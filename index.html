@@ -179,6 +179,22 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 @keyframes bulbSnap{0%{transform:translateX(-50%) scaleY(1)}45%{transform:translateX(-50%) scaleY(.86)}100%{transform:translateX(-50%) scaleY(1)}}
 .theme-pull.snap .theme-bulb{animation:bulbSnap .28s ease}
 @media(max-width:600px){.theme-pull-wrap{min-height:95px}.theme-pull{width:70px}}
+/* Global hanging lightbulb switch: always visible beside the profile avatar. */
+.app-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:116px;height:82px}
+.app-top-actions .avatar{margin-top:11px}
+.top-theme-pull{width:48px;height:82px;position:relative;overflow:visible}
+.top-theme-pull .theme-cord{top:0;height:35px;width:2px}
+.top-theme-pull .theme-bulb-base{top:30px;width:20px;height:12px;border-radius:4px 4px 2px 2px;background:#4b535d;box-shadow:0 3px 0 #353b43,0 6px 0 #4b535d;z-index:2}
+.top-theme-pull .theme-bulb{top:43px;width:32px;height:35px;border-radius:50% 50% 47% 47% / 52% 52% 48% 48%;background:#3b424b;box-shadow:0 0 0 3px var(--border);z-index:1}
+.top-theme-pull .theme-bulb:after{display:none}
+.top-theme-pull.pulling .theme-cord{height:47px}
+.top-theme-pull.pulling .theme-bulb-base{top:42px}
+.top-theme-pull.pulling .theme-bulb{top:55px}
+:root[data-theme="light"] .top-theme-pull .theme-bulb{background:#fffdf0;box-shadow:0 0 20px 7px #ffe87a,0 0 0 3px #e6d47a}
+:root[data-theme="light"] .top-theme-pull .theme-bulb-base{background:#81785d;box-shadow:0 3px 0 #5c5542,0 6px 0 #81785d}
+:root[data-theme="light"] .top-theme-pull .theme-cord{background:#9b8c57}
+:root[data-theme="light"] .top-theme-pull.snap .theme-bulb{animation:bulbSnap .28s ease}
+@media(max-width:600px){.app-top-actions{min-width:100px;height:72px;gap:7px}.app-top-actions .avatar{margin-top:8px}.top-theme-pull{width:42px;height:72px}.top-theme-pull .theme-cord{height:29px}.top-theme-pull .theme-bulb-base{top:24px}.top-theme-pull .theme-bulb{top:35px;width:28px;height:31px}.top-theme-pull.pulling .theme-cord{height:39px}.top-theme-pull.pulling .theme-bulb-base{top:34px}.top-theme-pull.pulling .theme-bulb{top:45px}}
 </style>
 </head>
 <body>
@@ -263,7 +279,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
       <button class="sidebar-action logout" onclick="doLogout()" title="Log out"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button>
     </div>
   </aside>
-  <div class="app-content"><div class="app-top"><div><h1 id="pageTitle">Today</h1><p id="pageSubtitle">Your planning workspace</p></div><div id="topAvatar" class="avatar" aria-label="Profile">L</div></div><main id="main"></main></div>
+  <div class="app-content"><div class="app-top"><div><h1 id="pageTitle">Today</h1><p id="pageSubtitle">Your planning workspace</p></div><div class="app-top-actions"><button id="themePull" class="theme-pull top-theme-pull" type="button" aria-label="Pull the lightbulb cord to change theme" title="Pull the cord to switch between dark and light mode"><span class="theme-cord"></span><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></button><div id="topAvatar" class="avatar" aria-label="Profile">L</div></div></div><main id="main"></main></div>
 </div>
 <div id="toastHost" aria-live="polite"></div>
 
@@ -1004,20 +1020,6 @@ function renderProfileTab(u){
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
     <input id="prof_bio" value="${esc(u.bio||'')}" placeholder="Bio" style="margin-top:8px">
     <button class="primary" style="margin-top:8px" onclick="saveProfile()">Save</button>
-  </div>
-  <div class="card">
-    <h2>Appearance</h2>
-    <div class="theme-pull-wrap">
-      <div class="theme-copy">
-        <strong>Theme</strong>
-        <div class="notice" style="margin:5px 0 0">Pull the cord to switch between dark and light mode.</div>
-      </div>
-      <button id="themePull" class="theme-pull" type="button" aria-label="Pull light switch to change theme" title="Pull to change theme">
-        <span class="theme-cord"></span>
-        <span class="theme-bulb" aria-hidden="true"></span>
-        <span class="theme-bulb-base" aria-hidden="true"></span>
-      </button>
-    </div>
   </div>
   <div class="card">
     <h2>Localization</h2>
