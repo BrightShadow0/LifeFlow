@@ -1,5 +1,4 @@
 
-
 const OAUTH_CONFIG = {
   google: {
     clientId: '',
@@ -475,8 +474,6 @@ function exportData(fmt){
   a.href = URL.createObjectURL(blob); a.download = 'lifeflow_tasks.'+ext; a.click();
 }
 
-function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='dark'?'light':'dark'); }
-
 function renderNav(){
   const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['account','Profile & settings','◎']];
   document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
@@ -712,7 +709,6 @@ function renderApp(){
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='account') el.innerHTML = renderAccount();
-  else if(view==='insights') el.innerHTML = renderInsights();
   initThemePull();
 }
 let accountTab='profile';
