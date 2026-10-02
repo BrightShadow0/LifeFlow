@@ -414,13 +414,17 @@ async function doSignup(){
   const bio = document.getElementById('signupBio').value.trim();
   const workspace = document.getElementById('signupWorkspace').value.trim() || 'My Workspace';
   const users = getUsers();
-  // Only the salted PBKDF2 hash is stored — the plaintext never touches disk.
-  users[email] = newUserRecord(email, {passwordHash: await hashPassword(pass), name, bio, workspace});
-  saveUsers(users);
-  pendingVerify = {email, token: randomToken(12), expiresAt: Date.now() + 15*60*1000};
-  document.getElementById('verifyEmailLabel').textContent = email;
-  document.getElementById('verifyTokenDisplay').textContent = 'Simulated activation token (expires in 15 min): '+pendingVerify.token;
-  showStep('stepVerify');
+  if(!email || !pass || pass.length<8) return;
+  if(users[email]) return;
+  try{
+    const passwordHash = await hashPassword(pass);
+    users[email] = newUserRecord(email, {passwordHash, name, bio, workspace});
+    saveUsers(users);
+    pendingVerify = {email, token: randomToken(12), expiresAt: Date.now() + 15*60*1000};
+    document.getElementById('verifyEmailLabel').textContent = email;
+    document.getElementById('verifyTokenDisplay').textContent = 'Simulated activation token (expires in 15 min): '+pendingVerify.token;
+    showStep('stepVerify');
+  }catch(e){ alert('Could not create the account. Please try again.'); }
 }
 let pendingVerify=null;
 function doVerify(){
