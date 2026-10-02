@@ -1,45 +1,22 @@
-/* ============================================================================
-   OAUTH CONFIG — paste your own client IDs here to enable REAL provider login.
-   ----------------------------------------------------------------------------
-   This file implements the OAuth 2.0 Authorization Code flow with PKCE
-   (Proof Key for Code Exchange), the current best practice for public
-   clients (apps that cannot keep a secret). No client secret is used or
-   stored anywhere: a browser file is a "public client" and cannot keep one,
-   so any code claiming to hide a secret in a file like this is pretending.
 
-   To light up real login:
-   1. Google: create an OAuth client at https://console.cloud.google.com/apis/credentials
-      (type "Web application"). Add the exact URL this file is served from to
-      "Authorized redirect URIs" (e.g. http://localhost:8000/lifeflow.html).
-      Paste the client ID below.
-   2. GitHub: create an OAuth App at https://github.com/settings/developers
-      with "Authorization callback URL" set to the exact URL this file is
-      served from. Paste the client ID below.
-   3. Serve the file over http://localhost (e.g. `python3 -m http.server`) or
-      any https host. Providers will not redirect back to a file:// URL.
 
-   Apple is left in demo mode on purpose: Sign in with Apple requires a
-   server-signed client secret JWT, so it cannot be done honestly from a
-   pure client-side file. Leaving a client ID blank keeps that button in
-   clearly-labeled demo mode.
-   ========================================================================== */
 const OAUTH_CONFIG = {
   google: {
-    clientId: '', // <-- paste your Google OAuth client ID here
+    clientId: '',
     authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: 'https://oauth2.googleapis.com/token',
     scope: 'openid email profile',
   },
   github: {
-    clientId: '', // <-- paste your GitHub OAuth App client ID here
+    clientId: '',
     authorizeUrl: 'https://github.com/login/oauth/authorize',
     tokenUrl: 'https://github.com/login/oauth/access_token',
     scope: 'read:user user:email',
   },
-  apple: { clientId: '' }, // requires a server-side client secret; demo only
+  apple: { clientId: '' },
 };
-const SESSION_TTL_MS = 7 * 24 * 3600 * 1000; // sessions last 7 days, sliding
-const PBKDF2_ITERATIONS = 100000;            // password hashing work factor
+const SESSION_TTL_MS = 7 * 24 * 3600 * 1000;
+const PBKDF2_ITERATIONS = 100000;
 
 let state = load();
 let view = 'today';
@@ -52,12 +29,8 @@ function load(){
 function save(){ try{ localStorage.setItem('lifeflow2_state', JSON.stringify(state)); }catch(e){} }
 window.addEventListener('storage', e=>{ if(e.key==='lifeflow2_state'){ state = load(); renderApp(); } });
 
-/* ---------------- Crypto helpers (Web Crypto) ----------------
-   All randomness in this app comes from crypto.getRandomValues, which is
-   cryptographically secure. Math.random is NOT secure and is never used
-   for tokens, IDs, or salts here. */
 function base64url(bytes){
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\
 }
 function randomToken(nBytes){
   const b = new Uint8Array(nBytes || 32);
@@ -68,16 +41,14 @@ async function sha256B64url(str){
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return base64url(new Uint8Array(digest));
 }
-// Length-checked constant-time comparison so hash checks don't leak timing.
+
 function timingSafeEqual(a, b){
   if(a.length !== b.length) return false;
   let diff = 0;
   for(let i=0;i<a.length;i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
-/* Password hashing: PBKDF2-HMAC-SHA256 with a random 16-byte salt and
-   100k iterations. Stored format: pbkdf2-sha256$iterations$salt$hash.
-   The plaintext password is never written to storage. */
+
 async function hashPassword(password, saltB64, iterations){
   const salt = saltB64
     ? Uint8Array.from(atob(saltB64), c=>c.charCodeAt(0))
@@ -95,15 +66,11 @@ async function verifyPassword(password, u){
   return timingSafeEqual(candidate, stored);
 }
 
-/* ---------------- Sessions ----------------
-   Login state is an expiring random token, not a bare `loggedIn` flag.
-   Every render re-validates the session; when it expires you are logged
-   out. A real server would keep the token server-side and revoke it. */
 function getSession(){
   try{
     const s = JSON.parse(localStorage.getItem('lifeflow2_session'));
     if(s && s.token && s.email && s.expiresAt && Date.now() < s.expiresAt){
-      s.expiresAt = Date.now() + SESSION_TTL_MS; // sliding renewal
+      s.expiresAt = Date.now() + SESSION_TTL_MS;
       localStorage.setItem('lifeflow2_session', JSON.stringify(s));
       return s;
     }
@@ -117,10 +84,9 @@ function createSession(email){
   return s;
 }
 function destroySession(){ localStorage.removeItem('lifeflow2_session'); state.currentUser = null; save(); }
-// Periodic expiry check: an expired session drops you back to login.
+
 setInterval(()=>{ if(!getSession() && document.getElementById('app').style.display==='block') doLogout(); }, 60000);
 
-// ---- Auth (accounts stored locally, keyed by email) ----
 function showStep(id){
   document.querySelectorAll('.authstep').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -227,13 +193,6 @@ function doVerify(){
   showStep('stepLogin');
 }
 
-/* ---------------- OAuth 2.0 Authorization Code + PKCE ----------------
-   Flow: (1) generate state, nonce and a random code_verifier;
-   (2) send the user to the provider with the SHA-256 hash of the verifier
-   (the "challenge"); (3) the provider redirects back with a code;
-   (4) we swap the code + original verifier for tokens directly with the
-   provider. Because the verifier never leaves this browser until step 4,
-   an intercepted code is useless without it. */
 function redirectUri(){ return location.href.split(/[?#]/)[0]; }
 function renderOAuthButtons(){
   document.getElementById('oauthRow').innerHTML = ['Google','Apple','GitHub'].map(p=>{
@@ -263,7 +222,7 @@ async function oauthLogin(provider){
   });
   location.href = cfg.authorizeUrl + '?' + params.toString();
 }
-// Clearly-labeled demo mode, used only when no client ID is configured.
+
 function demoOAuthLogin(provider){
   const email = 'demo_'+provider.toLowerCase()+'@lifeflow.local';
   const users = getUsers();
@@ -272,25 +231,24 @@ function demoOAuthLogin(provider){
   saveUsers(users);
   createSession(email);
   enterApp();
-  // The auth screen is hidden now, so surface the demo notice inside the app.
+
   const n = document.createElement('div');
   n.className = 'notice';
   n.textContent = 'Demo mode: no real '+provider+' client ID is configured, so a local demo account was created without contacting '+provider+'.';
   document.getElementById('main').prepend(n);
 }
-// Handles the provider redirect (?code=...&state=...) on page load.
+
 async function handleOAuthCallback(){
   const params = new URLSearchParams(location.search);
   const code = params.get('code');
   if(!code) return;
   const returnedState = params.get('state');
-  history.replaceState(null, '', location.pathname); // strip code from the URL bar
+  history.replaceState(null, '', location.pathname);
   let pending = null;
   try{ pending = JSON.parse(sessionStorage.getItem('lifeflow2_oauth')); }catch(e){}
   sessionStorage.removeItem('lifeflow2_oauth');
   const fail = msg => showOAuthNotice('OAuth sign-in failed: '+msg);
-  // The state check binds this response to the request we made, which
-  // blocks login CSRF; the age check keeps old links from being replayed.
+
   if(!pending || pending.state !== returnedState) return fail('state mismatch or expired attempt.');
   if(Date.now() - pending.createdAt > 10*60*1000) return fail('sign-in attempt expired.');
   const cfg = OAUTH_CONFIG[pending.provider];
@@ -312,20 +270,19 @@ async function handleOAuthCallback(){
   let profile = null;
   try{
     if(pending.provider === 'google'){
-      // Google returns an ID token (JWT). We check audience, nonce, expiry
-      // and issuer. Note: a browser file cannot verify the JWT signature
-      // with the provider's rotating keys; a production backend should do
-      // that check. PKCE + HTTPS + these claim checks cover this demo.
+
+
+
       const payload = JSON.parse(atob(tokens.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       const issOk = payload.iss === 'https://accounts.google.com' || payload.iss === 'accounts.google.com';
       if(!issOk || payload.aud !== cfg.clientId || payload.nonce !== pending.nonce || Date.now()/1000 > payload.exp)
         return fail('ID token claims did not validate.');
       profile = {email: payload.email, name: payload.name, avatar: payload.picture};
-    }else{ // github
+    }else{
       const ui = await fetch('https://api.github.com/user', {headers:{Authorization:'Bearer '+tokens.access_token, Accept:'application/vnd.github+json'}});
       const data = await ui.json();
       profile = {email: data.email, name: data.name || data.login, avatar: data.avatar_url};
-      if(!profile.email){ // email may be private; fetch the primary verified one
+      if(!profile.email){
         const em = await fetch('https://api.github.com/user/emails', {headers:{Authorization:'Bearer '+tokens.access_token, Accept:'application/vnd.github+json'}});
         const list = await em.json();
         const primary = (list||[]).find(e=>e.primary && e.verified) || (list||[])[0];
@@ -334,8 +291,7 @@ async function handleOAuthCallback(){
       if(!profile.email) return fail('no verified email on the GitHub account.');
     }
   }catch(e){ return fail('could not fetch your profile.'); }
-  // Access tokens are used once above and deliberately NOT stored: keeping
-  // bearer tokens in localStorage would let any XSS read them.
+
   const email = profile.email.trim().toLowerCase();
   const providerName = {google:'Google', github:'GitHub', apple:'Apple'}[pending.provider] || pending.provider;
   const users = getUsers();
@@ -351,12 +307,10 @@ async function doLogin(){
   const pass = document.getElementById('loginPass').value;
   const users = getUsers();
   const u = users[email];
-  // Plain-language errors: this is a local single-user app, so telling the
-  // difference between "no account" and "wrong password" is more helpful
-  // than production-style ambiguity.
+
+
   if(!u){ showAuthError('loginError','No account exists for that email here. Accounts are stored per browser and per web address (localhost vs file:// vs a different port each have separate storage) - sign up here, or go back to the address where you created it.'); return; }
-  // Legacy migration: an account saved by the old plaintext build is upgraded
-  // to a PBKDF2 hash on its next successful login, then the plaintext is wiped.
+
   if(!u.passwordHash && typeof u.password === 'string'){
     if(u.password !== pass){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
     u.passwordHash = await hashPassword(pass);
@@ -387,7 +341,7 @@ function sendReset(){
   const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
   const users = getUsers();
   if(!users[email]){ showAuthError('forgotError','No account found for that email.'); return; }
-  // Secure random, single-use, expiring token (Math.random is predictable).
+
   pendingReset = {email, token: randomToken(16), expiresAt: Date.now() + 15*60*1000};
   document.getElementById('tokenDisplay').textContent = 'Simulated email link token (expires in 15 min): '+pendingReset.token;
   showStep('stepSent');
@@ -400,7 +354,7 @@ async function doReset(){
   const users = getUsers();
   users[pendingReset.email].passwordHash = await hashPassword(pass);
   saveUsers(users);
-  pendingReset = null; // single-use: the token is consumed here
+  pendingReset = null;
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
@@ -457,8 +411,7 @@ function initThemePull(){
   const move=e=>{
     if(!themePullActive)return;
     const dy=Math.max(0,Math.min(24,e.clientY-themePullStartY));
-    // Keep the ceiling/cord anchor fixed. Only the cord length and hanging bulb
-    // assembly move downward, so the whole switch does not slide with the pull.
+
     b.style.setProperty('--pull-y',dy+'px');
   };
   const end=e=>{
@@ -481,8 +434,7 @@ function initThemePull(){
 }
 function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
 
-// ---- Task helpers ----
-function uid(){ return Date.now()+Math.floor(Math.random()*1000); } // display-only ID, not security-sensitive
+function uid(){ return Date.now()+Math.floor(Math.random()*1000); }
 function addTask(t){ state.tasks.push(Object.assign({id:uid(), title:'', tags:[], priority:'medium', due:null, startTime:null, endTime:null, recur:'none', status:'todo', done:false, subtasks:[]}, t)); save(); renderApp(); }
 function toggleDone(id){
   const t = state.tasks.find(x=>x.id===id); if(!t) return;
@@ -505,8 +457,7 @@ function toggleSub(tid,sid){
   const t = state.tasks.find(x=>x.id===tid); const s = t.subtasks.find(x=>x.id===sid);
   s.done = !s.done; save(); renderApp();
 }
-// Escape everything injected into HTML, including quotes, so user content
-// cannot break out of attribute values (e.g. the profile name field).
+
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function intervalHtml(t){ return validTime(t.startTime)&&validTime(t.endTime)?`<span class="time-chip">◷ ${esc(t.startTime)}–${esc(t.endTime)}</span>`:''; }
 function validTime(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t); }
@@ -656,7 +607,6 @@ function renderCalendar(){
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
-
 
 // A time interval belongs to a task's local due date; crossing midnight is not supported.
 let timeEdit=null, clock=null;
