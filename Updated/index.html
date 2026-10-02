@@ -843,7 +843,7 @@ function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='da
 
 // ---- Views ----
 function renderNav(){
-  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['javascript','JavaScript','</>'],['account','Profile & settings','◎']];
+  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['javascript','JavaScript','JS'],['account','Profile & settings','◎']];
   document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
 }
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
