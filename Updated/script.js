@@ -1,0 +1,921 @@
+/* ============================================================================
+   OAUTH CONFIG — paste your own client IDs here to enable REAL provider login.
+   ----------------------------------------------------------------------------
+   This file implements the OAuth 2.0 Authorization Code flow with PKCE
+   (Proof Key for Code Exchange), the current best practice for public
+   clients (apps that cannot keep a secret). No client secret is used or
+   stored anywhere: a browser file is a "public client" and cannot keep one,
+   so any code claiming to hide a secret in a file like this is pretending.
+
+   To light up real login:
+   1. Google: create an OAuth client at https://console.cloud.google.com/apis/credentials
+      (type "Web application"). Add the exact URL this file is served from to
+      "Authorized redirect URIs" (e.g. http://localhost:8000/lifeflow.html).
+      Paste the client ID below.
+   2. GitHub: create an OAuth App at https://github.com/settings/developers
+      with "Authorization callback URL" set to the exact URL this file is
+      served from. Paste the client ID below.
+   3. Serve the file over http://localhost (e.g. `python3 -m http.server`) or
+      any https host. Providers will not redirect back to a file:// URL.
+
+   Apple is left in demo mode on purpose: Sign in with Apple requires a
+   server-signed client secret JWT, so it cannot be done honestly from a
+   pure client-side file. Leaving a client ID blank keeps that button in
+   clearly-labeled demo mode.
+   ========================================================================== */
+const OAUTH_CONFIG = {
+  google: {
+    clientId: '', // <-- paste your Google OAuth client ID here
+    authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    scope: 'openid email profile',
+  },
+  github: {
+    clientId: '', // <-- paste your GitHub OAuth App client ID here
+    authorizeUrl: 'https://github.com/login/oauth/authorize',
+    tokenUrl: 'https://github.com/login/oauth/access_token',
+    scope: 'read:user user:email',
+  },
+  apple: { clientId: '' }, // requires a server-side client secret; demo only
+};
+const SESSION_TTL_MS = 7 * 24 * 3600 * 1000; // sessions last 7 days, sliding
+const PBKDF2_ITERATIONS = 100000;            // password hashing work factor
+
+let state = load();
+let view = 'today';
+let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
+
+function load(){
+  try{ const r = localStorage.getItem('lifeflow2_state'); if(r) return JSON.parse(r); }catch(e){}
+  return {tasks:[]};
+}
+function save(){ try{ localStorage.setItem('lifeflow2_state', JSON.stringify(state)); }catch(e){} }
+window.addEventListener('storage', e=>{ if(e.key==='lifeflow2_state'){ state = load(); renderApp(); } });
+
+/* ---------------- Crypto helpers (Web Crypto) ----------------
+   All randomness in this app comes from crypto.getRandomValues, which is
+   cryptographically secure. Math.random is NOT secure and is never used
+   for tokens, IDs, or salts here. */
+function base64url(bytes){
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function randomToken(nBytes){
+  const b = new Uint8Array(nBytes || 32);
+  crypto.getRandomValues(b);
+  return base64url(b);
+}
+async function sha256B64url(str){
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return base64url(new Uint8Array(digest));
+}
+// Length-checked constant-time comparison so hash checks don't leak timing.
+function timingSafeEqual(a, b){
+  if(a.length !== b.length) return false;
+  let diff = 0;
+  for(let i=0;i<a.length;i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+/* Password hashing: PBKDF2-HMAC-SHA256 with a random 16-byte salt and
+   100k iterations. Stored format: pbkdf2-sha256$iterations$salt$hash.
+   The plaintext password is never written to storage. */
+async function hashPassword(password, saltB64, iterations){
+  const salt = saltB64
+    ? Uint8Array.from(atob(saltB64), c=>c.charCodeAt(0))
+    : crypto.getRandomValues(new Uint8Array(16));
+  const iter = iterations || PBKDF2_ITERATIONS;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt, iterations:iter}, key, 256);
+  return 'pbkdf2-sha256$' + iter + '$' + btoa(String.fromCharCode(...salt)) + '$' + btoa(String.fromCharCode(...new Uint8Array(bits)));
+}
+async function verifyPassword(password, u){
+  const stored = u && u.passwordHash;
+  if(!stored) return false;
+  const [, iter, salt] = stored.split('$');
+  const candidate = await hashPassword(password, salt, +iter);
+  return timingSafeEqual(candidate, stored);
+}
+
+/* ---------------- Sessions ----------------
+   Login state is an expiring random token, not a bare `loggedIn` flag.
+   Every render re-validates the session; when it expires you are logged
+   out. A real server would keep the token server-side and revoke it. */
+function getSession(){
+  try{
+    const s = JSON.parse(localStorage.getItem('lifeflow2_session'));
+    if(s && s.token && s.email && s.expiresAt && Date.now() < s.expiresAt){
+      s.expiresAt = Date.now() + SESSION_TTL_MS; // sliding renewal
+      localStorage.setItem('lifeflow2_session', JSON.stringify(s));
+      return s;
+    }
+  }catch(e){}
+  return null;
+}
+function createSession(email){
+  const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS};
+  localStorage.setItem('lifeflow2_session', JSON.stringify(s));
+  state.currentUser = email; save();
+  return s;
+}
+function destroySession(){ localStorage.removeItem('lifeflow2_session'); state.currentUser = null; save(); }
+// Periodic expiry check: an expired session drops you back to login.
+setInterval(()=>{ if(!getSession() && document.getElementById('app').style.display==='block') doLogout(); }, 60000);
+
+// ---- Auth (accounts stored locally, keyed by email) ----
+function showStep(id){
+  document.querySelectorAll('.authstep').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const captions={stepLogin:['Welcome back.','Sign in to access your personal planning workspace.'],stepSignup1:['Create an account.','First, choose your email and password.'],stepSignup2:['Make it yours.','Add a name to your workspace.'],stepSignup3:['Your workspace.','One last step before you start planning.'],stepVerify:['Verify your account.','This activation is simulated in the browser.'],stepForgot:['Reset your password.','Enter the email you used to sign up.'],stepSent:['Reset link ready.','This simulated link expires in 15 minutes.'],stepReset:['New password.','Use at least eight characters.'],stepDone:['Password updated.','Return to sign in.']};
+  const caption=captions[id]||captions.stepLogin;document.getElementById('authTitle').textContent=caption[0];document.getElementById('authSubtitle').textContent=caption[1];
+  ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.style.display='none'; });
+}
+function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
+function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.style.display='block'; }
+function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_users')||'{}'); }catch(e){ return {}; } }
+function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
+function newUserRecord(email, extra){
+  return Object.assign({
+    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark',
+    workspace:'My Workspace', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    language:'en', weekStart:'Sunday', tier:'Free',
+    connected:{Google:false,Apple:false,GitHub:false},
+    verified:false, deletedAt:null, oauthProvider:null,
+  }, extra||{});
+}
+
+function validateSignup1(){
+  const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('signupPass').value;
+  const emailHint = document.getElementById('emailHint');
+  const passHint = document.getElementById('passHint');
+  const users = getUsers();
+  let emailOk = false;
+  if(!email){ emailHint.style.display='none'; }
+  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ emailHint.textContent='Invalid email format.'; emailHint.style.display='block'; }
+  else if(users[email]){
+    const ex = users[email];
+    emailHint.textContent = ex.deletedAt
+      ? 'That email belongs to an account scheduled for deletion. Log in to keep it, or reset all app data from the Danger Zone.'
+      : 'That email already has an account. Log in instead, or use Forgot password on the login screen.';
+    emailHint.style.display='block';
+  }
+  else{ emailHint.style.display='none'; emailOk = true; }
+
+  let score = 0;
+  if(pass.length>=8) score++;
+  if(/[0-9]/.test(pass)) score++;
+  if(/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score++;
+  if(/[^A-Za-z0-9]/.test(pass)) score++;
+  const fill = document.getElementById('strengthFill');
+  const pct = (score/4)*100;
+  fill.style.width = pct+'%';
+  fill.style.background = score<=1?'var(--danger)':score<=2?'var(--warn)':'var(--ok)';
+  const passOk = pass.length>=8;
+  if(pass && !passOk){ passHint.textContent='Password must be at least 8 characters.'; passHint.style.display='block'; }
+  else{ passHint.style.display='none'; }
+
+  document.getElementById('s1Next').disabled = !(emailOk && passOk);
+}
+function startSignup(){
+  ['signupEmail','signupPass','signupName','signupBio','signupWorkspace'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  showStep('stepSignup1');
+  validateSignup1();
+}
+
+async function doSignup(){
+  const email=document.getElementById('signupEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('signupPass').value;
+  const name=document.getElementById('signupName').value.trim() || email.split('@')[0];
+  const bio=document.getElementById('signupBio').value.trim();
+  const workspace=document.getElementById('signupWorkspace').value.trim() || 'My Workspace';
+  const error=document.getElementById('signupError');
+  try{
+    if(!email || !email.includes('@') || !email.includes('.')) throw new Error('Enter a valid email address.');
+    if(pass.length<8) throw new Error('Password must be at least 8 characters.');
+    const users=getUsers();
+    if(users[email]) throw new Error('That email already has an account. Log in instead, or use Forgot password.');
+    if(!window.crypto || !crypto.subtle) throw new Error('Secure password hashing is unavailable here. Open LifeFlow from its HTTPS GitHub Pages address or from http://localhost.');
+    const passwordHash=await hashPassword(pass);
+    users[email]=newUserRecord(email,{passwordHash,name,bio,workspace});
+    saveUsers(users);
+    const savedUsers=getUsers();
+    if(!savedUsers[email] || savedUsers[email].passwordHash!==passwordHash) throw new Error('Your browser blocked LifeFlow from saving the new account. Check browser storage/site permissions and try again.');
+    pendingVerify={email,token:randomToken(12),expiresAt:Date.now()+15*60*1000};
+    document.getElementById('verifyEmailLabel').textContent=email;
+    document.getElementById('verifyTokenDisplay').textContent='Simulated activation token (expires in 15 min): '+pendingVerify.token;
+    showStep('stepVerify');
+  }catch(err){
+    if(error){
+      error.textContent=err && err.message ? err.message : 'Could not create the account. Please try again.';
+      error.style.display='block';
+    }else{
+      alert(err && err.message ? err.message : 'Could not create the account. Please try again.');
+    }
+  }
+}
+let pendingVerify=null;
+function doVerify(){
+  if(pendingVerify && Date.now() < pendingVerify.expiresAt){
+    const users = getUsers();
+    if(pendingVerify.email && users[pendingVerify.email]){ users[pendingVerify.email].verified = true; saveUsers(users); }
+    document.getElementById('loginEmail').value = pendingVerify.email || '';
+  }
+  document.getElementById('loginPass').value = '';
+  pendingVerify=null;
+  showStep('stepLogin');
+}
+
+/* ---------------- OAuth 2.0 Authorization Code + PKCE ----------------
+   Flow: (1) generate state, nonce and a random code_verifier;
+   (2) send the user to the provider with the SHA-256 hash of the verifier
+   (the "challenge"); (3) the provider redirects back with a code;
+   (4) we swap the code + original verifier for tokens directly with the
+   provider. Because the verifier never leaves this browser until step 4,
+   an intercepted code is useless without it. */
+function redirectUri(){ return location.href.split(/[?#]/)[0]; }
+function renderOAuthButtons(){
+  document.getElementById('oauthRow').innerHTML = ['Google','Apple','GitHub'].map(p=>{
+    const configured = !!(OAUTH_CONFIG[p.toLowerCase()] && OAUTH_CONFIG[p.toLowerCase()].clientId);
+    return `<button onclick="oauthLogin('${p}')">${p}${configured?'':' (demo)'}</button>`;
+  }).join('');
+}
+async function oauthLogin(provider){
+  const cfg = OAUTH_CONFIG[provider.toLowerCase()];
+  if(!cfg || !cfg.clientId){ demoOAuthLogin(provider); return; }
+  const stateParam = randomToken(16);
+  const nonce = randomToken(16);
+  const verifier = randomToken(48);
+  const challenge = await sha256B64url(verifier);
+  sessionStorage.setItem('lifeflow2_oauth', JSON.stringify({
+    provider: provider.toLowerCase(), state: stateParam, nonce, verifier, createdAt: Date.now()
+  }));
+  const params = new URLSearchParams({
+    client_id: cfg.clientId,
+    redirect_uri: redirectUri(),
+    response_type: 'code',
+    scope: cfg.scope,
+    state: stateParam,
+    nonce,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+  });
+  location.href = cfg.authorizeUrl + '?' + params.toString();
+}
+// Clearly-labeled demo mode, used only when no client ID is configured.
+function demoOAuthLogin(provider){
+  const email = 'demo_'+provider.toLowerCase()+'@lifeflow.local';
+  const users = getUsers();
+  if(!users[email]) users[email] = newUserRecord(email, {name:'Demo '+provider+' User', workspace:'Demo Workspace', verified:true});
+  users[email].connected[provider] = true;
+  saveUsers(users);
+  createSession(email);
+  enterApp();
+  // The auth screen is hidden now, so surface the demo notice inside the app.
+  const n = document.createElement('div');
+  n.className = 'notice';
+  n.textContent = 'Demo mode: no real '+provider+' client ID is configured, so a local demo account was created without contacting '+provider+'.';
+  document.getElementById('main').prepend(n);
+}
+// Handles the provider redirect (?code=...&state=...) on page load.
+async function handleOAuthCallback(){
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  if(!code) return;
+  const returnedState = params.get('state');
+  history.replaceState(null, '', location.pathname); // strip code from the URL bar
+  let pending = null;
+  try{ pending = JSON.parse(sessionStorage.getItem('lifeflow2_oauth')); }catch(e){}
+  sessionStorage.removeItem('lifeflow2_oauth');
+  const fail = msg => showOAuthNotice('OAuth sign-in failed: '+msg);
+  // The state check binds this response to the request we made, which
+  // blocks login CSRF; the age check keeps old links from being replayed.
+  if(!pending || pending.state !== returnedState) return fail('state mismatch or expired attempt.');
+  if(Date.now() - pending.createdAt > 10*60*1000) return fail('sign-in attempt expired.');
+  const cfg = OAUTH_CONFIG[pending.provider];
+  let tokens;
+  try{
+    const resp = await fetch(cfg.tokenUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded', 'Accept':'application/json'},
+      body: new URLSearchParams({
+        grant_type: 'authorization_code', code,
+        redirect_uri: redirectUri(), client_id: cfg.clientId,
+        code_verifier: pending.verifier,
+      }),
+    });
+    if(!resp.ok) return fail('token exchange was rejected ('+resp.status+').');
+    tokens = await resp.json();
+  }catch(e){ return fail('could not reach the provider.'); }
+
+  let profile = null;
+  try{
+    if(pending.provider === 'google'){
+      // Google returns an ID token (JWT). We check audience, nonce, expiry
+      // and issuer. Note: a browser file cannot verify the JWT signature
+      // with the provider's rotating keys; a production backend should do
+      // that check. PKCE + HTTPS + these claim checks cover this demo.
+      const payload = JSON.parse(atob(tokens.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      const issOk = payload.iss === 'https://accounts.google.com' || payload.iss === 'accounts.google.com';
+      if(!issOk || payload.aud !== cfg.clientId || payload.nonce !== pending.nonce || Date.now()/1000 > payload.exp)
+        return fail('ID token claims did not validate.');
+      profile = {email: payload.email, name: payload.name, avatar: payload.picture};
+    }else{ // github
+      const ui = await fetch('https://api.github.com/user', {headers:{Authorization:'Bearer '+tokens.access_token, Accept:'application/vnd.github+json'}});
+      const data = await ui.json();
+      profile = {email: data.email, name: data.name || data.login, avatar: data.avatar_url};
+      if(!profile.email){ // email may be private; fetch the primary verified one
+        const em = await fetch('https://api.github.com/user/emails', {headers:{Authorization:'Bearer '+tokens.access_token, Accept:'application/vnd.github+json'}});
+        const list = await em.json();
+        const primary = (list||[]).find(e=>e.primary && e.verified) || (list||[])[0];
+        if(primary) profile.email = primary.email;
+      }
+      if(!profile.email) return fail('no verified email on the GitHub account.');
+    }
+  }catch(e){ return fail('could not fetch your profile.'); }
+  // Access tokens are used once above and deliberately NOT stored: keeping
+  // bearer tokens in localStorage would let any XSS read them.
+  const email = profile.email.trim().toLowerCase();
+  const providerName = {google:'Google', github:'GitHub', apple:'Apple'}[pending.provider] || pending.provider;
+  const users = getUsers();
+  if(!users[email]) users[email] = newUserRecord(email, {name: profile.name || email.split('@')[0], avatar: profile.avatar || null, verified:true, oauthProvider: providerName});
+  users[email].connected[providerName] = true;
+  saveUsers(users);
+  createSession(email);
+  enterApp();
+}
+
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const users = getUsers();
+  const u = users[email];
+  // Plain-language errors: this is a local single-user app, so telling the
+  // difference between "no account" and "wrong password" is more helpful
+  // than production-style ambiguity.
+  if(!u){ showAuthError('loginError','No account exists for that email here. Accounts are stored per browser and per web address (localhost vs file:// vs a different port each have separate storage) - sign up here, or go back to the address where you created it.'); return; }
+  // Legacy migration: an account saved by the old plaintext build is upgraded
+  // to a PBKDF2 hash on its next successful login, then the plaintext is wiped.
+  if(!u.passwordHash && typeof u.password === 'string'){
+    if(u.password !== pass){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
+    u.passwordHash = await hashPassword(pass);
+    delete u.password;
+    saveUsers(users);
+  }
+  if(!u.passwordHash){ showAuthError('loginError','This account signs in with '+(u.oauthProvider||'an identity provider')+'. Use that button instead of a password.'); return; }
+  if(!(await verifyPassword(pass, u))){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
+  if(u.deletedAt){ showAuthError('loginError','This account is scheduled for deletion and can no longer be accessed.'); return; }
+  if(!u.verified){ pendingVerify = {email, token: randomToken(12), expiresAt: Date.now() + 15*60*1000}; document.getElementById('verifyEmailLabel').textContent=email; document.getElementById('verifyTokenDisplay').textContent='Account not verified yet — click below to simulate verifying.'; showStep('stepVerify'); return; }
+  createSession(email);
+  enterApp();
+}
+function enterApp(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderApp();
+}
+function doLogout(){
+  destroySession();
+  document.getElementById('app').style.display='none';
+  document.getElementById('authScreen').style.display='block';
+  document.getElementById('oauthNotice').style.display='none';
+  showStep('stepLogin');
+}
+let pendingReset=null;
+function sendReset(){
+  const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const users = getUsers();
+  if(!users[email]){ showAuthError('forgotError','No account found for that email.'); return; }
+  // Secure random, single-use, expiring token (Math.random is predictable).
+  pendingReset = {email, token: randomToken(16), expiresAt: Date.now() + 15*60*1000};
+  document.getElementById('tokenDisplay').textContent = 'Simulated email link token (expires in 15 min): '+pendingReset.token;
+  showStep('stepSent');
+}
+async function doReset(){
+  const pass = document.getElementById('newPass').value;
+  if(!pass || !pendingReset) return;
+  if(Date.now() > pendingReset.expiresAt){ showAuthError('resetError','That reset link has expired. Request a new one.'); return; }
+  if(pass.length < 8){ showAuthError('resetError','Password must be at least 8 characters.'); return; }
+  const users = getUsers();
+  users[pendingReset.email].passwordHash = await hashPassword(pass);
+  saveUsers(users);
+  pendingReset = null; // single-use: the token is consumed here
+  showStep('stepDone');
+}
+function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
+function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark'); }
+function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
+function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
+function applyAuthTheme(mode){
+  const actual=mode==='auto' ? systemTheme() : mode;
+  applyTheme(actual);
+  const auto=document.getElementById('authAuto'), dark=document.getElementById('authDark'), light=document.getElementById('authLight'), bulb=document.getElementById('authBulb');
+  if(auto) auto.classList.toggle('active',mode==='auto');
+  if(dark) dark.classList.toggle('active',mode==='dark');
+  if(light) light.classList.toggle('active',mode==='light');
+  if(bulb) bulb.classList.toggle('light',actual==='light');
+}
+function setAuthTheme(mode){
+  const stored=mode==='auto' ? 'auto' : (mode==='light' ? 'light' : 'dark');
+  localStorage.setItem('lifeflow2_auth_theme',stored);
+  applyAuthTheme(stored);
+}
+function initAuthTheme(){
+  const mode=getAuthTheme(); applyAuthTheme(mode);
+  if(window.matchMedia){
+    const mq=window.matchMedia('(prefers-color-scheme: light)');
+    const onChange=()=>{ if(getAuthTheme()==='auto') applyAuthTheme('auto'); };
+    mq.addEventListener?.('change',onChange); mq.addListener?.(onChange);
+  }
+  const bulb=document.getElementById('authBulb'); if(!bulb) return;
+  let startY=null,active=false,switched=false;
+  const down=e=>{startY=e.clientY;active=true;switched=false;bulb.setPointerCapture?.(e.pointerId);e.preventDefault();};
+  const move=e=>{
+    if(!active)return;
+    const dy=Math.max(0,Math.min(24,e.clientY-startY));
+    bulb.style.setProperty('--pull-y',dy+'px');
+    if(dy>8 && !switched){
+      switched=true;
+      setAuthTheme(getAuthTheme()==='light'?'dark':'light');
+    }
+  };
+  const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
+  bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
+}
+function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
+let themePullStartY=null, themePullActive=false;
+function initThemePull(){
+  const b=document.getElementById('themePull'); if(!b) return;
+  const begin=e=>{
+    themePullStartY=e.clientY;
+    themePullActive=true;
+    b.classList.add('pulling');
+    b.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+  };
+  const move=e=>{
+    if(!themePullActive)return;
+    const dy=Math.max(0,Math.min(24,e.clientY-themePullStartY));
+    // Keep the ceiling/cord anchor fixed. Only the cord length and hanging bulb
+    // assembly move downward, so the whole switch does not slide with the pull.
+    b.style.setProperty('--pull-y',dy+'px');
+  };
+  const end=e=>{
+    if(!themePullActive)return;
+    const dy=Math.max(0,e.clientY-themePullStartY);
+    themePullActive=false;
+    b.classList.remove('pulling');
+    b.style.setProperty('--pull-y','0px');
+    b.releasePointerCapture?.(e.pointerId);
+    if(dy>8){
+      b.classList.add('snap');
+      setTheme((currentUser()?.theme||'dark')==='dark'?'light':'dark');
+      setTimeout(()=>b.classList.remove('snap'),300);
+    }
+  };
+  b.addEventListener('pointerdown',begin);
+  b.addEventListener('pointermove',move);
+  b.addEventListener('pointerup',end);
+  b.addEventListener('pointercancel',end);
+}
+function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
+
+// ---- Task helpers ----
+function uid(){ return Date.now()+Math.floor(Math.random()*1000); } // display-only ID, not security-sensitive
+function addTask(t){ state.tasks.push(Object.assign({id:uid(), title:'', tags:[], priority:'medium', due:null, startTime:null, endTime:null, recur:'none', status:'todo', done:false, subtasks:[]}, t)); save(); renderApp(); }
+function toggleDone(id){
+  const t = state.tasks.find(x=>x.id===id); if(!t) return;
+  t.done = !t.done;
+  if(t.done && t.recur !== 'none' && t.due){
+    const d = new Date(t.due);
+    if(t.recur==='daily') d.setDate(d.getDate()+1);
+    if(t.recur==='weekly') d.setDate(d.getDate()+7);
+    if(t.recur==='monthly') d.setMonth(d.getMonth()+1);
+    addTask({title:t.title, tags:t.tags, priority:t.priority, due:d.toISOString(), startTime:t.startTime||null, endTime:t.endTime||null, recur:t.recur, status:'todo'});
+  }
+  save(); renderApp();
+}
+function deleteTask(id){ state.tasks = state.tasks.filter(t=>t.id!==id); save(); renderApp(); }
+function addSubtask(id, text){
+  const t = state.tasks.find(x=>x.id===id); if(!t||!text) return;
+  t.subtasks.push({id:uid(), text, done:false}); save(); renderApp();
+}
+function toggleSub(tid,sid){
+  const t = state.tasks.find(x=>x.id===tid); const s = t.subtasks.find(x=>x.id===sid);
+  s.done = !s.done; save(); renderApp();
+}
+// Escape everything injected into HTML, including quotes, so user content
+// cannot break out of attribute values (e.g. the profile name field).
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function intervalHtml(t){ return validTime(t.startTime)&&validTime(t.endTime)?`<span class="time-chip">◷ ${esc(t.startTime)}–${esc(t.endTime)}</span>`:''; }
+function validTime(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t); }
+function validInterval(a,b){ return validTime(a)&&validTime(b)&&a<b; }
+function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
+
+// ---- Export ----
+function exportData(fmt){
+  let content, mime, ext;
+  if(fmt==='json'){ content = JSON.stringify(state.tasks,null,2); mime='application/json'; ext='json'; }
+  else{
+    const rows=[['Title','Priority','Due','Start time','End time','Status','Recurrence','Done']];
+    state.tasks.forEach(t=>rows.push([t.title,t.priority,t.due||'',t.startTime||'',t.endTime||'',t.status,t.recur,t.done]));
+    content = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    mime='text/csv'; ext='csv';
+  }
+  const blob = new Blob([content],{type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'lifeflow_tasks.'+ext; a.click();
+}
+
+function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='dark'?'light':'dark'); }
+
+// ---- Views ----
+function renderNav(){
+  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['account','Profile & settings','◎']];
+  document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
+}
+function setView(v){ view=v; clearNewTimes(); renderApp(); }
+
+function taskFormHtml(){
+  return `<div class="card"><h2>New Task</h2>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <input id="nt_title" placeholder="Task title" style="flex:2;min-width:140px">
+      <input id="nt_due" type="date">
+      <select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+      <select id="nt_recur"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <input id="nt_tags" placeholder="tags (comma)" style="min-width:100px">
+      <button class="primary" onclick="submitTask()">Add</button>
+    </div>
+    <div class="time-fields"><label>Optional time interval</label>
+      <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
+      <button type="button" id="nt_end" onclick="openClock('new','end')">End time</button>
+      <button type="button" onclick="clearNewTimes()" aria-label="Clear task times">Clear times</button>
+    </div><div id="nt_timeError" class="time-error" role="alert"></div></div>`;
+}
+let newTaskTimes={start:'',end:''};
+function clearNewTimes(){ newTaskTimes={start:'',end:''}; updateNewTimeButtons(); }
+function updateNewTimeButtons(){
+  const a=document.getElementById('nt_start'), b=document.getElementById('nt_end');
+  if(a) a.textContent=newTaskTimes.start||'Start time';
+  if(b) b.textContent=newTaskTimes.end||'End time';
+  const e=document.getElementById('nt_timeError'); if(e)e.textContent='';
+}
+function submitTask(){
+  const title = document.getElementById('nt_title').value.trim();
+  if(!title) return;
+  const due = document.getElementById('nt_due').value;
+  const tags = document.getElementById('nt_tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if((newTaskTimes.start||newTaskTimes.end) && !validInterval(newTaskTimes.start,newTaskTimes.end)){document.getElementById('nt_timeError').textContent='Choose both times, with the end after the start (same day).';return;}
+  addTask({title, due: due? new Date(due).toISOString(): null, startTime:newTaskTimes.start||null, endTime:newTaskTimes.end||null, priority:document.getElementById('nt_pri').value, recur:document.getElementById('nt_recur').value, tags});
+  clearNewTimes();
+}
+
+function taskRow(t){
+  return `<div class="task ${t.done?'done':''}">
+    <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
+    <div style="flex:1">
+      <div class="title">${esc(t.title)}</div>
+      <div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}${t.recur!=='none'?`<span>↻ ${t.recur}</span>`:''}${t.tags.map(g=>`<span>#${esc(g)}</span>`).join('')}</div>
+      ${t.subtasks.map(s=>`<div class="sub"><input type="checkbox" ${s.done?'checked':''} onchange="toggleSub(${t.id},${s.id})"> ${esc(s.text)}</div>`).join('')}
+      <div class="sub"><input placeholder="+ subtask" style="font-size:11px;padding:3px 6px" onkeydown="if(event.key==='Enter'){addSubtask(${t.id},this.value);this.value='';}"></div>
+    </div>
+    <button class="del" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}" title="Edit time interval">◷</button>
+    <button class="del" onclick="deleteTask(${t.id})" aria-label="Delete task">✕</button>
+  </div>`;
+}
+
+function todayKey(d){return new Date(d).toDateString();}
+function renderToday(){
+  const now=new Date(), todayStr=now.toDateString();
+  const dueToday=state.tasks.filter(t=>t.due && todayKey(t.due)===todayStr);
+  const overdue=state.tasks.filter(t=>t.due && new Date(t.due)<now && todayKey(t.due)!==todayStr && !t.done);
+  const upcoming=state.tasks.filter(t=>t.due && new Date(t.due)>now && todayKey(t.due)!==todayStr && !t.done).sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,5);
+  const completed=dueToday.filter(t=>t.done).length;
+  const percent=dueToday.length?Math.round(completed/dueToday.length*100):0;
+  const scheduled=dueToday.filter(t=>validInterval(t.startTime,t.endTime)).sort((a,b)=>a.startTime.localeCompare(b.startTime));
+  const minutes=scheduled.reduce((n,t)=>{const [ah,am]=t.startTime.split(':').map(Number),[bh,bm]=t.endTime.split(':').map(Number);return n+bh*60+bm-ah*60-am},0);
+  const u=currentUser()||{}, first=esc((u.name||'there').trim().split(/\s+/)[0]);
+  return `<section class="card hero hero-welcome">
+      <div class="hero-copy">
+        <div class="hero-kicker">YOUR DAY</div>
+        <h2>Good to see you, ${first}.</h2>
+        <p>${esc(now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}</p>
+        <div class="hero-summary"><span>${dueToday.length} task${dueToday.length===1?'':'s'} today</span><span class="hero-dot">•</span><span>${completed} completed</span></div>
+      </div>
+      <div class="hero-progress">
+        <div class="hero-ring" style="--progress:${percent*3.6}deg"><span>${percent}%</span></div>
+      </div>
+    </section>
+    <div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${dueToday.length? 'Stay focused on what needs your attention.':'You have a clear slate.'}</p></div><span class="section-count">${dueToday.length}</span></div>${dueToday.length?'<div class="task-scroll">'+dueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">Nothing due today. Add a task to get started.</div>'}</div>
+    ${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2>${overdue.map(taskRow).join('')}</div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?upcoming.map(taskRow).join(''):'<div class="empty">Nothing upcoming.</div>'}</div></div>
+    <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
+    <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
+}
+
+function renderList(){
+  const list = [...state.tasks].sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
+  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No tasks yet.</div>'}</div>`;
+}
+
+function renderBoard(){
+  const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
+  const html = `<div class="card"><h2>Kanban Board</h2><div class="board">${cols.map(([k,l])=>`
+    <div class="col" ondragover="event.preventDefault()" ondrop="dropCol(event,'${k}')">
+      <h3>${l} (${state.tasks.filter(t=>t.status===k).length})</h3>
+      ${state.tasks.filter(t=>t.status===k).map(t=>`<div class="kcard" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}<div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}</div><button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit time</button></div>`).join('')}
+    </div>`).join('')}</div></div>`;
+  return html;
+}
+function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done = col==='done'; save(); renderApp(); } }
+
+function renderCalendar(){
+  const first = new Date(calYear, calMonth, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const monthName = first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const cellDate = new Date(calYear,calMonth,d);
+    const isToday = cellDate.toDateString()===new Date().toDateString();
+    const dayTasks = state.tasks.filter(t=>t.due && new Date(t.due).toDateString()===cellDate.toDateString());
+    cells += `<div class="cal-day ${isToday?'today':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
+      <div class="dnum">${d}</div>
+      ${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}
+    </div>`;
+  }
+  return `<div class="card"><div class="cal-head">
+      <button class="hbtn" onclick="shiftMonth(-1)">‹</button>
+      <strong>${monthName}</strong>
+      <button class="hbtn" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="calendar-wrap"><div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
+    <div class="notice">Drag a task onto another day to reschedule it.</div>
+  </div>`;
+}
+function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
+function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
+
+
+// A time interval belongs to a task's local due date; crossing midnight is not supported.
+let timeEdit=null, clock=null;
+function editTaskTime(id){
+  const t=state.tasks.find(x=>x.id===id); if(!t)return;
+  timeEdit={id,start:validTime(t.startTime)?t.startTime:'',end:validTime(t.endTime)?t.endTime:''};
+  renderTimeEditor();
+}
+function renderTimeEditor(){
+  const host=document.getElementById('timeEditorHost');
+  if(!timeEdit){host.innerHTML='';return;}
+  const t=state.tasks.find(x=>x.id===timeEdit.id);if(!t){timeEdit=null;host.innerHTML='';return;}
+  host.innerHTML=`<div class="time-edit" role="presentation" onclick="if(event.target===this)closeTimeEditor()"><div class="time-edit-card" role="dialog" aria-modal="true" aria-label="Edit task time interval">
+    <h2>Edit time: ${esc(t.title)}</h2><div class="time-fields"><button onclick="openClock('edit','start')">${timeEdit.start||'Start time'}</button><span>to</span><button onclick="openClock('edit','end')">${timeEdit.end||'End time'}</button></div>
+    <div class="time-error" id="editTimeError" role="alert"></div><div class="time-edit-actions"><button onclick="clearTaskTimes()">Clear interval</button><button onclick="closeTimeEditor()">Cancel</button><button class="primary" onclick="saveTaskTimes()">Save</button></div>
+  </div></div>`;
+}
+function closeTimeEditor(){timeEdit=null;renderTimeEditor();}
+function clearTaskTimes(){
+  const t=state.tasks.find(x=>x.id===timeEdit?.id); if(!t)return;
+  t.startTime=null;t.endTime=null;save();closeTimeEditor();renderApp();
+}
+function saveTaskTimes(){
+  if(!validInterval(timeEdit.start,timeEdit.end)){document.getElementById('editTimeError').textContent='Choose a start and end time, with the end after the start (same day).';return;}
+  const t=state.tasks.find(x=>x.id===timeEdit.id);if(!t)return;
+  t.startTime=timeEdit.start;t.endTime=timeEdit.end;save();closeTimeEditor();renderApp();
+}
+function openClock(target,field){
+  const stored=target==='new'?newTaskTimes:timeEdit; if(!stored)return;
+  const initial=stored[field]|| (field==='end'?'10:00':'09:00');
+  clock={target,field,hour:Number(initial.slice(0,2)),minute:Number(initial.slice(3)),active:'hour',keyboard:false};
+  renderClock();
+}
+function closeClock(){clock=null;document.getElementById('clockHost').innerHTML='';}
+function setClockActive(part){clock.active=part;clock.keyboard=false;renderClock();}
+function selectClockValue(n){
+  if(clock.active==='hour'){clock.hour=n;clock.active='minute';}
+  else clock.minute=n;
+  renderClock();
+}
+function clockValue(){return String(clock.hour).padStart(2,'0')+':'+String(clock.minute).padStart(2,'0');}
+function toggleClockInput(){clock.keyboard=!clock.keyboard;renderClock();if(clock.keyboard)document.getElementById('clockInput').focus();}
+function clockOK(){
+  if(clock.keyboard){
+    const value=document.getElementById('clockInput').value;
+    if(!validTime(value)){document.getElementById('clockError').textContent='Enter a valid time (00:00–23:59).';return;}
+    clock.hour=Number(value.slice(0,2));clock.minute=Number(value.slice(3));
+  }
+  const {target,field}=clock,value=clockValue();closeClock();
+  if(target==='new'){newTaskTimes[field]=value;updateNewTimeButtons();}
+  else if(timeEdit){timeEdit[field]=value;renderTimeEditor();}
+}
+function renderClock(){
+  if(!clock)return;
+  const {hour,minute,active,field,keyboard}=clock;
+  const selected=active==='hour'?hour:minute;
+  // 24-hour Material dial: 0–11 outside, 12–23 inside, 5-minute ticks.
+  const numbers=[];
+  const add=(n,angle,radius,label)=>{
+    const x=50+radius*Math.sin(angle),y=50-radius*Math.cos(angle);
+    numbers.push(`<button type="button" class="clock-number ${selected===n?'selected':''}" style="left:${x}%;top:${y}%" aria-label="${active==='hour'?'Hour':'Minute'} ${String(n).padStart(2,'0')}" onclick="selectClockValue(${n})">${label}</button>`);
+  };
+  if(active==='hour'){
+    for(let i=0;i<12;i++){let angle=i*Math.PI/6; add(i,angle,39,String(i));add(i+12,angle,26,String(i+12));}
+  }else for(let i=0;i<12;i++) add(i*5,i*Math.PI/6,39,String(i*5).padStart(2,'0'));
+  const angle=(active==='hour'?(hour%12):minute/5)*Math.PI/6;
+  const radius=active==='hour'?(hour>=12?26:39):39;
+  const hand=`<div class="clock-hand" style="width:${radius}%;transform:rotate(${angle*180/Math.PI-90}deg)"></div><div class="clock-center"></div>`;
+  document.getElementById('clockHost').innerHTML=`<div class="clock-overlay" role="presentation" onclick="if(event.target===this)closeClock()"><div class="clock-dialog" role="dialog" aria-modal="true" aria-label="Select ${field} time">
+    <h2>Select ${field} time</h2><div class="clock-subtitle">24-hour clock · ${field==='start'?'Choose when this task starts':'Choose when this task ends'}</div>
+    <div class="clock-display"><button type="button" class="${active==='hour'?'active':''}" onclick="setClockActive('hour')" aria-label="Select hour">${String(hour).padStart(2,'0')}</button><span>:</span><button type="button" class="${active==='minute'?'active':''}" onclick="setClockActive('minute')" aria-label="Select minute">${String(minute).padStart(2,'0')}</button></div>
+    ${keyboard?`<div class="clock-keyboard"><input id="clockInput" type="time" aria-label="Time in 24-hour format" value="${clockValue()}" onkeydown="if(event.key==='Enter')clockOK()"></div>`:`<div class="clock-dial" id="clockDial" role="group" aria-label="${active} dial">${hand}${numbers.join('')}</div>`}
+    <div id="clockError" class="time-error" role="alert"></div><div class="clock-footer"><button type="button" class="clock-mode" onclick="toggleClockInput()" aria-label="${keyboard?'Use clock dial':'Use keyboard input'}" title="${keyboard?'Use clock dial':'Use keyboard input'}">${keyboard?'◷':'⌨'}</button><button type="button" onclick="closeClock()">Cancel</button><button type="button" onclick="clockOK()">OK</button></div>
+  </div></div>`;
+  // Drag/tap anywhere on the face to pick the closest tick; inner ring selects 12–23.
+  const dial=document.getElementById('clockDial');
+  if(dial){
+    dial.addEventListener('pointerdown',e=>{dial.setPointerCapture(e.pointerId);clockPointer(e,false);});
+    dial.addEventListener('pointermove',e=>{if(e.buttons)clockPointer(e,false);});
+    dial.addEventListener('pointerup',e=>{clockPointer(e,true);});
+  }
+}
+function clockPointer(e,finish=true){
+  if(!clock)return;
+  const rect=e.currentTarget.getBoundingClientRect(), cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  const x=e.clientX-cx,y=e.clientY-cy,dist=Math.hypot(x,y)/(rect.width/2);
+  if(dist<.12)return;
+  const turn=(Math.atan2(x,-y)+2*Math.PI)%(2*Math.PI);
+  const n=Math.round(turn/(Math.PI/6))%12;
+  if(clock.active==='hour')clock.hour=n+(dist<.66?12:0);
+  else clock.minute=n*5;
+  // Keep the pointer capture alive through drag; re-render on release only.
+  if(finish){if(clock.active==='hour')clock.active='minute';renderClock();}
+  else{
+    const old=e.currentTarget.querySelector('.clock-number.selected');if(old)old.classList.remove('selected');
+    const value=clock.active==='hour'?clock.hour:clock.minute;
+    e.currentTarget.querySelector(`[aria-label="${clock.active==='hour'?'Hour':'Minute'} ${String(value).padStart(2,'0')}"]`)?.classList.add('selected');
+  }
+}
+function showToast(message){const host=document.getElementById('toastHost');host.innerHTML='<div class="toast"></div>';host.firstElementChild.textContent=message;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>host.innerHTML='',3200);}
+function renderApp(){
+  // A rerender replaces the new-task form. Never carry invisible draft times into it.
+  newTaskTimes={start:'',end:''};
+  if(!getSession()) return; // no valid session: stay on the auth screen
+  renderNav();
+  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',account:'Profile & settings'};
+  document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
+  const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'Your personal planning workspace';
+  const el = document.getElementById('main');
+  if(view==='today') el.innerHTML = renderToday();
+  else if(view==='list') el.innerHTML = renderList();
+  else if(view==='board') el.innerHTML = renderBoard();
+  else if(view==='calendar') el.innerHTML = renderCalendar();
+  else if(view==='account') el.innerHTML = renderAccount();
+  else if(view==='insights') el.innerHTML = renderInsights();
+  initThemePull();
+}
+let accountTab='profile';
+function setAccountTab(t){ accountTab=t; renderApp(); }
+
+function renderAccount(){
+  const u = currentUser();
+  if(!u) return '<div class="empty">No profile data.</div>';
+  const sub = `<div class="subnav">${[['profile','Profile'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
+  if(accountTab==='profile') return sub + renderProfileTab(u);
+  if(accountTab==='connected') return sub + renderConnectedTab(u);
+  if(accountTab==='sessions') return sub + renderSessionsTab(u);
+  if(accountTab==='danger') return sub + renderDangerTab(u);
+}
+
+function renderProfileTab(u){
+  return `<div class="card">
+    <h2>Identity</h2>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
+      <div class="avatar" id="avatarBox">${u.avatar?`<img src="${esc(u.avatar)}">`:'👤'}</div>
+      <div>
+        <input type="file" accept="image/*" onchange="onAvatarChange(event)">
+        <div class="notice" style="margin:6px 0 0">Upload only — cropping isn't included in this build.</div>
+      </div>
+    </div>
+    <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
+    <input id="prof_bio" value="${esc(u.bio||'')}" placeholder="Bio" style="margin-top:8px">
+    <button class="primary" style="margin-top:8px" onclick="saveProfile()">Save</button>
+  </div>
+  <div class="card">
+    <h2>Localization</h2>
+    <select id="prof_tz" style="width:100%;margin-bottom:8px">${['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+    <select id="prof_lang" style="width:100%;margin-bottom:8px">${['English','Spanish','French','Hindi','German'].map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+    <select id="prof_week" style="width:100%;margin-bottom:8px">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
+    <button class="primary" onclick="saveLocalization()">Save</button>
+  </div>
+  <div class="card">
+    <h2>Account Tier</h2>
+    <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
+    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+    <button class="primary" style="margin-top:8px" onclick="saveTier()">Update (demo only)</button>
+  </div>`;
+}
+function onAvatarChange(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{ updateUser(u=>u.avatar = reader.result); };
+  reader.readAsDataURL(file);
+}
+function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); u.bio=document.getElementById('prof_bio').value.trim(); }); }
+function saveLocalization(){ updateUser(u=>{ u.timezone=document.getElementById('prof_tz').value; u.language=document.getElementById('prof_lang').value; u.weekStart=document.getElementById('prof_week').value; }); }
+function saveTier(){ updateUser(u=>{ u.tier=document.getElementById('prof_tier').value; }); }
+
+function renderConnectedTab(u){
+  return `<div class="card"><h2>Identity Providers</h2>
+    ${['Google','Apple','GitHub'].map(p=>`<div class="row-between">
+      <div>${p}${u.connected[p]?' <span class="notice" style="display:inline;padding:2px 6px">Linked</span>':''}</div>
+      <label class="switch"><input type="checkbox" ${u.connected[p]?'checked':''} onchange="toggleConnected('${p}')"><span class="slider"></span></label>
+    </div>`).join('')}
+  </div>
+  <div class="card"><h2>Data Permissions</h2>
+    <div class="notice">Linked providers can read your name and email. Access tokens are used once at sign-in and never stored in the browser.</div>
+  </div>`;
+}
+function toggleConnected(p){ updateUser(u=>{ u.connected[p] = !u.connected[p]; }); }
+
+function renderSessionsTab(u){
+  const ua = navigator.userAgent;
+  const browser = /Chrome/.test(ua)?'Chrome':/Firefox/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'Browser';
+  const s = getSession();
+  const mock = state.mockSessions || (state.mockSessions = [
+    {device:'iPhone · Safari', loc:'Mumbai, IN', last:'2 days ago'},
+    {device:'Windows · Edge', loc:'Pune, IN', last:'1 week ago'}
+  ]);
+  return `<div class="card"><h2>Active Sessions</h2>
+    <div class="row-between"><div><strong>${browser} · This device</strong><div class="notice" style="display:inline">Current session — expires ${new Date(s.expiresAt).toLocaleString()}</div></div><span></span></div>
+    ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div style="font-size:11px;color:var(--muted)">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" onclick="revokeSession(${i})">Revoke</button></div>`).join('')}
+    <button class="primary" style="margin-top:10px" onclick="revokeAll()">Log out all other devices</button>
+  </div>`;
+}
+function revokeSession(i){ state.mockSessions.splice(i,1); save(); renderApp(); }
+function revokeAll(){ state.mockSessions = []; save(); renderApp(); }
+
+function renderDangerTab(u){
+  const email = esc(state.currentUser || '');
+  return `<div class="card"><h2>Delete Account</h2>
+    <div class="notice" style="border-color:var(--danger);color:var(--danger);background:transparent">You are deleting <strong>${email}</strong>. Only this account is removed; other accounts and their tasks stay.</div>
+    ${u.passwordHash?'<input id="danger_pass" type="password" placeholder="Confirm your password" style="margin-top:8px">':'<div class="notice">This account signs in with '+(u.oauthProvider||'an identity provider')+', so no password is needed to confirm.</div>'}
+    <select id="danger_mode" style="width:100%;margin:8px 0">
+      <option value="soft">Soft delete — 30-day recovery window</option>
+      <option value="hard">Hard delete — immediate, permanent, email freed for reuse</option>
+    </select>
+    <button class="primary" style="background:var(--danger)" onclick="deleteAccount()">Delete ${email}</button>
+  </div>
+  <div class="card"><h2>Reset All App Data</h2>
+    <div class="notice">Stuck at login, or an email says "already taken" and you can't get in? This wipes every account, task, and setting LifeFlow stored in this browser - a clean slate. There is no undo.</div>
+    <button class="primary" style="background:var(--danger)" onclick="resetAllData()">Erase everything in this browser</button>
+  </div>`;
+}
+function resetAllData(){
+  if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting? There is no undo.')) return;
+  doLogout(); // destroys the session and returns to the login screen
+  // Wipe storage AFTER logging out so nothing saves itself back.
+  ['lifeflow2_users','lifeflow2_state'].forEach(k=>localStorage.removeItem(k));
+  sessionStorage.removeItem('lifeflow2_oauth');
+  state = {tasks:[]}; // fresh in-memory state; nothing is written back to storage
+  alert('All app data erased. You can sign up fresh.');
+}
+async function deleteAccount(){
+  const passEl = document.getElementById('danger_pass');
+  const mode = document.getElementById('danger_mode').value;
+  const users = getUsers();
+  const u = users[state.currentUser];
+  if(u.passwordHash && !(await verifyPassword(passEl ? passEl.value : '', u))){ alert('Incorrect password for '+state.currentUser+'.'); return; }
+  if(mode==='soft'){
+    u.deletedAt = new Date(Date.now()+30*86400000).toISOString();
+    saveUsers(users);
+    alert(state.currentUser+' scheduled for deletion. Data is recoverable until '+new Date(u.deletedAt).toDateString()+'.');
+  }else{
+    if(!confirm('Permanently delete '+state.currentUser+' right now? The email becomes reusable immediately. There is no undo.')) return;
+    delete users[state.currentUser];
+    saveUsers(users);
+    // Confirm the account is actually gone from storage before saying so.
+    const gone = !getUsers()[state.currentUser];
+    alert(gone
+      ? state.currentUser+' permanently deleted. That email is free to sign up again.'
+      : 'Delete failed - storage did not update. Try Reset All App Data instead.');
+  }
+  doLogout();
+}
+
+/* ---------------- Boot ----------------
+   Handle an OAuth redirect first, then fall back to the stored session. */
+(async function boot(){
+  initAuthTheme();
+  renderOAuthButtons();
+  if(!window.crypto || !crypto.subtle){
+    showOAuthNotice('This app needs the Web Crypto API. Serve it over https or http://localhost (most browsers treat file:// and plain http as insecure).');
+  }
+  await handleOAuthCallback();
+  const session = getSession();
+  if(session && !document.getElementById('app').style.display.includes('block')){
+    state.currentUser = session.email;
+    enterApp();
+  }
+})();
