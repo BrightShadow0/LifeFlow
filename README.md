@@ -4,6 +4,4 @@ LifeFlow is a personal planning workspace.
 
 ## Updated
 
-This section tracks the latest updates made to LifeFlow.
-
-- Initial LifeFlow deployment
+The updated working version of LifeFlow is maintained from the initial deployment baseline. Future feature changes and refinements will be developed here.
