@@ -271,8 +271,6 @@ async function handleOAuthCallback(){
   try{
     if(pending.provider === 'google'){
 
-
-
       const payload = JSON.parse(atob(tokens.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
       const issOk = payload.iss === 'https://accounts.google.com' || payload.iss === 'accounts.google.com';
       if(!issOk || payload.aud !== cfg.clientId || payload.nonce !== pending.nonce || Date.now()/1000 > payload.exp)
@@ -307,7 +305,6 @@ async function doLogin(){
   const pass = document.getElementById('loginPass').value;
   const users = getUsers();
   const u = users[email];
-
 
   if(!u){ showAuthError('loginError','No account exists for that email here. Accounts are stored per browser and per web address (localhost vs file:// vs a different port each have separate storage) - sign up here, or go back to the address where you created it.'); return; }
 
@@ -464,7 +461,6 @@ function validTime(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/
 function validInterval(a,b){ return validTime(a)&&validTime(b)&&a<b; }
 function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
 
-// ---- Export ----
 function exportData(fmt){
   let content, mime, ext;
   if(fmt==='json'){ content = JSON.stringify(state.tasks,null,2); mime='application/json'; ext='json'; }
@@ -481,7 +477,6 @@ function exportData(fmt){
 
 function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='dark'?'light':'dark'); }
 
-// ---- Views ----
 function renderNav(){
   const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['account','Profile & settings','◎']];
   document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
@@ -608,7 +603,6 @@ function renderCalendar(){
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
 
-// A time interval belongs to a task's local due date; crossing midnight is not supported.
 let timeEdit=null, clock=null;
 function editTaskTime(id){
   const t=state.tasks.find(x=>x.id===id); if(!t)return;
@@ -663,7 +657,6 @@ function renderClock(){
   if(!clock)return;
   const {hour,minute,active,field,keyboard}=clock;
   const selected=active==='hour'?hour:minute;
-  // 24-hour Material dial: 0–11 outside, 12–23 inside, 5-minute ticks.
   const numbers=[];
   const add=(n,angle,radius,label)=>{
     const x=50+radius*Math.sin(angle),y=50-radius*Math.cos(angle);
@@ -681,7 +674,6 @@ function renderClock(){
     ${keyboard?`<div class="clock-keyboard"><input id="clockInput" type="time" aria-label="Time in 24-hour format" value="${clockValue()}" onkeydown="if(event.key==='Enter')clockOK()"></div>`:`<div class="clock-dial" id="clockDial" role="group" aria-label="${active} dial">${hand}${numbers.join('')}</div>`}
     <div id="clockError" class="time-error" role="alert"></div><div class="clock-footer"><button type="button" class="clock-mode" onclick="toggleClockInput()" aria-label="${keyboard?'Use clock dial':'Use keyboard input'}" title="${keyboard?'Use clock dial':'Use keyboard input'}">${keyboard?'◷':'⌨'}</button><button type="button" onclick="closeClock()">Cancel</button><button type="button" onclick="clockOK()">OK</button></div>
   </div></div>`;
-  // Drag/tap anywhere on the face to pick the closest tick; inner ring selects 12–23.
   const dial=document.getElementById('clockDial');
   if(dial){
     dial.addEventListener('pointerdown',e=>{dial.setPointerCapture(e.pointerId);clockPointer(e,false);});
@@ -698,7 +690,6 @@ function clockPointer(e,finish=true){
   const n=Math.round(turn/(Math.PI/6))%12;
   if(clock.active==='hour')clock.hour=n+(dist<.66?12:0);
   else clock.minute=n*5;
-  // Keep the pointer capture alive through drag; re-render on release only.
   if(finish){if(clock.active==='hour')clock.active='minute';renderClock();}
   else{
     const old=e.currentTarget.querySelector('.clock-number.selected');if(old)old.classList.remove('selected');
@@ -708,7 +699,6 @@ function clockPointer(e,finish=true){
 }
 function showToast(message){const host=document.getElementById('toastHost');host.innerHTML='<div class="toast"></div>';host.firstElementChild.textContent=message;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>host.innerHTML='',3200);}
 function renderApp(){
-  // A rerender replaces the new-task form. Never carry invisible draft times into it.
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
   renderNav();
@@ -825,7 +815,6 @@ function renderDangerTab(u){
 function resetAllData(){
   if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting? There is no undo.')) return;
   doLogout(); // destroys the session and returns to the login screen
-  // Wipe storage AFTER logging out so nothing saves itself back.
   ['lifeflow2_users','lifeflow2_state'].forEach(k=>localStorage.removeItem(k));
   sessionStorage.removeItem('lifeflow2_oauth');
   state = {tasks:[]}; // fresh in-memory state; nothing is written back to storage
@@ -845,7 +834,6 @@ async function deleteAccount(){
     if(!confirm('Permanently delete '+state.currentUser+' right now? The email becomes reusable immediately. There is no undo.')) return;
     delete users[state.currentUser];
     saveUsers(users);
-    // Confirm the account is actually gone from storage before saying so.
     const gone = !getUsers()[state.currentUser];
     alert(gone
       ? state.currentUser+' permanently deleted. That email is free to sign up again.'
