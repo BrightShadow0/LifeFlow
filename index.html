@@ -960,8 +960,8 @@ function renderProfileTab(u){
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
       <div><strong>Theme</strong><div class="notice" style="margin:5px 0 0">Choose how LifeFlow looks on this device.</div></div>
       <select id="prof_theme" onchange="setTheme(this.value)" style="min-width:120px">
-        <option value="dark" selected>Dark</option>
-        <option value="light">Light</option>
+        <option value="dark" ${u.theme==='dark'?'selected':''}>Dark</option>
+        <option value="light" ${u.theme==='light'?'selected':''}>Light</option>
       </select>
     </div>
   </div>
