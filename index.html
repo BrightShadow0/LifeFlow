@@ -951,8 +951,8 @@ function renderApp(){
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='account') el.innerHTML = renderAccount();
-  initThemePull();
   else if(view==='insights') el.innerHTML = renderInsights();
+  initThemePull();
 }
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
@@ -994,7 +994,7 @@ function renderProfileTab(u){
         <span class="theme-bulb-base" aria-hidden="true"></span>
       </button>
     </div>
-  </div>v>
+  </div>
   <div class="card">
     <h2>Localization</h2>
     <select id="prof_tz" style="width:100%;margin-bottom:8px">${['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
