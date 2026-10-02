@@ -918,7 +918,7 @@ function renderToday(){
 
 function renderList(){
   const list = [...state.tasks].sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  return taskFormHtml() + `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No tasks yet.</div>'}</div>`;
+  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No tasks yet.</div>'}</div>`;
 }
 
 function renderBoard(){
@@ -928,7 +928,7 @@ function renderBoard(){
       <h3>${l} (${state.tasks.filter(t=>t.status===k).length})</h3>
       ${state.tasks.filter(t=>t.status===k).map(t=>`<div class="kcard" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}<div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}</div><button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit time</button></div>`).join('')}
     </div>`).join('')}</div></div>`;
-  return taskFormHtml() + html;
+  return html;
 }
 function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done = col==='done'; save(); renderApp(); } }
 
