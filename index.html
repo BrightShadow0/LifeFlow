@@ -112,7 +112,8 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 
 .gantt{min-width:680px}.ghead,.grow{display:grid;grid-template-columns:180px repeat(7,1fr)}.ghead div,.grow>div{border:1px solid var(--border);border-bottom:0;padding:9px;font-size:10px;overflow:hidden;text-overflow:ellipsis}.grow:last-child>div{border-bottom:1px solid var(--border)}.gbar{display:block;height:10px;background:var(--accent);border-radius:5px;margin-top:4px}
 /* LifeFlow OS visual shell. The original application logic and storage keys remain intact. */
-:root,:root[data-theme="dark"],:root[data-theme="light"]{--bg:#080b0f;--card:#10151c;--panel2:#151b23;--text:#f3f6fa;--muted:#8993a1;--border:#27303b;--accent:#79e36d;--accent-soft:#1b2d20;--danger:#ff7777;--warn:#e7c56a;--ok:#79e36d;color-scheme:dark}
+:root{--bg:#080b0f;--card:#10151c;--panel2:#151b23;--text:#f3f6fa;--muted:#8993a1;--border:#27303b;--accent:#79e36d;--accent-soft:#1b2d20;--danger:#ff7777;--warn:#e7c56a;--ok:#79e36d;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f4f6f5;--card:#ffffff;--panel2:#eef2ef;--text:#182019;--muted:#657067;--border:#d8ded9;--accent:#3f9f38;--accent-soft:#e8f4e6;--danger:#c83f3f;--warn:#a87514;--ok:#3f9f38;color-scheme:light}
 body{font:14px Inter,system-ui,-apple-system,sans-serif;background:var(--bg)}
 button,input,select{font:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button:disabled{opacity:.45;cursor:not-allowed}
 #authScreen{max-width:none;min-height:100dvh;margin:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 30%,#132117 0,#080b0f 49%)}
@@ -139,6 +140,28 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .toast{position:fixed;right:20px;bottom:20px;background:#eaffe6;color:#071007;padding:11px 15px;border-radius:8px;font-size:12px;font-weight:800;z-index:30;box-shadow:0 12px 30px #0008}
 @media(max-width:900px){.app-sidebar{width:68px;padding:22px 9px}.brand{font-size:0;margin:0 0 26px;text-align:center}.brand-mark{font-size:23px}.navlabel,.nav-text,.sidebottom .nav-text{display:none}#nav button,.sidebar-action{justify-content:center;padding:11px 6px}.app-content{margin-left:68px;padding:25px 20px 70px}.today-grid{grid-template-columns:minmax(0,1fr)}.today-grid>div,.card{min-width:0}.app-content{width:calc(100% - 68px)}.task>div{min-width:0}.task .sub input{max-width:100%}}
 @media(max-width:600px){.app-content{padding:20px 14px 70px}.app-top h1{font-size:24px}.hero{align-items:flex-start;flex-direction:column}.board{grid-template-columns:1fr}.calendar-wrap{overflow-x:auto}.cal-grid{min-width:650px}.statgrid{grid-template-columns:repeat(2,1fr)}.termcontent{padding:24px}.clock-dial{width:min(100%,310px)}}
+/* Light theme overrides */
+:root[data-theme="light"] .app-sidebar{background:#ffffff}
+:root[data-theme="light"] #nav button:hover,:root[data-theme="light"] #nav button.active,:root[data-theme="light"] .sidebar-action:hover{background:#eef2ef;color:#182019}
+:root[data-theme="light"] .app-top .avatar{background:#e8f4e6;border-color:#c9dfc6;color:#3f9f38}
+:root[data-theme="light"] .task{background:#f9fbfa}
+:root[data-theme="light"] .stat,:root[data-theme="light"] .col{background:#f8faf9}
+:root[data-theme="light"] .kcard{background:#ffffff}
+:root[data-theme="light"] .hero{background:linear-gradient(120deg,#edf7eb,#ffffff)}
+:root[data-theme="light"] .event{background:#f1f8f0}
+:root[data-theme="light"] .progress-track{background:#dfe6e0}
+:root[data-theme="light"] .cal-day.today{background:#f1f8f0}
+:root[data-theme="light"] .cal-day .citem{background:#e8f4e6;color:#347d2f}
+:root[data-theme="light"] .termbar{background:#f1f3f2}
+:root[data-theme="light"] .termcontent h2{color:#182019}
+:root[data-theme="light"] #authScreen{background:radial-gradient(circle at 50% 30%,#edf7eb 0,#f4f6f5 49%)}
+:root[data-theme="light"] #authScreen .card{background:#ffffff;border-color:#d8ded9;box-shadow:0 25px 80px #0001}
+:root[data-theme="light"] #authScreen input{background:#f8faf9;color:#182019;border-color:#d8ded9}
+:root[data-theme="light"] .clock-dialog,:root[data-theme="light"] .time-edit-card{background:#ffffff;color:#182019}
+:root[data-theme="light"] .clock-display button,:root[data-theme="light"] .clock-dial,:root[data-theme="light"] .clock-keyboard input{background:#eef2ef;color:#182019}
+:root[data-theme="light"] .clock-number{color:#182019}
+:root[data-theme="light"] .hbtn,:root[data-theme="light"] .time-fields button,:root[data-theme="light"] .time-edit button{background:#f8faf9;color:#182019}
+:root[data-theme="light"] input,:root[data-theme="light"] select{background:#ffffff;color:#182019}
 </style>
 </head>
 <body>
@@ -364,7 +387,7 @@ function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_user
 function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
 function newUserRecord(email, extra){
   return Object.assign({
-    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null,
+    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark',
     workspace:'My Workspace', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,
     language:'en', weekStart:'Sunday', tier:'Free',
     connected:{Google:false,Apple:false,GitHub:false},
@@ -611,7 +634,9 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function updateUser(fn){ const users=getUsers(); fn(users[state.currentUser]); saveUsers(users); renderApp(); }
+function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark'); }
+function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
+function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
 
 // ---- Task helpers ----
 function uid(){ return Date.now()+Math.floor(Math.random()*1000); } // display-only ID, not security-sensitive
@@ -660,9 +685,7 @@ function exportData(fmt){
   a.href = URL.createObjectURL(blob); a.download = 'lifeflow_tasks.'+ext; a.click();
 }
 
-function toggleTheme(){
-  const r=document.documentElement; r.setAttribute('data-theme', r.getAttribute('data-theme')==='dark'?'light':'dark');
-}
+function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='dark'?'light':'dark'); }
 
 // ---- Views ----
 function renderNav(){
@@ -895,7 +918,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',insights:'Insights',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'Your personal planning workspace';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -931,6 +954,16 @@ function renderProfileTab(u){
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
     <input id="prof_bio" value="${esc(u.bio||'')}" placeholder="Bio" style="margin-top:8px">
     <button class="primary" style="margin-top:8px" onclick="saveProfile()">Save</button>
+  </div>
+  <div class="card">
+    <h2>Appearance</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div><strong>Theme</strong><div class="notice" style="margin:5px 0 0">Choose how LifeFlow looks on this device.</div></div>
+      <select id="prof_theme" onchange="setTheme(this.value)" style="min-width:120px">
+        <option value="dark" selected>Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
   </div>
   <div class="card">
     <h2>Localization</h2>
