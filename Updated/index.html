@@ -184,10 +184,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .theme-bulb-base{position:absolute;left:50%;top:72px;width:15px;height:4px;border-radius:3px;background:#4b535d;transform:translateX(-50%);pointer-events:none}
 :root[data-theme="light"] .theme-bulb{background:#fff3a8;box-shadow:0 0 18px 6px #ffe87a,0 0 0 3px #e6d47a}
 :root[data-theme="light"] .theme-cord{background:#9b8c57}
-.theme-pull.pulling .theme-cord{height:75px}
-.theme-pull.pulling .theme-bulb{top:67px}
-@keyframes bulbSnap{0%{transform:translateX(-50%) scaleY(1)}45%{transform:translateX(-50%) scaleY(.86)}100%{transform:translateX(-50%) scaleY(1)}}
-.theme-pull.snap .theme-bulb{animation:bulbSnap .28s ease}
+/* Pull animation is controlled by the active bulb assembly below. */
 @media(max-width:600px){.theme-pull-wrap{min-height:95px}.theme-pull{width:70px}}
 /* Global hanging lightbulb switch: always visible beside the profile avatar. */
 .app-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:116px;height:82px}
