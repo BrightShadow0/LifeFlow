@@ -29,7 +29,7 @@ function save(){ try{ localStorage.setItem('lifeflow2_state', JSON.stringify(sta
 window.addEventListener('storage', e=>{ if(e.key==='lifeflow2_state'){ state = load(); renderApp(); } });
 
 function base64url(bytes){
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function randomToken(nBytes){
   const b = new Uint8Array(nBytes || 32);
@@ -838,8 +838,6 @@ async function deleteAccount(){
   doLogout();
 }
 
-/* ---------------- Boot ----------------
-   Handle an OAuth redirect first, then fall back to the stored session. */
 (async function boot(){
   initAuthTheme();
   renderOAuthButtons();
