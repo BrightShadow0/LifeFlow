@@ -144,6 +144,14 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .hero-copy{position:relative;z-index:1}.hero-kicker{font-size:9px;letter-spacing:2px;font-weight:800;color:#8bb98a;margin-bottom:9px}.hero-welcome h2{font-size:25px;letter-spacing:-.035em;margin:0 0 5px}.hero-welcome p{font-size:13px}.hero-summary{display:flex;align-items:center;gap:8px;margin-top:17px;color:#b7c5b9;font-size:11px}.hero-dot{color:var(--accent)}
 .hero-progress{display:flex;align-items:center;gap:15px;position:relative;z-index:1}.hero-ring{width:66px;height:66px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) var(--progress),#29352d var(--progress));position:relative}.hero-ring:before{content:"";position:absolute;inset:6px;border-radius:50%;background:#10151c}.hero-ring span{position:relative;font-size:12px;font-weight:800;color:#dfffd9}.hero-add{white-space:nowrap}
 .section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.section-heading h2{margin:0}.section-heading p{margin:3px 0 0;color:var(--muted);font-size:11px}.section-count{min-width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:12px}.empty-soft{background:var(--bg);border:1px dashed var(--border);border-radius:9px;margin-top:8px}
+.code-card{padding:0;overflow:hidden}
+.code-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--card)}
+.code-toolbar h2{margin:0;font-size:15px}
+.code-toolbar p{margin:3px 0 0;color:var(--muted);font-size:11px}
+.code-actions{display:flex;gap:7px}
+.code-view{margin:0;padding:18px;background:#090d12;color:#dce7df;border:0;overflow:auto;max-height:calc(100dvh - 190px);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;white-space:pre;tab-size:2}
+.code-view::selection{background:#36513a}
+
 @media(max-width:600px){.hero-welcome{padding:20px;min-height:145px}.hero-welcome h2{font-size:21px}.hero-progress{gap:9px}.hero-ring{width:56px;height:56px}.hero-add{padding:9px 11px}.hero-summary{margin-top:13px}}.task-scroll{max-height:118px;overflow-y:auto;padding-right:4px}.schedule-scroll{max-height:112px;overflow-y:auto;padding-right:4px}.col{max-height:300px;overflow-y:auto}.cal-day{height:108px;min-height:108px;max-height:108px;overflow-y:auto;align-self:start}
 .today-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(270px,.8fr);gap:18px}.today-grid .card{min-width:0}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#0d1218;border:1px solid var(--border);border-radius:9px;padding:12px}.stat b{font-size:20px;display:block}.stat small{display:block;color:var(--muted);margin-top:3px;font-size:10px}.progress-track{height:6px;background:#252c35;border-radius:20px;margin:14px 0 8px;overflow:hidden}.progress-track span{display:block;height:100%;background:var(--accent)}.event{border-left:2px solid var(--accent);background:#111a15;padding:10px 12px;border-radius:0 8px 8px 0;margin-bottom:6px}.event b{font-size:12px}.event small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .board{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.col{background:#0d1218;border-radius:10px;padding:12px;min-height:250px}.col h3{color:var(--text);margin:4px 4px 12px}.kcard{background:#171d25;padding:12px;margin-bottom:8px}.cal-grid{gap:0;border-top:1px solid var(--border);border-left:1px solid var(--border)}.cal-day{min-height:115px;border:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:0;padding:9px}.cal-day.today{background:#111a14}.cal-day.today .dnum{color:var(--accent)}.cal-day .citem{background:#1d2c20;color:#a9eaa1;padding:6px;margin-top:7px;overflow-wrap:anywhere}.dow{padding:8px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -300,7 +308,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 <div id="toastHost" aria-live="polite"></div>
 
 <div id="timeEditorHost"></div><div id="clockHost"></div>
-<script>
+<script id="appScript">
 /* ============================================================================
    OAUTH CONFIG — paste your own client IDs here to enable REAL provider login.
    ----------------------------------------------------------------------------
@@ -835,7 +843,7 @@ function toggleTheme(){ const u=currentUser(); setTheme((u?.theme||'dark')==='da
 
 // ---- Views ----
 function renderNav(){
-  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['account','Profile & settings','◎']];
+  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['javascript','JavaScript','JS'],['account','Profile & settings','◎']];
   document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
 }
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
@@ -1074,10 +1082,27 @@ function renderApp(){
   else if(view==='list') el.innerHTML = renderList();
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
+  else if(view==='javascript') el.innerHTML = renderJavaScript();
   else if(view==='account') el.innerHTML = renderAccount();
   else if(view==='insights') el.innerHTML = renderInsights();
   initThemePull();
 }
+function renderJavaScript(){
+  const source=document.getElementById('appScript')?.textContent||'';
+  const escaped=source.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  return `<div class="card code-card">
+    <div class="code-toolbar">
+      <div><h2>JavaScript</h2><p>The JavaScript used by this Updated LifeFlow build.</p></div>
+      <div class="code-actions"><button class="hbtn" onclick="copyJavaScript()">Copy</button></div>
+    </div>
+    <pre class="code-view"><code>${escaped}</code></pre>
+  </div>`;
+}
+function copyJavaScript(){
+  const source=document.getElementById('appScript')?.textContent||'';
+  navigator.clipboard?.writeText(source).then(()=>showToast('JavaScript copied to clipboard.')).catch(()=>showToast('Copy was blocked by the browser.'));
+}
+
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
 
