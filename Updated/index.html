@@ -909,7 +909,6 @@ function renderToday(){
       </div>
       <div class="hero-progress">
         <div class="hero-ring" style="--progress:${percent*3.6}deg"><span>${percent}%</span></div>
-        <button class="primary hero-add" onclick="document.getElementById('nt_title')?.focus()">+ Add task</button>
       </div>
     </section>
     <div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${dueToday.length? 'Stay focused on what needs your attention.':'You have a clear slate.'}</p></div><span class="section-count">${dueToday.length}</span></div>${dueToday.length?dueToday.map(taskRow).join(''):'<div class="empty empty-soft">Nothing due today. Add a task to get started.</div>'}</div>
