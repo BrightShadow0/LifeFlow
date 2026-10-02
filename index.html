@@ -162,6 +162,23 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 :root[data-theme="light"] .clock-number{color:#182019}
 :root[data-theme="light"] .hbtn,:root[data-theme="light"] .time-fields button,:root[data-theme="light"] .time-edit button{background:#f8faf9;color:#182019}
 :root[data-theme="light"] input,:root[data-theme="light"] select{background:#ffffff;color:#182019}
+
+/* Physical light-bulb theme switch */
+.theme-pull-wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:105px}
+.theme-copy{flex:1}
+.theme-pull{position:relative;width:78px;height:100px;border:0;background:transparent;cursor:grab;padding:0;flex:none;touch-action:none}
+.theme-pull:active{cursor:grabbing}
+.theme-cord{position:absolute;top:0;left:50%;width:2px;height:62px;background:var(--muted);transform:translateX(-50%);transition:height .12s ease}
+.theme-bulb{position:absolute;left:50%;top:54px;width:27px;height:27px;border-radius:50% 50% 48% 48%;background:#3b424b;box-shadow:0 0 0 3px var(--border);transform:translateX(-50%);transition:all .18s ease}
+.theme-bulb:after{content:'';position:absolute;left:7px;bottom:-9px;width:13px;height:11px;border-radius:2px 2px 4px 4px;background:#69727d;box-shadow:0 3px 0 #454c55}
+.theme-bulb-base{position:absolute;left:50%;top:72px;width:15px;height:4px;border-radius:3px;background:#4b535d;transform:translateX(-50%);pointer-events:none}
+:root[data-theme="light"] .theme-bulb{background:#fff3a8;box-shadow:0 0 18px 6px #ffe87a,0 0 0 3px #e6d47a}
+:root[data-theme="light"] .theme-cord{background:#9b8c57}
+.theme-pull.pulling .theme-cord{height:75px}
+.theme-pull.pulling .theme-bulb{top:67px}
+@keyframes bulbSnap{0%{transform:translateX(-50%) scaleY(1)}45%{transform:translateX(-50%) scaleY(.86)}100%{transform:translateX(-50%) scaleY(1)}}
+.theme-pull.snap .theme-bulb{animation:bulbSnap .28s ease}
+@media(max-width:600px){.theme-pull-wrap{min-height:95px}.theme-pull{width:70px}}
 </style>
 </head>
 <body>
@@ -636,6 +653,14 @@ async function doReset(){
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
 function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark'); }
 function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
+let themePullStartY=null, themePullActive=false;
+function initThemePull(){
+  const b=document.getElementById('themePull'); if(!b) return;
+  const begin=e=>{themePullStartY=e.clientY;themePullActive=true;b.classList.add('pulling');b.setPointerCapture?.(e.pointerId);e.preventDefault();};
+  const move=e=>{if(!themePullActive)return;const dy=e.clientY-themePullStartY;b.style.transform='translateY('+Math.max(0,Math.min(18,dy))+'px)';};
+  const end=e=>{if(!themePullActive)return;const dy=e.clientY-themePullStartY;themePullActive=false;b.classList.remove('pulling');b.style.transform='';b.releasePointerCapture?.(e.pointerId);if(dy>8){b.classList.add('snap');setTheme((currentUser()?.theme||'dark')==='dark'?'light':'dark');setTimeout(()=>b.classList.remove('snap'),300);}};
+  b.addEventListener('pointerdown',begin);b.addEventListener('pointermove',move);b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);
+}
 function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
 
 // ---- Task helpers ----
@@ -926,6 +951,7 @@ function renderApp(){
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='account') el.innerHTML = renderAccount();
+  initThemePull();
   else if(view==='insights') el.innerHTML = renderInsights();
 }
 let accountTab='profile';
@@ -957,14 +983,18 @@ function renderProfileTab(u){
   </div>
   <div class="card">
     <h2>Appearance</h2>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div><strong>Theme</strong><div class="notice" style="margin:5px 0 0">Choose how LifeFlow looks on this device.</div></div>
-      <select id="prof_theme" onchange="setTheme(this.value)" style="min-width:120px">
-        <option value="dark" ${u.theme==='dark'?'selected':''}>Dark</option>
-        <option value="light" ${u.theme==='light'?'selected':''}>Light</option>
-      </select>
+    <div class="theme-pull-wrap">
+      <div class="theme-copy">
+        <strong>Theme</strong>
+        <div class="notice" style="margin:5px 0 0">Pull the cord to switch between dark and light mode.</div>
+      </div>
+      <button id="themePull" class="theme-pull" type="button" aria-label="Pull light switch to change theme" title="Pull to change theme">
+        <span class="theme-cord"></span>
+        <span class="theme-bulb" aria-hidden="true"></span>
+        <span class="theme-bulb-base" aria-hidden="true"></span>
+      </button>
     </div>
-  </div>
+  </div>v>
   <div class="card">
     <h2>Localization</h2>
     <select id="prof_tz" style="width:100%;margin-bottom:8px">${['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
