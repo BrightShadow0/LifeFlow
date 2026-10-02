@@ -733,10 +733,18 @@ function initAuthTheme(){
     mq.addEventListener?.('change',onChange); mq.addListener?.(onChange);
   }
   const bulb=document.getElementById('authBulb'); if(!bulb) return;
-  let startY=null,active=false;
-  const down=e=>{startY=e.clientY;active=true;bulb.setPointerCapture?.(e.pointerId);e.preventDefault();};
-  const move=e=>{if(!active)return;bulb.style.setProperty('--pull-y',Math.max(0,Math.min(24,e.clientY-startY))+'px');};
-  const end=e=>{if(!active)return;const dy=Math.max(0,e.clientY-startY);active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);if(dy>8)setAuthTheme(getAuthTheme()==='light'?'dark':'light');};
+  let startY=null,active=false,switched=false;
+  const down=e=>{startY=e.clientY;active=true;switched=false;bulb.setPointerCapture?.(e.pointerId);e.preventDefault();};
+  const move=e=>{
+    if(!active)return;
+    const dy=Math.max(0,Math.min(24,e.clientY-startY));
+    bulb.style.setProperty('--pull-y',dy+'px');
+    if(dy>8 && !switched){
+      switched=true;
+      setAuthTheme(getAuthTheme()==='light'?'dark':'light');
+    }
+  };
+  const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
   bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
 }
 function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
