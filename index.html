@@ -204,6 +204,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
       <input id="signupEmail" placeholder="Email" oninput="validateSignup1()">
       <div id="emailHint" class="notice" style="display:none"></div>
       <input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()">
+      <div id="signupError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
       <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
       <div id="passHint" class="notice" style="display:none"></div>
       <button class="primary" id="s1Next" onclick="showStep('stepSignup2')" style="width:100%" disabled>Next</button>
@@ -445,22 +446,45 @@ function validateSignup1(){
 
   document.getElementById('s1Next').disabled = !(emailOk && passOk);
 }
-function startSignup(){ document.getElementById('signupEmail').value=''; document.getElementById('signupPass').value=''; showStep('stepSignup1'); validateSignup1(); }
+function startSignup(){
+  ['signupEmail','signupPass','signupName','signupBio','signupWorkspace'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  showStep('stepSignup1');
+  validateSignup1();
+}
 
 async function doSignup(){
-  const email = document.getElementById('signupEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('signupPass').value;
-  const name = document.getElementById('signupName').value.trim() || email.split('@')[0];
-  const bio = document.getElementById('signupBio').value.trim();
-  const workspace = document.getElementById('signupWorkspace').value.trim() || 'My Workspace';
-  const users = getUsers();
-  // Only the salted PBKDF2 hash is stored — the plaintext never touches disk.
-  users[email] = newUserRecord(email, {passwordHash: await hashPassword(pass), name, bio, workspace});
-  saveUsers(users);
-  pendingVerify = {email, token: randomToken(12), expiresAt: Date.now() + 15*60*1000};
-  document.getElementById('verifyEmailLabel').textContent = email;
-  document.getElementById('verifyTokenDisplay').textContent = 'Simulated activation token (expires in 15 min): '+pendingVerify.token;
-  showStep('stepVerify');
+  const email=document.getElementById('signupEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('signupPass').value;
+  const name=document.getElementById('signupName').value.trim() || email.split('@')[0];
+  const bio=document.getElementById('signupBio').value.trim();
+  const workspace=document.getElementById('signupWorkspace').value.trim() || 'My Workspace';
+  const error=document.getElementById('signupError');
+  try{
+    if(!email || !email.includes('@') || !email.includes('.')) throw new Error('Enter a valid email address.');
+    if(pass.length<8) throw new Error('Password must be at least 8 characters.');
+    const users=getUsers();
+    if(users[email]) throw new Error('That email already has an account. Log in instead, or use Forgot password.');
+    if(!window.crypto || !crypto.subtle) throw new Error('Secure password hashing is unavailable here. Open LifeFlow from its HTTPS GitHub Pages address or from http://localhost.');
+    const passwordHash=await hashPassword(pass);
+    users[email]=newUserRecord(email,{passwordHash,name,bio,workspace});
+    saveUsers(users);
+    const savedUsers=getUsers();
+    if(!savedUsers[email] || savedUsers[email].passwordHash!==passwordHash) throw new Error('Your browser blocked LifeFlow from saving the new account. Check browser storage/site permissions and try again.');
+    pendingVerify={email,token:randomToken(12),expiresAt:Date.now()+15*60*1000};
+    document.getElementById('verifyEmailLabel').textContent=email;
+    document.getElementById('verifyTokenDisplay').textContent='Simulated activation token (expires in 15 min): '+pendingVerify.token;
+    showStep('stepVerify');
+  }catch(err){
+    if(error){
+      error.textContent=err && err.message ? err.message : 'Could not create the account. Please try again.';
+      error.style.display='block';
+    }else{
+      alert(err && err.message ? err.message : 'Could not create the account. Please try again.');
+    }
+  }
 }
 let pendingVerify=null;
 function doVerify(){
