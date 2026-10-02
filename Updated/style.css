@@ -18,13 +18,13 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:16px 0;}
 .tag{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600;color:#fff;}
 .pri-high{color:var(--danger)} .pri-medium{color:var(--warn)} .pri-low{color:var(--ok)}
-/* Auth */
+
 #authScreen{max-width:360px;margin:60px auto;}
 #authScreen input{width:100%;margin-bottom:10px;}
 .authstep{display:none;} .authstep.active{display:block;}
 .linklike{color:var(--accent);background:none;border:none;cursor:pointer;font-size:12px;padding:0;}
 .notice{font-size:12px;color:var(--muted);background:var(--accent-soft);padding:8px 10px;border-radius:8px;margin:8px 0;}
-/* Task row */
+
 .task{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);}
 .task:last-child{border-bottom:none;}
 .task.done .title{text-decoration:line-through;color:var(--muted);}
@@ -32,7 +32,7 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .meta{font-size:11px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
 .sub{margin-left:26px;font-size:12px;color:var(--muted);}
 .del{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;}
-/* Calendar */
+
 .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .cal-day{min-height:70px;border:1px solid var(--border);border-radius:8px;padding:4px;font-size:11px;}
@@ -40,14 +40,14 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .cal-day .dnum{font-weight:600;margin-bottom:3px;}
 .cal-day .citem{background:var(--accent-soft);border-radius:5px;padding:1px 4px;margin-bottom:2px;font-size:10px;cursor:grab;}
 .dow{font-size:10px;color:var(--muted);text-align:center;}
-/* Kanban */
+
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .col{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px;min-height:120px;}
 .col h3{font-size:12px;margin:0 0 8px;color:var(--muted);}
 .kcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;cursor:grab;}
 .overflow-x{overflow-x:auto;}
 @media(max-width:600px){.board{grid-template-columns:1fr;}}
-/* Account terminal */
+
 .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
 .subnav button{padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;}
 .subnav button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -73,7 +73,6 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .stepdots span{width:6px;height:6px;border-radius:50%;background:var(--border);}
 .stepdots span.on{background:var(--accent);}
 
-/* Task intervals and accessible clock dialog */
 .time-fields{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
 .time-fields label{font-size:12px;color:var(--muted)}
 .time-fields button,.time-edit button{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;padding:8px 11px;cursor:pointer}
@@ -104,7 +103,7 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 @media(max-width:380px){.clock-dialog{padding:17px}.clock-dial,.clock-keyboard{width:min(100%,290px);min-height:0}.clock-keyboard{height:290px}}
 
 .gantt{min-width:680px}.ghead,.grow{display:grid;grid-template-columns:180px repeat(7,1fr)}.ghead div,.grow>div{border:1px solid var(--border);border-bottom:0;padding:9px;font-size:10px;overflow:hidden;text-overflow:ellipsis}.grow:last-child>div{border-bottom:1px solid var(--border)}.gbar{display:block;height:10px;background:var(--accent);border-radius:5px;margin-top:4px}
-/* LifeFlow OS visual shell. The original application logic and storage keys remain intact. */
+
 :root{--bg:#080b0f;--card:#10151c;--panel2:#151b23;--text:#f3f6fa;--muted:#8993a1;--border:#27303b;--accent:#79e36d;--accent-soft:#1b2d20;--danger:#ff7777;--warn:#e7c56a;--ok:#79e36d;color-scheme:dark}
 :root[data-theme="light"]{--bg:#f4f6f5;--card:#ffffff;--panel2:#eef2ef;--text:#182019;--muted:#657067;--border:#d8ded9;--accent:#3f9f38;--accent-soft:#e8f4e6;--danger:#c83f3f;--warn:#a87514;--ok:#3f9f38;color-scheme:light}
 body{font:14px Inter,system-ui,-apple-system,sans-serif;background:var(--bg)}
@@ -152,7 +151,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .toast{position:fixed;right:20px;bottom:20px;background:#eaffe6;color:#071007;padding:11px 15px;border-radius:8px;font-size:12px;font-weight:800;z-index:30;box-shadow:0 12px 30px #0008}
 @media(max-width:900px){.app-sidebar{width:68px;padding:22px 9px}.brand{font-size:0;margin:0 0 26px;text-align:center}.brand-mark{font-size:23px}.navlabel,.nav-text,.sidebottom .nav-text{display:none}#nav button,.sidebar-action{justify-content:center;padding:11px 6px}.app-content{margin-left:68px;padding:25px 20px 70px}.today-grid{grid-template-columns:minmax(0,1fr)}.today-grid>div,.card{min-width:0}.app-content{width:calc(100% - 68px)}.task>div{min-width:0}.task .sub input{max-width:100%}}
 @media(max-width:600px){.app-content{padding:20px 14px 70px}.app-top h1{font-size:24px}.hero{align-items:flex-start;flex-direction:column}.board{grid-template-columns:1fr}.calendar-wrap{overflow-x:auto}.cal-grid{min-width:650px}.statgrid{grid-template-columns:repeat(2,1fr)}.termcontent{padding:24px}.clock-dial{width:min(100%,310px)}}
-/* Light theme overrides */
+
 :root[data-theme="light"] .app-sidebar{background:#ffffff}
 :root[data-theme="light"] #nav button:hover,:root[data-theme="light"] #nav button.active,:root[data-theme="light"] .sidebar-action:hover{background:#eef2ef;color:#182019}
 :root[data-theme="light"] .app-top .avatar{background:#e8f4e6;border-color:#c9dfc6;color:#3f9f38}
@@ -175,7 +174,6 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 :root[data-theme="light"] .hbtn,:root[data-theme="light"] .time-fields button,:root[data-theme="light"] .time-edit button{background:#f8faf9;color:#182019}
 :root[data-theme="light"] input,:root[data-theme="light"] select{background:#ffffff;color:#182019}
 
-/* Physical light-bulb theme switch */
 .theme-pull-wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:105px}
 .theme-copy{flex:1}
 .theme-pull{position:relative;width:78px;height:100px;border:0;background:transparent;cursor:grab;padding:0;flex:none;touch-action:none}
@@ -186,9 +184,9 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .theme-bulb-base{position:absolute;left:50%;top:72px;width:15px;height:4px;border-radius:3px;background:#4b535d;transform:translateX(-50%);pointer-events:none}
 :root[data-theme="light"] .theme-bulb{background:#fff3a8;box-shadow:0 0 18px 6px #ffe87a,0 0 0 3px #e6d47a}
 :root[data-theme="light"] .theme-cord{background:#9b8c57}
-/* Pull animation is controlled by the active bulb assembly below. */
+
 @media(max-width:600px){.theme-pull-wrap{min-height:95px}.theme-pull{width:70px}}
-/* Global hanging lightbulb switch: always visible beside the profile avatar. */
+
 .app-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:116px;height:82px}
 .app-top-actions .avatar{margin-top:11px}
 .top-theme-pull{width:48px;height:82px;position:relative;overflow:visible}
