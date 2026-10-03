@@ -756,7 +756,7 @@ function renderApp(){
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
   const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
-  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'Your personal planning workspace';
+  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
   else if(view==='list') el.innerHTML = renderList();
