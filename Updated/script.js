@@ -606,8 +606,7 @@ function renderToday(){
   if(overdue.length>=3) loadReasons.push(overdue.length+' overdue tasks');
   const overloaded=loadReasons.length>0;
   const u=currentUser()||{}, first=esc((u.name||'there').trim().split(/\s+/)[0]);
-  const firstUse=state.tasks.length===0;
-  return `${firstUse ? '<section class="card first-use-guide" aria-label="LifeFlow quick start"><span class="custom-kicker">QUICK START</span><strong>Start with one thing that matters today.</strong><span>Add a task, give it a date if it needs one, and let LifeFlow build the day around it.</span></section>' : ''}<section class="card hero hero-welcome">
+  return `<section class="card hero hero-welcome">
       <div class="hero-copy">
         <div class="hero-kicker">YOUR DAY</div>
         <h2>Good to see you, ${first}.</h2>
