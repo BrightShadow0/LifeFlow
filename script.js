@@ -1066,14 +1066,36 @@ function activateCobaltSequence(){
     for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
     return copy.slice(0,count);
   };
+  // Give every Task Master task its own random, non-overlapping
+  // time interval. Five tasks are spread naturally across an 8 AM–8 PM day.
+  const randomIntervals=()=>{
+    const slots=[];
+    const dayStart=8*60;
+    const slotWidth=Math.floor((12*60)/5);
+    for(let i=0;i<5;i++){
+      const slotStart=dayStart+i*slotWidth;
+      const latestStart=slotStart+Math.max(0,slotWidth-45);
+      const start=slotStart+Math.floor(Math.random()*(latestStart-slotStart+1));
+      const duration=30+Math.floor(Math.random()*46); // 30–75 minutes
+      const end=Math.min(start+duration,dayStart+(i+1)*slotWidth-5);
+      const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
+      const mm=n=>String(n%60).padStart(2,'0');
+      slots.push({startTime:hh(start)+':'+mm(start),endTime:hh(end)+':'+mm(end)});
+    }
+    return slots;
+  };
+
   const generated=[];
   [[-1,'yesterday'],[0,'today'],[1,'tomorrow']].forEach(([offset,key])=>{
-    pick(pools[key],5).forEach(title=>{
+    const intervals=randomIntervals();
+    pick(pools[key],5).forEach((title,index)=>{
       generated.push({
         id:uid(),title,tags:['Task Master'],
         priority:['low','medium','high'][Math.floor(Math.random()*3)],
-        due:dateForOffset(offset),startTime:null,endTime:null,recur:'none',
-        status:'todo',done:false,subtasks:[]
+        due:dateForOffset(offset),
+        startTime:intervals[index].startTime,
+        endTime:intervals[index].endTime,
+        recur:'none',status:'todo',done:false,subtasks:[]
       });
     });
   });
