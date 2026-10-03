@@ -1301,3 +1301,27 @@ body{scrollbar-gutter:stable}
   .task-master-terminal::before{inset:5px;border-width:2px}
   .task-master-terminal-text{font-size:clamp(18px,5.5vw,30px)}
 }
+
+
+/* Final visual cohesion: remove legacy green defaults from the active app shell. */
+:root[data-color-theme] .app-sidebar{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,var(--accent) 4%),var(--bg));
+  border-right-color:var(--border);
+}
+:root[data-color-theme] #nav button,
+:root[data-color-theme] .sidebar-action{color:color-mix(in srgb,var(--text) 68%,var(--muted));}
+:root[data-color-theme] #nav button:hover,
+:root[data-color-theme] #nav button.active,
+:root[data-color-theme] .sidebar-action:hover{background:var(--accent-soft);color:var(--text);}
+:root[data-color-theme] .app-top .avatar{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+:root[data-color-theme] .hero-welcome{border-color:color-mix(in srgb,var(--accent) 48%,var(--border));}
+:root[data-color-theme] .hbtn{background:var(--panel2);color:var(--text);border-color:var(--border);}
+:root[data-color-theme] input,
+:root[data-color-theme] select,
+:root[data-color-theme] textarea{background:var(--bg);color:var(--text);border-color:var(--border);}
+:root[data-color-theme] .notice{background:color-mix(in srgb,var(--accent-soft) 55%,var(--card));color:var(--text);border-color:var(--border);}
+:root[data-color-theme] .tag,
+:root[data-color-theme] .badge{background:var(--accent-soft);color:var(--accent);}
+:root[data-color-theme] .task{background:color-mix(in srgb,var(--card) 88%,var(--accent-soft));border-color:var(--border);}
+:root[data-color-theme] .task:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 8%,transparent);}
+:root[data-color-theme] .navlabel{color:color-mix(in srgb,var(--muted) 78%,var(--accent));}
