@@ -1675,3 +1675,24 @@ body::-webkit-scrollbar{
     height:82px !important;
   }
 }
+
+/* Tasks toolbar */
+.clear-completed-button{
+  flex:0 0 auto;
+  padding:7px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--card);
+  color:var(--text);
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+}
+.clear-completed-button:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.clear-completed-button:disabled{
+  opacity:.45;
+  cursor:default;
+}
