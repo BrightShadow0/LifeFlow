@@ -355,7 +355,17 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark'); }
+function applyTheme(theme){
+  const allowed=['dark','light','forest','paper'];
+  const actual=allowed.includes(theme)?theme:'dark';
+  document.documentElement.setAttribute('data-theme',actual);
+}
+function setTheme(theme){
+  const u=currentUser();
+  const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
+  if(u) updateUser(user=>user.theme=next); else applyTheme(next);
+}
+function themeLabel(theme){ return ({dark:'Deep Night',light:'Clean Light',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Deep Night'; }
 function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
 function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
 function applyAuthTheme(mode){
