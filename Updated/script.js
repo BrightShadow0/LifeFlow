@@ -619,6 +619,15 @@ function renderCalendar(){
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
 
+let densityMode=localStorage.getItem('lifeflow2_density')||'comfortable';
+function setDensity(mode){
+  densityMode=['compact','comfortable','immersive'].includes(mode)?mode:'comfortable';
+  localStorage.setItem('lifeflow2_density',densityMode);
+  document.documentElement.setAttribute('data-density',densityMode);
+  renderApp();
+}
+function applyDensity(){ document.documentElement.setAttribute('data-density',densityMode); }
+
 let timeEdit=null, clock=null;
 function editTaskTime(id){
   const t=state.tasks.find(x=>x.id===id); if(!t)return;
@@ -717,6 +726,7 @@ function showToast(message){const host=document.getElementById('toastHost');host
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
+  applyDensity();
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
