@@ -543,12 +543,12 @@ function setView(v){ view=v; clearNewTimes(); renderApp(); }
 function taskFormHtml(){
   return `<div class="card"><h2>New Task</h2>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <input id="nt_title" placeholder="Task title" style="flex:2;min-width:140px">
-      <input id="nt_due" type="date">
-      <select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
-      <select id="nt_recur"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
-      <input id="nt_tags" placeholder="tags (comma)" style="min-width:100px">
-      <button class="primary" onclick="submitTask()">Add</button>
+      <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off" style="flex:2;min-width:140px">
+      <input id="nt_due" type="date" aria-label="Due date">
+      <select id="nt_pri" aria-label="Priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+      <select id="nt_recur" aria-label="Repeat task"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)" style="min-width:100px">
+      <button class="primary" onclick="submitTask()" aria-label="Add task">Add</button>
     </div>
     <div class="time-fields"><label>Optional time interval</label>
       <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
@@ -606,7 +606,8 @@ function renderToday(){
   if(overdue.length>=3) loadReasons.push(overdue.length+' overdue tasks');
   const overloaded=loadReasons.length>0;
   const u=currentUser()||{}, first=esc((u.name||'there').trim().split(/\s+/)[0]);
-  return `<section class="card hero hero-welcome">
+  const firstUse=state.tasks.length===0;
+  return `${firstUse ? '<section class="card first-use-guide" aria-label="LifeFlow quick start"><span class="custom-kicker">QUICK START</span><strong>Start with one thing that matters today.</strong><span>Add a task, give it a date if it needs one, and let LifeFlow build the day around it.</span></section>' : ''}<section class="card hero hero-welcome">
       <div class="hero-copy">
         <div class="hero-kicker">YOUR DAY</div>
         <h2>Good to see you, ${first}.</h2>
@@ -801,6 +802,18 @@ function renderApp(){
   }
   initThemePull();
   lfEnhanceInterface();
+  lfAccessibilityPass();
+}
+function lfAccessibilityPass(){
+  const root=document.documentElement;
+  root.setAttribute('data-first-use',state.tasks?.length?'off':'on');
+  root.setAttribute('data-session-state',currentUser()?'returning':'guest');
+  document.querySelectorAll('#main input,#main select').forEach(el=>{
+    if(!el.getAttribute('aria-label') && el.placeholder) el.setAttribute('aria-label',el.placeholder);
+  });
+  document.querySelectorAll('#main button').forEach(btn=>{
+    if(!btn.getAttribute('aria-label') && !btn.textContent.trim() && btn.title) btn.setAttribute('aria-label',btn.title);
+  });
 }
 function lfEnhanceInterface(){
   const top=document.querySelector('.app-top');
