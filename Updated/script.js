@@ -1030,7 +1030,13 @@ function saveLocalization(){
   });
   if(exact) activateCobaltSequence();
 }
-function saveTier(){ updateUser(u=>{ u.tier=document.getElementById('prof_tier').value; }); }
+function saveTier(){
+  const tier=document.getElementById('prof_tier')?.value;
+  updateUser(u=>{
+    u.tier=tier||u.tier;
+    if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
+  });
+}
 
 function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
