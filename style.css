@@ -500,6 +500,14 @@ button.primary.loading:after{content:"";position:absolute;width:14px;height:14px
 
 .task-master-button{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(255,108,38,.7);border-radius:12px;background:linear-gradient(135deg,#2a1110,#4a160d);color:#fff2e8;font-weight:900;letter-spacing:.02em;cursor:pointer;box-shadow:0 0 18px rgba(255,90,25,.18),inset 0 0 18px rgba(255,130,40,.08);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
 .task-master-button:hover{transform:translateY(-2px);border-color:#ff8a45;box-shadow:0 0 26px rgba(255,90,25,.35),inset 0 0 20px rgba(255,130,40,.12)}
-.task-master-flame{display:inline-block;font-size:21px;transform-origin:50% 80%;animation:taskMasterFlame .72s ease-in-out infinite alternate;filter:drop-shadow(0 0 7px rgba(255,105,35,.7))}
-@keyframes taskMasterFlame{0%{transform:translateY(1px) scale(.94) rotate(-3deg)}100%{transform:translateY(-2px) scale(1.08) rotate(3deg)}}
+.task-master-flame{position:relative;width:28px;height:32px;display:inline-block;flex:none;filter:drop-shadow(0 0 7px rgba(20,150,255,.65));image-rendering:pixelated}
+.task-master-flame i,.task-master-flame b,.task-master-flame em{position:absolute;display:block;box-sizing:border-box}
+.task-master-flame i{left:3px;bottom:0;width:22px;height:24px;background:#087cff;clip-path:polygon(0 58%,14% 58%,14% 39%,28% 39%,28% 19%,43% 19%,43% 0,57% 0,57% 20%,72% 20%,72% 10%,86% 10%,86% 29%,100% 29%,100% 77%,86% 77%,86% 91%,71% 91%,71% 100%,29% 100%,29% 91%,14% 91%,14% 77%,0 77%);animation:pixelFlameOuter .6s steps(2,end) infinite}
+.task-master-flame b{left:7px;bottom:3px;width:15px;height:18px;background:#16b7ff;clip-path:polygon(0 60%,20% 60%,20% 34%,40% 34%,40% 8%,60% 8%,60% 30%,80% 30%,80% 0,100% 0,100% 75%,80% 75%,80% 100%,20% 100%,20% 84%,0 84%);animation:pixelFlameInner .42s steps(2,end) infinite}
+.task-master-flame em{left:12px;bottom:4px;width:8px;height:12px;background:#a8f4ff;clip-path:polygon(0 58%,25% 58%,25% 25%,50% 25%,50% 0,75% 0,75% 33%,100% 33%,100% 100%,0 100%);animation:pixelFlameCore .3s steps(2,end) infinite}
+.task-master-button:hover .task-master-flame{transform:scale(1.08)}
+.task-master-button:hover{transform:translateY(-2px);border-color:#2b9dff;box-shadow:0 0 26px rgba(20,120,255,.4),inset 0 0 20px rgba(30,150,255,.12)}
+@keyframes pixelFlameOuter{0%{transform:translateY(1px) scaleX(.94)}50%{transform:translateY(-1px) scaleX(1.04)}100%{transform:translateY(0) scaleX(.98)}}
+@keyframes pixelFlameInner{0%{transform:translate(-1px,1px)}50%{transform:translate(1px,-1px)}100%{transform:translate(0,0)}}
+@keyframes pixelFlameCore{0%{transform:translateY(1px)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.task-master-flame{animation:none}.task-master-button{transition:none}}
