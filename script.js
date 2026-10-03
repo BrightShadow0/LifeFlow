@@ -876,22 +876,22 @@ function renderAccount(){
 }
 
 function secretSequence(u){
-  return Object.assign({step:0,languageClicks:0,languageRevealed:false,unlocked:false,used:false},u?.secretSequence||{});
+  return Object.assign({step:0,languageRevealed:false,used:false},u?.secretSequence||{});
 }
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
-  if(s.unlocked || s.used)return;
-  if(action==='timezoneDash'){
-    if(s.step===0)s.step=1; else{s.step=0;s.languageClicks=0;}
-  }else if(action==='languageClick'){
-    if(s.step!==1)return;
-    s.languageClicks++;
-    if(s.languageClicks>=5){s.languageRevealed=true;s.step=2;}
-  }else if(action==='weekMonday'){
+  if(s.used)return;
+  if(action==='tierTeamAdmin'){
+    if(s.step===0)s.step=1;
+  }else if(action==='timezoneDash'){
+    if(s.step===1){s.step=2;s.languageRevealed=true;}
+  }else if(action==='languageCobalt'){
     if(s.step===2)s.step=3;
-  }else if(action==='tierTeamAdmin'){
+  }else if(action==='weekMonday'){
     if(s.step===3)s.step=4;
+  }else if(action==='tierOther' || action==='timezoneOther'){
+    if(action==='tierOther' && s.step>0)s.step=0;
   }
   updateSecretSequence(s);
 }
@@ -899,12 +899,12 @@ function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
   users[state.currentUser].secretSequence=s;
   saveUsers(users);
-  if(s.languageRevealed || s.unlocked) renderApp();
+  if(s.languageRevealed) renderApp();
 }
 function activateCobaltSequence(){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
-  if(!s.unlocked || s.used)return;
+  if(s.step!==4 || s.used)return;
   s.used=true;
   updateSecretSequence(s);
   const makeDate=(offset)=>{
@@ -918,22 +918,9 @@ function activateCobaltSequence(){
     ['Prepare tomorrow','Review open tasks','Protect some quiet time','Finish one pending item','Set tomorrow’s first priority'],
     ['Look back at yesterday','Close a loose end','Capture anything you missed','Review yesterday’s notes','Reset the workspace']
   ];
-  const dates=[0,1,-1];
-  dates.forEach((offset,group)=>{
+  [0,1,-1].forEach((offset,group)=>{
     pools[group].forEach((title,i)=>{
-      state.tasks.push({
-        id:uid()+group*100+i,
-        title,
-        tags:group===0?['Today']:group===1?['Tomorrow']:['Yesterday'],
-        priority:['medium','low','medium','high','low'][i],
-        due:makeDate(offset),
-        startTime:null,
-        endTime:null,
-        recur:'none',
-        status:'todo',
-        done:false,
-        subtasks:[]
-      });
+      state.tasks.push({id:uid()+group*100+i,title,tags:group===0?['Today']:group===1?['Tomorrow']:['Yesterday'],priority:['medium','low','medium','high','low'][i],due:makeDate(offset),startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]});
     });
   });
   save();
@@ -942,10 +929,7 @@ function activateCobaltSequence(){
   renderApp();
   showToast('Cobalt sequence activated');
   clearTimeout(temporaryThemeTimer);
-  temporaryThemeTimer=setTimeout(()=>{
-    temporaryTheme=null;
-    renderApp();
-  },5000);
+  temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
 }
 function secretUpdateSettings(){
   const u=currentUser(); if(!u)return;
@@ -953,14 +937,7 @@ function secretUpdateSettings(){
   const tz=document.getElementById('prof_tz')?.value;
   const week=document.getElementById('prof_week')?.value;
   const tier=document.getElementById('prof_tier')?.value;
-  if(s.step===4 && tz==='-' && week==='Monday' && tier==='Team Admin' && s.languageRevealed && !s.used){
-    activateCobaltSequence();
-    return;
-  }
   updateUser(user=>{
-    user.timezone=tz||user.timezone;
-    user.language=document.getElementById('prof_lang')?.value||user.language;
-    user.weekStart=week||user.weekStart;
     user.tier=tier||user.tier;
   });
 }
@@ -987,7 +964,7 @@ function renderProfileTab(u){
       <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
     </div>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_lang" style="width:100%;margin-bottom:8px" onclick="lfSecretAction('languageClick')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
     <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
@@ -997,7 +974,7 @@ function renderProfileTab(u){
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary" style="margin-top:8px" onclick="secretUpdateSettings()">Update settings</button>
+    <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
   </div>>`;
 }
 function renderCustomisationTab(u){
@@ -1032,7 +1009,20 @@ function onAvatarChange(e){
   reader.readAsDataURL(file);
 }
 function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); u.bio=document.getElementById('prof_bio').value.trim(); }); }
-function saveLocalization(){ updateUser(u=>{ u.timezone=document.getElementById('prof_tz').value; u.language=document.getElementById('prof_lang').value; u.weekStart=document.getElementById('prof_week').value; }); }
+function saveLocalization(){
+  const tz=document.getElementById('prof_tz')?.value;
+  const lang=document.getElementById('prof_lang')?.value;
+  const week=document.getElementById('prof_week')?.value;
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  const exact=s.step===4 && tz==='-' && lang==='Cobalt' && week==='Monday' && !s.used;
+  updateUser(user=>{
+    user.timezone=tz||user.timezone;
+    user.language=lang||user.language;
+    user.weekStart=week||user.weekStart;
+  });
+  if(exact) activateCobaltSequence();
+}
 function saveTier(){ updateUser(u=>{ u.tier=document.getElementById('prof_tier').value; }); }
 
 function renderConnectedTab(u){
