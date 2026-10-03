@@ -372,9 +372,13 @@ function setTheme(theme){
 }
 function setColorTheme(theme){
   const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  const u=currentUser();
+  if(theme==='gold' && u && !['Premium','Team Admin'].includes(u.tier)){
+    toast('Gold is available to Premium and Team Admin accounts.');
+    return;
+  }
   const next=allowed.includes(theme)?theme:'sapphire';
   document.documentElement.setAttribute('data-color-theme',next);
-  const u=currentUser();
   if(u){
     updateUser(user=>{user.colorTheme=next;});
   }else{
@@ -1223,7 +1227,10 @@ function subCustomisation(themes,u,a){
       </button>`).join('')}</div>
     </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
-      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].map(([id,name,desc])=>{
+        const locked=id==='gold'&&!['Premium','Team Admin'].includes(u.tier);
+        return `<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''} ${locked?'locked':''}" onclick="${locked?"toast('Gold is available to Premium and Team Admin accounts.')":`setColorTheme('${id}')`}" aria-pressed="${(u.colorTheme||'sapphire')===id}">${locked?'<span class="color-lock" aria-hidden="true">🔒</span>':''}<span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}${locked?' • Premium / Team Admin':''}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`;
+      }).join('')}</div>
     </div>
     <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
@@ -1260,6 +1267,9 @@ function saveTier(){
   const tier=document.getElementById('prof_tier')?.value;
   updateUser(u=>{
     u.tier=tier||u.tier;
+    if(!['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold'){
+      u.colorTheme='sapphire';
+    }
     if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   });
 }
