@@ -20,6 +20,7 @@ const PBKDF2_ITERATIONS = 100000;
 let state = load();
 let view = 'today';
 let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
+let taskMasterActivationActive = false;
 
 function load(){
   try{ const r = localStorage.getItem('lifeflow2_state'); if(r) return JSON.parse(r); }catch(e){}
@@ -938,6 +939,8 @@ function showTaskMasterActivation(){
   const old=document.getElementById('taskMasterActivation');
   if(old) old.remove();
 
+  taskMasterActivationActive=true;
+
   const overlay=document.createElement('div');
   overlay.id='taskMasterActivation';
   overlay.className='task-master-activation';
@@ -946,21 +949,28 @@ function showTaskMasterActivation(){
   overlay.innerHTML='<div class="task-master-terminal"><div class="task-master-terminal-text">* Your tasks have been generated</div></div>';
   document.body.appendChild(overlay);
 
-  // Audio is intentionally loaded from a local project asset.
-  // Add assets/megalovania.mp3 if you have a licensed copy to use.
+  // Keep the audio independent of the current LifeFlow tab.
+  // It is only stopped naturally when the track reaches its end.
   const audio=new Audio('assets/megalovania.mp3');
   audio.preload='auto';
   audio.volume=0.72;
-  audio.play().catch(()=>{});
   overlay._audio=audio;
 
+  const finishSequence=()=>{
+    if(overlay._finished)return;
+    overlay._finished=true;
+    taskMasterActivationActive=false;
+    overlay.classList.remove('is-visible');
+    overlay.classList.add('is-fading');
+    setTimeout(()=>{
+      if(overlay.isConnected) overlay.remove();
+      if(document.getElementById('app')?.style.display==='block') renderApp();
+    },560);
+  };
+
+  audio.addEventListener('ended',finishSequence,{once:true});
+  audio.play().catch(()=>{});
   requestAnimationFrame(()=>overlay.classList.add('is-visible'));
-  setTimeout(()=>overlay.classList.add('is-fading'),3600);
-  setTimeout(()=>{
-    audio.pause();
-    audio.currentTime=0;
-    overlay.remove();
-  },4600);
 }
 
 function activateCobaltSequence(){
@@ -1017,10 +1027,10 @@ function activateCobaltSequence(){
 
   const next=Object.assign(s,{used:false,unlocked:true});
   updateSecretSequence(next);
+  // Hide the trigger only because it was explicitly clicked.
+  // Do not switch away from Profile, and do not let tab navigation affect the overlay/audio.
   document.getElementById('taskMasterHost')?.replaceChildren();
-  view='today';
   temporaryTheme='cobalt';
-  renderApp();
   showTaskMasterActivation();
   clearTimeout(temporaryThemeTimer);
   temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
@@ -1087,7 +1097,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!s.used?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!s.used&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>`;
 }
 function renderCustomisationTab(u){
