@@ -355,7 +355,41 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark'); }
+function applyTheme(theme){
+  const allowed=['dark','light','forest','paper'];
+  const actual=allowed.includes(theme)?theme:'dark';
+  document.documentElement.setAttribute('data-theme',actual);
+  document.documentElement.style.setProperty('--lf-theme-transition','1');
+}
+function setTheme(theme){
+  const u=currentUser();
+  const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
+  if(u) updateUser(user=>user.theme=next); else applyTheme(next);
+  if(document.getElementById('app')?.style.display==='block') renderApp();
+}
+function ambientSettings(u){
+  return Object.assign({ambientMode:true,ambientIntensity:'medium'},u?.ambient||{});
+}
+function applyAmbientEnvironment(){
+  const u=currentUser(); if(!u)return;
+  const settings=ambientSettings(u);
+  const tasks=state.tasks||[];
+  const active=tasks.filter(t=>!t.done).length;
+  const overdue=tasks.filter(t=>t.due && new Date(t.due)<new Date() && !t.done).length;
+  const today=new Date();
+  const hour=today.getHours()+today.getMinutes()/60;
+  const timeState=hour<7?'dawn':hour<12?'morning':hour<17?'afternoon':hour<21?'evening':'night';
+  const load=Math.min(1,(active/12)+(overdue/8));
+  const level=overdue>=3||active>=8?'high':overdue>=1||active>=4?'medium':'calm';
+  const intensity=settings.ambientMode?({low:.45,medium:.75,high:1}[settings.ambientIntensity==='low'?'low':settings.ambientIntensity==='high'?'high':'medium']):0;
+  const root=document.documentElement;
+  root.setAttribute('data-ambient',settings.ambientMode?'on':'off');
+  root.setAttribute('data-load',level);
+  root.setAttribute('data-time',timeState);
+  root.style.setProperty('--lf-load',String(load));
+  root.style.setProperty('--lf-ambient-intensity',String(intensity));
+}
+function themeLabel(theme){ return ({dark:'Deep Night',light:'Clean Light',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Deep Night'; }
 function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
 function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
 function applyAuthTheme(mode){
@@ -445,7 +479,32 @@ function toggleDone(id){
   }
   save(); renderApp();
 }
-function deleteTask(id){ state.tasks = state.tasks.filter(t=>t.id!==id); save(); renderApp(); }
+let lastDeletedTask=null;
+let lastDeletedTimer=null;
+function deleteTask(id){
+  const index=state.tasks.findIndex(t=>t.id===id);
+  if(index<0)return;
+  lastDeletedTask={task:JSON.parse(JSON.stringify(state.tasks[index])),index};
+  state.tasks.splice(index,1);
+  save();
+  renderApp();
+  showUndoToast('Task deleted');
+}
+function undoDelete(){
+  if(!lastDeletedTask)return;
+  const exists=state.tasks.some(t=>t.id===lastDeletedTask.task.id);
+  if(!exists) state.tasks.splice(Math.min(lastDeletedTask.index,state.tasks.length),0,lastDeletedTask.task);
+  save(); lastDeletedTask=null;
+  clearTimeout(lastDeletedTimer); lastDeletedTimer=null;
+  document.getElementById('toastHost').innerHTML='';
+  renderApp();
+}
+function showUndoToast(message){
+  const host=document.getElementById('toastHost'); if(!host)return;
+  clearTimeout(lastDeletedTimer);
+  host.innerHTML='<div class="toast" role="status"><span>'+esc(message)+'</span><button class="undo-action" type="button" onclick="undoDelete()">Undo</button></div>';
+  lastDeletedTimer=setTimeout(()=>{lastDeletedTask=null;host.innerHTML='';},5000);
+}
 function addSubtask(id, text){
   const t = state.tasks.find(x=>x.id===id); if(!t||!text) return;
   t.subtasks.push({id:uid(), text, done:false}); save(); renderApp();
@@ -484,12 +543,12 @@ function setView(v){ view=v; clearNewTimes(); renderApp(); }
 function taskFormHtml(){
   return `<div class="card"><h2>New Task</h2>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <input id="nt_title" placeholder="Task title" style="flex:2;min-width:140px">
-      <input id="nt_due" type="date">
-      <select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
-      <select id="nt_recur"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
-      <input id="nt_tags" placeholder="tags (comma)" style="min-width:100px">
-      <button class="primary" onclick="submitTask()">Add</button>
+      <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off" style="flex:2;min-width:140px">
+      <input id="nt_due" type="date" aria-label="Due date">
+      <select id="nt_pri" aria-label="Priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
+      <select id="nt_recur" aria-label="Repeat task"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)" style="min-width:100px">
+      <button class="primary" onclick="submitTask()" aria-label="Add task">Add</button>
     </div>
     <div class="time-fields"><label>Optional time interval</label>
       <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
@@ -516,17 +575,18 @@ function submitTask(){
 }
 
 function taskRow(t){
-  return `<div class="task ${t.done?'done':''}">
-    <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
-    <div style="flex:1">
-      <div class="title">${esc(t.title)}</div>
-      <div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}${t.recur!=='none'?`<span>↻ ${t.recur}</span>`:''}${t.tags.map(g=>`<span>#${esc(g)}</span>`).join('')}</div>
-      ${t.subtasks.map(s=>`<div class="sub"><input type="checkbox" ${s.done?'checked':''} onchange="toggleSub(${t.id},${s.id})"> ${esc(s.text)}</div>`).join('')}
-      <div class="sub"><input placeholder="+ subtask" style="font-size:11px;padding:3px 6px" onkeydown="if(event.key==='Enter'){addSubtask(${t.id},this.value);this.value='';}"></div>
-    </div>
-    <button class="del" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}" title="Edit time interval">◷</button>
-    <button class="del" onclick="deleteTask(${t.id})" aria-label="Delete task">✕</button>
-  </div>`;
+  const overdue=!!(t.due && new Date(t.due)<new Date() && !t.done);
+  const priorityLabel=t.priority==='high'?'High':t.priority==='medium'?'Medium':'Low';
+  const subDone=t.subtasks.filter(s=>s.done).length;
+  const subTotal=t.subtasks.length;
+  return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" tabindex="0">'+
+    '<span class="task-priority-dot" aria-hidden="true" title="'+priorityLabel+' priority"></span>'+
+    '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleDone('+t.id+')" aria-label="Toggle task completion">'+
+    '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+(t.recur!=='none'?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
+    '<div class="meta"><span class="priority-label">'+priorityLabel+'</span>'+(t.due?'<span class="'+(overdue?'due-overdue':'')+'">'+(overdue?'Overdue · ':'')+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+(t.recur!=='none'?'<span class="recurrence-text">↻ '+t.recur+'</span>':'')+t.tags.map(g=>'<span>#'+esc(g)+'</span>').join('')+'</div>'+
+    (subTotal?'<div class="subtask-list">'+t.subtasks.map(s=>'<label class="sub"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSub('+t.id+','+s.id+')"> <span>'+esc(s.text)+'</span></label>').join('')+'</div>':'')+
+    '<div class="subtask-add"><input placeholder="+ add subtask" aria-label="Add subtask" onkeydown="if(event.key===\'Enter\'){addSubtask('+t.id+',this.value);this.value=\'\';}"></div></div>'+
+    '<button class="del task-action" onclick="editTaskTime('+t.id+')" aria-label="Edit time">◷</button><button class="del task-action" onclick="deleteTask('+t.id+')" aria-label="Delete task">✕</button></div>';
 }
 
 function todayKey(d){return new Date(d).toDateString();}
@@ -540,8 +600,14 @@ function renderToday(){
   const percent=dueToday.length?Math.round(completed/dueToday.length*100):0;
   const scheduled=dueToday.filter(t=>validInterval(t.startTime,t.endTime) && !t.done).sort((a,b)=>a.startTime.localeCompare(b.startTime));
   const minutes=scheduled.reduce((n,t)=>{const [ah,am]=t.startTime.split(':').map(Number),[bh,bm]=t.endTime.split(':').map(Number);return n+bh*60+bm-ah*60-am},0);
+  const loadReasons=[];
+  if(dueToday.filter(t=>!t.done).length>=8) loadReasons.push(dueToday.filter(t=>!t.done).length+' active tasks');
+  if(minutes>=480) loadReasons.push(Math.round(minutes/60*10)/10+' scheduled hours');
+  if(overdue.length>=3) loadReasons.push(overdue.length+' overdue tasks');
+  const overloaded=loadReasons.length>0;
   const u=currentUser()||{}, first=esc((u.name||'there').trim().split(/\s+/)[0]);
-  return `<section class="card hero hero-welcome">
+  const firstUse=state.tasks.length===0;
+  return `${firstUse ? '<section class="card first-use-guide" aria-label="LifeFlow quick start"><span class="custom-kicker">QUICK START</span><strong>Start with one thing that matters today.</strong><span>Add a task, give it a date if it needs one, and let LifeFlow build the day around it.</span></section>' : ''}<section class="card hero hero-welcome">
       <div class="hero-copy">
         <div class="hero-kicker">YOUR DAY</div>
         <h2>Good to see you, ${first}.</h2>
@@ -552,27 +618,32 @@ function renderToday(){
         <div class="hero-ring" style="--progress:${percent*3.6}deg"><span>${percent}%</span></div>
       </div>
     </section>
-    <div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${activeDueToday.length? 'Stay focused on what needs your attention.':dueToday.length?'You are all caught up for today.':'You have a clear slate.'}</p></div><span class="section-count">${activeDueToday.length}</span></div>${activeDueToday.length?'<div class="task-scroll">'+activeDueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">'+(dueToday.length?'All today’s tasks are done.':'Nothing due today. Add a task to get started.')+'</div>'}</div>
+    ${overloaded?`<div class="workload-warning"><div class="load-icon">!</div><div><strong>Your day is getting full</strong><span>${esc(loadReasons.join(' · '))}. Consider protecting some space before adding more.</span></div></div>`:''}<div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${activeDueToday.length? 'Stay focused on what needs your attention.':dueToday.length?'You are all caught up for today.':'You have a clear slate.'}</p></div><span class="section-count">${activeDueToday.length}</span></div>${activeDueToday.length?'<div class="task-scroll">'+activeDueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">'+(dueToday.length?'All today’s tasks are done.':'Nothing due today. Add a task to get started.')+'</div>'}</div>
     ${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2><div class="task-scroll">${overdue.map(taskRow).join('')}</div></div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?'<div class="task-scroll">'+upcoming.map(taskRow).join('')+'</div>':'<div class="empty">Nothing upcoming.</div>'}</div></div>
     <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
 
 function renderList(){
-  const list = [...state.tasks].sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No tasks yet.</div>'}</div>`;
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const list = state.tasks
+    .filter(t=>!t.due || new Date(t.due)>=today)
+    .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
+  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
   const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
-  const html = `<div class="card"><h2>Kanban Board</h2><div class="board">${cols.map(([k,l])=>`
-    <div class="col" ondragover="event.preventDefault()" ondrop="dropCol(event,'${k}')">
-      <h3>${l} (${state.tasks.filter(t=>t.status===k).length})</h3>
-      ${state.tasks.filter(t=>t.status===k).map(t=>`<div class="kcard" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}<div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}</div><button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit time</button></div>`).join('')}
-    </div>`).join('')}</div></div>`;
-  return html;
+  return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards into a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
+    '<div class="col col-'+k+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');dropCol(event,\''+k+'\')">'+
+      '<h3><span>'+l+'</span><b>'+state.tasks.filter(t=>t.status===k).length+'</b></h3><div class="col-drop-hint">Drop here</div>'+
+      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')">'+
+        '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+(t.recur!=='none'?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
+        '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
+        '<button class="linklike" onclick="editTaskTime('+t.id+')">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
 }
-function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done = col==='done'; save(); renderApp(); } }
+function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done=col==='done'; save(); renderApp(); } }
 
 function renderCalendar(){
   const first = new Date(calYear, calMonth, 1);
@@ -601,6 +672,15 @@ function renderCalendar(){
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
+
+let densityMode=localStorage.getItem('lifeflow2_density')||'comfortable';
+function setDensity(mode){
+  densityMode=['compact','comfortable','immersive'].includes(mode)?mode:'comfortable';
+  localStorage.setItem('lifeflow2_density',densityMode);
+  document.documentElement.setAttribute('data-density',densityMode);
+  renderApp();
+}
+function applyDensity(){ document.documentElement.setAttribute('data-density',densityMode); }
 
 let timeEdit=null, clock=null;
 function editTaskTime(id){
@@ -697,14 +777,17 @@ function clockPointer(e,finish=true){
   }
 }
 function showToast(message){const host=document.getElementById('toastHost');host.innerHTML='<div class="toast"></div>';host.firstElementChild.textContent=message;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>host.innerHTML='',3200);}
+let temporaryTheme=null;
+let temporaryThemeTimer=null;
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
+  applyDensity();
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
-  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'Your personal planning workspace';
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
   else if(view==='list') el.innerHTML = renderList();
@@ -720,7 +803,56 @@ function renderApp(){
     setTimeout(()=>el.classList.remove('page-enter'),900);
   }
   initThemePull();
+  lfEnhanceInterface();
+  lfAccessibilityPass();
 }
+function lfAccessibilityPass(){
+  const root=document.documentElement;
+  root.setAttribute('data-first-use',state.tasks?.length?'off':'on');
+  root.setAttribute('data-session-state',currentUser()?'returning':'guest');
+  document.querySelectorAll('#main input,#main select').forEach(el=>{
+    if(!el.getAttribute('aria-label') && el.placeholder) el.setAttribute('aria-label',el.placeholder);
+  });
+  document.querySelectorAll('#main button').forEach(btn=>{
+    if(!btn.getAttribute('aria-label') && !btn.textContent.trim() && btn.title) btn.setAttribute('aria-label',btn.title);
+  });
+}
+function lfEnhanceInterface(){
+  const top=document.querySelector('.app-top');
+  if(top && !document.getElementById('lfSearch')){
+    const tools=document.createElement('div');
+    tools.className='lf-top-tools';
+    tools.innerHTML='<button class="hbtn lf-search-trigger" id="lfSearch" type="button" onclick="openCommandPalette()" aria-label="Search LifeFlow (Ctrl or Cmd + K)">⌕ <span>Search</span></button>';
+    top.appendChild(tools);
+  }
+}
+function openCommandPalette(){
+  if(document.getElementById('lfCommandPalette')) return;
+  const overlay=document.createElement('div');
+  overlay.id='lfCommandPalette';
+  overlay.className='command-overlay';
+  overlay.innerHTML='<div class="command-panel" role="dialog" aria-modal="true" aria-label="LifeFlow search"><div class="command-head"><div><strong>Search LifeFlow</strong><span>Tasks, pages and actions</span></div><button class="command-close" type="button" onclick="closeCommandPalette()" aria-label="Close">×</button></div><input id="lfCommandInput" class="command-input" autocomplete="off" placeholder="Search tasks or jump to a page..." aria-label="Search tasks or pages"><div id="lfCommandResults" class="command-results"></div><div class="command-hint">Esc to close · Enter to open</div></div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeCommandPalette();});
+  const input=document.getElementById('lfCommandInput');
+  input.addEventListener('input',renderCommandResults);
+  input.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommandPalette();if(e.key==='Enter'){const first=document.querySelector('#lfCommandResults button');if(first)first.click();}});
+  renderCommandResults();
+  input.focus();
+}
+function closeCommandPalette(){document.getElementById('lfCommandPalette')?.remove();}
+function renderCommandResults(){
+  const input=document.getElementById('lfCommandInput'); const host=document.getElementById('lfCommandResults'); if(!input||!host)return;
+  const q=input.value.trim().toLowerCase();
+  const pages=[['today','Today','See what needs attention now'],['list','Tasks','Browse and manage tasks'],['calendar','Calendar','View deadlines and scheduled time'],['board','Board','Move work through the flow'],['about','Why LifeFlow','Read the product principles'],['account','Profile & settings','Personalize LifeFlow']];
+  const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" onclick="view=\''+x[0]+'\';closeCommandPalette();renderApp()"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
+  const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,8).map(t=>'<button type="button" class="command-result" onclick="view=\'list\';closeCommandPalette();renderApp();setTimeout(()=>document.querySelector(\'[data-task-id="'+t.id+'"]\')?.focus(),50)"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
+  host.innerHTML=(matches.concat(tasks)).slice(0,10).join('')||'<div class="command-empty">No matching pages or tasks.</div>';
+}
+window.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
+  if(e.key==='Escape')closeCommandPalette();
+});
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
     <div class="manifesto-kicker">THE IDEA BEHIND LIFEFLOW</div>
@@ -747,14 +879,107 @@ function setAccountTab(t){ accountTab=t; renderApp(); }
 function renderAccount(){
   const u = currentUser();
   if(!u) return '<div class="empty">No profile data.</div>';
-  const sub = `<div class="subnav">${[['profile','Profile'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
+  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
   if(accountTab==='profile') return sub + renderProfileTab(u);
+  if(accountTab==='custom') return sub + renderCustomisationTab(u);
   if(accountTab==='connected') return sub + renderConnectedTab(u);
   if(accountTab==='sessions') return sub + renderSessionsTab(u);
   if(accountTab==='danger') return sub + renderDangerTab(u);
 }
 
+function secretSequence(u){
+  return Object.assign({step:0,languageClicks:0,languageRevealed:false,unlocked:false,used:false},u?.secretSequence||{});
+}
+function lfSecretAction(action){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  if(s.unlocked || s.used)return;
+  if(action==='timezoneDash'){
+    if(s.step===0){s.step=1;u.timezone='-';}else{s.step=0;s.languageClicks=0;}
+  }else if(action==='languageClick'){
+    if(s.step!==1){s.step=0;s.languageClicks=0;return;}
+    s.languageClicks++;
+    if(s.languageClicks>=5){s.languageRevealed=true;s.step=2;}
+  }else if(action==='weekMonday'){
+    if(s.step===2){s.step=3;u.weekStart='Monday';}else{s.step=0;s.languageClicks=0;}
+  }else if(action==='tierTeamAdmin'){
+    if(s.step===3){s.step=4;u.tier='Team Admin';}else{s.step=0;s.languageClicks=0;}
+  }
+  updateSecretSequence(s);
+}
+function updateSecretSequence(s){
+  const users=getUsers(); if(!users[state.currentUser])return;
+  users[state.currentUser].secretSequence=s;
+  saveUsers(users);
+  if(s.languageRevealed || s.unlocked) renderApp();
+}
+function activateCobaltSequence(){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  if(!s.unlocked || s.used)return;
+  s.used=true;
+  updateSecretSequence(s);
+  const makeDate=(offset)=>{
+    const d=new Date();
+    d.setHours(12,0,0,0);
+    d.setDate(d.getDate()+offset);
+    return d.toISOString();
+  };
+  const pools=[
+    ['Review the day ahead','Clear one small task','Take a short reset','Check upcoming commitments','Plan the next focused block'],
+    ['Prepare tomorrow','Review open tasks','Protect some quiet time','Finish one pending item','Set tomorrow’s first priority'],
+    ['Look back at yesterday','Close a loose end','Capture anything you missed','Review yesterday’s notes','Reset the workspace']
+  ];
+  const dates=[0,1,-1];
+  dates.forEach((offset,group)=>{
+    pools[group].forEach((title,i)=>{
+      state.tasks.push({
+        id:uid()+group*100+i,
+        title,
+        tags:group===0?['Today']:group===1?['Tomorrow']:['Yesterday'],
+        priority:['medium','low','medium','high','low'][i],
+        due:makeDate(offset),
+        startTime:null,
+        endTime:null,
+        recur:'none',
+        status:'todo',
+        done:false,
+        subtasks:[]
+      });
+    });
+  });
+  save();
+  view='list';
+  temporaryTheme='cobalt';
+  renderApp();
+  showToast('Cobalt sequence activated');
+  clearTimeout(temporaryThemeTimer);
+  temporaryThemeTimer=setTimeout(()=>{
+    temporaryTheme=null;
+    renderApp();
+  },5000);
+}
+function secretUpdateSettings(){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  const tz=document.getElementById('prof_tz')?.value;
+  const week=document.getElementById('prof_week')?.value;
+  const tier=document.getElementById('prof_tier')?.value;
+  if(s.step===4 && tz==='-' && week==='Monday' && tier==='Team Admin' && s.languageRevealed && !s.used){
+    activateCobaltSequence();
+    return;
+  }
+  updateUser(user=>{
+    user.timezone=tz||user.timezone;
+    user.language=document.getElementById('prof_lang')?.value||user.language;
+    user.weekStart=week||user.weekStart;
+    user.tier=tier||user.tier;
+  });
+}
 function renderProfileTab(u){
+  const s=secretSequence(u);
+  const tzs=['-','UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'];
+  const langs=['English','Spanish','French','Hindi','German'].concat(s.languageRevealed?['Cobalt']:[]);
   return `<div class="card">
     <h2>Identity</h2>
     <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
@@ -770,18 +995,50 @@ function renderProfileTab(u){
   </div>
   <div class="card">
     <h2>Localization</h2>
-    <select id="prof_tz" style="width:100%;margin-bottom:8px">${['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
-    <select id="prof_lang" style="width:100%;margin-bottom:8px">${['English','Spanish','French','Hindi','German'].map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
-    <select id="prof_week" style="width:100%;margin-bottom:8px">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
-    <button class="primary" onclick="saveLocalization()">Save</button>
+    <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
+      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+    </div>
+    <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" onclick="lfSecretAction('languageClick')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
+    </div>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary" style="margin-top:8px" onclick="saveTier()">Update (demo only)</button>
+    <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+  </div>
+  <div class="card">
+    <button class="primary lf-settings-update" onclick="secretUpdateSettings()">Update settings</button>
+    ${s.unlocked&&!s.used?'<button class="primary lf-secret-action" style="margin-top:10px" onclick="activateCobaltSequence()">Activate Cobalt sequence</button>':''}
   </div>`;
 }
+function renderCustomisationTab(u){
+  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
+  const a=ambientSettings(u);
+  return subCustomisation(themes,u,a);
+}
+function subCustomisation(themes,u,a){
+  return `<div class="customisation-shell">
+    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill">Currently using <b>${themeLabel(u.theme)}</b></span></div>
+    <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" onclick="resetCustomisation()">Reset to default</button></div>
+      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${u.theme===id}">
+        <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
+      </button>`).join('')}</div>
+    </div>
+    <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></label></div>
+      <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
+      <label class="custom-range-label">Visual intensity <span>${a.ambientIntensity}</span></label>
+      <input type="range" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)">
+      <div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div>
+    </div>
+    <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
+  </div>`;
+}
+function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
+function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
