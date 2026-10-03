@@ -322,7 +322,7 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 .termtheme h3{color:var(--accent)!important}
 .termtheme p{line-height:1.6!important}
 
-.app-content{background:radial-gradient(circle at 92% 0,var(--lf-glow),transparent 25%)}
+.app-content{background:transparent}
 .app-top h1{letter-spacing:-.055em}
 .app-top p{transition:color .2s ease}
 .hero-welcome{
