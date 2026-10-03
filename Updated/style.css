@@ -240,3 +240,15 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 @keyframes orbit{to{transform:rotate(360deg)}}
 @keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+
+.page-enter{animation:pageEnter .34s cubic-bezier(.2,.7,.2,1) both;transform-origin:top center}
+.page-enter .card,.page-enter .hero-welcome,.page-enter .task,.page-enter .kcard,.page-enter .cal-day,.page-enter .manifesto-card,.page-enter .manifesto-principles,.page-enter .section-heading{animation:contentRise .42s cubic-bezier(.2,.7,.2,1) both}
+.page-enter .card:nth-child(2){animation-delay:.05s}.page-enter .card:nth-child(3){animation-delay:.1s}.page-enter .card:nth-child(4){animation-delay:.15s}
+.page-enter .task:nth-child(2),.page-enter .kcard:nth-child(2),.page-enter .manifesto-card:nth-child(2){animation-delay:.04s}
+.page-enter .task:nth-child(3),.page-enter .kcard:nth-child(3),.page-enter .manifesto-card:nth-child(3){animation-delay:.08s}
+.page-enter .task:nth-child(4),.page-enter .kcard:nth-child(4),.page-enter .manifesto-card:nth-child(4){animation-delay:.12s}
+.page-enter .task:nth-child(5),.page-enter .kcard:nth-child(5),.page-enter .manifesto-card:nth-child(5){animation-delay:.16s}
+@keyframes pageEnter{from{opacity:0}to{opacity:1}}
+@keyframes contentRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.page-enter,.page-enter *{animation:none!important}}
