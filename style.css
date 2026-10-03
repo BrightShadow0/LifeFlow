@@ -497,3 +497,9 @@ button.primary.loading:after{content:"";position:absolute;width:14px;height:14px
   .app-sidebar{left:10px;right:10px;bottom:10px;top:auto;width:auto}
 }
 @media(prefers-reduced-motion:reduce){.card,.task,.kcard,.citem,.cal-day,.time-edit-card,.clock-dialog,.toast{animation:none!important;transition:none!important}}
+
+.task-master-button{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid rgba(255,108,38,.7);border-radius:12px;background:linear-gradient(135deg,#2a1110,#4a160d);color:#fff2e8;font-weight:900;letter-spacing:.02em;cursor:pointer;box-shadow:0 0 18px rgba(255,90,25,.18),inset 0 0 18px rgba(255,130,40,.08);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.task-master-button:hover{transform:translateY(-2px);border-color:#ff8a45;box-shadow:0 0 26px rgba(255,90,25,.35),inset 0 0 20px rgba(255,130,40,.12)}
+.task-master-flame{display:inline-block;font-size:21px;transform-origin:50% 80%;animation:taskMasterFlame .72s ease-in-out infinite alternate;filter:drop-shadow(0 0 7px rgba(255,105,35,.7))}
+@keyframes taskMasterFlame{0%{transform:translateY(1px) scale(.94) rotate(-3deg)}100%{transform:translateY(-2px) scale(1.08) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.task-master-flame{animation:none}.task-master-button{transition:none}}
