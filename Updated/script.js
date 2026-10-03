@@ -600,8 +600,12 @@ function renderToday(){
 }
 
 function renderList(){
-  const list = [...state.tasks].sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No tasks yet.</div>'}</div>`;
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const list = state.tasks
+    .filter(t=>!t.due || new Date(t.due)>=today)
+    .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
+  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
