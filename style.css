@@ -1740,3 +1740,21 @@ body::-webkit-scrollbar{
 .color-combination.locked{
   position:relative;
 }
+
+/* Dark theme: button labels stay readable against every colour combination. */
+:root[data-theme="dark"] button,
+:root[data-theme="dark"] button.primary,
+:root[data-theme="dark"] .hbtn,
+:root[data-theme="dark"] .subnav button,
+:root[data-theme="dark"] .time-fields button,
+:root[data-theme="dark"] .time-edit button,
+:root[data-theme="dark"] .clear-completed-button{
+  color:#fff;
+}
+:root[data-theme="dark"] button.primary{
+  color:#fff;
+}
+:root[data-theme="dark"] .clock-display button.active,
+:root[data-theme="dark"] .clock-number.selected{
+  color:#fff;
+}
