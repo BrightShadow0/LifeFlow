@@ -985,11 +985,10 @@ function showTaskMasterActivation(){
   overlay.innerHTML='<div class="task-master-terminal"><div class="task-master-terminal-text">* Your tasks have been generated</div></div>';
   document.body.appendChild(overlay);
 
-  // Keep the audio independent of the current LifeFlow tab.
-  // It is only stopped naturally when the track reaches its end.
-  const audio=new Audio('assets/megalovania.mp3');
+  const audio=new Audio();
   audio.preload='auto';
   audio.volume=0.72;
+  audio.src='assets/megalovania.mp3';
   overlay._audio=audio;
 
   const finishSequence=()=>{
@@ -1004,9 +1003,23 @@ function showTaskMasterActivation(){
     },560);
   };
 
+  // Normal path: the overlay lasts for the full track and fades only after it ends.
   audio.addEventListener('ended',finishSequence,{once:true});
-  audio.play().catch(()=>{});
-  requestAnimationFrame(()=>overlay.classList.add('is-visible'));
+
+  // Failure path: never leave a dead overlay on screen if the audio asset
+  // is missing, corrupt, or cannot be loaded.
+  audio.addEventListener('error',finishSequence,{once:true});
+
+  requestAnimationFrame(()=>{
+    overlay.classList.add('is-visible');
+
+    // This is called directly from the Task Master button click, so it
+    // remains eligible for normal browser media playback policies.
+    const playAttempt=audio.play();
+    if(playAttempt && typeof playAttempt.catch==='function'){
+      playAttempt.catch(finishSequence);
+    }
+  });
 }
 
 function activateCobaltSequence(){
