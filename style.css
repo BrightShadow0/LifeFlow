@@ -1569,3 +1569,49 @@ body::-webkit-scrollbar{
     margin:0 auto !important;
   }
 }
+
+
+/* FINAL DESKTOP SHELL: simple two-column flex layout. */
+@media (min-width:901px){
+  #app{
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    width:100% !important;
+    min-height:100dvh !important;
+  }
+  #app > .app-sidebar{
+    position:sticky !important;
+    top:0 !important;
+    left:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    flex:0 0 245px !important;
+    width:245px !important;
+    height:100dvh !important;
+    max-height:100dvh !important;
+    margin:0 !important;
+    overflow-y:auto !important;
+    align-self:flex-start !important;
+    box-sizing:border-box !important;
+  }
+  #app > .app-content{
+    position:relative !important;
+    flex:1 1 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:30px 34px 80px !important;
+    box-sizing:border-box !important;
+    align-self:flex-start !important;
+  }
+  #app > .app-content > .app-top,
+  #app > .app-content > #main{
+    width:min(1180px,100%) !important;
+    max-width:1180px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+  #app > .app-content > .app-top{margin-top:0 !important;margin-bottom:24px !important;}
+}
