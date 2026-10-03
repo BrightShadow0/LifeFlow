@@ -1496,3 +1496,35 @@ body::-webkit-scrollbar{
 @media(max-width:900px){
   #app .app-sidebar{position:fixed !important;}
 }
+
+
+/* Put the desktop sidebar directly into the empty left column beside the workspace. */
+@media(min-width:901px){
+  #app{position:relative !important;}
+  #app>.app-sidebar{
+    display:flex !important;
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:245px !important;
+    height:100vh !important;
+    margin:0 !important;
+    z-index:100 !important;
+    overflow-y:auto !important;
+  }
+  #app>.app-content{
+    display:block !important;
+    position:relative !important;
+    margin-left:245px !important;
+    width:calc(100% - 245px) !important;
+    max-width:none !important;
+    min-height:100vh !important;
+  }
+  #app>.app-content>#main{
+    width:min(1180px,100%) !important;
+    max-width:1180px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+}
