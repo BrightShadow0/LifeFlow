@@ -721,7 +721,9 @@ function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.t
 
 function renderCalendar(){
   const first = new Date(calYear, calMonth, 1);
-  const startDow = first.getDay();
+  const u=currentUser();
+  const weekStartsMonday=u?.weekStart==='Monday';
+  const startDow = weekStartsMonday ? (first.getDay()+6)%7 : first.getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const monthName = first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   let cells = '';
@@ -740,7 +742,7 @@ function renderCalendar(){
       <strong>${monthName}</strong>
       <button class="hbtn" onclick="shiftMonth(1)">›</button>
     </div>
-    <div class="calendar-wrap"><div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
+    <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['M','T','W','T','F','S','S']:['S','M','T','W','T','F','S']).map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
     <div class="notice">Drag a task onto another day to reschedule it.</div>
   </div>`;
 }
