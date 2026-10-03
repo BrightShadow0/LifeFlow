@@ -359,6 +359,8 @@ function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
+  const color=currentUser()?.colorTheme||'life';
+  document.documentElement.setAttribute('data-color-theme',['life','cobalt','violet','ember','mint','ocean'].includes(color)?color:'life');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
@@ -366,6 +368,12 @@ function setTheme(theme){
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
   if(u) updateUser(user=>user.theme=next); else applyTheme(next);
   if(document.getElementById('app')?.style.display==='block') renderApp();
+}
+function setColorTheme(theme){
+  const allowed=['life','cobalt','violet','ember','mint','ocean'];
+  const next=allowed.includes(theme)?theme:'life';
+  const u=currentUser();
+  if(u) updateUser(user=>user.colorTheme=next); else document.documentElement.setAttribute('data-color-theme',next);
 }
 function ambientSettings(u){
   return Object.assign({ambientMode:true,ambientIntensity:'medium'},u?.ambient||{});
@@ -996,6 +1004,9 @@ function subCustomisation(themes,u,a){
       <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${u.theme===id}">
         <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
       </button>`).join('')}</div>
+    </div>
+    <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Pair your visual theme with an accent palette that changes the character of LifeFlow.</p></div></div>
+      <div class="color-combinations"><button type="button" class="color-combination color-life active" onclick="setColorTheme('life')" aria-pressed="true"><span class="color-swatch"></span><span><strong>LifeFlow</strong><small>Fresh green</small></span><b>✓</b></button><button type="button" class="color-combination color-cobalt " onclick="setColorTheme('cobalt')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Cobalt</strong><small>Electric blue</small></span><b>○</b></button><button type="button" class="color-combination color-violet " onclick="setColorTheme('violet')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Violet</strong><small>Deep purple</small></span><b>○</b></button><button type="button" class="color-combination color-ember " onclick="setColorTheme('ember')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Ember</strong><small>Warm orange</small></span><b>○</b></button><button type="button" class="color-combination color-mint " onclick="setColorTheme('mint')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Mint</strong><small>Cool green</small></span><b>○</b></button><button type="button" class="color-combination color-ocean " onclick="setColorTheme('ocean')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Ocean</strong><small>Cyan blue</small></span><b>○</b></button></div>
     </div>
     <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
