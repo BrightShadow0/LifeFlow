@@ -933,6 +933,36 @@ function revealSecretTimezone(){
   }
   select.closest('.lf-secret-field')?.classList.add('revealed');
 }
+
+function showTaskMasterActivation(){
+  const old=document.getElementById('taskMasterActivation');
+  if(old) old.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='taskMasterActivation';
+  overlay.className='task-master-activation';
+  overlay.setAttribute('role','status');
+  overlay.setAttribute('aria-live','polite');
+  overlay.innerHTML='<div class="task-master-terminal"><div class="task-master-terminal-text">* Your tasks have been generated</div></div>';
+  document.body.appendChild(overlay);
+
+  // Audio is intentionally loaded from a local project asset.
+  // Add assets/megalovania.mp3 if you have a licensed copy to use.
+  const audio=new Audio('assets/megalovania.mp3');
+  audio.preload='auto';
+  audio.volume=0.72;
+  audio.play().catch(()=>{});
+  overlay._audio=audio;
+
+  requestAnimationFrame(()=>overlay.classList.add('is-visible'));
+  setTimeout(()=>overlay.classList.add('is-fading'),3600);
+  setTimeout(()=>{
+    audio.pause();
+    audio.currentTime=0;
+    overlay.remove();
+  },4600);
+}
+
 function activateCobaltSequence(){
   const u=currentUser();
   if(!u)return;
@@ -991,6 +1021,7 @@ function activateCobaltSequence(){
   view='today';
   temporaryTheme='cobalt';
   renderApp();
+  showTaskMasterActivation();
   clearTimeout(temporaryThemeTimer);
   temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
   toast('Task Master created 15 tasks: 5 yesterday, 5 today, 5 tomorrow.');
