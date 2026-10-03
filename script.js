@@ -955,19 +955,7 @@ function renderAccount(){
 function secretSequence(u){
   const base={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   if(!u)return base;
-  const s=Object.assign(base,u.secretSequence||{});
-  if(u.tier!=='Team Admin' && !s.pendingTeamAdmin) return base;
-  if(u.tier==='Team Admin' && u.timezone==='-'){
-    s.step=Math.max(s.step,2);
-    s.languageRevealed=true;
-  }
-  if(u.tier==='Team Admin' && u.timezone==='-' && u.language==='Cobalt'){
-    s.step=Math.max(s.step,3);
-  }
-  if(u.tier==='Team Admin' && u.timezone==='-' && u.language==='Cobalt' && u.weekStart==='Monday'){
-    s.step=Math.max(s.step,4);
-  }
-  return s;
+  return Object.assign(base,u.secretSequence||{});
 }
 function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
