@@ -371,7 +371,7 @@ function setTheme(theme){
 }
 function setColorTheme(theme){
   const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
-  const next=allowed.includes(theme)?theme:'life';
+  const next=allowed.includes(theme)?theme:'sapphire';
   const u=currentUser();
   if(u) updateUser(user=>user.colorTheme=next); else document.documentElement.setAttribute('data-color-theme',next);
 }
@@ -1006,7 +1006,7 @@ function subCustomisation(themes,u,a){
       </button>`).join('')}</div>
     </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Pair your visual theme with an accent palette that changes the character of LifeFlow.</p></div></div>
-      <div class="color-combinations"><button type="button" class="color-combination color-sapphire active" onclick="setColorTheme('sapphire')" aria-pressed="true"><span class="color-swatch"></span><span><strong>Sapphire</strong><small>Blue based</small></span><b>✓</b></button><button type="button" class="color-combination color-emerald " onclick="setColorTheme('emerald')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Emerald</strong><small>Green based</small></span><b>○</b></button><button type="button" class="color-combination color-gold " onclick="setColorTheme('gold')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Gold</strong><small>Yellow & orange</small></span><b>○</b></button><button type="button" class="color-combination color-platinum " onclick="setColorTheme('platinum')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Platinum</strong><small>Black & silver</small></span><b>○</b></button><button type="button" class="color-combination color-amethyst " onclick="setColorTheme('amethyst')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Amethyst</strong><small>Purple based</small></span><b>○</b></button><button type="button" class="color-combination color-ruby " onclick="setColorTheme('ruby')" aria-pressed="false"><span class="color-swatch"></span><span><strong>Ruby</strong><small>Red based</small></span><b>○</b></button></div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
     <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
