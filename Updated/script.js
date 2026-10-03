@@ -882,6 +882,7 @@ function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
   if(s.used)return;
+  const wasRevealed=!!s.languageRevealed;
   if(action==='tierTeamAdmin'){
     if(s.step===0)s.step=1;
   }else if(action==='timezoneDash'){
@@ -892,14 +893,15 @@ function lfSecretAction(action){
     if(s.step===3)s.step=4;
   }else if(action==='tierOther' || action==='timezoneOther'){
     if(action==='tierOther' && s.step>0)s.step=0;
+    if(action==='timezoneOther' && s.step>1)s.step=0;
   }
   updateSecretSequence(s);
+  if(s.languageRevealed && !wasRevealed) renderApp();
 }
 function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
   users[state.currentUser].secretSequence=s;
   saveUsers(users);
-  if(s.languageRevealed) renderApp();
 }
 function activateCobaltSequence(){
   const u=currentUser(); if(!u)return;
