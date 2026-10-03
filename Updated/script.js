@@ -929,15 +929,15 @@ function lfSecretAction(action){
   const s=secretSequence(u);
   if(s.used)return;
   if(action==='tierTeamAdmin' && s.step===0){
-    s.step=1; updateSecretSequence(s); revealSecretTimezone();
+    s.step=1; s.pendingTeamAdmin=true; updateSecretSequence(s); revealSecretTimezone();
   }else if(action==='timezoneDash' && s.step===1){
     s.step=2; s.languageRevealed=true; updateSecretSequence(s); revealCobaltLanguage(true);
   }else if(action==='languageCobalt' && s.step===2){
     s.step=3; updateSecretSequence(s);
   }else if(action==='weekMonday' && s.step===3){
     s.step=4; updateSecretSequence(s); showTaskMaster();
-  }else if(action==='tierOther' && s.step===1){
-    s.step=0; updateSecretSequence(s);
+  }else if(action==='tierOther' && s.step>=1){
+    s.step=0; s.pendingTeamAdmin=false; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false); document.getElementById('taskMasterHost')?.replaceChildren();
   }else if(action==='timezoneOther' && s.step>=2){
     s.step=0; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false);
   }else if(action==='languageOther' && (s.step===2 || s.step===3)){
