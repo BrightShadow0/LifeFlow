@@ -531,23 +531,23 @@ button.primary.loading:after{content:"";position:absolute;width:14px;height:14px
   .ambient-toggle{align-self:flex-start}
 }
 /* Custom colour combinations */
-:root[data-color-theme="life"]{--accent:#79e36d;--accent-soft:#18341b;--ok:#43d9a3}
-:root[data-color-theme="cobalt"]{--accent:#3e7bfa;--accent-soft:#10295b;--ok:#48d9b0}
-:root[data-color-theme="violet"]{--accent:#a66cff;--accent-soft:#291653;--ok:#58d5ba}
-:root[data-color-theme="ember"]{--accent:#ff9b3d;--accent-soft:#4b2912;--ok:#6ed6a0}
-:root[data-color-theme="mint"]{--accent:#55d9b5;--accent-soft:#123b35;--ok:#7ce7b0}
-:root[data-color-theme="ocean"]{--accent:#38c8ed;--accent-soft:#103847;--ok:#55ddb7}
+:root[data-color-theme="sapphire"]{--accent:#4d8dff;--accent-soft:#102b5e;--ok:#52d9bb}
+:root[data-color-theme="emerald"]{--accent:#45d98a;--accent-soft:#103b27;--ok:#63e6a5}
+:root[data-color-theme="gold"]{--accent:#f5b83d;--accent-soft:#4a3210;--ok:#72d99a}
+:root[data-color-theme="platinum"]{--accent:#c7ccd6;--accent-soft:#2a2d34;--ok:#82e0c0}
+:root[data-color-theme="amethyst"]{--accent:#a56cff;--accent-soft:#2c1852;--ok:#63d9bd}
+:root[data-color-theme="ruby"]{--accent:#f05261;--accent-soft:#4a1720;--ok:#67dba5}
 .color-combinations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .color-combination{min-width:0;display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:11px;text-align:left;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);cursor:pointer}
 .color-combination:hover{border-color:var(--accent);transform:translateY(-1px)}
 .color-combination.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 16%,transparent)}
 .color-swatch{width:30px;height:30px;border-radius:9px;display:block;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 0 14px color-mix(in srgb,var(--accent) 28%,transparent)}
-.color-life .color-swatch{background:linear-gradient(145deg,#79e36d,#2d9b45)}
-.color-cobalt .color-swatch{background:linear-gradient(145deg,#70a2ff,#1765e8)}
-.color-violet .color-swatch{background:linear-gradient(145deg,#c08cff,#7135d9)}
-.color-ember .color-swatch{background:linear-gradient(145deg,#ffc06c,#e55b1f)}
-.color-mint .color-swatch{background:linear-gradient(145deg,#7bf0d0,#20a88c)}
-.color-ocean .color-swatch{background:linear-gradient(145deg,#72e9ff,#168cb5)}
+.color-sapphire .color-swatch{background:linear-gradient(145deg,#83b2ff,#2464d9)}
+.color-emerald .color-swatch{background:linear-gradient(145deg,#72efae,#198d56)}
+.color-gold .color-swatch{background:linear-gradient(145deg,#ffe18a,#e58b16)}
+.color-platinum .color-swatch{background:linear-gradient(145deg,#f4f6fa,#777d88 52%,#252830)}
+.color-amethyst .color-swatch{background:linear-gradient(145deg,#d0a4ff,#7335d2)}
+.color-ruby .color-swatch{background:linear-gradient(145deg,#ff8790,#b71f38)}
 .color-combination strong{display:block;font-size:11px}.color-combination small{display:block;color:var(--muted);font-size:9px;margin-top:2px}.color-combination>b{font-size:11px;color:var(--accent)}
 @media(max-width:800px){.color-combinations{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.color-combinations{grid-template-columns:1fr}}
