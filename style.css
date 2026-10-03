@@ -1422,3 +1422,34 @@ body{scrollbar-gutter:stable}
     bottom:10px !important;
   }
 }
+
+
+/* Final app-shell alignment: keep the main content anchored to the same top edge as the sidebar.
+   The large empty band above page content must not be part of the app layout. */
+#app{
+  position:relative;
+  min-height:100dvh;
+}
+#app .app-content{
+  position:relative !important;
+  top:0 !important;
+  margin-top:0 !important;
+  padding-top:30px !important;
+  transform:none !important;
+  align-self:flex-start !important;
+}
+#app .app-top{
+  margin-top:0 !important;
+}
+#app .app-sidebar{
+  top:0 !important;
+  bottom:0 !important;
+}
+@media(max-width:900px){
+  #app .app-content{padding-top:24px !important;}
+  #app .app-sidebar{top:0 !important;bottom:0 !important;}
+}
+@media(max-width:600px){
+  #app .app-content{padding-top:18px !important;}
+  #app .app-sidebar{top:auto !important;bottom:10px !important;}
+}
