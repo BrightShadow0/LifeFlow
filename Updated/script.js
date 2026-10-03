@@ -475,7 +475,7 @@ function exportData(fmt){
 }
 
 function renderNav(){
-  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['account','Profile & settings','◎']];
+  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['about','Why LifeFlow','✦'],['account','Profile & settings','◎']];
   document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
 }
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
@@ -700,7 +700,7 @@ function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
   renderNav();
-  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',account:'Profile & settings'};
+  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
   const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'Your personal planning workspace';
@@ -709,8 +709,29 @@ function renderApp(){
   else if(view==='list') el.innerHTML = renderList();
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
+  else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
   initThemePull();
+}
+function renderAbout(){
+  return `<section class="card lifeflow-manifesto">
+    <div class="manifesto-kicker">THE IDEA BEHIND LIFEflow</div>
+    <h2>Life is bigger than a task list.</h2>
+    <p class="manifesto-lead">LifeFlow exists to help you see what is competing for your time, understand what matters today, and move through your day with less friction.</p>
+    <div class="manifesto-grid">
+      <div class="manifesto-card"><span>01</span><h3>Why it exists</h3><p>Planning tools often make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p></div>
+      <div class="manifesto-card"><span>02</span><h3>Who it is for</h3><p>People balancing multiple parts of life: work or study, responsibilities, personal priorities and the things they want to make progress on.</p></div>
+      <div class="manifesto-card"><span>03</span><h3>What it manages</h3><p>Tasks are the starting point, but the centre is broader: your time, attention, commitments and progress.</p></div>
+      <div class="manifesto-card"><span>04</span><h3>Your first 30 seconds</h3><p>You should quickly understand what needs attention today, what is already handled, and where your time is going.</p></div>
+      <div class="manifesto-card"><span>05</span><h3>How it should feel</h3><p>Clear. Calm. Focused. Human. In control. LifeFlow should never feel like another system demanding that you keep up with it.</p></div>
+      <div class="manifesto-card"><span>06</span><h3>Why “Flow”</h3><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p></div>
+      <div class="manifesto-card manifesto-wide"><span>07</span><h3>The six-month test</h3><p>Success is not having a perfectly maintained planner. It is having fewer forgotten commitments, clearer days, better use of time, and a stronger sense of progress in the parts of life that matter.</p></div>
+    </div>
+  </section>
+  <section class="card manifesto-principles">
+    <h2>One principle</h2>
+    <p><strong>LifeFlow should help you decide, not just record.</strong> A task is useful when it helps you understand what deserves your attention and take the next meaningful step.</p>
+  </section>`;
 }
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
