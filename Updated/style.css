@@ -252,3 +252,32 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 @keyframes pageEnter{from{opacity:0}to{opacity:1}}
 @keyframes contentRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.page-enter,.page-enter *{animation:none!important}}
+
+
+#main.page-enter{animation:lifePageIn .48s cubic-bezier(.16,1,.3,1) both}
+#main.page-enter>.card,#main.page-enter>section,#main.page-enter>.hero-welcome{animation:lifeBlockIn .5s cubic-bezier(.16,1,.3,1) both}
+#main.page-enter>.card:nth-child(1),#main.page-enter>section:nth-child(1){animation-delay:.02s}
+#main.page-enter>.card:nth-child(2),#main.page-enter>section:nth-child(2){animation-delay:.10s}
+#main.page-enter>.card:nth-child(3),#main.page-enter>section:nth-child(3){animation-delay:.18s}
+#main.page-enter>.card:nth-child(4),#main.page-enter>section:nth-child(4){animation-delay:.26s}
+#main.page-enter .task,#main.page-enter .kcard,#main.page-enter .cal-day,#main.page-enter .manifesto-card{animation:lifeItemIn .38s cubic-bezier(.16,1,.3,1) both}
+#main.page-enter .task:nth-child(1),#main.page-enter .kcard:nth-child(1),#main.page-enter .manifesto-card:nth-child(1){animation-delay:.10s}
+#main.page-enter .task:nth-child(2),#main.page-enter .kcard:nth-child(2),#main.page-enter .manifesto-card:nth-child(2){animation-delay:.15s}
+#main.page-enter .task:nth-child(3),#main.page-enter .kcard:nth-child(3),#main.page-enter .manifesto-card:nth-child(3){animation-delay:.20s}
+#main.page-enter .task:nth-child(4),#main.page-enter .kcard:nth-child(4),#main.page-enter .manifesto-card:nth-child(4){animation-delay:.25s}
+#main.page-enter .task:nth-child(5),#main.page-enter .kcard:nth-child(5),#main.page-enter .manifesto-card:nth-child(5){animation-delay:.30s}
+#nav button{position:relative;overflow:hidden}
+#nav button:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .28s cubic-bezier(.16,1,.3,1)}
+#nav button.active:after{transform:scaleX(1)}
+#nav button.active .nav-icon{animation:navIconPop .42s cubic-bezier(.16,1,.3,1)}
+#nav button:hover .nav-icon{transform:translateY(-2px) scale(1.08)}
+.nav-icon{transition:transform .18s ease}
+.hero-welcome h2{animation:heroTextIn .55s .08s both}
+.hero-welcome p{animation:heroTextIn .55s .15s both}
+.hero-summary,.hero-progress{animation:heroTextIn .55s .22s both}
+@keyframes lifePageIn{from{opacity:0;transform:translateY(22px) scale(.985);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+@keyframes lifeBlockIn{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes lifeItemIn{from{opacity:0;transform:translateY(10px) translateX(-5px)}to{opacity:1;transform:none}}
+@keyframes navIconPop{0%{transform:scale(.7) rotate(-8deg)}65%{transform:scale(1.18) rotate(4deg)}100%{transform:scale(1)}}
+@keyframes heroTextIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){#main.page-enter,#main.page-enter>* ,#main.page-enter .task,#main.page-enter .kcard,#main.page-enter .cal-day,#main.page-enter .manifesto-card{animation:none!important}}
