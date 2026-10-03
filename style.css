@@ -1726,3 +1726,17 @@ body::-webkit-scrollbar{
   opacity:.55;
   cursor:default;
 }
+
+.color-combination.locked{
+  opacity:.62;
+}
+.color-combination.locked .color-lock{
+  position:absolute;
+  top:9px;
+  left:9px;
+  z-index:2;
+  font-size:11px;
+}
+.color-combination.locked{
+  position:relative;
+}
