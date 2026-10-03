@@ -933,6 +933,35 @@ function revealSecretTimezone(){
   }
   select.closest('.lf-secret-field')?.classList.add('revealed');
 }
+function activateCobaltSequence(){
+  const u=currentUser();
+  if(!u)return;
+  const s=secretSequence(u);
+  if(s.used)return;
+  const base=new Date();
+  base.setHours(12,0,0,0);
+  const day=(offset)=>{
+    const d=new Date(base);
+    d.setDate(d.getDate()+offset);
+    return d.toISOString().slice(0,10);
+  };
+  const pools={
+    "-1":["Review yesterday's notes","Clear yesterday's unfinished work","Review completed tasks","Organise yesterday's files","Plan the follow-up"],
+    "0":["Plan today's priorities","Finish an important task","Review today's schedule","Clear your task list","Take a focused work block"],
+    "1":["Prepare for tomorrow","Set tomorrow's priorities","Review upcoming work","Plan tomorrow's schedule","Prepare the next steps"]
+  };
+  [-1,0,1].forEach(offset=>{
+    pools[String(offset)].forEach(title=>{
+      addTask({title,due:day(offset),priority:['low','medium','high'][Math.floor(Math.random()*3)],status:'todo',done:false,tags:['Task Master'],subtasks:[]});
+    });
+  });
+  updateSecretSequence(Object.assign(s,{used:true,unlocked:true}));
+  temporaryTheme='cobalt';
+  renderApp();
+  clearTimeout(temporaryThemeTimer);
+  temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
+  toast('Task Master created 15 tasks: 5 yesterday, 5 today, 5 tomorrow.');
+}
 function showTaskMaster(){
   const host=document.getElementById('taskMasterHost');
   if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>';
@@ -994,7 +1023,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>🔥 TASK MASTER 🔥</span></button>':''}</div>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>`;
 }
 function renderCustomisationTab(u){
