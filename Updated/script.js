@@ -885,7 +885,55 @@ function renderAccount(){
   if(accountTab==='danger') return sub + renderDangerTab(u);
 }
 
+function secretSequence(u){
+  return Object.assign({step:0,languageClicks:0,languageRevealed:false,unlocked:false,used:false},u?.secretSequence||{});
+}
+function lfSecretAction(action){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  if(s.unlocked || s.used)return;
+  if(action==='timezoneDash'){
+    s.step=s.step===0?1:0;
+  }else if(action==='languageClick'){
+    if(s.step!==1){s.step=0;s.languageClicks=0;return;}
+    s.languageClicks++;
+    if(s.languageClicks>=5){s.languageRevealed=true;s.step=2;}
+  }else if(action==='weekMonday'){
+    if(s.step===2)s.step=3;else{s.step=0;s.languageClicks=0;}
+  }else if(action==='tierTeamAdmin'){
+    if(s.step===3)s.step=4;else{s.step=0;s.languageClicks=0;}
+  }
+  updateSecretSequence(s);
+}
+function updateSecretSequence(s){
+  const users=getUsers(); if(!users[state.currentUser])return;
+  users[state.currentUser].secretSequence=s;
+  saveUsers(users);
+  if(s.languageRevealed || s.unlocked) renderApp();
+}
+function secretUpdateSettings(){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  const tz=document.getElementById('prof_tz')?.value;
+  const week=document.getElementById('prof_week')?.value;
+  const tier=document.getElementById('prof_tier')?.value;
+  if(s.step===4 && tz==='-' && week==='Monday' && tier==='Team Admin' && s.languageRevealed){
+    s.unlocked=true;
+    updateSecretSequence(s);
+    showToast('Settings updated.');
+    return;
+  }
+  updateUser(user=>{
+    user.timezone=tz||user.timezone;
+    user.language=document.getElementById('prof_lang')?.value||user.language;
+    user.weekStart=week||user.weekStart;
+    user.tier=tier||user.tier;
+  });
+}
 function renderProfileTab(u){
+  const s=secretSequence(u);
+  const tzs=['-','UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'];
+  const langs=['English','Spanish','French','Hindi','German'].concat(s.languageRevealed?['Cobalt']:[]);
   return `<div class="card">
     <h2>Identity</h2>
     <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
@@ -901,16 +949,23 @@ function renderProfileTab(u){
   </div>
   <div class="card">
     <h2>Localization</h2>
-    <select id="prof_tz" style="width:100%;margin-bottom:8px">${['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
-    <select id="prof_lang" style="width:100%;margin-bottom:8px">${['English','Spanish','French','Hindi','German'].map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
-    <select id="prof_week" style="width:100%;margin-bottom:8px">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
-    <button class="primary" onclick="saveLocalization()">Save</button>
+    <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
+      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+    </div>
+    <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" onclick="lfSecretAction('languageClick')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
+    </div>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary" style="margin-top:8px" onclick="saveTier()">Update (demo only)</button>
+    <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+  </div>
+  <div class="card">
+    <button class="primary lf-settings-update" onclick="secretUpdateSettings()">Update settings</button>
+    ${s.unlocked&&!s.used?'<button class="primary lf-secret-action" style="margin-top:10px" onclick="activateCobaltSequence()">Activate Cobalt sequence</button>':''}
   </div>`;
 }
 function renderCustomisationTab(u){
