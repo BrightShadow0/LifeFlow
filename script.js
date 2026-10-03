@@ -997,11 +997,9 @@ function subCustomisation(themes,u,a){
         <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
       </button>`).join('')}</div>
     </div>
-    <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></label></div>
+    <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
-      <label class="custom-range-label">Visual intensity <span>${a.ambientIntensity}</span></label>
-      <input type="range" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)">
-      <div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div>
+      <div class="intensity-control"><div class="intensity-copy"><strong>Visual intensity</strong><span>Control how noticeable the ambient effect feels.</span></div><div class="intensity-slider"><input type="range" aria-label="Visual intensity" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)"><div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div></div><b class="intensity-value">${a.ambientIntensity}</b></div>
     </div>
     <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
   </div>`;
