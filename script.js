@@ -1213,6 +1213,14 @@ function renderProfileTab(u){
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
     <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!s.used&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+  </div>
+  <div class="card">
+    <h2>Change Password</h2>
+    <input id="changeCurrentPassword" type="password" autocomplete="current-password" placeholder="Current password">
+    <input id="changeNewPassword" type="password" autocomplete="new-password" placeholder="New password" style="margin-top:8px">
+    <input id="changeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password" style="margin-top:8px">
+    <div class="notice" style="margin-top:8px">Use at least 8 characters.</div>
+    <button class="primary" style="margin-top:8px" onclick="changePassword()">Change password</button>
   </div>`;
 }
 function renderCustomisationTab(u){
@@ -1262,6 +1270,25 @@ function saveLocalization(){
   });
   if(exact) activateCobaltSequence();
 }
+async function changePassword(){
+  const current=document.getElementById('changeCurrentPassword')?.value||'';
+  const next=document.getElementById('changeNewPassword')?.value||'';
+  const confirm=document.getElementById('changeConfirmPassword')?.value||'';
+  const u=currentUser();
+  if(!u){ toast('Please sign in again.'); return; }
+  if(!current||!next||!confirm){ toast('Please complete all password fields.'); return; }
+  if(!(await verifyPassword(current,u))){ toast('Current password is incorrect.'); return; }
+  if(next.length<8){ toast('New password must be at least 8 characters.'); return; }
+  if(next!==confirm){ toast('New passwords do not match.'); return; }
+  if(await verifyPassword(next,u)){ toast('Choose a different password.'); return; }
+  const hash=await hashPassword(next);
+  updateUser(user=>{user.passwordHash=hash;});
+  ['changeCurrentPassword','changeNewPassword','changeConfirmPassword'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  toast('Password changed successfully.');
+}
+
 function saveTier(){
   const tier=document.getElementById('prof_tier')?.value;
   updateUser(u=>{
