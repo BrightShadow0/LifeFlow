@@ -887,19 +887,18 @@ function revealCobaltLanguage(show){
   const select=document.getElementById('prof_lang');
   const field=select?.closest('.lf-secret-field');
   if(!select || !field)return;
-  const existing=[...select.options].find(o=>o.value==='Cobalt'||o.textContent==='Cobalt');
+  const existing=[...select.options].find(o=>o.value==='Cobalt');
   if(show){
     if(!existing){
       const option=document.createElement('option');
-      option.value='Cobalt';
-      option.textContent='Cobalt';
+      option.value='Cobalt'; option.textContent='Cobalt';
       select.appendChild(option);
     }
     field.classList.add('revealed');
     if(!field.querySelector('.lf-secret-dot')){
       const dot=document.createElement('span');
       dot.className='lf-secret-dot';
-      dot.setAttribute('aria-label','Language option revealed');
+      dot.setAttribute('aria-label','Cobalt language revealed');
       field.appendChild(dot);
     }
   }else if(existing && select.value!=='Cobalt'){
@@ -908,46 +907,45 @@ function revealCobaltLanguage(show){
     field.querySelector('.lf-secret-dot')?.remove();
   }
 }
+function revealSecretTimezone(){
+  const select=document.getElementById('prof_tz'); if(!select)return;
+  if(![...select.options].some(o=>o.value==='-')){
+    const option=document.createElement('option');
+    option.value='-'; option.textContent='-';
+    select.insertBefore(option,select.firstChild);
+  }
+  select.closest('.lf-secret-field')?.classList.add('revealed');
+}
+function showTaskMaster(){
+  const host=document.getElementById('taskMasterHost');
+  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true">🔥</span><span>Task Master</span></button>';
+}
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
   if(s.used)return;
-  if(action==='tierTeamAdmin'){
-    if(s.step===0)s.step=1;
-  }else if(action==='timezoneDash'){
-    if(s.step===1){
-      s.step=2;
-      s.languageRevealed=true;
-      updateSecretSequence(s);
-      revealCobaltLanguage(true);
-      return;
-    }
-  }else if(action==='languageCobalt'){
-    if(s.step===2)s.step=3;
-  }else if(action==='weekMonday'){
-    if(s.step===3)s.step=4;
-  }else if(action==='tierOther'){
-    if(s.step===1)s.step=0;
-  }else if(action==='timezoneOther'){
-    if(s.step>=2){
-      s.step=0;
-      s.languageRevealed=false;
-      revealCobaltLanguage(false);
-    }
-  }else if(action==='languageOther'){
-    if(s.step===2 || s.step===3){
-      s.step=0;
-      s.languageRevealed=false;
-      revealCobaltLanguage(false);
-    }
-  }else if(action==='weekOther'){
-    if(s.step===3 || s.step===4)s.step=0;
+  if(action==='tierTeamAdmin' && s.step===0){
+    s.step=1; updateSecretSequence(s); revealSecretTimezone();
+  }else if(action==='timezoneDash' && s.step===1){
+    s.step=2; s.languageRevealed=true; updateSecretSequence(s); revealCobaltLanguage(true);
+  }else if(action==='languageCobalt' && s.step===2){
+    s.step=3; updateSecretSequence(s);
+  }else if(action==='weekMonday' && s.step===3){
+    s.step=4; updateSecretSequence(s); showTaskMaster();
+  }else if(action==='tierOther' && s.step===1){
+    s.step=0; updateSecretSequence(s);
+  }else if(action==='timezoneOther' && s.step>=2){
+    s.step=0; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false);
+  }else if(action==='languageOther' && (s.step===2 || s.step===3)){
+    s.step=0; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false);
+  }else if(action==='weekOther' && (s.step===3 || s.step===4)){
+    s.step=0; updateSecretSequence(s);
+    document.getElementById('taskMasterHost')?.replaceChildren();
   }
-  updateSecretSequence(s);
 }
 function renderProfileTab(u){
   const s=secretSequence(u);
-  const tzs=['-','UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney'];
+  const tzs=(s.step>=1?['-']:[]).concat(['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Kolkata','Asia/Tokyo','Australia/Sydney']);
   const langs=['English','Spanish','French','Hindi','German'].concat(s.languageRevealed?['Cobalt']:[]);
   return `<div class="card">
     <h2>Identity</h2>
@@ -979,6 +977,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true">🔥</span><span>Task Master</span></button>':''}</div>
   </div>`;
 }
 function renderCustomisationTab(u){
