@@ -1206,7 +1206,6 @@ function renderProfileTab(u){
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
     <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
-    <button class="primary" onclick="saveLocalization()">Save</button>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
