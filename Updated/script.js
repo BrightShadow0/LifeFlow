@@ -802,7 +802,6 @@ function renderApp(){
     setTimeout(()=>el.classList.remove('page-enter'),900);
   }
   initThemePull();
-  lfEnhanceInterface();
   lfAccessibilityPass();
 }
 function lfAccessibilityPass(){
@@ -815,15 +814,6 @@ function lfAccessibilityPass(){
   document.querySelectorAll('#main button').forEach(btn=>{
     if(!btn.getAttribute('aria-label') && !btn.textContent.trim() && btn.title) btn.setAttribute('aria-label',btn.title);
   });
-}
-function lfEnhanceInterface(){
-  const top=document.querySelector('.app-top');
-  if(top && !document.getElementById('lfSearch')){
-    const tools=document.createElement('div');
-    tools.className='lf-top-tools';
-    tools.innerHTML='<button class="hbtn lf-search-trigger" id="lfSearch" type="button" onclick="openCommandPalette()" aria-label="Search LifeFlow (Ctrl or Cmd + K)">⌕ <span>Search</span></button>';
-    top.appendChild(tools);
-  }
 }
 function openCommandPalette(){
   if(document.getElementById('lfCommandPalette')) return;
@@ -849,7 +839,6 @@ function renderCommandResults(){
   host.innerHTML=(matches.concat(tasks)).slice(0,10).join('')||'<div class="command-empty">No matching pages or tasks.</div>';
 }
 window.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
   if(e.key==='Escape')closeCommandPalette();
 });
 function renderAbout(){
