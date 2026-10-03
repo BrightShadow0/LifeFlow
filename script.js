@@ -895,15 +895,15 @@ function lfSecretAction(action){
   const s=secretSequence(u);
   if(s.unlocked || s.used)return;
   if(action==='timezoneDash'){
-    if(s.step===0){s.step=1;u.timezone='-';}else{s.step=0;s.languageClicks=0;}
+    if(s.step===0)s.step=1; else{s.step=0;s.languageClicks=0;}
   }else if(action==='languageClick'){
-    if(s.step!==1){s.step=0;s.languageClicks=0;return;}
+    if(s.step!==1)return;
     s.languageClicks++;
     if(s.languageClicks>=5){s.languageRevealed=true;s.step=2;}
   }else if(action==='weekMonday'){
-    if(s.step===2){s.step=3;u.weekStart='Monday';}else{s.step=0;s.languageClicks=0;}
+    if(s.step===2)s.step=3;
   }else if(action==='tierTeamAdmin'){
-    if(s.step===3){s.step=4;u.tier='Team Admin';}else{s.step=0;s.languageClicks=0;}
+    if(s.step===3)s.step=4;
   }
   updateSecretSequence(s);
 }
@@ -1003,16 +1003,14 @@ function renderProfileTab(u){
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
     <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
+    <button class="primary" onclick="saveLocalization()">Save</button>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-  </div>
-  <div class="card">
-    <button class="primary lf-settings-update" onclick="secretUpdateSettings()">Update settings</button>
-    ${s.unlocked&&!s.used?'<button class="primary lf-secret-action" style="margin-top:10px" onclick="activateCobaltSequence()">Activate Cobalt sequence</button>':''}
-  </div>`;
+    <button class="primary" style="margin-top:8px" onclick="secretUpdateSettings()">Update settings</button>
+  </div>>`;
 }
 function renderCustomisationTab(u){
   const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
