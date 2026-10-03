@@ -876,7 +876,8 @@ function renderAccount(){
 }
 
 function secretSequence(u){
-  return Object.assign({step:0,languageRevealed:false,used:false},u?.secretSequence||{});
+  if(!u || u.tier!=='Team Admin') return {step:0,languageRevealed:false,used:false};
+  return Object.assign({step:0,languageRevealed:false,used:false},u.secretSequence||{});
 }
 function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
