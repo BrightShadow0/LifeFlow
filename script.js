@@ -1199,13 +1199,13 @@ function renderProfileTab(u){
   <div class="card">
     <h2>Localization</h2>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('timezone',this.value);lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
     </div>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('language',this.value);lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('weekStart',this.value.replace(' start',''));lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
@@ -1256,6 +1256,10 @@ function onAvatarChange(e){
   reader.readAsDataURL(file);
 }
 function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); u.bio=document.getElementById('prof_bio').value.trim(); }); }
+function saveLocalizationField(field,value){
+  const u=currentUser(); if(!u)return;
+  updateUser(user=>{ user[field]=value; });
+}
 function saveLocalization(){
   const tz=document.getElementById('prof_tz')?.value;
   const lang=document.getElementById('prof_lang')?.value;
