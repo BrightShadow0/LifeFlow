@@ -323,6 +323,7 @@ async function doLogin(){
 function enterApp(){
   document.getElementById('authScreen').style.display='none';
   document.getElementById('app').style.display='block';
+  window.lifeFlowLoginEntry=true;
   renderApp();
 }
 function doLogout(){
@@ -711,18 +712,18 @@ function renderApp(){
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
-  if(!window.lifeFlowFirstViewAnimated){
+  if(window.lifeFlowLoginEntry){
     el.classList.remove('page-enter');
     void el.offsetWidth;
     el.classList.add('page-enter');
-    window.lifeFlowFirstViewAnimated=true;
+    window.lifeFlowLoginEntry=false;
     setTimeout(()=>el.classList.remove('page-enter'),900);
   }
   initThemePull();
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
-    <div class="manifesto-kicker">THE IDEA BEHIND LIFEflow</div>
+    <div class="manifesto-kicker">THE IDEA BEHIND LIFEFLOW</div>
     <h2>Life is bigger than a task list.</h2>
     <p class="manifesto-lead">LifeFlow exists to help you see what is competing for your time, understand what matters today, and move through your day with less friction.</p>
     <div class="manifesto-grid">
