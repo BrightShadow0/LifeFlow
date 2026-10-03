@@ -862,7 +862,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
