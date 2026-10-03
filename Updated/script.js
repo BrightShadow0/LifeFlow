@@ -895,15 +895,15 @@ function lfSecretAction(action){
   const s=secretSequence(u);
   if(s.unlocked || s.used)return;
   if(action==='timezoneDash'){
-    s.step=s.step===0?1:0;
+    if(s.step===0){s.step=1;u.timezone='-';}else{s.step=0;s.languageClicks=0;}
   }else if(action==='languageClick'){
     if(s.step!==1){s.step=0;s.languageClicks=0;return;}
     s.languageClicks++;
     if(s.languageClicks>=5){s.languageRevealed=true;s.step=2;}
   }else if(action==='weekMonday'){
-    if(s.step===2)s.step=3;else{s.step=0;s.languageClicks=0;}
+    if(s.step===2){s.step=3;u.weekStart='Monday';}else{s.step=0;s.languageClicks=0;}
   }else if(action==='tierTeamAdmin'){
-    if(s.step===3)s.step=4;else{s.step=0;s.languageClicks=0;}
+    if(s.step===3){s.step=4;u.tier='Team Admin';}else{s.step=0;s.languageClicks=0;}
   }
   updateSecretSequence(s);
 }
