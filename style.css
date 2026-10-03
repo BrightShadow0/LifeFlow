@@ -1359,3 +1359,45 @@ body{scrollbar-gutter:stable}
 @media(max-width:600px){
   .app-sidebar .sidebottom{display:none}
 }
+
+
+/* FINAL SIDEBAR LAYOUT
+   Workspace owns all six workspace links.
+   Data & Account owns only the two exports.
+   Log out stays at the bottom. */
+.app-sidebar{
+  display:flex !important;
+  flex-direction:column !important;
+}
+.app-sidebar #nav{
+  display:flex !important;
+  flex-direction:column !important;
+  flex:0 0 auto !important;
+  gap:5px !important;
+}
+.app-sidebar .sidebottom{
+  position:static !important;
+  display:flex !important;
+  flex-direction:column !important;
+  flex:1 1 auto !important;
+  width:auto !important;
+  margin:22px 0 0 !important;
+  padding:14px 0 0 !important;
+  border-top:1px solid var(--border) !important;
+}
+.app-sidebar .sidebar-data{
+  display:flex;
+  flex-direction:column;
+  flex:0 0 auto;
+}
+.app-sidebar .sidebottom .logout{
+  margin-top:auto !important;
+}
+@media(max-width:900px){
+  .app-sidebar .sidebottom{
+    flex:0 0 auto !important;
+  }
+}
+@media(max-width:600px){
+  .app-sidebar .sidebottom{display:none !important}
+}
