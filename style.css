@@ -1048,12 +1048,18 @@ body{scrollbar-gutter:stable}
 
 /* Cobalt sequence */
 :root[data-theme="cobalt"]{
-  --bg:#050b18;--card:#091426;--panel2:#0d1d35;--text:#eaf4ff;--muted:#7f9abd;--border:#16345b;--accent:#198cff;--accent-soft:#0b2a52;--danger:#ff667a;--warn:#ffbd5a;--ok:#43d9a3;color-scheme:dark;
+  /* Keep the normal LifeFlow surfaces while the sequence is active.
+     The event should not recolour the entire application. */
+  --bg:#080b0f;--card:#10151c;--panel2:#151b23;--text:#f3f6fa;--muted:#8993a1;--border:#27303b;
+  --accent:#4d8dff;--accent-soft:#102b5e;--danger:#ff7777;--warn:#e7c56a;--ok:#52d9bb;color-scheme:dark;
 }
-:root[data-theme="cobalt"] body{background:radial-gradient(circle at 72% 0,rgba(25,140,255,.18),transparent 30%),linear-gradient(140deg,#050b18,#020611);transition:background 1s ease,color .5s ease}
-:root[data-theme="cobalt"] .app-sidebar{background:#030914;border-right-color:#123765}
-:root[data-theme="cobalt"] .hero-welcome{background:radial-gradient(circle at 88% 15%,#0c3d78 0,transparent 38%),linear-gradient(120deg,#071a32,#040b17)}
-:root[data-theme="cobalt"] .card{box-shadow:0 12px 35px rgba(0,80,180,.12)}
+:root[data-theme="cobalt"] body{background:var(--bg);transition:background .35s ease,color .25s ease}
+:root[data-theme="cobalt"] .app-sidebar{background:#0a0d12;border-right-color:var(--border)}
+:root[data-theme="cobalt"] .hero-welcome{
+  background:radial-gradient(circle at 88% 15%,#182a46 0,transparent 34%),linear-gradient(120deg,#101b2a,#10151c 72%);
+  border-color:#30445f;
+}
+:root[data-theme="cobalt"] .card{box-shadow:none}
 .lf-secret-field{position:relative}
 .lf-secret-dot{position:absolute;right:12px;top:50%;width:8px;height:8px;margin-top:-12px;border-radius:50%;background:#168cff;box-shadow:0 0 0 4px rgba(22,140,255,.12),0 0 14px rgba(22,140,255,.6);pointer-events:none}
 .lf-secret-action{background:#0d78d8!important;border-color:#168cff!important}
