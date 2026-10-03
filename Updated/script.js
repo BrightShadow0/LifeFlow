@@ -455,7 +455,32 @@ function toggleDone(id){
   }
   save(); renderApp();
 }
-function deleteTask(id){ state.tasks = state.tasks.filter(t=>t.id!==id); save(); renderApp(); }
+let lastDeletedTask=null;
+let lastDeletedTimer=null;
+function deleteTask(id){
+  const index=state.tasks.findIndex(t=>t.id===id);
+  if(index<0)return;
+  lastDeletedTask={task:JSON.parse(JSON.stringify(state.tasks[index])),index};
+  state.tasks.splice(index,1);
+  save();
+  renderApp();
+  showUndoToast('Task deleted');
+}
+function undoDelete(){
+  if(!lastDeletedTask)return;
+  const exists=state.tasks.some(t=>t.id===lastDeletedTask.task.id);
+  if(!exists) state.tasks.splice(Math.min(lastDeletedTask.index,state.tasks.length),0,lastDeletedTask.task);
+  save(); lastDeletedTask=null;
+  clearTimeout(lastDeletedTimer); lastDeletedTimer=null;
+  document.getElementById('toastHost').innerHTML='';
+  renderApp();
+}
+function showUndoToast(message){
+  const host=document.getElementById('toastHost'); if(!host)return;
+  clearTimeout(lastDeletedTimer);
+  host.innerHTML='<div class="toast" role="status"><span>'+esc(message)+'</span><button class="undo-action" type="button" onclick="undoDelete()">Undo</button></div>';
+  lastDeletedTimer=setTimeout(()=>{lastDeletedTask=null;host.innerHTML='';},5000);
+}
 function addSubtask(id, text){
   const t = state.tasks.find(x=>x.id===id); if(!t||!text) return;
   t.subtasks.push({id:uid(), text, done:false}); save(); renderApp();
