@@ -957,6 +957,16 @@ function secretSequence(u){
   if(!u)return base;
   const s=Object.assign(base,u.secretSequence||{});
   if(u.tier!=='Team Admin' && !s.pendingTeamAdmin) return base;
+  if(u.tier==='Team Admin' && u.timezone==='-'){
+    s.step=Math.max(s.step,2);
+    s.languageRevealed=true;
+  }
+  if(u.tier==='Team Admin' && u.timezone==='-' && u.language==='Cobalt'){
+    s.step=Math.max(s.step,3);
+  }
+  if(u.tier==='Team Admin' && u.timezone==='-' && u.language==='Cobalt' && u.weekStart==='Monday'){
+    s.step=Math.max(s.step,4);
+  }
   return s;
 }
 function updateSecretSequence(s){
