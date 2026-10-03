@@ -922,7 +922,7 @@ function revealSecretTimezone(){
 }
 function showTaskMaster(){
   const host=document.getElementById('taskMasterHost');
-  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>Task Master</span></button>';
+  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>🔥 TASK MASTER 🔥</span></button>';
 }
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
@@ -981,7 +981,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>Task Master</span></button>':''}</div>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>🔥 TASK MASTER 🔥</span></button>':''}</div>
   </div>`;
 }
 function renderCustomisationTab(u){
