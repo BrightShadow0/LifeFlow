@@ -1222,7 +1222,7 @@ function renderProfileTab(u){
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
     <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>
@@ -1309,16 +1309,12 @@ function saveTier(){
   const tier=document.getElementById('prof_tier')?.value;
   updateUser(u=>{
     u.tier=tier||u.tier;
-    if(!['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold'){
-      u.colorTheme='sapphire';
-    }
+    if(!['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold') u.colorTheme='sapphire';
     if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   });
-  // Re-apply entitlements immediately after a tier change.
-  const u=currentUser();
-  if(u && !['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold'){
-    updateUser(user=>user.colorTheme='sapphire');
-  }
+  const saved=currentUser();
+  if(saved?.tier==='Team Admin') lfSecretAction('tierTeamAdmin');
+  else lfSecretAction('tierOther');
 }
 function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
