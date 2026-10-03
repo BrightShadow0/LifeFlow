@@ -1210,7 +1210,7 @@ function renderProfileTab(u){
   </div>`;
 }
 function renderCustomisationTab(u){
-  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
+  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy']];
   const a=ambientSettings(u);
   return subCustomisation(themes,u,a);
 }
