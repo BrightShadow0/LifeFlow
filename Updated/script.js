@@ -965,10 +965,8 @@ function secretUpdateSettings(){
   const tz=document.getElementById('prof_tz')?.value;
   const week=document.getElementById('prof_week')?.value;
   const tier=document.getElementById('prof_tier')?.value;
-  if(s.step===4 && tz==='-' && week==='Monday' && tier==='Team Admin' && s.languageRevealed){
-    s.unlocked=true;
-    updateSecretSequence(s);
-    showToast('Settings updated.');
+  if(s.step===4 && tz==='-' && week==='Monday' && tier==='Team Admin' && s.languageRevealed && !s.used){
+    activateCobaltSequence();
     return;
   }
   updateUser(user=>{
