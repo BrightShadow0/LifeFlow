@@ -359,8 +359,8 @@ function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
-  const color=currentUser()?.colorTheme||'life';
-  document.documentElement.setAttribute('data-color-theme',['life','cobalt','violet','ember','mint','ocean'].includes(color)?color:'life');
+  const color=currentUser()?.colorTheme||'sapphire';
+  document.documentElement.setAttribute('data-color-theme',['sapphire','emerald','gold','platinum','amethyst','ruby'].includes(color)?color:'life');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
@@ -370,7 +370,7 @@ function setTheme(theme){
   if(document.getElementById('app')?.style.display==='block') renderApp();
 }
 function setColorTheme(theme){
-  const allowed=['life','cobalt','violet','ember','mint','ocean'];
+  const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
   const next=allowed.includes(theme)?theme:'life';
   const u=currentUser();
   if(u) updateUser(user=>user.colorTheme=next); else document.documentElement.setAttribute('data-color-theme',next);
