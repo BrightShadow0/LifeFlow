@@ -922,7 +922,7 @@ function revealSecretTimezone(){
 }
 function showTaskMaster(){
   const host=document.getElementById('taskMasterHost');
-  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true">🔥</span><span>Task Master</span></button>';
+  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>Task Master</span></button>';
 }
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
