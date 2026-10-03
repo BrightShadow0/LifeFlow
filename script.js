@@ -1010,15 +1010,16 @@ function showTaskMasterActivation(){
   // is missing, corrupt, or cannot be loaded.
   audio.addEventListener('error',finishSequence,{once:true});
 
+  // Start playback synchronously while this function is still inside the
+  // Task Master button click. This preserves the browser's user-activation
+  // permission for audio playback.
+  const playAttempt=audio.play();
+  if(playAttempt && typeof playAttempt.catch==='function'){
+    playAttempt.catch(finishSequence);
+  }
+
   requestAnimationFrame(()=>{
     overlay.classList.add('is-visible');
-
-    // This is called directly from the Task Master button click, so it
-    // remains eligible for normal browser media playback policies.
-    const playAttempt=audio.play();
-    if(playAttempt && typeof playAttempt.catch==='function'){
-      playAttempt.catch(finishSequence);
-    }
   });
 }
 
