@@ -973,7 +973,7 @@ function renderProfileTab(u){
       <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
     <button class="primary" onclick="saveLocalization()">Save</button>
   </div>
   <div class="card">
@@ -981,7 +981,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true">🔥</span><span>Task Master</span></button>':''}</div>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>Task Master</span></button>':''}</div>
   </div>`;
 }
 function renderCustomisationTab(u){
