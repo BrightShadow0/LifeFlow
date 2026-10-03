@@ -1466,3 +1466,33 @@ body::-webkit-scrollbar{
   width:0;
   height:0;
 }
+
+
+/* Final shell fix: the sidebar must stay beside the page, not enter normal document flow. */
+@media(min-width:901px){
+  #app .app-sidebar{
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:238px !important;
+    height:100dvh !important;
+    overflow-y:auto !important;
+  }
+  #app .app-content{
+    position:relative !important;
+    margin-left:238px !important;
+    width:calc(100% - 238px) !important;
+    min-height:100dvh !important;
+    padding:30px 34px 80px !important;
+  }
+  #app #main{
+    width:100%;
+    max-width:1180px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
+@media(max-width:900px){
+  #app .app-sidebar{position:fixed !important;}
+}
