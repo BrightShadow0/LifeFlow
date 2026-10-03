@@ -1331,3 +1331,31 @@ body{scrollbar-gutter:stable}
 :root[data-color-theme] .task{background:color-mix(in srgb,var(--card) 88%,var(--accent-soft));border-color:var(--border);}
 :root[data-color-theme] .task:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 8%,transparent);}
 :root[data-color-theme] .navlabel{color:color-mix(in srgb,var(--muted) 78%,var(--accent));}
+
+
+/* Sidebar hierarchy fix
+   Keep Workspace navigation and Data & Account in normal document flow.
+   The previous absolute positioning caused the two sections to overlap. */
+.app-sidebar .sidebottom{
+  position:static;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  width:auto;
+  margin-top:22px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.app-sidebar #nav{
+  position:static;
+  display:flex;
+  flex-direction:column;
+  flex:0 0 auto;
+  gap:5px;
+}
+.app-sidebar .sidebottom{
+  flex:0 0 auto;
+}
+@media(max-width:600px){
+  .app-sidebar .sidebottom{display:none}
+}
