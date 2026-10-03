@@ -799,3 +799,102 @@ body:after{
 @media(prefers-reduced-motion:reduce){
   body:after{animation:none!important}
 }
+
+/* Why LifeFlow motion */
+.lifeflow-manifesto{
+  animation:lfManifestoIn .65s cubic-bezier(.2,.8,.2,1) both;
+}
+.manifesto-kicker{
+  animation:lfManifestoText .55s .05s cubic-bezier(.2,.8,.2,1) both;
+}
+.lifeflow-manifesto>h2{
+  animation:lfManifestoText .6s .1s cubic-bezier(.2,.8,.2,1) both;
+}
+.manifesto-lead{
+  animation:lfManifestoText .6s .15s cubic-bezier(.2,.8,.2,1) both;
+}
+.manifesto-grid{
+  perspective:900px;
+}
+.manifesto-card{
+  position:relative;
+  overflow:hidden;
+  animation:lfManifestoCard .55s cubic-bezier(.2,.8,.2,1) both;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s ease,box-shadow .25s ease,background .25s ease;
+}
+.manifesto-card:nth-child(1){animation-delay:.12s}
+.manifesto-card:nth-child(2){animation-delay:.17s}
+.manifesto-card:nth-child(3){animation-delay:.22s}
+.manifesto-card:nth-child(4){animation-delay:.27s}
+.manifesto-card:nth-child(5){animation-delay:.32s}
+.manifesto-card:nth-child(6){animation-delay:.37s}
+.manifesto-card:nth-child(7){animation-delay:.42s}
+.manifesto-card:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  width:2px;
+  height:100%;
+  background:var(--accent);
+  transform:scaleY(0);
+  transform-origin:top;
+  transition:transform .35s ease;
+}
+.manifesto-card:hover{
+  transform:translateY(-4px) rotateX(1deg);
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border));
+  box-shadow:0 12px 28px rgba(0,0,0,.12);
+  background:color-mix(in srgb,var(--card) 94%,var(--accent-soft));
+}
+.manifesto-card:hover:before{transform:scaleY(1)}
+.manifesto-card span{
+  transition:color .25s ease,transform .25s ease;
+}
+.manifesto-card:hover span{
+  color:var(--accent);
+  transform:translateX(3px);
+}
+.manifesto-card h3{
+  transition:transform .25s ease,color .25s ease;
+}
+.manifesto-card:hover h3{
+  transform:translateX(3px);
+  color:var(--accent);
+}
+.manifesto-principles{
+  animation:lfPrincipleIn .65s .48s cubic-bezier(.2,.8,.2,1) both;
+}
+.manifesto-principles strong{
+  transition:color .25s ease;
+}
+.manifesto-principles:hover strong{color:var(--accent)}
+@keyframes lfManifestoIn{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:none}
+}
+@keyframes lfManifestoText{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+@keyframes lfManifestoCard{
+  from{opacity:0;transform:translateY(18px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@keyframes lfPrincipleIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:none}
+}
+@media(max-width:600px){
+  .manifesto-card:hover{transform:none}
+  .manifesto-card:active{transform:scale(.99)}
+}
+@media(prefers-reduced-motion:reduce){
+  .lifeflow-manifesto,.manifesto-kicker,.lifeflow-manifesto>h2,.manifesto-lead,.manifesto-card,.manifesto-principles{
+    animation:none!important;
+  }
+  .manifesto-card,.manifesto-card:hover,.manifesto-card h3,.manifesto-card:hover h3,.manifesto-card span,.manifesto-card:hover span{
+    transition:none!important;
+    transform:none!important;
+  }
+}
