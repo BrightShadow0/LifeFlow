@@ -678,13 +678,26 @@ function renderToday(){
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
 
+function clearCompletedTasks(){
+  const completed=state.tasks.filter(t=>t.done);
+  if(!completed.length){
+    toast('No completed tasks to clear.');
+    return;
+  }
+  state.tasks=state.tasks.filter(t=>!t.done);
+  save();
+  renderApp();
+  toast(completed.length+' completed task'+(completed.length===1?'':'s')+' cleared.');
+}
+
 function renderList(){
   const today=new Date();
   today.setHours(0,0,0,0);
   const list = state.tasks
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
+  const completedCount=state.tasks.filter(t=>t.done).length;
+  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div>${completedCount?'<button type="button" class="secondary" onclick="clearCompletedTasks()">Clear completed tasks</button>':''}</div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
