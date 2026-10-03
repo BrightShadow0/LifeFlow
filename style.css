@@ -1748,3 +1748,4 @@ body::-webkit-scrollbar{
 :root[data-theme="dark"] .clock-number.selected{
   color:#fff;
 }
+.auth-bulb:focus,.auth-bulb:focus-visible{outline:none;box-shadow:none}
