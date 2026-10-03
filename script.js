@@ -640,7 +640,7 @@ function renderList(){
   const today=new Date();
   today.setHours(0,0,0,0);
   const list = state.tasks
-    .filter(t=>!t.due || new Date(t.due)>=today)
+    .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
   return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
@@ -937,33 +937,57 @@ function activateCobaltSequence(){
   const u=currentUser();
   if(!u)return;
   const s=secretSequence(u);
-  const alreadyCreated=state.tasks.some(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master'));
-  if(s.used && alreadyCreated)return;
+  const existingMaster=state.tasks.some(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master'));
+  if(s.used && existingMaster)return;
+
   const base=new Date();
   base.setHours(12,0,0,0);
-  const day=(offset)=>{
+  const dateForOffset=(offset)=>{
     const d=new Date(base);
     d.setDate(d.getDate()+offset);
-    const y=d.getFullYear();
-    const m=String(d.getMonth()+1).padStart(2,'0');
-    const dayNum=String(d.getDate()).padStart(2,'0');
-    return y+'-'+m+'-'+dayNum;
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   };
   const pools={
-    "-1":["Review yesterday's notes","Clear yesterday's unfinished work","Review completed tasks","Organise yesterday's files","Plan the follow-up"],
-    "0":["Plan today's priorities","Finish an important task","Review today's schedule","Clear your task list","Take a focused work block"],
-    "1":["Prepare for tomorrow","Set tomorrow's priorities","Review upcoming work","Plan tomorrow's schedule","Prepare the next steps"]
+    yesterday:[
+      'Review yesterday’s notes','Clear yesterday’s unfinished work','Organise yesterday’s files',
+      'Review completed work','Write yesterday’s follow-up','Archive old messages','Check yesterday’s priorities',
+      'Update yesterday’s records','Review what was missed','Sort yesterday’s tasks'
+    ],
+    today:[
+      'Plan today’s priorities','Finish the most important task','Review today’s schedule',
+      'Clear the task list','Complete a focused work block','Handle today’s follow-up','Review today’s notes',
+      'Organise today’s files','Finish an open item','Set today’s priorities'
+    ],
+    tomorrow:[
+      'Prepare for tomorrow','Set tomorrow’s priorities','Review upcoming work',
+      'Plan tomorrow’s schedule','Prepare the next steps','Organise tomorrow’s materials',
+      'Review tomorrow’s commitments','Prepare tomorrow’s notes','Set up tomorrow’s work',
+      'Plan the first task for tomorrow'
+    ]
+  };
+  const pick=(items,count)=>{
+    const copy=[...items];
+    for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
+    return copy.slice(0,count);
   };
   const generated=[];
-  [-1,0,1].forEach(offset=>{
-    pools[String(offset)].forEach(title=>{
-      generated.push({id:uid(),title,tags:['Task Master'],priority:['low','medium','high'][Math.floor(Math.random()*3)],due:day(offset),startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]});
+  [[-1,'yesterday'],[0,'today'],[1,'tomorrow']].forEach(([offset,key])=>{
+    pick(pools[key],5).forEach(title=>{
+      generated.push({
+        id:uid(),title,tags:['Task Master'],
+        priority:['low','medium','high'][Math.floor(Math.random()*3)],
+        due:dateForOffset(offset),startTime:null,endTime:null,recur:'none',
+        status:'todo',done:false,subtasks:[]
+      });
     });
   });
   state.tasks.push(...generated);
   save();
-  updateSecretSequence(Object.assign(s,{used:true,unlocked:true}));
+
+  const next=Object.assign(s,{used:true,unlocked:true});
+  updateSecretSequence(next);
   document.getElementById('taskMasterHost')?.replaceChildren();
+  view='today';
   temporaryTheme='cobalt';
   renderApp();
   clearTimeout(temporaryThemeTimer);
