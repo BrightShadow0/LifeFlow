@@ -187,9 +187,9 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 
 @media(max-width:600px){.theme-pull-wrap{min-height:95px}.theme-pull{width:70px}}
 
-.app-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:56px;height:82px}
+.app-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:96px;height:82px}
 .app-top-actions .avatar{margin-top:11px}
-.top-theme-pull{width:48px;height:82px;position:absolute;left:48%;top:-8px;overflow:visible;z-index:3}
+.top-theme-pull{width:48px;height:82px;position:relative;left:auto;top:auto;overflow:visible;z-index:3;flex:none}
 .top-theme-pull .theme-cord{top:0;height:35px;width:2px}
 .top-theme-pull .theme-bulb-assembly{position:absolute;left:50%;top:30px;width:34px;height:48px;transform:translateX(-50%) translateY(var(--pull-y,0px));transform-origin:50% 0;z-index:2}
 .top-theme-pull .theme-bulb-base{position:absolute;left:50%;top:0;width:20px;height:12px;border-radius:4px 4px 2px 2px;background:#4b535d;box-shadow:0 3px 0 #353b43,0 6px 0 #4b535d;z-index:2;transform:translateX(-50%)}
@@ -201,7 +201,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 :root[data-theme="light"] .top-theme-pull .theme-bulb-base{background:#81785d;box-shadow:0 3px 0 #5c5542,0 6px 0 #81785d}
 :root[data-theme="light"] .top-theme-pull .theme-cord{background:#9b8c57}
 :root[data-theme="light"] .top-theme-pull.snap .theme-bulb-assembly{animation:bulbSnap .28s ease}
-@media(max-width:600px){.app-top-actions{min-width:48px;height:72px;gap:7px}.app-top-actions .avatar{margin-top:8px}.top-theme-pull{width:42px;height:72px;left:50%;top:-4px;transform:translateX(-50%)}.top-theme-pull .theme-cord{height:29px}.top-theme-pull .theme-bulb-assembly{top:24px}.top-theme-pull .theme-bulb{width:28px;height:31px}.top-theme-pull .theme-cord{height:calc(29px + var(--pull-y,0px))}}
+@media(max-width:600px){.app-top-actions{min-width:90px;height:72px;gap:7px}.app-top-actions .avatar{margin-top:8px}.top-theme-pull{width:42px;height:72px;left:auto;top:auto;transform:none}.top-theme-pull .theme-cord{height:29px}.top-theme-pull .theme-bulb-assembly{top:24px}.top-theme-pull .theme-bulb{width:28px;height:31px}.top-theme-pull .theme-cord{height:calc(29px + var(--pull-y,0px))}}
 
 .lifeflow-manifesto{padding:28px}
 .manifesto-kicker{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:800;margin-bottom:9px}
