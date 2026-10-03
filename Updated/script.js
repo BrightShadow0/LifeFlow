@@ -359,11 +359,35 @@ function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
+  document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
   const u=currentUser();
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
   if(u) updateUser(user=>user.theme=next); else applyTheme(next);
+  if(document.getElementById('app')?.style.display==='block') renderApp();
+}
+function ambientSettings(u){
+  return Object.assign({ambientMode:true,ambientIntensity:'medium'},u?.ambient||{});
+}
+function applyAmbientEnvironment(){
+  const u=currentUser(); if(!u)return;
+  const settings=ambientSettings(u);
+  const tasks=state.tasks||[];
+  const active=tasks.filter(t=>!t.done).length;
+  const overdue=tasks.filter(t=>t.due && new Date(t.due)<new Date() && !t.done).length;
+  const today=new Date();
+  const hour=today.getHours()+today.getMinutes()/60;
+  const timeState=hour<7?'dawn':hour<12?'morning':hour<17?'afternoon':hour<21?'evening':'night';
+  const load=Math.min(1,(active/12)+(overdue/8));
+  const level=overdue>=3||active>=8?'high':overdue>=1||active>=4?'medium':'calm';
+  const intensity=settings.ambientMode?({low:.45,medium:.75,high:1}[settings.ambientIntensity==='low'?'low':settings.ambientIntensity==='high'?'high':'medium']):0;
+  const root=document.documentElement;
+  root.setAttribute('data-ambient',settings.ambientMode?'on':'off');
+  root.setAttribute('data-load',level);
+  root.setAttribute('data-time',timeState);
+  root.style.setProperty('--lf-load',String(load));
+  root.style.setProperty('--lf-ambient-intensity',String(intensity));
 }
 function themeLabel(theme){ return ({dark:'Deep Night',light:'Clean Light',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Deep Night'; }
 function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
@@ -759,7 +783,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(u?.theme||'dark'); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  const u=currentUser(); applyTheme(u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -840,8 +864,9 @@ function setAccountTab(t){ accountTab=t; renderApp(); }
 function renderAccount(){
   const u = currentUser();
   if(!u) return '<div class="empty">No profile data.</div>';
-  const sub = `<div class="subnav">${[['profile','Profile'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
+  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
   if(accountTab==='profile') return sub + renderProfileTab(u);
+  if(accountTab==='custom') return sub + renderCustomisationTab(u);
   if(accountTab==='connected') return sub + renderConnectedTab(u);
   if(accountTab==='sessions') return sub + renderSessionsTab(u);
   if(accountTab==='danger') return sub + renderDangerTab(u);
@@ -875,6 +900,31 @@ function renderProfileTab(u){
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update (demo only)</button>
   </div>`;
 }
+function renderCustomisationTab(u){
+  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
+  const a=ambientSettings(u);
+  return subCustomisation(themes,u,a);
+}
+function subCustomisation(themes,u,a){
+  return `<div class="customisation-shell">
+    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill">Currently using <b>${themeLabel(u.theme)}</b></span></div>
+    <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" onclick="resetCustomisation()">Reset to default</button></div>
+      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${u.theme===id}">
+        <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
+      </button>`).join('')}</div>
+    </div>
+    <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></label></div>
+      <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
+      <label class="custom-range-label">Visual intensity <span>${a.ambientIntensity}</span></label>
+      <input type="range" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)">
+      <div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div>
+    </div>
+    <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
+  </div>`;
+}
+function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
+function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
