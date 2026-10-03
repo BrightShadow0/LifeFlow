@@ -559,13 +559,15 @@ function renderNav(){
     <div class="navlabel">Workspace</div>
     <nav id="nav" aria-label="Workspace"></nav>
     <div class="sidebottom">
-      <div class="navlabel">Data & account</div>
-      <button class="sidebar-action" onclick="exportData('csv')" title="Export CSV">
-        <span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span>
-      </button>
-      <button class="sidebar-action" onclick="exportData('json')" title="Export JSON">
-        <span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span>
-      </button>
+      <div class="sidebar-data">
+        <div class="navlabel">Data & account</div>
+        <button class="sidebar-action" onclick="exportData('csv')" title="Export CSV">
+          <span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span>
+        </button>
+        <button class="sidebar-action" onclick="exportData('json')" title="Export JSON">
+          <span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span>
+        </button>
+      </div>
       <button class="sidebar-action logout" onclick="doLogout()" title="Log out">
         <span class="nav-icon">↪</span><span class="nav-text">Log out</span>
       </button>
