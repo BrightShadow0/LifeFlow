@@ -1089,16 +1089,34 @@ function activateCobaltSequence(){
   [[-1,'yesterday'],[0,'today'],[1,'tomorrow']].forEach(([offset,key])=>{
     const intervals=randomIntervals();
     pick(pools[key],5).forEach((title,index)=>{
+      const interval=intervals[index];
       generated.push({
         id:uid(),title,tags:['Task Master'],
         priority:['low','medium','high'][Math.floor(Math.random()*3)],
         due:dateForOffset(offset),
-        startTime:intervals[index].startTime,
-        endTime:intervals[index].endTime,
+        startTime:interval.startTime,
+        endTime:interval.endTime,
         recur:'none',status:'todo',done:false,subtasks:[]
       });
     });
   });
+
+  // Backfill older Task Master tasks too, so every generated Task Master
+  // task has an actual start and end time, not just date and priority.
+  const missingMasterTimes=state.tasks.filter(t=>
+    Array.isArray(t.tags)&&t.tags.includes('Task Master')&&
+    (!validTime(t.startTime)||!validTime(t.endTime)||!validInterval(t.startTime,t.endTime))
+  );
+  missingMasterTimes.forEach((t,index)=>{
+    const minute=8*60+(index%10)*70+Math.floor(Math.random()*25);
+    const duration=30+Math.floor(Math.random()*31);
+    const end=Math.min(minute+duration,20*60);
+    const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
+    const mm=n=>String(n%60).padStart(2,'0');
+    t.startTime=hh(minute)+':'+mm(minute);
+    t.endTime=hh(end)+':'+mm(end);
+  });
+
   state.tasks.push(...generated);
   save();
 
