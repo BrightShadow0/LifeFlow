@@ -360,7 +360,7 @@ function applyTheme(theme){
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
   const color=currentUser()?.colorTheme||'sapphire';
-  document.documentElement.setAttribute('data-color-theme',['sapphire','emerald','gold','platinum','amethyst','ruby'].includes(color)?color:'life');
+  document.documentElement.setAttribute('data-color-theme',['sapphire','emerald','gold','platinum','amethyst','ruby'].includes(color)?color:'sapphire');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
