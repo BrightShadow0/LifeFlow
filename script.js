@@ -1030,10 +1030,11 @@ function activateCobaltSequence(){
   // Hide the trigger only because it was explicitly clicked.
   // Do not switch away from Profile, and do not let tab navigation affect the overlay/audio.
   document.getElementById('taskMasterHost')?.replaceChildren();
-  temporaryTheme='cobalt';
-  showTaskMasterActivation();
+  // Keep the normal LifeFlow visual system during the event.
+  // The Task Master effect belongs to the overlay, not the entire app.
+  temporaryTheme=null;
   clearTimeout(temporaryThemeTimer);
-  temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
+  showTaskMasterActivation();
   toast('Task Master created 15 tasks: 5 yesterday, 5 today, 5 tomorrow.');
 }
 function showTaskMaster(){
