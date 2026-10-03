@@ -512,10 +512,4 @@ button.primary.loading:after{content:"";position:absolute;width:14px;height:14px
 @keyframes pixelFlameCore{0%{transform:translateY(1px)}50%{transform:translateY(-2px)}100%{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.task-master-flame{animation:none}.task-master-button{transition:none}}
 
-.col h3{position:relative;display:flex!important;align-items:center;justify-content:space-between!important;gap:12px}
-.col-title{display:block;min-width:0;line-height:1.2}
-.col-count{flex:0 0 auto;min-width:24px;height:22px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;background:var(--bg);color:var(--muted);font-size:10px;font-weight:800;line-height:1}
-.col-todo .col-count{color:var(--muted)}
-.col-doing .col-count{color:var(--warn)}
-.col-done .col-count{color:var(--ok)}
  
