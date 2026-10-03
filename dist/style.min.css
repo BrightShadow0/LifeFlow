@@ -1747,4 +1747,4 @@ body::-webkit-scrollbar{
 :root[data-theme="dark"] .clock-display button.active,
 :root[data-theme="dark"] .clock-number.selected{
   color:#fff;
-}:root[data-theme="light"] button.primary, :root[data-theme="light"] .profile-save, :root[data-theme="light"] .settings-save, :root[data-theme="light"] [class*="save"] button.primary, :root[data-theme="light"] .btn-primary{ color:#fff !important}
+}:root[data-theme="light"] button.primary, :root[data-theme="light"] .profile-save, :root[data-theme="light"] .settings-save, :root[data-theme="light"] [class*="save"] button.primary, :root[data-theme="light"] .btn-primary{ color:#fff !important}.cal-empty{min-height:115px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-sizing:border-box;background:color-mix(in srgb,var(--card) 82%,var(--bg))}
