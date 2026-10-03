@@ -281,3 +281,118 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 @keyframes navIconPop{0%{transform:scale(.7) rotate(-8deg)}65%{transform:scale(1.18) rotate(4deg)}100%{transform:scale(1)}}
 @keyframes heroTextIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){#main.page-enter,#main.page-enter>* ,#main.page-enter .task,#main.page-enter .kcard,#main.page-enter .cal-day,#main.page-enter .manifesto-card{animation:none!important}}
+
+/* LifeFlow visual system */
+:root{
+  --lf-glow:rgba(121,227,109,.16);
+  --lf-shadow:0 18px 50px rgba(0,0,0,.18);
+}
+:root[data-theme="light"]{--lf-glow:rgba(63,159,56,.12);--lf-shadow:0 18px 45px rgba(30,60,35,.10)}
+
+#authScreen{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 20%,var(--lf-glow),transparent 28%),
+    radial-gradient(circle at 85% 80%,var(--lf-glow),transparent 30%),
+    var(--bg);
+}
+#authScreen:before{
+  content:"";
+  position:absolute;
+  width:520px;height:520px;border:1px solid var(--border);border-radius:50%;
+  right:-260px;top:-260px;opacity:.45;pointer-events:none;
+}
+#authScreen .card{
+  position:relative;
+  z-index:1;
+  box-shadow:var(--lf-shadow);
+  transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease;
+}
+#authScreen .card:hover{transform:translateY(-2px);border-color:#3d4a43}
+.termbar{background:linear-gradient(180deg,var(--card),color-mix(in srgb,var(--card) 88%,var(--bg)));letter-spacing:.01em}
+.termeyebrow{color:var(--accent)!important}
+.termcontent h2{letter-spacing:-.04em}
+.authstep.active{animation:authStepIn .32s cubic-bezier(.2,.8,.2,1) both}
+#authScreen input{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+#authScreen input:focus{box-shadow:0 0 0 3px var(--lf-glow);transform:translateY(-1px)}
+#authScreen .primary{box-shadow:0 8px 20px var(--lf-glow);transition:transform .18s ease,box-shadow .18s ease}
+#authScreen .primary:hover{transform:translateY(-1px);box-shadow:0 11px 26px var(--lf-glow)}
+.termtheme{border-color:var(--border)!important;background:linear-gradient(145deg,var(--card),var(--bg))!important}
+.termtheme h3{color:var(--accent)!important}
+.termtheme p{line-height:1.6!important}
+
+.app-content{background:radial-gradient(circle at 92% 0,var(--lf-glow),transparent 25%)}
+.app-top h1{letter-spacing:-.055em}
+.app-top p{transition:color .2s ease}
+.hero-welcome{
+  box-shadow:0 20px 55px rgba(0,0,0,.16);
+  border-color:#36513a;
+}
+.hero-welcome:before{
+  content:"";
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0 65%,rgba(121,227,109,.035));
+  pointer-events:none;
+}
+.hero-ring{box-shadow:0 0 28px rgba(121,227,109,.08)}
+.section-heading h2{letter-spacing:-.025em}
+.section-heading .count{transition:transform .2s ease,color .2s ease}
+.section-heading:hover .count{transform:scale(1.04);color:var(--accent)}
+.task,.kcard,.cal-day,.schedule-item{
+  transition:background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .2s ease;
+}
+.task:hover,.kcard:hover{background:color-mix(in srgb,var(--card) 94%,var(--accent));border-color:#3d4a43}
+.cal-day:hover{border-color:color-mix(in srgb,var(--border) 55%,var(--accent))}
+#nav button{
+  position:relative;
+  overflow:hidden;
+  transition:background .2s ease,color .2s ease,transform .18s ease;
+}
+#nav button:after{
+  content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;
+  background:var(--accent);transform:scaleX(0);transform-origin:left;
+  transition:transform .22s ease;
+}
+#nav button.active:after{transform:scaleX(1)}
+#nav button:hover{transform:translateX(2px)}
+#nav button.active{transform:translateX(3px)}
+.nav-icon{transition:transform .2s ease}
+#nav button:hover .nav-icon,#nav button.active .nav-icon{transform:scale(1.08)}
+
+.top-theme-pull{filter:drop-shadow(0 5px 12px var(--lf-glow))}
+:root[data-theme="light"] .top-theme-pull{filter:drop-shadow(0 5px 16px rgba(255,220,90,.35))}
+.theme-bulb{transition:transform .16s ease,box-shadow .2s ease,background .2s ease}
+.theme-pull:hover .theme-bulb,.auth-bulb:hover .theme-bulb{transform:translateX(-50%) scale(1.07)}
+.theme-pull.pulling .theme-bulb,.auth-bulb:active .theme-bulb{filter:brightness(1.08)}
+.theme-pull.snap .theme-bulb{animation:bulbSnap .3s ease both}
+
+@keyframes authStepIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes bulbSnap{0%{transform:translateX(-50%) scale(1)}45%{transform:translateX(-50%) scale(.88)}100%{transform:translateX(-50%) scale(1)}}
+
+@media(max-width:800px){
+  .app-sidebar{width:78px;padding:22px 10px}
+  .brand{font-size:18px;text-align:center;margin:0 0 25px}
+  .navlabel,.nav-text,.sidebottom .sidebar-action:not(.logout) .nav-text{display:none}
+  #nav button,.sidebar-action{justify-content:center;padding:11px 8px}
+  .app-content{margin-left:78px;padding:24px 20px 70px}
+}
+@media(max-width:600px){
+  #authScreen{padding:14px}
+  #authScreen .card{border-radius:10px}
+  .app-content{margin-left:0;padding:18px 14px 65px}
+  .app-sidebar{position:fixed;top:auto;left:10px;right:10px;bottom:10px;width:auto;height:62px;border:1px solid var(--border);border-radius:16px;padding:6px;flex-direction:row;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(14px);box-shadow:0 12px 35px rgba(0,0,0,.18)}
+  .app-sidebar .brand,.app-sidebar .sidebottom{display:none}
+  #nav{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+  #nav button{justify-content:center;flex-direction:column;gap:1px;padding:5px;border-radius:11px}
+  #nav button:after{left:20%;right:20%}
+  #nav button .nav-icon{font-size:16px}
+  #nav button .nav-text{display:block;font-size:9px}
+  .app-top{margin-bottom:18px}
+  .app-top h1{font-size:24px}
+  .hero-welcome{padding:20px;min-height:145px}
+  .hero-welcome h2{font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  #authScreen .card,.authstep.active,#nav button,.task,.kcard,.cal-day,.theme-bulb{animation:none!important;transition:none!important}
+}
