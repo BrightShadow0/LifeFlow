@@ -878,70 +878,72 @@ function renderAccount(){
 function secretSequence(u){
   return Object.assign({step:0,languageRevealed:false,used:false},u?.secretSequence||{});
 }
-function lfSecretAction(action){
-  const u=currentUser(); if(!u)return;
-  const s=secretSequence(u);
-  if(s.used)return;
-  const wasRevealed=!!s.languageRevealed;
-  if(action==='tierTeamAdmin'){
-    if(s.step===0)s.step=1;
-  }else if(action==='timezoneDash'){
-    if(s.step===1){s.step=2;s.languageRevealed=true;}
-  }else if(action==='languageCobalt'){
-    if(s.step===2)s.step=3;
-  }else if(action==='weekMonday'){
-    if(s.step===3)s.step=4;
-  }else if(action==='tierOther' || action==='timezoneOther'){
-    if(action==='tierOther' && s.step>0)s.step=0;
-    if(action==='timezoneOther' && s.step>1)s.step=0;
-  }
-  updateSecretSequence(s);
-  if(s.languageRevealed && !wasRevealed) renderApp();
-}
 function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
   users[state.currentUser].secretSequence=s;
   saveUsers(users);
 }
-function activateCobaltSequence(){
-  const u=currentUser(); if(!u)return;
-  const s=secretSequence(u);
-  if(s.step!==4 || s.used)return;
-  s.used=true;
-  updateSecretSequence(s);
-  const makeDate=(offset)=>{
-    const d=new Date();
-    d.setHours(12,0,0,0);
-    d.setDate(d.getDate()+offset);
-    return d.toISOString();
-  };
-  const pools=[
-    ['Review the day ahead','Clear one small task','Take a short reset','Check upcoming commitments','Plan the next focused block'],
-    ['Prepare tomorrow','Review open tasks','Protect some quiet time','Finish one pending item','Set tomorrow’s first priority'],
-    ['Look back at yesterday','Close a loose end','Capture anything you missed','Review yesterday’s notes','Reset the workspace']
-  ];
-  [0,1,-1].forEach((offset,group)=>{
-    pools[group].forEach((title,i)=>{
-      state.tasks.push({id:uid()+group*100+i,title,tags:group===0?['Today']:group===1?['Tomorrow']:['Yesterday'],priority:['medium','low','medium','high','low'][i],due:makeDate(offset),startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]});
-    });
-  });
-  save();
-  view='list';
-  temporaryTheme='cobalt';
-  renderApp();
-  showToast('Cobalt sequence activated');
-  clearTimeout(temporaryThemeTimer);
-  temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
+function revealCobaltLanguage(show){
+  const select=document.getElementById('prof_lang');
+  const field=select?.closest('.lf-secret-field');
+  if(!select || !field)return;
+  const existing=[...select.options].find(o=>o.value==='Cobalt'||o.textContent==='Cobalt');
+  if(show){
+    if(!existing){
+      const option=document.createElement('option');
+      option.value='Cobalt';
+      option.textContent='Cobalt';
+      select.appendChild(option);
+    }
+    field.classList.add('revealed');
+    if(!field.querySelector('.lf-secret-dot')){
+      const dot=document.createElement('span');
+      dot.className='lf-secret-dot';
+      dot.setAttribute('aria-label','Language option revealed');
+      field.appendChild(dot);
+    }
+  }else if(existing && select.value!=='Cobalt'){
+    existing.remove();
+    field.classList.remove('revealed');
+    field.querySelector('.lf-secret-dot')?.remove();
+  }
 }
-function secretUpdateSettings(){
+function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
-  const tz=document.getElementById('prof_tz')?.value;
-  const week=document.getElementById('prof_week')?.value;
-  const tier=document.getElementById('prof_tier')?.value;
-  updateUser(user=>{
-    user.tier=tier||user.tier;
-  });
+  if(s.used)return;
+  if(action==='tierTeamAdmin'){
+    if(s.step===0)s.step=1;
+  }else if(action==='timezoneDash'){
+    if(s.step===1){
+      s.step=2;
+      s.languageRevealed=true;
+      updateSecretSequence(s);
+      revealCobaltLanguage(true);
+      return;
+    }
+  }else if(action==='languageCobalt'){
+    if(s.step===2)s.step=3;
+  }else if(action==='weekMonday'){
+    if(s.step===3)s.step=4;
+  }else if(action==='tierOther'){
+    if(s.step===1)s.step=0;
+  }else if(action==='timezoneOther'){
+    if(s.step>=2){
+      s.step=0;
+      s.languageRevealed=false;
+      revealCobaltLanguage(false);
+    }
+  }else if(action==='languageOther'){
+    if(s.step===2 || s.step===3){
+      s.step=0;
+      s.languageRevealed=false;
+      revealCobaltLanguage(false);
+    }
+  }else if(action==='weekOther'){
+    if(s.step===3 || s.step===4)s.step=0;
+  }
+  updateSecretSequence(s);
 }
 function renderProfileTab(u){
   const s=secretSequence(u);
@@ -1017,7 +1019,7 @@ function saveLocalization(){
   const week=document.getElementById('prof_week')?.value;
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
-  const exact=s.step===4 && tz==='-' && lang==='Cobalt' && week==='Monday' && !s.used;
+  const exact=s.step===4 && tz==='-' && lang==='Cobalt' && week==='Monday' && s.languageRevealed && !s.used;
   updateUser(user=>{
     user.timezone=tz||user.timezone;
     user.language=lang||user.language;
