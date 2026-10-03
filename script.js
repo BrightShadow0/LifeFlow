@@ -101,7 +101,7 @@ function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)
 function newUserRecord(email, extra){
   return Object.assign({
     passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark',
-    workspace:'My Workspace', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    workspace:'My Workspace', timezone:'UTC',
     language:'en', weekStart:'Sunday', tier:'Free',
     connected:{Google:false,Apple:false,GitHub:false},
     verified:false, deletedAt:null, oauthProvider:null,
