@@ -1190,7 +1190,7 @@ function renderProfileTab(u){
     <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
       <div class="avatar" id="avatarBox">${u.avatar?`<img src="${esc(u.avatar)}">`:'👤'}</div>
       <div>
-        <input type="file" accept="image/*" onchange="onAvatarChange(event)">
+        <div class="profile-upload"><input type="file" class="profile-file-input" accept="image/*" onchange="onAvatarChange(event)"></div>
         <div class="notice" style="margin:6px 0 0">Upload only — cropping isn't included in this build.</div>
       </div>
     </div>
@@ -1207,7 +1207,7 @@ function renderProfileTab(u){
       <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('language',this.value);lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('weekStart',this.value.replace(' start',''));lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('weekStart',this.value);lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option value="${w}" ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
