@@ -396,3 +396,104 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 @media(prefers-reduced-motion:reduce){
   #authScreen .card,.authstep.active,#nav button,.task,.kcard,.cal-day,.theme-bulb{animation:none!important;transition:none!important}
 }
+
+
+:root{
+  --lf-radius:12px;
+  --lf-radius-sm:9px;
+  --lf-shadow-soft:0 8px 24px rgba(0,0,0,.12);
+  --lf-shadow-deep:0 22px 60px rgba(0,0,0,.18);
+}
+:root[data-theme="light"]{--lf-shadow-soft:0 8px 24px rgba(30,60,35,.08);--lf-shadow-deep:0 22px 55px rgba(30,60,35,.12)}
+
+.app-sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:238px;z-index:10;
+  background:color-mix(in srgb,var(--card) 94%,var(--bg));
+  border-right:1px solid var(--border);
+  box-shadow:8px 0 30px rgba(0,0,0,.08);
+  backdrop-filter:blur(14px);
+}
+.app-content{margin-left:238px;min-height:100dvh;padding:30px 34px 80px;max-width:none}
+.app-top{max-width:1180px;margin:0 auto 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+#main{max-width:1180px;margin:0 auto}
+
+#nav{display:flex;flex-direction:column;gap:5px}
+#nav button,.sidebar-action{
+  width:100%;min-height:42px;padding:9px 12px;border:1px solid transparent;border-radius:10px;
+  background:transparent;color:var(--muted);display:flex;align-items:center;gap:11px;text-align:left;
+}
+#nav button:hover,.sidebar-action:hover{background:var(--accent-soft);color:var(--text);transform:translateX(2px)}
+#nav button.active{background:var(--accent-soft);color:var(--text);border-color:color-mix(in srgb,var(--accent) 25%,var(--border));box-shadow:inset 3px 0 var(--accent),0 4px 14px var(--lf-glow)}
+#nav button.active:after{display:none}
+#nav button.active .nav-icon{color:var(--accent)}
+.nav-icon{width:22px;text-align:center;color:inherit}
+.sidebottom{position:absolute;left:12px;right:12px;bottom:16px}
+.sidebar-action{cursor:pointer;font-size:12px;margin-top:3px}
+.sidebar-action.logout{color:var(--danger)}
+
+.card{
+  border-radius:var(--lf-radius);box-shadow:var(--lf-shadow-soft);
+  transition:transform .22s cubic-bezier(.2,.7,.2,1),box-shadow .22s ease,border-color .22s ease;
+}
+.card:hover{transform:translateY(-1px);box-shadow:var(--lf-shadow-soft);border-color:color-mix(in srgb,var(--accent) 18%,var(--border))}
+.hero-welcome{box-shadow:var(--lf-shadow-deep);position:relative;overflow:hidden}
+.hero-welcome:hover{transform:none;box-shadow:var(--lf-shadow-deep)}
+
+button.primary,.hbtn,.linklike,#nav button,.sidebar-action,.subnav button{
+  position:relative;overflow:hidden;
+}
+button.primary{min-height:38px;border-radius:9px;box-shadow:0 6px 18px var(--lf-glow)}
+button.primary:hover{transform:translateY(-1px);filter:brightness(1.06)}
+button.primary:active{transform:translateY(1px) scale(.98);filter:none}
+button.primary:disabled{filter:none;box-shadow:none}
+button.primary.loading{color:transparent;pointer-events:none}
+button.primary.loading:after{content:"";position:absolute;width:14px;height:14px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;left:50%;top:50%;margin:-7px;animation:lfSpin .7s linear infinite}
+
+.task,.kcard,.event,.citem{border-radius:var(--lf-radius-sm)}
+.task{padding:11px 9px;margin:2px 0;border-bottom:0;background:color-mix(in srgb,var(--card) 96%,var(--bg));border:1px solid transparent}
+.task:hover{transform:translateX(3px);box-shadow:0 5px 16px rgba(0,0,0,.08);border-color:color-mix(in srgb,var(--accent) 25%,var(--border))}
+.task.done{opacity:.72;background:transparent}
+.task input[type="checkbox"]{accent-color:var(--accent);width:16px;height:16px;margin-top:2px}
+.task .del{width:30px;height:30px;border-radius:8px;opacity:.35}
+.task:hover .del{opacity:1;background:var(--bg)}
+
+.col{background:color-mix(in srgb,var(--card) 65%,var(--bg));border-radius:var(--lf-radius);padding:10px}
+.kcard{padding:11px;margin-bottom:8px;box-shadow:0 3px 12px rgba(0,0,0,.08);cursor:grab}
+.kcard:active{cursor:grabbing;transform:scale(.99)}
+.board .col:nth-child(1){border-top:2px solid var(--muted)}
+.board .col:nth-child(2){border-top:2px solid var(--warn)}
+.board .col:nth-child(3){border-top:2px solid var(--ok)}
+
+.cal-head .hbtn{width:34px;height:34px;padding:0;font-size:20px;border-radius:9px}
+.cal-day{border-radius:0;background:color-mix(in srgb,var(--card) 82%,var(--bg));transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.cal-day:hover{background:var(--accent-soft)}
+.cal-day.today{box-shadow:inset 0 2px var(--accent),inset 0 -2px var(--accent)}
+.citem{transition:transform .16s ease,background .16s ease}.citem:hover{transform:translateX(2px)}
+
+.empty{padding:26px 16px;border:1px dashed var(--border);border-radius:10px;background:color-mix(in srgb,var(--card) 55%,transparent)}
+.empty-soft{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 20%,var(--border))}
+.notice{border:1px solid var(--border);background:var(--accent-soft)}
+
+.task-scroll,.schedule-scroll{scrollbar-width:thin;scrollbar-color:var(--muted) transparent}
+.task-scroll::-webkit-scrollbar,.schedule-scroll::-webkit-scrollbar,.col::-webkit-scrollbar,.cal-day::-webkit-scrollbar{width:5px}
+.task-scroll::-webkit-scrollbar-thumb,.schedule-scroll::-webkit-scrollbar-thumb,.col::-webkit-scrollbar-thumb,.cal-day::-webkit-scrollbar-thumb{background:var(--muted);border-radius:10px}
+
+.time-edit,.clock-overlay{background:rgba(4,7,10,.72);backdrop-filter:blur(8px)}
+.time-edit-card,.clock-dialog{box-shadow:var(--lf-shadow-deep);animation:lfModalIn .24s cubic-bezier(.2,.8,.2,1) both}
+
+.toast{border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));box-shadow:var(--lf-shadow-deep);animation:lfToastIn .25s cubic-bezier(.2,.8,.2,1) both}
+
+@keyframes lfSpin{to{transform:rotate(360deg)}}
+@keyframes lfModalIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lfToastIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+
+@media(max-width:800px){
+  .app-sidebar{width:78px}
+  .app-content{margin-left:78px;padding:24px 20px 80px}
+}
+@media(max-width:600px){
+  .app-content{margin-left:0;padding:18px 14px 82px}
+  .app-top{margin-bottom:18px}
+  .app-sidebar{left:10px;right:10px;bottom:10px;top:auto;width:auto}
+}
+@media(prefers-reduced-motion:reduce){.card,.task,.kcard,.citem,.cal-day,.time-edit-card,.clock-dialog,.toast{animation:none!important;transition:none!important}}
