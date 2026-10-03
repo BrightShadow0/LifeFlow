@@ -526,17 +526,18 @@ function submitTask(){
 }
 
 function taskRow(t){
-  return `<div class="task ${t.done?'done':''}">
-    <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
-    <div style="flex:1">
-      <div class="title">${esc(t.title)}</div>
-      <div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}${t.recur!=='none'?`<span>↻ ${t.recur}</span>`:''}${t.tags.map(g=>`<span>#${esc(g)}</span>`).join('')}</div>
-      ${t.subtasks.map(s=>`<div class="sub"><input type="checkbox" ${s.done?'checked':''} onchange="toggleSub(${t.id},${s.id})"> ${esc(s.text)}</div>`).join('')}
-      <div class="sub"><input placeholder="+ subtask" style="font-size:11px;padding:3px 6px" onkeydown="if(event.key==='Enter'){addSubtask(${t.id},this.value);this.value='';}"></div>
-    </div>
-    <button class="del" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}" title="Edit time interval">◷</button>
-    <button class="del" onclick="deleteTask(${t.id})" aria-label="Delete task">✕</button>
-  </div>`;
+  const overdue=!!(t.due && new Date(t.due)<new Date() && !t.done);
+  const priorityLabel=t.priority==='high'?'High':t.priority==='medium'?'Medium':'Low';
+  const subDone=t.subtasks.filter(s=>s.done).length;
+  const subTotal=t.subtasks.length;
+  return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" tabindex="0">'+
+    '<span class="task-priority-dot" aria-hidden="true" title="'+priorityLabel+' priority"></span>'+
+    '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleDone('+t.id+')" aria-label="Toggle task completion">'+
+    '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+(t.recur!=='none'?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
+    '<div class="meta"><span class="priority-label">'+priorityLabel+'</span>'+(t.due?'<span class="'+(overdue?'due-overdue':'')+'">'+(overdue?'Overdue · ':'')+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+(t.recur!=='none'?'<span class="recurrence-text">↻ '+t.recur+'</span>':'')+t.tags.map(g=>'<span>#'+esc(g)+'</span>').join('')+'</div>'+
+    (subTotal?'<div class="subtask-list">'+t.subtasks.map(s=>'<label class="sub"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSub('+t.id+','+s.id+')"> <span>'+esc(s.text)+'</span></label>').join('')+'</div>':'')+
+    '<div class="subtask-add"><input placeholder="+ add subtask" aria-label="Add subtask" onkeydown="if(event.key===\'Enter\'){addSubtask('+t.id+',this.value);this.value=\'\';}"></div></div>'+
+    '<button class="del task-action" onclick="editTaskTime('+t.id+')" aria-label="Edit time">◷</button><button class="del task-action" onclick="deleteTask('+t.id+')" aria-label="Delete task">✕</button></div>';
 }
 
 function todayKey(d){return new Date(d).toDateString();}
@@ -575,14 +576,15 @@ function renderList(){
 
 function renderBoard(){
   const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
-  const html = `<div class="card"><h2>Kanban Board</h2><div class="board">${cols.map(([k,l])=>`
-    <div class="col" ondragover="event.preventDefault()" ondrop="dropCol(event,'${k}')">
-      <h3>${l} (${state.tasks.filter(t=>t.status===k).length})</h3>
-      ${state.tasks.filter(t=>t.status===k).map(t=>`<div class="kcard" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}<div class="meta"><span class="pri-${t.priority}">${t.priority}</span>${t.due?`<span>${fmtDate(t.due)}</span>`:''}${intervalHtml(t)}</div><button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit time</button></div>`).join('')}
-    </div>`).join('')}</div></div>`;
-  return html;
+  return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards into a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
+    '<div class="col col-'+k+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');dropCol(event,\''+k+'\')">'+
+      '<h3><span>'+l+'</span><b>'+state.tasks.filter(t=>t.status===k).length+'</b></h3><div class="col-drop-hint">Drop here</div>'+
+      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')">'+
+        '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+(t.recur!=='none'?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
+        '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
+        '<button class="linklike" onclick="editTaskTime('+t.id+')">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
 }
-function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done = col==='done'; save(); renderApp(); } }
+function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done=col==='done'; save(); renderApp(); } }
 
 function renderCalendar(){
   const first = new Date(calYear, calMonth, 1);
