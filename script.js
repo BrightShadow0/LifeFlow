@@ -937,24 +937,31 @@ function activateCobaltSequence(){
   const u=currentUser();
   if(!u)return;
   const s=secretSequence(u);
-  if(s.used)return;
+  const alreadyCreated=state.tasks.some(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master'));
+  if(s.used && alreadyCreated)return;
   const base=new Date();
   base.setHours(12,0,0,0);
   const day=(offset)=>{
     const d=new Date(base);
     d.setDate(d.getDate()+offset);
-    return d.toISOString().slice(0,10);
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,'0');
+    const dayNum=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+dayNum;
   };
   const pools={
     "-1":["Review yesterday's notes","Clear yesterday's unfinished work","Review completed tasks","Organise yesterday's files","Plan the follow-up"],
     "0":["Plan today's priorities","Finish an important task","Review today's schedule","Clear your task list","Take a focused work block"],
     "1":["Prepare for tomorrow","Set tomorrow's priorities","Review upcoming work","Plan tomorrow's schedule","Prepare the next steps"]
   };
+  const generated=[];
   [-1,0,1].forEach(offset=>{
     pools[String(offset)].forEach(title=>{
-      addTask({title,due:day(offset),priority:['low','medium','high'][Math.floor(Math.random()*3)],status:'todo',done:false,tags:['Task Master'],subtasks:[]});
+      generated.push({id:uid(),title,tags:['Task Master'],priority:['low','medium','high'][Math.floor(Math.random()*3)],due:day(offset),startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]});
     });
   });
+  state.tasks.push(...generated);
+  save();
   updateSecretSequence(Object.assign(s,{used:true,unlocked:true}));
   temporaryTheme='cobalt';
   renderApp();
