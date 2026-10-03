@@ -551,3 +551,132 @@ button.primary.loading:after{content:"";position:absolute;width:14px;height:14px
 .color-combination strong{display:block;font-size:11px}.color-combination small{display:block;color:var(--muted);font-size:9px;margin-top:2px}.color-combination>b{font-size:11px;color:var(--accent)}
 @media(max-width:800px){.color-combinations{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.color-combinations{grid-template-columns:1fr}}
+
+/* Full colour-combination environments */
+:root[data-theme="dark"][data-color-theme="sapphire"]{
+  --bg:#070d18;--card:#0e1726;--panel2:#111f33;--border:#213b61;--accent:#4d8dff;--accent-soft:#102b5e;
+}
+:root[data-theme="dark"][data-color-theme="emerald"]{
+  --bg:#06120c;--card:#0d1c14;--panel2:#10271b;--border:#214d36;--accent:#45d98a;--accent-soft:#103b27;
+}
+:root[data-theme="dark"][data-color-theme="gold"]{
+  --bg:#120e05;--card:#1d1709;--panel2:#29200d;--border:#55421b;--accent:#f5b83d;--accent-soft:#4a3210;
+}
+:root[data-theme="dark"][data-color-theme="platinum"]{
+  --bg:#090a0d;--card:#15171b;--panel2:#202329;--border:#3b3f47;--accent:#c7ccd6;--accent-soft:#2a2d34;
+}
+:root[data-theme="dark"][data-color-theme="amethyst"]{
+  --bg:#0d0716;--card:#170e25;--panel2:#211434;--border:#4b2e70;--accent:#a56cff;--accent-soft:#2c1852;
+}
+:root[data-theme="dark"][data-color-theme="ruby"]{
+  --bg:#13070a;--card:#1d0e12;--panel2:#2a1319;--border:#572631;--accent:#f05261;--accent-soft:#4a1720;
+}
+:root[data-theme="dark"][data-color-theme] body{
+  background:
+    radial-gradient(circle at 88% 0,color-mix(in srgb,var(--accent) 17%,transparent),transparent 28%),
+    linear-gradient(145deg,var(--bg),#020305 82%);
+}
+:root[data-theme="dark"][data-color-theme] .app-sidebar{
+  background:linear-gradient(180deg,var(--bg),#030508);
+  border-right-color:var(--border);
+}
+:root[data-theme="dark"][data-color-theme] .app-top .avatar{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+:root[data-theme="dark"][data-color-theme] .hero-welcome{
+  background:
+    radial-gradient(circle at 88% 15%,color-mix(in srgb,var(--accent) 42%,transparent) 0,transparent 36%),
+    linear-gradient(120deg,var(--accent-soft),var(--card) 72%);
+  border-color:color-mix(in srgb,var(--accent) 55%,var(--border));
+}
+:root[data-theme="dark"][data-color-theme] .hero-welcome:after{
+  border-color:color-mix(in srgb,var(--accent) 25%,transparent);
+}
+:root[data-theme="dark"][data-color-theme] .hero-kicker,
+:root[data-theme="dark"][data-color-theme] .hero-dot,
+:root[data-theme="dark"][data-color-theme] .time-chip{
+  color:var(--accent);
+}
+:root[data-theme="dark"][data-color-theme] .hero-summary{color:color-mix(in srgb,var(--text) 72%,var(--accent))}
+:root[data-theme="dark"][data-color-theme] .stat,
+:root[data-theme="dark"][data-color-theme] .col,
+:root[data-theme="dark"][data-color-theme] .event,
+:root[data-theme="dark"][data-color-theme] .kcard{
+  background:color-mix(in srgb,var(--card) 82%,var(--accent-soft));
+}
+:root[data-theme="dark"][data-color-theme] .progress-track{background:color-mix(in srgb,var(--card) 72%,var(--accent))}
+:root[data-theme="dark"][data-color-theme] .progress-track span{background:var(--accent)}
+:root[data-theme="dark"][data-color-theme] .cal-day.today{background:color-mix(in srgb,var(--accent-soft) 55%,var(--card))}
+:root[data-theme="dark"][data-color-theme] .cal-day .citem{
+  background:var(--accent-soft);color:color-mix(in srgb,var(--accent) 72%,white);
+}
+:root[data-theme="dark"][data-color-theme] input:focus,
+:root[data-theme="dark"][data-color-theme] select:focus,
+:root[data-theme="dark"][data-color-theme] textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent);
+}
+
+/* Light mode keeps the white environment and uses the selected colour as its accent atmosphere. */
+:root[data-theme="light"][data-color-theme="sapphire"]{--bg:#f7faff;--card:#fff;--panel2:#edf4ff;--border:#d7e3f5;--accent:#286be8;--accent-soft:#e8f0ff}
+:root[data-theme="light"][data-color-theme="emerald"]{--bg:#f7fcf9;--card:#fff;--panel2:#edf8f1;--border:#d4e8db;--accent:#238b56;--accent-soft:#e5f5eb}
+:root[data-theme="light"][data-color-theme="gold"]{--bg:#fffaf0;--card:#fff;--panel2:#fff4d9;--border:#eadbb7;--accent:#c88416;--accent-soft:#fff0c9}
+:root[data-theme="light"][data-color-theme="platinum"]{--bg:#f7f8fa;--card:#fff;--panel2:#eef0f4;--border:#d8dce3;--accent:#5d6470;--accent-soft:#e8ebf0}
+:root[data-theme="light"][data-color-theme="amethyst"]{--bg:#fbf8ff;--card:#fff;--panel2:#f2eaff;--border:#dfd0f3;--accent:#7a45c7;--accent-soft:#eee4ff}
+:root[data-theme="light"][data-color-theme="ruby"]{--bg:#fff8f8;--card:#fff;--panel2:#ffeded;--border:#efd2d5;--accent:#c73345;--accent-soft:#ffe5e8}
+:root[data-theme="light"][data-color-theme] body{
+  background:
+    radial-gradient(circle at 88% 0,color-mix(in srgb,var(--accent) 11%,transparent),transparent 30%),
+    linear-gradient(145deg,#fff,var(--bg));
+}
+:root[data-theme="light"][data-color-theme] .app-sidebar{
+  background:linear-gradient(180deg,#fff,var(--bg));
+  border-right-color:var(--border);
+}
+:root[data-theme="light"][data-color-theme] .app-top .avatar{
+  background:var(--accent-soft);
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border));
+  color:var(--accent);
+}
+:root[data-theme="light"][data-color-theme] .hero-welcome{
+  background:
+    radial-gradient(circle at 88% 15%,color-mix(in srgb,var(--accent) 22%,transparent) 0,transparent 36%),
+    linear-gradient(120deg,#fff,var(--accent-soft) 72%);
+  border-color:color-mix(in srgb,var(--accent) 35%,var(--border));
+}
+:root[data-theme="light"][data-color-theme] .hero-welcome:after{
+  border-color:color-mix(in srgb,var(--accent) 18%,transparent);
+}
+:root[data-theme="light"][data-color-theme] .hero-kicker,
+:root[data-theme="light"][data-color-theme] .hero-dot,
+:root[data-theme="light"][data-color-theme] .time-chip{
+  color:var(--accent);
+}
+:root[data-theme="light"][data-color-theme] .hero-summary{color:color-mix(in srgb,var(--text) 70%,var(--accent))}
+:root[data-theme="light"][data-color-theme] .progress-track span{background:var(--accent)}
+:root[data-theme="light"][data-color-theme] .cal-day.today{background:var(--accent-soft)}
+:root[data-theme="light"][data-color-theme] .cal-day .citem{
+  background:var(--accent-soft);color:color-mix(in srgb,var(--accent) 82%,#182019);
+}
+:root[data-theme="light"][data-color-theme] input:focus,
+:root[data-theme="light"][data-color-theme] select:focus,
+:root[data-theme="light"][data-color-theme] textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent);
+}
+
+/* The selected colour also drives interactive accents across the interface. */
+:root[data-color-theme] .nav-action:hover,
+:root[data-color-theme] #nav button.active,
+:root[data-color-theme] .sidebar-action:hover{
+  border-color:var(--accent);
+}
+:root[data-color-theme] .btn-primary,
+:root[data-color-theme] .primary,
+:root[data-color-theme] .add-btn,
+:root[data-color-theme] .hero-add{
+  background:var(--accent);
+  border-color:var(--accent);
+}
