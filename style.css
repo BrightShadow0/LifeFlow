@@ -1150,11 +1150,6 @@ body{scrollbar-gutter:stable}
   background:linear-gradient(180deg,var(--bg),#030508);
   border-right-color:var(--border);
 }
-:root[data-theme="dark"][data-color-theme] .app-top .avatar{
-  background:var(--accent-soft);
-  border-color:var(--accent);
-  color:var(--accent);
-}
 :root[data-theme="dark"][data-color-theme] .hero-welcome{
   background:
     radial-gradient(circle at 88% 15%,color-mix(in srgb,var(--accent) 42%,transparent) 0,transparent 36%),
@@ -1204,11 +1199,6 @@ body{scrollbar-gutter:stable}
 :root[data-theme="light"][data-color-theme] .app-sidebar{
   background:linear-gradient(180deg,#fff,var(--bg));
   border-right-color:var(--border);
-}
-:root[data-theme="light"][data-color-theme] .app-top .avatar{
-  background:var(--accent-soft);
-  border-color:color-mix(in srgb,var(--accent) 45%,var(--border));
-  color:var(--accent);
 }
 :root[data-theme="light"][data-color-theme] .hero-welcome{
   background:
