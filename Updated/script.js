@@ -938,7 +938,8 @@ function activateCobaltSequence(){
   if(!u)return;
   const s=secretSequence(u);
   const existingMaster=state.tasks.some(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master'));
-  if(s.used && existingMaster)return;
+  // Task Master is intentionally repeatable during development/testing.
+  // Each activation generates another fresh batch of 15 tasks.
 
   const base=new Date();
   base.setHours(12,0,0,0);
@@ -984,7 +985,7 @@ function activateCobaltSequence(){
   state.tasks.push(...generated);
   save();
 
-  const next=Object.assign(s,{used:true,unlocked:true});
+  const next=Object.assign(s,{used:false,unlocked:true});
   updateSecretSequence(next);
   document.getElementById('taskMasterHost')?.replaceChildren();
   view='today';
@@ -1001,7 +1002,7 @@ function showTaskMaster(){
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
   const s=secretSequence(u);
-  if(s.used)return;
+  if(false && s.used)return;
   if(action==='tierTeamAdmin' && s.step===0){
     s.step=1; s.pendingTeamAdmin=true; updateSecretSequence(s); revealSecretTimezone();
   }else if(action==='timezoneDash' && s.step===1){
