@@ -777,6 +777,8 @@ function clockPointer(e,finish=true){
   }
 }
 function showToast(message){const host=document.getElementById('toastHost');host.innerHTML='<div class="toast"></div>';host.firstElementChild.textContent=message;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>host.innerHTML='',3200);}
+let temporaryTheme=null;
+let temporaryThemeTimer=null;
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
@@ -784,7 +786,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -910,6 +912,52 @@ function updateSecretSequence(s){
   users[state.currentUser].secretSequence=s;
   saveUsers(users);
   if(s.languageRevealed || s.unlocked) renderApp();
+}
+function activateCobaltSequence(){
+  const u=currentUser(); if(!u)return;
+  const s=secretSequence(u);
+  if(!s.unlocked || s.used)return;
+  s.used=true;
+  updateSecretSequence(s);
+  const makeDate=(offset)=>{
+    const d=new Date();
+    d.setHours(12,0,0,0);
+    d.setDate(d.getDate()+offset);
+    return d.toISOString();
+  };
+  const pools=[
+    ['Review the day ahead','Clear one small task','Take a short reset','Check upcoming commitments','Plan the next focused block'],
+    ['Prepare tomorrow','Review open tasks','Protect some quiet time','Finish one pending item','Set tomorrow’s first priority'],
+    ['Look back at yesterday','Close a loose end','Capture anything you missed','Review yesterday’s notes','Reset the workspace']
+  ];
+  const dates=[0,1,-1];
+  dates.forEach((offset,group)=>{
+    pools[group].forEach((title,i)=>{
+      state.tasks.push({
+        id:uid()+group*100+i,
+        title,
+        tags:group===0?['Today']:group===1?['Tomorrow']:['Yesterday'],
+        priority:['medium','low','medium','high','low'][i],
+        due:makeDate(offset),
+        startTime:null,
+        endTime:null,
+        recur:'none',
+        status:'todo',
+        done:false,
+        subtasks:[]
+      });
+    });
+  });
+  save();
+  view='list';
+  temporaryTheme='cobalt';
+  renderApp();
+  showToast('Cobalt sequence activated');
+  clearTimeout(temporaryThemeTimer);
+  temporaryThemeTimer=setTimeout(()=>{
+    temporaryTheme=null;
+    renderApp();
+  },5000);
 }
 function secretUpdateSettings(){
   const u=currentUser(); if(!u)return;
