@@ -680,3 +680,122 @@ input[type="range"]:focus-visible{outline:2px solid var(--accent);outline-offset
 @media(prefers-reduced-motion:reduce){
   button,.task,.kcard,.toast,.command-panel{transition:none!important;animation:none!important}
 }
+
+/* Spatial environment, questions 151-175 */
+:root{
+  --lf-space-glow:rgba(121,227,109,.07);
+  --lf-space-glow-2:rgba(121,227,109,.035);
+  --lf-space-line:rgba(121,227,109,.028);
+}
+:root[data-theme="light"]{--lf-space-glow:rgba(63,159,56,.055);--lf-space-glow-2:rgba(63,159,56,.025);--lf-space-line:rgba(63,159,56,.025)}
+:root[data-theme="forest"]{--lf-space-glow:rgba(155,226,125,.08);--lf-space-glow-2:rgba(155,226,125,.035);--lf-space-line:rgba(155,226,125,.025)}
+:root[data-theme="paper"]{--lf-space-glow:rgba(139,106,62,.065);--lf-space-glow-2:rgba(139,106,62,.028);--lf-space-line:rgba(139,106,62,.025)}
+
+body{
+  position:relative;
+  overflow-x:hidden;
+  background:
+    radial-gradient(ellipse 680px 520px at 92% 7%,var(--lf-space-glow),transparent 70%),
+    radial-gradient(ellipse 520px 420px at 7% 88%,var(--lf-space-glow-2),transparent 72%),
+    var(--bg);
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.8;
+  background-image:
+    linear-gradient(var(--lf-space-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--lf-space-line) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.65),transparent 72%);
+}
+body:after{
+  content:"";
+  position:fixed;
+  width:42vw;
+  height:42vw;
+  max-width:620px;
+  max-height:620px;
+  right:-18vw;
+  top:12vh;
+  border:1px solid color-mix(in srgb,var(--accent) 8%,transparent);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:0;
+  opacity:.7;
+  animation:lfAmbientDrift 18s ease-in-out infinite alternate;
+}
+.app-sidebar,.app-content{position:relative;z-index:1}
+.app-content{
+  min-height:100dvh;
+}
+.app-content:before{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  left:-120px;
+  top:80px;
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--lf-space-glow),transparent 68%);
+  opacity:.7;
+}
+#main{
+  position:relative;
+  isolation:isolate;
+}
+#main:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-34px -28px;
+  border-radius:28px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--card) 18%,transparent),transparent 38%);
+  pointer-events:none;
+}
+.card{
+  position:relative;
+}
+.card:empty{min-height:0}
+.empty{
+  min-height:90px;
+  display:grid;
+  place-items:center;
+}
+.empty-soft{
+  min-height:78px;
+}
+.hero-welcome{
+  background:
+    radial-gradient(circle at 88% 15%,color-mix(in srgb,var(--accent) 18%,transparent) 0,transparent 34%),
+    linear-gradient(120deg,color-mix(in srgb,var(--accent) 7%,var(--card)),var(--card) 72%);
+}
+.task-scroll,.schedule-scroll,.calendar-wrap{
+  overscroll-behavior:contain;
+}
+:root[data-density="compact"] body:after{opacity:.5}
+:root[data-density="immersive"] body:after{opacity:.9}
+:root[data-density="immersive"] #main:before{inset:-48px -42px;background:linear-gradient(180deg,color-mix(in srgb,var(--card) 24%,transparent),transparent 45%)}
+@keyframes lfAmbientDrift{
+  from{transform:translate3d(0,-10px,0) scale(.98);opacity:.55}
+  to{transform:translate3d(-24px,18px,0) scale(1.03);opacity:.8}
+}
+@media(max-width:1100px){
+  body:after{right:-28vw}
+  body:before{background-size:68px 68px;opacity:.55}
+  #main:before{inset:-24px -18px}
+}
+@media(max-width:600px){
+  body:before{background-size:82px 82px;opacity:.28;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 58%)}
+  body:after{width:78vw;height:78vw;right:-34vw;top:5vh;opacity:.38}
+  .app-content:before{left:-150px;top:30px;opacity:.35}
+  #main:before{inset:-12px -8px;border-radius:20px;background:linear-gradient(180deg,color-mix(in srgb,var(--card) 15%,transparent),transparent 38%)}
+  .card{box-shadow:0 7px 22px rgba(0,0,0,.09)}
+}
+@media(prefers-reduced-motion:reduce){
+  body:after{animation:none!important}
+}
