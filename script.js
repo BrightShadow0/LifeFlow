@@ -711,9 +711,13 @@ function renderApp(){
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
-  el.classList.remove('page-enter');
-  void el.offsetWidth;
-  el.classList.add('page-enter');
+  if(!window.lifeFlowFirstViewAnimated){
+    el.classList.remove('page-enter');
+    void el.offsetWidth;
+    el.classList.add('page-enter');
+    window.lifeFlowFirstViewAnimated=true;
+    setTimeout(()=>el.classList.remove('page-enter'),900);
+  }
   initThemePull();
 }
 function renderAbout(){
