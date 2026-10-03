@@ -442,7 +442,13 @@ function initAuthTheme(){
   const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
   bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
 }
-function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
+function setTheme(theme){
+  const allowed=['dark','light','forest','paper'];
+  const next=allowed.includes(theme)?theme:'dark';
+  const u=currentUser();
+  if(u) updateUser(user=>user.theme=next);
+  else applyTheme(next);
+}
 let themePullStartY=null, themePullActive=false;
 function initThemePull(){
   const b=document.getElementById('themePull'); if(!b) return;
