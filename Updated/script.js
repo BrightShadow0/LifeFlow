@@ -977,7 +977,7 @@ function renderProfileTab(u){
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-  </div>>`;
+  </div>`;
 }
 function renderCustomisationTab(u){
   const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
