@@ -727,7 +727,7 @@ function renderCalendar(){
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const monthName = first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   let cells = '';
-  for(let i=0;i<startDow;i++) cells += `<div></div>`;
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-empty" aria-hidden="true"></div>`;
   for(let d=1; d<=daysInMonth; d++){
     const cellDate = new Date(calYear,calMonth,d);
     const isToday = cellDate.toDateString()===new Date().toDateString();
