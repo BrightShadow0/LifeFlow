@@ -549,8 +549,42 @@ function exportData(fmt){
 }
 
 function renderNav(){
-  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['about','Why LifeFlow','✦'],['account','Profile & settings','◎']];
-  document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
+  const sidebar=document.querySelector('.app-sidebar');
+  if(!sidebar) return;
+
+  // Rebuild the sidebar in the intended hierarchy so the workspace navigation
+  // can never get mixed with Data & Account, even after older cached markup.
+  sidebar.innerHTML=`
+    <div class="brand">LifeFlow<i class="brand-mark">.</i></div>
+    <div class="navlabel">Workspace</div>
+    <nav id="nav" aria-label="Workspace"></nav>
+    <div class="sidebottom">
+      <div class="navlabel">Data & account</div>
+      <button class="sidebar-action" onclick="exportData('csv')" title="Export CSV">
+        <span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span>
+      </button>
+      <button class="sidebar-action" onclick="exportData('json')" title="Export JSON">
+        <span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span>
+      </button>
+      <button class="sidebar-action logout" onclick="doLogout()" title="Log out">
+        <span class="nav-icon">↪</span><span class="nav-text">Log out</span>
+      </button>
+    </div>`;
+
+  const tabs=[
+    ['today','Today','◈'],
+    ['list','Tasks','☷'],
+    ['calendar','Calendar','▦'],
+    ['board','Board','▥'],
+    ['about','Why LifeFlow','✦'],
+    ['account','Profile & settings','◎']
+  ];
+
+  document.getElementById('nav').innerHTML=tabs.map(([k,l,i])=>
+    `<button type="button" title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')">
+      <span class="nav-icon">${i}</span><span class="nav-text">${l}</span>
+    </button>`
+  ).join('');
 }
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
 
