@@ -747,7 +747,44 @@ function renderApp(){
     setTimeout(()=>el.classList.remove('page-enter'),900);
   }
   initThemePull();
+  lfEnhanceInterface();
 }
+function lfEnhanceInterface(){
+  const top=document.querySelector('.app-top');
+  if(top && !document.getElementById('lfSearch')){
+    const tools=document.createElement('div');
+    tools.className='lf-top-tools';
+    tools.innerHTML='<button class="hbtn lf-search-trigger" id="lfSearch" type="button" onclick="openCommandPalette()" aria-label="Search LifeFlow (Ctrl or Cmd + K)">⌕ <span>Search</span></button>';
+    top.appendChild(tools);
+  }
+}
+function openCommandPalette(){
+  if(document.getElementById('lfCommandPalette')) return;
+  const overlay=document.createElement('div');
+  overlay.id='lfCommandPalette';
+  overlay.className='command-overlay';
+  overlay.innerHTML='<div class="command-panel" role="dialog" aria-modal="true" aria-label="LifeFlow search"><div class="command-head"><div><strong>Search LifeFlow</strong><span>Tasks, pages and actions</span></div><button class="command-close" type="button" onclick="closeCommandPalette()" aria-label="Close">×</button></div><input id="lfCommandInput" class="command-input" autocomplete="off" placeholder="Search tasks or jump to a page..." aria-label="Search tasks or pages"><div id="lfCommandResults" class="command-results"></div><div class="command-hint">Esc to close · Enter to open</div></div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeCommandPalette();});
+  const input=document.getElementById('lfCommandInput');
+  input.addEventListener('input',renderCommandResults);
+  input.addEventListener('keydown',e=>{if(e.key==='Escape')closeCommandPalette();if(e.key==='Enter'){const first=document.querySelector('#lfCommandResults button');if(first)first.click();}});
+  renderCommandResults();
+  input.focus();
+}
+function closeCommandPalette(){document.getElementById('lfCommandPalette')?.remove();}
+function renderCommandResults(){
+  const input=document.getElementById('lfCommandInput'); const host=document.getElementById('lfCommandResults'); if(!input||!host)return;
+  const q=input.value.trim().toLowerCase();
+  const pages=[['today','Today','See what needs attention now'],['list','Tasks','Browse and manage tasks'],['calendar','Calendar','View deadlines and scheduled time'],['board','Board','Move work through the flow'],['about','Why LifeFlow','Read the product principles'],['account','Profile & settings','Personalize LifeFlow']];
+  const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" onclick="view=\''+x[0]+'\';closeCommandPalette();renderApp()"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
+  const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,8).map(t=>'<button type="button" class="command-result" onclick="view=\'list\';closeCommandPalette();renderApp();setTimeout(()=>document.querySelector(\'[data-task-id="'+t.id+'"]\')?.focus(),50)"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
+  host.innerHTML=(matches.concat(tasks)).slice(0,10).join('')||'<div class="command-empty">No matching pages or tasks.</div>';
+}
+window.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
+  if(e.key==='Escape')closeCommandPalette();
+});
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
     <div class="manifesto-kicker">THE IDEA BEHIND LIFEFLOW</div>
