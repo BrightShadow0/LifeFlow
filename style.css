@@ -1401,3 +1401,24 @@ body{scrollbar-gutter:stable}
 @media(max-width:600px){
   .app-sidebar .sidebottom{display:none !important}
 }
+
+
+/* Align the sidebar with the main LifeFlow content start.
+   It was anchored to the viewport at 0px while the content begins
+   inside the app with a 30px top inset. */
+.app-sidebar{
+  top:30px !important;
+  bottom:0 !important;
+}
+@media(max-width:900px){
+  .app-sidebar{
+    top:24px !important;
+    bottom:0 !important;
+  }
+}
+@media(max-width:600px){
+  .app-sidebar{
+    top:auto !important;
+    bottom:10px !important;
+  }
+}
