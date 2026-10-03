@@ -468,7 +468,12 @@ function initThemePull(){
     b.releasePointerCapture?.(e.pointerId);
     if(dy>8){
       b.classList.add('snap');
-      setTheme((currentUser()?.theme||'dark')==='dark'?'light':'dark');
+      // The lightbulb is intentionally limited to the two quick themes.
+      // Forest and Paper remain accessible from Profile > Customisation > Theme.
+      const quickTheme=(currentUser()?.theme||'dark')==='dark'?'light':'dark';
+      const u=currentUser();
+      if(u) updateUser(user=>user.theme=quickTheme);
+      else applyTheme(quickTheme);
       setTimeout(()=>b.classList.remove('snap'),300);
     }
   };
