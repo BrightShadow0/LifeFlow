@@ -383,7 +383,7 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
   .app-content{margin-left:0;padding:18px 14px 65px}
   .app-sidebar{position:fixed;top:auto;left:10px;right:10px;bottom:10px;width:auto;height:62px;border:1px solid var(--border);border-radius:16px;padding:6px;flex-direction:row;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(14px);box-shadow:0 12px 35px rgba(0,0,0,.18)}
   .app-sidebar .brand,.app-sidebar .sidebottom{display:none}
-  #nav{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+  #nav{width:100%;display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
   #nav button{justify-content:center;flex-direction:column;gap:1px;padding:5px;border-radius:11px}
   #nav button:after{left:20%;right:20%}
   #nav button .nav-icon{font-size:16px}
