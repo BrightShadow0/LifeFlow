@@ -636,7 +636,7 @@ function renderBoard(){
   const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
   return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards into a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
     '<div class="col col-'+k+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');dropCol(event,\''+k+'\')">'+
-      '<h3><span class="col-title">'+l+'</span><span class="col-count">'+state.tasks.filter(t=>t.status===k).length+'</span></h3><div class="col-drop-hint">Drop here</div>'+
+      '<h3><span class="col-title">'+l+'</span></h3><div class="col-drop-hint">Drop here</div>'+
       state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')">'+
         '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+(t.recur!=='none'?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
         '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
