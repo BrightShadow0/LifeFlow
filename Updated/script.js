@@ -20,6 +20,7 @@ const PBKDF2_ITERATIONS = 100000;
 let state = load();
 let view = 'today';
 let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
+let taskMasterActivationActive = false;
 
 function load(){
   try{ const r = localStorage.getItem('lifeflow2_state'); if(r) return JSON.parse(r); }catch(e){}
@@ -100,7 +101,7 @@ function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)
 function newUserRecord(email, extra){
   return Object.assign({
     passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark',
-    workspace:'My Workspace', timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,
+    workspace:'My Workspace', timezone:'UTC',
     language:'en', weekStart:'Sunday', tier:'Free',
     connected:{Google:false,Apple:false,GitHub:false},
     verified:false, deletedAt:null, oauthProvider:null,
@@ -359,8 +360,11 @@ function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
-  const color=currentUser()?.colorTheme||'sapphire';
-  document.documentElement.setAttribute('data-color-theme',['sapphire','emerald','gold','platinum','amethyst','ruby'].includes(color)?color:'sapphire');
+  const u=currentUser();
+  const entitledColors=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  let color=u?.colorTheme||'sapphire';
+  if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
+  document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'sapphire');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
@@ -371,9 +375,13 @@ function setTheme(theme){
 }
 function setColorTheme(theme){
   const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  const u=currentUser();
+  if(theme==='gold' && u && !['Premium','Team Admin'].includes(u.tier)){
+    toast('Gold is available to Premium and Team Admin accounts.');
+    return;
+  }
   const next=allowed.includes(theme)?theme:'sapphire';
   document.documentElement.setAttribute('data-color-theme',next);
-  const u=currentUser();
   if(u){
     updateUser(user=>{user.colorTheme=next;});
   }else{
@@ -467,7 +475,12 @@ function initThemePull(){
     b.releasePointerCapture?.(e.pointerId);
     if(dy>8){
       b.classList.add('snap');
-      setTheme((currentUser()?.theme||'dark')==='dark'?'light':'dark');
+      // The lightbulb is intentionally limited to the two quick themes.
+      // Forest and Paper remain accessible from Profile > Customisation > Theme.
+      const quickTheme=(currentUser()?.theme||'dark')==='dark'?'light':'dark';
+      const u=currentUser();
+      if(u) updateUser(user=>user.theme=quickTheme);
+      else applyTheme(quickTheme);
       setTimeout(()=>b.classList.remove('snap'),300);
     }
   };
@@ -548,8 +561,44 @@ function exportData(fmt){
 }
 
 function renderNav(){
-  const tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥'],['about','Why LifeFlow','✦'],['account','Profile & settings','◎']];
-  document.getElementById('nav').innerHTML = tabs.map(([k,l,i])=>`<button title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')"><span class="nav-icon">${i}</span><span class="nav-text">${l}</span></button>`).join('');
+  const sidebar=document.querySelector('.app-sidebar');
+  if(!sidebar) return;
+
+  // Rebuild the sidebar in the intended hierarchy so the workspace navigation
+  // can never get mixed with Data & Account, even after older cached markup.
+  sidebar.innerHTML=`
+    <div class="brand">LifeFlow<i class="brand-mark">.</i></div>
+    <div class="navlabel">Workspace</div>
+    <nav id="nav" aria-label="Workspace"></nav>
+    <div class="sidebottom">
+      <div class="sidebar-data">
+        <div class="navlabel">Data & account</div>
+        <button class="sidebar-action" onclick="exportData('csv')" title="Export CSV">
+          <span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span>
+        </button>
+        <button class="sidebar-action" onclick="exportData('json')" title="Export JSON">
+          <span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span>
+        </button>
+      </div>
+      <button class="sidebar-action logout" onclick="doLogout()" title="Log out">
+        <span class="nav-icon">↪</span><span class="nav-text">Log out</span>
+      </button>
+    </div>`;
+
+  const tabs=[
+    ['today','Today','◈'],
+    ['list','Tasks','☷'],
+    ['calendar','Calendar','▦'],
+    ['board','Board','▥'],
+    ['about','Why LifeFlow','✦'],
+    ['account','Profile & settings','◎']
+  ];
+
+  document.getElementById('nav').innerHTML=tabs.map(([k,l,i])=>
+    `<button type="button" title="${l}" aria-label="${l}" class="${view===k?'active':''}" onclick="setView('${k}')">
+      <span class="nav-icon">${i}</span><span class="nav-text">${l}</span>
+    </button>`
+  ).join('');
 }
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
 
@@ -636,13 +685,26 @@ function renderToday(){
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
 
+function clearCompletedTasks(){
+  const completed=state.tasks.filter(t=>t.done);
+  if(!completed.length){
+    toast('No completed tasks to clear.');
+    return;
+  }
+  state.tasks=state.tasks.filter(t=>!t.done);
+  save();
+  renderApp();
+  toast(completed.length+' completed task'+(completed.length===1?'':'s')+' cleared.');
+}
+
 function renderList(){
   const today=new Date();
   today.setHours(0,0,0,0);
   const list = state.tasks
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  return `<div class="card"><h2>All Tasks (${list.length})</h2>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
+  const completedCount=state.tasks.filter(t=>t.done).length;
+  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><button type="button" class="clear-completed-button" onclick="clearCompletedTasks()" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
@@ -659,18 +721,20 @@ function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.t
 
 function renderCalendar(){
   const first = new Date(calYear, calMonth, 1);
-  const startDow = first.getDay();
+  const u=currentUser();
+  const weekStartsMonday=u?.weekStart==='Monday';
+  const startDow = weekStartsMonday ? (first.getDay()+6)%7 : first.getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const monthName = first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   let cells = '';
-  for(let i=0;i<startDow;i++) cells += `<div></div>`;
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-empty" aria-hidden="true"></div>`;
   for(let d=1; d<=daysInMonth; d++){
     const cellDate = new Date(calYear,calMonth,d);
     const isToday = cellDate.toDateString()===new Date().toDateString();
     const dayTasks = state.tasks.filter(t=>t.due && new Date(t.due).toDateString()===cellDate.toDateString());
-    cells += `<div class="cal-day ${isToday?'today':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
+    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
       <div class="dnum">${d}</div>
-      ${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}
+      <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
     </div>`;
   }
   return `<div class="card"><div class="cal-head">
@@ -678,7 +742,7 @@ function renderCalendar(){
       <strong>${monthName}</strong>
       <button class="hbtn" onclick="shiftMonth(1)">›</button>
     </div>
-    <div class="calendar-wrap"><div class="cal-grid">${['S','M','T','W','T','F','S'].map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
+    <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['M','T','W','T','F','S','S']:['S','M','T','W','T','F','S']).map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
     <div class="notice">Drag a task onto another day to reschedule it.</div>
   </div>`;
 }
@@ -798,7 +862,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment(); document.getElementById('topAvatar').textContent=(u?.name||'L').trim().charAt(0).toUpperCase();
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -891,9 +955,7 @@ function renderAccount(){
 function secretSequence(u){
   const base={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   if(!u)return base;
-  const s=Object.assign(base,u.secretSequence||{});
-  if(u.tier!=='Team Admin' && !s.pendingTeamAdmin) return base;
-  return s;
+  return Object.assign(base,u.secretSequence||{});
 }
 function updateSecretSequence(s){
   const users=getUsers(); if(!users[state.currentUser])return;
@@ -938,6 +1000,8 @@ function showTaskMasterActivation(){
   const old=document.getElementById('taskMasterActivation');
   if(old) old.remove();
 
+  taskMasterActivationActive=true;
+
   const overlay=document.createElement('div');
   overlay.id='taskMasterActivation';
   overlay.className='task-master-activation';
@@ -946,21 +1010,42 @@ function showTaskMasterActivation(){
   overlay.innerHTML='<div class="task-master-terminal"><div class="task-master-terminal-text">* Your tasks have been generated</div></div>';
   document.body.appendChild(overlay);
 
-  // Audio is intentionally loaded from a local project asset.
-  // Add assets/megalovania.mp3 if you have a licensed copy to use.
-  const audio=new Audio('assets/megalovania.mp3');
+  const audio=new Audio();
   audio.preload='auto';
   audio.volume=0.72;
-  audio.play().catch(()=>{});
+  audio.src='assets/megalovania.mp3';
   overlay._audio=audio;
 
-  requestAnimationFrame(()=>overlay.classList.add('is-visible'));
-  setTimeout(()=>overlay.classList.add('is-fading'),3600);
-  setTimeout(()=>{
-    audio.pause();
-    audio.currentTime=0;
-    overlay.remove();
-  },4600);
+  const finishSequence=()=>{
+    if(overlay._finished)return;
+    overlay._finished=true;
+    taskMasterActivationActive=false;
+    overlay.classList.remove('is-visible');
+    overlay.classList.add('is-fading');
+    setTimeout(()=>{
+      if(overlay.isConnected) overlay.remove();
+      if(document.getElementById('app')?.style.display==='block') renderApp();
+    },560);
+  };
+
+  // Normal path: the overlay lasts for the full track and fades only after it ends.
+  audio.addEventListener('ended',finishSequence,{once:true});
+
+  // Failure path: never leave a dead overlay on screen if the audio asset
+  // is missing, corrupt, or cannot be loaded.
+  audio.addEventListener('error',finishSequence,{once:true});
+
+  // Start playback synchronously while this function is still inside the
+  // Task Master button click. This preserves the browser's user-activation
+  // permission for audio playback.
+  const playAttempt=audio.play();
+  if(playAttempt && typeof playAttempt.catch==='function'){
+    playAttempt.catch(finishSequence);
+  }
+
+  requestAnimationFrame(()=>{
+    overlay.classList.add('is-visible');
+  });
 }
 
 function activateCobaltSequence(){
@@ -1001,29 +1086,70 @@ function activateCobaltSequence(){
     for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
     return copy.slice(0,count);
   };
+  // Give every Task Master task its own random, non-overlapping
+  // time interval. Five tasks are spread naturally across an 8 AM–8 PM day.
+  const randomIntervals=()=>{
+    const slots=[];
+    const dayStart=8*60;
+    const slotWidth=Math.floor((12*60)/5);
+    for(let i=0;i<5;i++){
+      const slotStart=dayStart+i*slotWidth;
+      const latestStart=slotStart+Math.max(0,slotWidth-45);
+      const start=slotStart+Math.floor(Math.random()*(latestStart-slotStart+1));
+      const duration=30+Math.floor(Math.random()*46); // 30–75 minutes
+      const end=Math.min(start+duration,dayStart+(i+1)*slotWidth-5);
+      const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
+      const mm=n=>String(n%60).padStart(2,'0');
+      slots.push({startTime:hh(start)+':'+mm(start),endTime:hh(end)+':'+mm(end)});
+    }
+    return slots;
+  };
+
   const generated=[];
   [[-1,'yesterday'],[0,'today'],[1,'tomorrow']].forEach(([offset,key])=>{
-    pick(pools[key],5).forEach(title=>{
+    const intervals=randomIntervals();
+    pick(pools[key],5).forEach((title,index)=>{
+      const interval=intervals[index];
       generated.push({
         id:uid(),title,tags:['Task Master'],
         priority:['low','medium','high'][Math.floor(Math.random()*3)],
-        due:dateForOffset(offset),startTime:null,endTime:null,recur:'none',
-        status:'todo',done:false,subtasks:[]
+        due:dateForOffset(offset),
+        startTime:interval.startTime,
+        endTime:interval.endTime,
+        recur:'none',status:'todo',done:false,subtasks:[]
       });
     });
   });
+
+  // Backfill older Task Master tasks too, so every generated Task Master
+  // task has an actual start and end time, not just date and priority.
+  const missingMasterTimes=state.tasks.filter(t=>
+    Array.isArray(t.tags)&&t.tags.includes('Task Master')&&
+    (!validTime(t.startTime)||!validTime(t.endTime)||!validInterval(t.startTime,t.endTime))
+  );
+  missingMasterTimes.forEach((t,index)=>{
+    const minute=8*60+(index%10)*70+Math.floor(Math.random()*25);
+    const duration=30+Math.floor(Math.random()*31);
+    const end=Math.min(minute+duration,20*60);
+    const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
+    const mm=n=>String(n%60).padStart(2,'0');
+    t.startTime=hh(minute)+':'+mm(minute);
+    t.endTime=hh(end)+':'+mm(end);
+  });
+
   state.tasks.push(...generated);
   save();
 
   const next=Object.assign(s,{used:false,unlocked:true});
   updateSecretSequence(next);
+  // Hide the trigger only because it was explicitly clicked.
+  // Do not switch away from Profile, and do not let tab navigation affect the overlay/audio.
   document.getElementById('taskMasterHost')?.replaceChildren();
-  view='today';
-  temporaryTheme='cobalt';
-  renderApp();
-  showTaskMasterActivation();
+  // Keep the normal LifeFlow visual system during the event.
+  // The Task Master effect belongs to the overlay, not the entire app.
+  temporaryTheme=null;
   clearTimeout(temporaryThemeTimer);
-  temporaryThemeTimer=setTimeout(()=>{temporaryTheme=null;renderApp();},5000);
+  showTaskMasterActivation();
   toast('Task Master created 15 tasks: 5 yesterday, 5 today, 5 tomorrow.');
 }
 function showTaskMaster(){
@@ -1062,7 +1188,7 @@ function renderProfileTab(u){
     <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
       <div class="avatar" id="avatarBox">${u.avatar?`<img src="${esc(u.avatar)}">`:'👤'}</div>
       <div>
-        <input type="file" accept="image/*" onchange="onAvatarChange(event)">
+        <div class="profile-upload"><input type="file" class="profile-file-input" accept="image/*" onchange="onAvatarChange(event)"></div>
         <div class="notice" style="margin:6px 0 0">Upload only — cropping isn't included in this build.</div>
       </div>
     </div>
@@ -1073,25 +1199,32 @@ function renderProfileTab(u){
   <div class="card">
     <h2>Localization</h2>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('timezone',this.value);lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
     </div>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('language',this.value);lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="lfSecretAction(this.value==='Monday start'?'weekMonday':'weekOther')">${['Sunday','Monday'].map(w=>`<option ${u.weekStart===w?'selected':''}>${w} start</option>`).join('')}</select>
-    <button class="primary" onclick="saveLocalization()">Save</button>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('weekStart',this.value);lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" style="margin-top:8px;width:100%" onchange="lfSecretAction(this.value==='Team Admin'?'tierTeamAdmin':'tierOther')">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!s.used?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+  </div>
+  <div class="card">
+    <h2>Change Password</h2>
+    <input id="changeCurrentPassword" type="password" autocomplete="current-password" placeholder="Current password">
+    <input id="changeNewPassword" type="password" autocomplete="new-password" placeholder="New password" style="margin-top:8px">
+    <input id="changeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password" style="margin-top:8px">
+    <div class="notice" style="margin-top:8px">Use at least 8 characters.</div>
+    <button class="primary" style="margin-top:8px" onclick="changePassword()">Change password</button>
   </div>`;
 }
 function renderCustomisationTab(u){
-  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy'],['forest','Quiet Forest','Natural, grounded and calm'],['paper','Warm Paper','Warm editorial, tactile and softer']];
+  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy']];
   const a=ambientSettings(u);
   return subCustomisation(themes,u,a);
 }
@@ -1103,8 +1236,8 @@ function subCustomisation(themes,u,a){
         <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
       </button>`).join('')}</div>
     </div>
-    <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>Sapphire</b></span></div>
-      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
+    <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
     <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
@@ -1123,6 +1256,10 @@ function onAvatarChange(e){
   reader.readAsDataURL(file);
 }
 function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); u.bio=document.getElementById('prof_bio').value.trim(); }); }
+function saveLocalizationField(field,value){
+  const u=currentUser(); if(!u)return;
+  updateUser(user=>{ user[field]=value; });
+}
 function saveLocalization(){
   const tz=document.getElementById('prof_tz')?.value;
   const lang=document.getElementById('prof_lang')?.value;
@@ -1137,14 +1274,36 @@ function saveLocalization(){
   });
   if(exact) activateCobaltSequence();
 }
+async function changePassword(){
+  const current=document.getElementById('changeCurrentPassword')?.value||'';
+  const next=document.getElementById('changeNewPassword')?.value||'';
+  const confirm=document.getElementById('changeConfirmPassword')?.value||'';
+  const u=currentUser();
+  if(!u){ toast('Please sign in again.'); return; }
+  if(!current||!next||!confirm){ toast('Please complete all password fields.'); return; }
+  if(!(await verifyPassword(current,u))){ toast('Current password is incorrect.'); return; }
+  if(next.length<8){ toast('New password must be at least 8 characters.'); return; }
+  if(next!==confirm){ toast('New passwords do not match.'); return; }
+  if(await verifyPassword(next,u)){ toast('Choose a different password.'); return; }
+  const hash=await hashPassword(next);
+  updateUser(user=>{user.passwordHash=hash;});
+  ['changeCurrentPassword','changeNewPassword','changeConfirmPassword'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  toast('Password changed successfully.');
+}
+
 function saveTier(){
   const tier=document.getElementById('prof_tier')?.value;
   updateUser(u=>{
     u.tier=tier||u.tier;
+    if(!['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold') u.colorTheme='sapphire';
     if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   });
+  const saved=currentUser();
+  if(saved?.tier==='Team Admin') lfSecretAction('tierTeamAdmin');
+  else lfSecretAction('tierOther');
 }
-
 function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
     ${['Google','Apple','GitHub'].map(p=>`<div class="row-between">
