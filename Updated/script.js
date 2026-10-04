@@ -607,11 +607,10 @@ function taskFormHtml(){
     <div class="new-task-fields">
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
       <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
-      <select id="nt_pri" aria-label="Priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
-      <select id="nt_recur" aria-label="Repeat task" onchange="updateRepeatIntervalFields()"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <label class="task-field-select" aria-label="Priority">Priority<select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
       <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)">
     </div>
-    <div id="nt_repeatInterval" class="repeat-interval" hidden>
+    <div id="nt_repeatInterval" class="repeat-interval">
       <div class="repeat-row">
         <label for="nt_interval">Interval</label>
         <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
@@ -675,7 +674,7 @@ function recurringDates(start,end,recur){
   return dates;
 }
 function updateRepeatIntervalFields(){
-  const recur=document.getElementById('nt_recur')?.value||'none';
+  const recur='daily';
   const box=document.getElementById('nt_repeatInterval');
   const interval=document.getElementById('nt_interval');
   const endWrap=document.getElementById('nt_repeatEndWrap');
