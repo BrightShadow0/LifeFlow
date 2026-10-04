@@ -732,9 +732,9 @@ function renderCalendar(){
     const cellDate = new Date(calYear,calMonth,d);
     const isToday = cellDate.toDateString()===new Date().toDateString();
     const dayTasks = state.tasks.filter(t=>t.due && new Date(t.due).toDateString()===cellDate.toDateString());
-    cells += `<div class="cal-day ${isToday?'today':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
+    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
       <div class="dnum">${d}</div>
-      ${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}
+      <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
     </div>`;
   }
   return `<div class="card"><div class="cal-head">
