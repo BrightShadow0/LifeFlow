@@ -612,12 +612,14 @@ function taskFormHtml(){
       <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)">
     </div>
     <div id="nt_repeatInterval" class="repeat-interval" hidden>
-      <label for="nt_interval">Interval</label>
-      <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
-        <option value="week">One week (starting today)</option>
-        <option value="month">One month (starting today)</option>
-        <option value="other">Other</option>
-      </select>
+      <div class="repeat-row">
+        <label for="nt_interval">Interval</label>
+        <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
+          <option value="week">One week (starting today)</option>
+          <option value="month">One month (starting today)</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
       <div id="nt_repeatEndWrap" class="repeat-end" hidden>
         <label for="nt_repeatEnd">End date</label>
         <input id="nt_repeatEnd" type="date" aria-label="Repeat end date">
