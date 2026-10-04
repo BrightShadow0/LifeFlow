@@ -39,6 +39,10 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .cal-day.today{border-color:var(--accent);}
 .cal-day .dnum{font-weight:600;margin-bottom:3px;}
 .cal-day .citem{background:var(--accent-soft);border-radius:5px;padding:1px 4px;margin-bottom:2px;font-size:10px;cursor:grab;}
+.cal-day.has-scroll .cal-tasks{max-height:58px;overflow-y:auto;overflow-x:hidden;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--accent) transparent;}
+.cal-day.has-scroll .cal-tasks::-webkit-scrollbar{width:5px;}
+.cal-day.has-scroll .cal-tasks::-webkit-scrollbar-track{background:transparent;border-radius:8px;}
+.cal-day.has-scroll .cal-tasks::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;border:1px solid var(--card);}
 .dow{font-size:10px;color:var(--muted);text-align:center;}
 
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -115,7 +119,7 @@ button,input,select{font:inherit}button:focus-visible,input:focus-visible,select
 .auth-auto{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-auto.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .auth-theme{display:flex;align-items:center;gap:6px}.auth-theme-label{font-size:10px;letter-spacing:.08em;color:var(--muted)}
 .auth-theme-btn{border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-theme-btn.active{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
-.term-layout{display:grid;grid-template-columns:minmax(0,1fr) 150px}.termcontent{padding:30px;font:13px ui-monospace,SFMono-Regular,Consolas,monospace}.termtheme{border-left:1px solid var(--border);padding:30px 20px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}.termtheme h3{font:700 11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);letter-spacing:.1em;margin:0}.termtheme p{font:11px Inter,system-ui,sans-serif;color:var(--muted);line-height:1.5;margin:0}.auth-bulb{position:relative;width:56px;height:92px;border:0;background:transparent;cursor:pointer;touch-action:none}.auth-bulb .theme-cord{position:absolute;left:50%;top:0;width:2px;height:34px;background:#66707c;transform:translateX(-50%)}.auth-bulb .theme-bulb-base{position:absolute;left:50%;top:29px;width:22px;height:13px;border-radius:4px 4px 2px 2px;background:#4b535d;transform:translateX(-50%) translateY(var(--pull-y,0px));box-shadow:0 3px 0 #353b43,0 6px 0 #4b535d,0 9px 0 #353b43;z-index:2}.auth-bulb .theme-bulb{position:absolute;left:50%;top:39px;width:38px;height:46px;border-radius:48% 48% 50% 50% / 42% 42% 58% 58%;background:#3b424b;transform:translateX(-50%) translateY(var(--pull-y,0px));box-shadow:0 0 0 3px var(--border);z-index:1}.auth-bulb .theme-bulb:before{content:"";position:absolute;left:8px;top:7px;width:8px;height:21px;border-radius:50%;background:#ffffff22;transform:rotate(18deg)}.auth-bulb .theme-bulb:after{content:"";position:absolute;left:50%;top:13px;width:9px;height:19px;border:2px solid #9ba3ad;border-top:0;border-bottom:0;border-radius:0 0 50% 50%;transform:translateX(-50%);opacity:.7}.auth-bulb.light .theme-bulb{background:#fff3a6;box-shadow:0 0 0 3px var(--border),0 0 28px #f6d65f}.auth-bulb.light .theme-bulb:after{border-color:#b78622;opacity:.9}.auth-bulb .theme-cord{height:calc(34px + var(--pull-y,0px))}
+.term-layout{display:grid;grid-template-columns:minmax(0,1fr) 150px}.termcontent{padding:30px;font:13px ui-monospace,SFMono-Regular,Consolas,monospace}.termtheme{border-left:1px solid var(--border);padding:30px 20px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px}.termtheme h3{font:700 11px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);letter-spacing:.1em;margin:0}.termtheme p{font:11px Inter,system-ui,sans-serif;color:var(--muted);line-height:1.5;margin:0}.auth-bulb{position:relative;width:56px;height:122px;border:0;background:transparent;cursor:pointer;touch-action:none;margin-top:4px}.auth-bulb .theme-cord{position:absolute;left:50%;top:0;width:2px;height:44px;background:#66707c;transform:translateX(-50%)}.auth-bulb .theme-bulb-group{position:absolute;left:50%;top:39px;width:38px;height:56px;transform:translateX(-50%) translateY(var(--pull-y,0px));transition:transform .08s ease-out;z-index:2}.auth-bulb .theme-bulb-base{position:absolute;left:50%;top:0;width:22px;height:13px;border-radius:4px 4px 2px 2px;background:#4b535d;transform:translateX(-50%);box-shadow:0 3px 0 #353b43,0 6px 0 #4b535d,0 9px 0 #353b43;z-index:2}.auth-bulb .theme-bulb{position:absolute;left:50%;top:10px;width:38px;height:46px;border-radius:48% 48% 50% 50% / 42% 42% 58% 58%;background:#3b424b;transform:translateX(-50%);box-shadow:0 0 0 3px var(--border);z-index:1}.auth-bulb .theme-bulb:before{content:"";position:absolute;left:8px;top:7px;width:8px;height:21px;border-radius:50%;background:#ffffff22;transform:rotate(18deg)}.auth-bulb .theme-bulb:after{content:"";position:absolute;left:50%;top:13px;width:9px;height:19px;border:2px solid #9ba3ad;border-top:0;border-bottom:0;border-radius:0 0 50% 50%;transform:translateX(-50%);opacity:.7}.auth-bulb.light .theme-bulb{background:#fff3a6;box-shadow:0 0 0 3px var(--border),0 0 28px #f6d65f}.auth-bulb.light .theme-bulb:after{border-color:#b78622;opacity:.9}.auth-bulb .theme-cord{height:calc(44px + var(--pull-y,0px))}.termtheme>p{margin:8px 0 0;line-height:1.5}
 .termeyebrow{color:#6e8972;font-size:12px;margin-bottom:8px}.termcontent h2{font:800 30px Inter,system-ui,sans-serif;margin:0 0 8px;color:var(--text);text-transform:none;letter-spacing:-.04em}.termcontent p{font:12px Inter,system-ui,sans-serif;color:var(--muted);margin:0 0 20px}
 #authScreen input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:6px;margin:0 0 12px;width:100%}
 #authScreen input:focus{border-color:var(--accent)}.authstep label{display:block;color:var(--muted);margin:12px 0 7px;font-size:11px;letter-spacing:.06em}
@@ -322,7 +326,7 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 .termtheme h3{color:var(--accent)!important}
 .termtheme p{line-height:1.6!important}
 
-.app-content{background:radial-gradient(circle at 92% 0,var(--lf-glow),transparent 25%)}
+.app-content{background:transparent}
 .app-top h1{letter-spacing:-.055em}
 .app-top p{transition:color .2s ease}
 .hero-welcome{
@@ -1048,12 +1052,18 @@ body{scrollbar-gutter:stable}
 
 /* Cobalt sequence */
 :root[data-theme="cobalt"]{
-  --bg:#050b18;--card:#091426;--panel2:#0d1d35;--text:#eaf4ff;--muted:#7f9abd;--border:#16345b;--accent:#198cff;--accent-soft:#0b2a52;--danger:#ff667a;--warn:#ffbd5a;--ok:#43d9a3;color-scheme:dark;
+  /* Keep the normal LifeFlow surfaces while the sequence is active.
+     The event should not recolour the entire application. */
+  --bg:#080b0f;--card:#10151c;--panel2:#151b23;--text:#f3f6fa;--muted:#8993a1;--border:#27303b;
+  --accent:#4d8dff;--accent-soft:#102b5e;--danger:#ff7777;--warn:#e7c56a;--ok:#52d9bb;color-scheme:dark;
 }
-:root[data-theme="cobalt"] body{background:radial-gradient(circle at 72% 0,rgba(25,140,255,.18),transparent 30%),linear-gradient(140deg,#050b18,#020611);transition:background 1s ease,color .5s ease}
-:root[data-theme="cobalt"] .app-sidebar{background:#030914;border-right-color:#123765}
-:root[data-theme="cobalt"] .hero-welcome{background:radial-gradient(circle at 88% 15%,#0c3d78 0,transparent 38%),linear-gradient(120deg,#071a32,#040b17)}
-:root[data-theme="cobalt"] .card{box-shadow:0 12px 35px rgba(0,80,180,.12)}
+:root[data-theme="cobalt"] body{background:var(--bg);transition:background .35s ease,color .25s ease}
+:root[data-theme="cobalt"] .app-sidebar{background:#0a0d12;border-right-color:var(--border)}
+:root[data-theme="cobalt"] .hero-welcome{
+  background:radial-gradient(circle at 88% 15%,#182a46 0,transparent 34%),linear-gradient(120deg,#101b2a,#10151c 72%);
+  border-color:#30445f;
+}
+:root[data-theme="cobalt"] .card{box-shadow:none}
 .lf-secret-field{position:relative}
 .lf-secret-dot{position:absolute;right:12px;top:50%;width:8px;height:8px;margin-top:-12px;border-radius:50%;background:#168cff;box-shadow:0 0 0 4px rgba(22,140,255,.12),0 0 14px rgba(22,140,255,.6);pointer-events:none}
 .lf-secret-action{background:#0d78d8!important;border-color:#168cff!important}
@@ -1144,11 +1154,6 @@ body{scrollbar-gutter:stable}
   background:linear-gradient(180deg,var(--bg),#030508);
   border-right-color:var(--border);
 }
-:root[data-theme="dark"][data-color-theme] .app-top .avatar{
-  background:var(--accent-soft);
-  border-color:var(--accent);
-  color:var(--accent);
-}
 :root[data-theme="dark"][data-color-theme] .hero-welcome{
   background:
     radial-gradient(circle at 88% 15%,color-mix(in srgb,var(--accent) 42%,transparent) 0,transparent 36%),
@@ -1198,11 +1203,6 @@ body{scrollbar-gutter:stable}
 :root[data-theme="light"][data-color-theme] .app-sidebar{
   background:linear-gradient(180deg,#fff,var(--bg));
   border-right-color:var(--border);
-}
-:root[data-theme="light"][data-color-theme] .app-top .avatar{
-  background:var(--accent-soft);
-  border-color:color-mix(in srgb,var(--accent) 45%,var(--border));
-  color:var(--accent);
 }
 :root[data-theme="light"][data-color-theme] .hero-welcome{
   background:
@@ -1325,3 +1325,442 @@ body{scrollbar-gutter:stable}
 :root[data-color-theme] .task{background:color-mix(in srgb,var(--card) 88%,var(--accent-soft));border-color:var(--border);}
 :root[data-color-theme] .task:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 8%,transparent);}
 :root[data-color-theme] .navlabel{color:color-mix(in srgb,var(--muted) 78%,var(--accent));}
+
+
+/* Sidebar hierarchy fix
+   Keep Workspace navigation and Data & Account in normal document flow.
+   The previous absolute positioning caused the two sections to overlap. */
+.app-sidebar .sidebottom{
+  position:static;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  width:auto;
+  margin-top:22px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.app-sidebar #nav{
+  position:static;
+  display:flex;
+  flex-direction:column;
+  flex:0 0 auto;
+  gap:5px;
+}
+.app-sidebar .sidebottom{
+  flex:0 0 auto;
+}
+@media(max-width:600px){
+  .app-sidebar .sidebottom{display:none}
+}
+
+
+/* FINAL SIDEBAR LAYOUT
+   Workspace owns all six workspace links.
+   Data & Account owns only the two exports.
+   Log out stays at the bottom. */
+.app-sidebar{
+  display:flex !important;
+  flex-direction:column !important;
+}
+.app-sidebar #nav{
+  display:flex !important;
+  flex-direction:column !important;
+  flex:0 0 auto !important;
+  gap:5px !important;
+}
+.app-sidebar .sidebottom{
+  position:static !important;
+  display:flex !important;
+  flex-direction:column !important;
+  flex:1 1 auto !important;
+  width:auto !important;
+  margin:22px 0 0 !important;
+  padding:14px 0 0 !important;
+  border-top:1px solid var(--border) !important;
+}
+.app-sidebar .sidebar-data{
+  display:flex;
+  flex-direction:column;
+  flex:0 0 auto;
+}
+.app-sidebar .sidebottom .logout{
+  margin-top:auto !important;
+}
+@media(max-width:900px){
+  .app-sidebar .sidebottom{
+    flex:0 0 auto !important;
+  }
+}
+@media(max-width:600px){
+  .app-sidebar .sidebottom{display:none !important}
+}
+
+
+/* Align the sidebar with the main LifeFlow content start.
+   It was anchored to the viewport at 0px while the content begins
+   inside the app with a 30px top inset. */
+.app-sidebar{
+  top:30px !important;
+  bottom:0 !important;
+}
+@media(max-width:900px){
+  .app-sidebar{
+    top:24px !important;
+    bottom:0 !important;
+  }
+}
+@media(max-width:600px){
+  .app-sidebar{
+    top:auto !important;
+    bottom:10px !important;
+  }
+}
+
+
+/* Final app-shell alignment: keep the main content anchored to the same top edge as the sidebar.
+   The large empty band above page content must not be part of the app layout. */
+#app{
+  position:relative;
+  min-height:100dvh;
+}
+#app .app-content{
+  position:relative !important;
+  top:0 !important;
+  margin-top:0 !important;
+  padding-top:30px !important;
+  transform:none !important;
+  align-self:flex-start !important;
+}
+#app .app-top{
+  margin-top:0 !important;
+}
+#app .app-sidebar{
+  top:0 !important;
+  bottom:0 !important;
+}
+@media(max-width:900px){
+  #app .app-content{padding-top:24px !important;}
+  #app .app-sidebar{top:0 !important;bottom:0 !important;}
+}
+@media(max-width:600px){
+  #app .app-content{padding-top:18px !important;}
+  #app .app-sidebar{top:auto !important;bottom:10px !important;}
+}
+
+
+/* Hide the main page scrollbar while keeping normal page scrolling. */
+html,body{
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar{
+  display:none;
+  width:0;
+  height:0;
+}
+
+
+/* Final shell fix: the sidebar must stay beside the page, not enter normal document flow. */
+@media(min-width:901px){
+  #app .app-sidebar{
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:238px !important;
+    height:100dvh !important;
+    overflow-y:auto !important;
+  }
+  #app .app-content{
+    position:relative !important;
+    margin-left:238px !important;
+    width:calc(100% - 238px) !important;
+    min-height:100dvh !important;
+    padding:30px 34px 80px !important;
+  }
+  #app #main{
+    width:100%;
+    max-width:1180px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}
+@media(max-width:900px){
+  #app .app-sidebar{position:fixed !important;}
+}
+
+
+/* Put the desktop sidebar directly into the empty left column beside the workspace. */
+@media(min-width:901px){
+  #app{position:relative !important;}
+  #app>.app-sidebar{
+    display:flex !important;
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:245px !important;
+    height:100vh !important;
+    margin:0 !important;
+    z-index:100 !important;
+    overflow-y:auto !important;
+  }
+  #app>.app-content{
+    display:block !important;
+    position:relative !important;
+    margin-left:245px !important;
+    width:calc(100% - 245px) !important;
+    max-width:none !important;
+    min-height:100vh !important;
+  }
+  #app>.app-content>#main{
+    width:min(1180px,100%) !important;
+    max-width:1180px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+}
+
+
+/* DESKTOP APP SHELL: sidebar occupies the left column, workspace occupies the rest. */
+@media (min-width: 901px){
+  #app{
+    display:grid !important;
+    grid-template-columns:245px minmax(0,1fr) !important;
+    align-items:stretch !important;
+    min-height:100dvh !important;
+    width:100% !important;
+  }
+  #app > .app-sidebar{
+    grid-column:1 !important;
+    grid-row:1 !important;
+    position:sticky !important;
+    top:0 !important;
+    left:auto !important;
+    width:245px !important;
+    height:100dvh !important;
+    max-height:100dvh !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    overflow-y:auto !important;
+    z-index:10 !important;
+  }
+  #app > .app-content{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:30px 34px 80px !important;
+    box-sizing:border-box !important;
+  }
+  #app > .app-content > #main{
+    width:100% !important;
+    max-width:1180px !important;
+    margin:0 auto !important;
+  }
+}
+
+
+/* FINAL DESKTOP SHELL: simple two-column flex layout. */
+@media (min-width:901px){
+  #app{
+    display:flex !important;
+    flex-direction:row !important;
+    align-items:stretch !important;
+    width:100% !important;
+    min-height:100dvh !important;
+  }
+  #app > .app-sidebar{
+    position:sticky !important;
+    top:0 !important;
+    left:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    flex:0 0 245px !important;
+    width:245px !important;
+    height:100dvh !important;
+    max-height:100dvh !important;
+    margin:0 !important;
+    overflow-y:auto !important;
+    align-self:flex-start !important;
+    box-sizing:border-box !important;
+  }
+  #app > .app-content{
+    position:relative !important;
+    flex:1 1 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:30px 34px 80px !important;
+    box-sizing:border-box !important;
+    align-self:flex-start !important;
+  }
+  #app > .app-content > .app-top,
+  #app > .app-content > #main{
+    width:min(1180px,100%) !important;
+    max-width:1180px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+  #app > .app-content > .app-top{margin-top:0 !important;margin-bottom:24px !important;}
+}
+
+
+/* Align customisation choices cleanly inside their cards. */
+.theme-preview{
+  min-height:114px !important;
+  height:auto !important;
+  padding:10px !important;
+  align-items:center !important;
+  overflow:hidden !important;
+}
+.theme-preview-window{
+  width:110px !important;
+  height:92px !important;
+  min-width:0 !important;
+  align-self:center !important;
+}
+.theme-preview-copy{
+  min-width:0 !important;
+  align-self:center !important;
+}
+.theme-check{
+  right:10px !important;
+  top:50% !important;
+  bottom:auto !important;
+  transform:translateY(-50%) !important;
+}
+.color-combination{
+  min-height:66px !important;
+  height:auto !important;
+  align-items:center !important;
+}
+.color-swatch{
+  align-self:center !important;
+}
+.color-combination > span:nth-child(2){
+  min-width:0 !important;
+  align-self:center !important;
+}
+.color-combination > b{
+  align-self:center !important;
+}
+@media(max-width:900px){
+  .theme-preview{
+    min-height:108px !important;
+  }
+  .theme-preview-window{
+    width:100% !important;
+    height:78px !important;
+  }
+}
+@media(max-width:600px){
+  .theme-preview{
+    min-height:108px !important;
+    grid-template-columns:1fr !important;
+  }
+  .theme-preview-window{
+    width:100% !important;
+    height:82px !important;
+  }
+}
+
+/* Tasks toolbar */
+.clear-completed-button{
+  flex:0 0 auto;
+  padding:7px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--card);
+  color:var(--text);
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+}
+.clear-completed-button:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.clear-completed-button:disabled{
+  opacity:.45;
+  cursor:default;
+}
+
+/* Theme-aware completed-task control */
+.clear-completed-button{
+  appearance:none;
+  flex:0 0 auto;
+  padding:7px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--accent-soft);
+  color:var(--accent);
+  font:inherit;
+  font-size:12px;
+  font-weight:650;
+  line-height:1.2;
+  box-shadow:none;
+  cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,color .2s ease,opacity .2s ease;
+}
+.clear-completed-button:hover:not(:disabled){
+  background:color-mix(in srgb,var(--accent) 12%,var(--card));
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.clear-completed-button:disabled{
+  background:var(--bg);
+  color:var(--muted);
+  border-color:var(--border);
+  opacity:.55;
+  cursor:default;
+}
+
+.color-combination.locked{
+  opacity:.62;
+}
+.color-combination.locked .color-lock{
+  position:absolute;
+  top:9px;
+  left:9px;
+  z-index:2;
+  font-size:11px;
+}
+.color-combination.locked{
+  position:relative;
+}
+
+/* Dark theme: button labels stay readable against every colour combination. */
+:root[data-theme="dark"] button,
+:root[data-theme="dark"] button.primary,
+:root[data-theme="dark"] .hbtn,
+:root[data-theme="dark"] .subnav button,
+:root[data-theme="dark"] .time-fields button,
+:root[data-theme="dark"] .time-edit button,
+:root[data-theme="dark"] .clear-completed-button{
+  color:#fff;
+}
+:root[data-theme="dark"] button.primary{
+  color:#fff;
+}
+:root[data-theme="dark"] .clock-display button.active,
+:root[data-theme="dark"] .clock-number.selected{
+  color:#fff;
+}
+:root[data-theme="light"] button.primary,
+:root[data-theme="light"] .profile-save,
+:root[data-theme="light"] .settings-save,
+:root[data-theme="light"] [class*="save"] button.primary,
+:root[data-theme="light"] .btn-primary{
+  color:#fff !important;
+}
+.cal-empty{min-height:115px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-sizing:border-box;background:color-mix(in srgb,var(--card) 82%,var(--bg));}
+.profile-upload{margin-top:2px}
+.profile-file-input{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+.profile-file-input::file-selector-button{margin-right:10px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:13px;font-weight:650;cursor:pointer}
+.profile-file-input::file-selector-button:hover{background:color-mix(in srgb,var(--accent-soft) 70%,var(--accent))}
