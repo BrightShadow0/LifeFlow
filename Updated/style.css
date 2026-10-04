@@ -1849,3 +1849,21 @@ body::-webkit-scrollbar{
   .repeat-interval{grid-template-columns:1fr;}
   .repeat-end{grid-column:1 / -1;grid-template-columns:1fr;}
 }
+
+.task-field-select{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:650;
+}
+.task-field-select select{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
