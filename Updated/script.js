@@ -606,11 +606,23 @@ function taskFormHtml(){
   return `<div class="card"><h2>New Task</h2>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off" style="flex:2;min-width:140px">
-      <input id="nt_due" type="date" aria-label="Due date">
+      <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
       <select id="nt_pri" aria-label="Priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
-      <select id="nt_recur" aria-label="Repeat task"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <select id="nt_recur" aria-label="Repeat task" onchange="updateRepeatIntervalFields()"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
       <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)" style="min-width:100px">
       <button class="primary" onclick="submitTask()" aria-label="Add task">Add</button>
+    </div>
+    <div id="nt_repeatInterval" class="repeat-interval" hidden>
+      <label for="nt_interval">Interval</label>
+      <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
+        <option value="week">One week (starting today)</option>
+        <option value="month">One month (starting today)</option>
+        <option value="other">Other</option>
+      </select>
+      <div id="nt_repeatEndWrap" class="repeat-end" hidden>
+        <label for="nt_repeatEnd">End date</label>
+        <input id="nt_repeatEnd" type="date" aria-label="Repeat end date">
+      </div>
     </div>
     <div class="time-fields"><label>Optional time interval</label>
       <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
@@ -626,16 +638,82 @@ function updateNewTimeButtons(){
   if(b) b.textContent=newTaskTimes.end||'End time';
   const e=document.getElementById('nt_timeError'); if(e)e.textContent='';
 }
+function dateInputToLocalDate(value){
+  const [y,m,d]=String(value||'').split('-').map(Number);
+  return y&&m&&d ? new Date(y,m-1,d) : null;
+}
+function dateToIsoDay(d){
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()).toISOString();
+}
+function repeatEndDate(start,mode){
+  const end=new Date(start);
+  if(mode==='week') end.setDate(end.getDate()+6);
+  else if(mode==='month'){
+    const day=start.getDate();
+    end.setDate(1);
+    end.setMonth(end.getMonth()+1);
+    end.setDate(day-1);
+  }
+  return end;
+}
+function recurringDates(start,end,recur){
+  const dates=[];
+  const d=new Date(start);
+  while(d<=end){
+    dates.push(new Date(d));
+    if(recur==='daily') d.setDate(d.getDate()+1);
+    else if(recur==='weekly') d.setDate(d.getDate()+7);
+    else if(recur==='monthly'){
+      const day=d.getDate();
+      d.setDate(1);
+      d.setMonth(d.getMonth()+1);
+      d.setDate(Math.min(day,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
+    }else break;
+  }
+  return dates;
+}
+function updateRepeatIntervalFields(){
+  const recur=document.getElementById('nt_recur')?.value||'none';
+  const box=document.getElementById('nt_repeatInterval');
+  const interval=document.getElementById('nt_interval');
+  const endWrap=document.getElementById('nt_repeatEndWrap');
+  const end=document.getElementById('nt_repeatEnd');
+  const due=document.getElementById('nt_due')?.value||'';
+  if(!box)return;
+  box.hidden=recur==='none';
+  if(end) end.min=due||new Date().toISOString().slice(0,10);
+  if(interval && interval.value==='other' && endWrap) endWrap.hidden=false;
+  else if(endWrap) endWrap.hidden=true;
+}
 function submitTask(){
   const title = document.getElementById('nt_title').value.trim();
   if(!title) return;
-  const due = document.getElementById('nt_due').value;
+  const dueValue = document.getElementById('nt_due').value;
   const tags = document.getElementById('nt_tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const recur=document.getElementById('nt_recur').value;
+  const interval=document.getElementById('nt_interval')?.value||'week';
+  const startDate=dateInputToLocalDate(dueValue)||new Date();
+  startDate.setHours(0,0,0,0);
   if((newTaskTimes.start||newTaskTimes.end) && !validInterval(newTaskTimes.start,newTaskTimes.end)){document.getElementById('nt_timeError').textContent='Choose both times, with the end after the start (same day).';return;}
-  addTask({title, due: due? new Date(due).toISOString(): null, startTime:newTaskTimes.start||null, endTime:newTaskTimes.end||null, priority:document.getElementById('nt_pri').value, recur:document.getElementById('nt_recur').value, tags});
+  if(recur==='none'){
+    addTask({title, due: dueValue?dateToIsoDay(startDate):null, startTime:newTaskTimes.start||null, endTime:newTaskTimes.end||null, priority:document.getElementById('nt_pri').value, recur:'none', tags});
+    clearNewTimes();
+    return;
+  }
+  let endDate;
+  if(interval==='other'){
+    endDate=dateInputToLocalDate(document.getElementById('nt_repeatEnd')?.value);
+    if(!endDate){ toast('Choose an end date for the repeat interval.'); return; }
+  }else endDate=repeatEndDate(startDate,interval);
+  endDate.setHours(0,0,0,0);
+  if(endDate<startDate){ toast('The repeat end date must be on or after the start date.'); return; }
+  const dates=recurringDates(startDate,endDate,recur);
+  const base={title,tags,priority:document.getElementById('nt_pri').value,startTime:newTaskTimes.start||null,endTime:newTaskTimes.end||null,status:'todo',done:false,subtasks:[],repeatPattern:recur,repeatEnd:dateToIsoDay(endDate)};
+  dates.forEach(d=>state.tasks.push(Object.assign({id:uid(),due:dateToIsoDay(d),recur:'none'},base)));
+  save();
   clearNewTimes();
+  renderApp();
 }
-
 function taskRow(t){
   const overdue=!!(t.due && new Date(t.due)<new Date() && !t.done);
   const priorityLabel=t.priority==='high'?'High':t.priority==='medium'?'Medium':'Low';
