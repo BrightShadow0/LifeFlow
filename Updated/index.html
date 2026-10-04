@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LifeFlow Planner</title>
-<link rel="stylesheet" href="style.css?v=20261003-2">
+<link rel="stylesheet" href="dist/style.min.css?v=20261003-8">
 </head>
 <body>
 
@@ -80,8 +80,8 @@
     </div>
     <aside class="termtheme">
       <h3>THEME CONTROL</h3>
-      <button id="authBulb" class="auth-bulb" type="button" aria-label="Switch between dark and light mode" title="Pull to switch theme"><span class="theme-cord"></span><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></button>
       <p>Pull the bulb to switch manually. AUTO follows your system setting only when selected.</p>
+      <button id="authBulb" class="auth-bulb" type="button" aria-label="Switch between dark and light mode" title="Pull to switch theme"><span class="theme-cord" aria-hidden="true"></span><span class="theme-bulb-group"><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></span></button>
     </aside></div>
   </div>
 </div>
@@ -96,11 +96,11 @@
       <button class="sidebar-action logout" onclick="doLogout()" title="Log out"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button>
     </div>
   </aside>
-  <div class="app-content"><div class="app-top"><div><h1 id="pageTitle">Today</h1><p id="pageSubtitle">Your planning workspace</p></div><div class="app-top-actions"><button id="themePull" class="theme-pull top-theme-pull" type="button" aria-label="Pull the lightbulb cord to change theme" title="Pull the cord to switch between dark and light mode"><span class="theme-cord"></span><span class="theme-bulb-assembly"><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></span></button><div id="topAvatar" class="avatar" aria-label="Profile">L</div></div></div><main id="main"></main></div>
+  <div class="app-content"><div class="app-top"><div><h1 id="pageTitle">Today</h1><p id="pageSubtitle">Your planning workspace</p></div><div class="app-top-actions"><button id="themePull" class="theme-pull top-theme-pull" type="button" aria-label="Pull the lightbulb cord to change theme" title="Pull the cord to switch between dark and light mode"><span class="theme-cord"></span><span class="theme-bulb-assembly"><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></span></button></div></div><main id="main"></main></div>
 </div>
 <div id="toastHost" aria-live="polite"></div>
 
 <div id="timeEditorHost"></div><div id="clockHost"></div>
-<script src="script.js?v=20261003-2"></script>
+<script src="script.js?v=20261003-10" defer></script>
 </body>
 </html>
