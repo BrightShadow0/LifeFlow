@@ -709,13 +709,42 @@ function renderList(){
 
 function renderBoard(){
   const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
-  return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards into a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
-    '<div class="col col-'+k+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="this.classList.remove(\'drag-over\');dropCol(event,\''+k+'\')">'+
-      '<h3><span class="col-title">'+l+'</span></h3><div class="col-drop-hint">Drop here</div>'+
-      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')">'+
+  return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards anywhere inside a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
+    '<div class="col col-'+k+'" ondragover="kanbanDragOver(event,this)" ondragleave="kanbanDragLeave(event,this)" ondrop="kanbanDrop(event,this,\''+k+'\')">'+
+      '<h3><span class="col-title">'+l+'</span></h3><div class="col-drop-hint">Drop anywhere in this column</div>'+
+      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')" ondragover="kanbanCardDragOver(event,this)" ondrop="kanbanCardDrop(event,this,\''+k+'\')">'+
         '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+(t.recur!=='none'?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
         '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
         '<button class="linklike" onclick="editTaskTime('+t.id+')">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
+}
+function kanbanDragOver(e,col){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  col.classList.add('drag-over');
+}
+function kanbanDragLeave(e,col){
+  const next=e.relatedTarget;
+  if(next && col.contains(next)) return;
+  col.classList.remove('drag-over');
+}
+function kanbanDrop(e,col,targetStatus){
+  e.preventDefault();
+  e.stopPropagation();
+  col.classList.remove('drag-over');
+  dropCol(e,targetStatus);
+}
+function kanbanCardDragOver(e,card){
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect='move';
+  card.closest('.col')?.classList.add('drag-over');
+}
+function kanbanCardDrop(e,card,targetStatus){
+  e.preventDefault();
+  e.stopPropagation();
+  const col=card.closest('.col');
+  col?.classList.remove('drag-over');
+  dropCol(e,targetStatus);
 }
 function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done=col==='done'; save(); renderApp(); } }
 
