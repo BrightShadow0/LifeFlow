@@ -1780,9 +1780,10 @@ body::-webkit-scrollbar{
 /* New Task layout: keep the action separate so dynamic repeat fields never push it sideways. */
 .new-task-fields{
   display:grid;
-  grid-template-columns:minmax(180px,2fr) minmax(145px,1fr) minmax(120px,.8fr) minmax(140px,1fr) minmax(140px,1.2fr);
-  gap:6px;
+  grid-template-columns:2fr 1.4fr .9fr 1fr 1.3fr;
+  gap:8px;
   align-items:stretch;
+  width:100%;
 }
 .new-task-fields input,
 .new-task-fields select{min-width:0;width:100%;box-sizing:border-box;}
@@ -1803,3 +1804,7 @@ body::-webkit-scrollbar{
   .new-task-fields input:first-child{grid-column:auto;}
   .new-task-actions .primary{width:100%;}
 }
+
+/* Let the repeat controls breathe across the available card width. */
+.repeat-interval select{min-width:260px}
+.repeat-end input{min-width:250px}
