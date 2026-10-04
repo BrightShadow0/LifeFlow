@@ -39,9 +39,10 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 .cal-day.today{border-color:var(--accent);}
 .cal-day .dnum{font-weight:600;margin-bottom:3px;}
 .cal-day .citem{background:var(--accent-soft);border-radius:5px;padding:1px 4px;margin-bottom:2px;font-size:10px;cursor:grab;}
-.cal-day.has-scroll .cal-tasks{max-height:58px;overflow-y:auto;overflow-x:hidden;padding-right:2px;scrollbar-width:thin;}
+.cal-day.has-scroll .cal-tasks{max-height:58px;overflow-y:auto;overflow-x:hidden;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--accent) transparent;}
 .cal-day.has-scroll .cal-tasks::-webkit-scrollbar{width:5px;}
-.cal-day.has-scroll .cal-tasks::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+.cal-day.has-scroll .cal-tasks::-webkit-scrollbar-track{background:transparent;border-radius:8px;}
+.cal-day.has-scroll .cal-tasks::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;border:1px solid var(--card);}
 .dow{font-size:10px;color:var(--muted);text-align:center;}
 
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
