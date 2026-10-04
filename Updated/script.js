@@ -608,7 +608,6 @@ function taskFormHtml(){
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
       <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
       <label class="task-field-select" aria-label="Priority">Priority<select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
-      <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)">
     </div>
     <div id="nt_repeatInterval" class="repeat-interval">
       <div class="repeat-row">
