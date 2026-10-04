@@ -604,13 +604,12 @@ function setView(v){ view=v; clearNewTimes(); renderApp(); }
 
 function taskFormHtml(){
   return `<div class="card"><h2>New Task</h2>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off" style="flex:2;min-width:140px">
+    <div class="new-task-fields">
+      <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
       <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
       <select id="nt_pri" aria-label="Priority"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select>
       <select id="nt_recur" aria-label="Repeat task" onchange="updateRepeatIntervalFields()"><option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
-      <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)" style="min-width:100px">
-      <button class="primary" onclick="submitTask()" aria-label="Add task">Add</button>
+      <input id="nt_tags" aria-label="Task tags" placeholder="tags (comma)">
     </div>
     <div id="nt_repeatInterval" class="repeat-interval" hidden>
       <label for="nt_interval">Interval</label>
@@ -628,7 +627,8 @@ function taskFormHtml(){
       <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
       <button type="button" id="nt_end" onclick="openClock('new','end')">End time</button>
       <button type="button" onclick="clearNewTimes()" aria-label="Clear task times">Clear times</button>
-    </div><div id="nt_timeError" class="time-error" role="alert"></div></div>`;
+    </div><div id="nt_timeError" class="time-error" role="alert"></div>
+    <div class="new-task-actions"><button class="primary" onclick="submitTask()" aria-label="Add task">Add</button></div></div>`;
 }
 let newTaskTimes={start:'',end:''};
 function clearNewTimes(){ newTaskTimes={start:'',end:''}; updateNewTimeButtons(); }
