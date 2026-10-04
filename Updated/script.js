@@ -603,14 +603,14 @@ function renderNav(){
 function setView(v){ view=v; clearNewTimes(); renderApp(); }
 
 function taskFormHtml(){
-  return `<div class="card"><h2>New Task</h2>
+  return `<div class="card new-task-card"><h2>New Task</h2>
     <div class="new-task-fields">
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
       <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
-      <label class="task-field-select" aria-label="Priority">Priority<select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
+      <label class="task-field-select" aria-label="Priority"><span>Priority</span><select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
     </div>
     <div id="nt_repeatInterval" class="repeat-interval">
-      <div class="repeat-row">
+      <div class="repeat-field">
         <label for="nt_interval">Interval</label>
         <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
           <option value="week">One week (starting today)</option>
@@ -618,16 +618,17 @@ function taskFormHtml(){
           <option value="other">Other</option>
         </select>
       </div>
-      <div id="nt_repeatEndWrap" class="repeat-end" hidden>
+      <div id="nt_repeatEndWrap" class="repeat-field repeat-end" hidden>
         <label for="nt_repeatEnd">End date</label>
         <input id="nt_repeatEnd" type="date" aria-label="Repeat end date">
       </div>
     </div>
-    <div class="time-fields"><label>Optional time interval</label>
-      <button type="button" id="nt_start" onclick="openClock('new','start')">Start time</button><span>to</span>
-      <button type="button" id="nt_end" onclick="openClock('new','end')">End time</button>
-      <button type="button" onclick="clearNewTimes()" aria-label="Clear task times">Clear times</button>
-    </div><div id="nt_timeError" class="time-error" role="alert"></div>
+    <div class="time-fields new-task-time"><span class="time-label">Time</span>
+      <button type="button" id="nt_start" onclick="openClock('new','start')">Start</button><span>to</span>
+      <button type="button" id="nt_end" onclick="openClock('new','end')">End</button>
+      <button class="clear-timing" type="button" onclick="clearNewTimes()" aria-label="Clear timing">Clear timing</button>
+    </div>
+    <div id="nt_timeError" class="time-error" role="alert"></div>
     <div class="new-task-actions"><button class="primary" onclick="submitTask()" aria-label="Add task">Add</button></div></div>`;
 }
 let newTaskTimes={start:'',end:''};
@@ -689,8 +690,8 @@ function submitTask(){
   const title = document.getElementById('nt_title').value.trim();
   if(!title) return;
   const dueValue = document.getElementById('nt_due').value;
-  const tags = document.getElementById('nt_tags').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const recur=document.getElementById('nt_recur').value;
+  const tags = [];
+  const recur='daily';
   const interval=document.getElementById('nt_interval')?.value||'week';
   const startDate=dateInputToLocalDate(dueValue)||new Date();
   startDate.setHours(0,0,0,0);
