@@ -1867,3 +1867,76 @@ body::-webkit-scrollbar{
   min-width:0;
   box-sizing:border-box;
 }
+
+/* New Task compact layout */
+.new-task-card .new-task-fields{
+  display:grid;
+  grid-template-columns:minmax(280px,1.8fr) minmax(180px,1fr) minmax(180px,1fr);
+  gap:14px;
+  width:100%;
+  align-items:end;
+}
+.new-task-card .new-task-fields>input,
+.new-task-card .task-field-select,
+.new-task-card .task-field-select select{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
+.new-task-card .task-field-select{gap:5px;align-items:stretch}
+.new-task-card .task-field-select span,
+.new-task-card .repeat-field label,
+.new-task-card .time-label{
+  font-size:12px;
+  font-weight:650;
+  color:var(--muted);
+}
+.new-task-card .repeat-interval{
+  display:grid;
+  grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);
+  gap:16px;
+  width:100%;
+  margin-top:16px;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-sizing:border-box;
+}
+.new-task-card .repeat-field{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  min-width:0;
+}
+.new-task-card .repeat-field select,
+.new-task-card .repeat-field input{
+  width:100%;
+  min-width:0;
+  box-sizing:border-box;
+  min-height:40px;
+}
+.new-task-card .new-task-time{
+  display:grid;
+  grid-template-columns:auto auto auto auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  margin-top:18px;
+}
+.new-task-card .new-task-time .clear-timing{
+  justify-self:end;
+}
+.new-task-card .new-task-actions{
+  margin-top:18px;
+}
+@media(max-width:800px){
+  .new-task-card .new-task-fields,
+  .new-task-card .repeat-interval{grid-template-columns:1fr 1fr;}
+  .new-task-card .new-task-fields>input:first-child{grid-column:1 / -1;}
+}
+@media(max-width:560px){
+  .new-task-card .new-task-fields,
+  .new-task-card .repeat-interval{grid-template-columns:1fr;}
+  .new-task-card .new-task-fields>input:first-child{grid-column:auto;}
+  .new-task-card .new-task-time{grid-template-columns:auto auto auto auto;justify-content:start;}
+  .new-task-card .new-task-time .clear-timing{justify-self:start;}
+}
