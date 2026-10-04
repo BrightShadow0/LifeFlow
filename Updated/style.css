@@ -1765,11 +1765,29 @@ body::-webkit-scrollbar{
 .profile-file-input::file-selector-button{margin-right:10px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:var(--accent-soft);color:var(--accent);font:inherit;font-size:13px;font-weight:650;cursor:pointer}
 .profile-file-input::file-selector-button:hover{background:color-mix(in srgb,var(--accent-soft) 70%,var(--accent))}
 
-.repeat-interval{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:color-mix(in srgb,var(--card) 86%,var(--bg));}
-.repeat-interval>label{font-size:12px;font-weight:650;color:var(--muted)}
-.repeat-interval select,.repeat-end input{min-height:34px;box-sizing:border-box}
-.repeat-end{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.repeat-end label{font-size:12px;color:var(--muted)}
+.repeat-interval{
+  display:grid;
+  grid-template-columns:auto minmax(220px,420px);
+  align-items:center;
+  gap:8px 10px;
+  margin-top:9px;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--card) 86%,var(--bg));
+  box-sizing:border-box;
+  width:100%;
+}
+.repeat-interval>label{font-size:12px;font-weight:650;color:var(--muted);white-space:nowrap}
+.repeat-interval select,.repeat-end input{min-height:34px;box-sizing:border-box;width:100%;min-width:0}
+.repeat-end{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:auto minmax(180px,280px);
+  align-items:center;
+  gap:8px 10px;
+}
+.repeat-end label{font-size:12px;color:var(--muted);white-space:nowrap}
 
 /* Keep the clock picker stable while its dial re-renders. */
 .clock-dialog{animation:none!important;transition:none!important}
@@ -1805,6 +1823,8 @@ body::-webkit-scrollbar{
   .new-task-actions .primary{width:100%;}
 }
 
-/* Let the repeat controls breathe across the available card width. */
-.repeat-interval select{min-width:260px}
-.repeat-end input{min-width:250px}
+
+@media(max-width:560px){
+  .repeat-interval{grid-template-columns:1fr;}
+  .repeat-end{grid-column:1 / -1;grid-template-columns:1fr;}
+}
