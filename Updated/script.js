@@ -722,8 +722,8 @@ function taskRow(t){
   return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" tabindex="0">'+
     '<span class="task-priority-dot" aria-hidden="true" title="'+priorityLabel+' priority"></span>'+
     '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleDone('+t.id+')" aria-label="Toggle task completion">'+
-    '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+(t.recur!=='none'?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
-    '<div class="meta"><span class="priority-label">'+priorityLabel+'</span>'+(t.due?'<span class="'+(overdue?'due-overdue':'')+'">'+(overdue?'Overdue · ':'')+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+(t.recur!=='none'?'<span class="recurrence-text">↻ '+t.recur+'</span>':'')+t.tags.map(g=>'<span>#'+esc(g)+'</span>').join('')+'</div>'+
+    '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
+    '<div class="meta"><span class="priority-label">'+priorityLabel+'</span>'+(t.due?'<span class="'+(overdue?'due-overdue':'')+'">'+(overdue?'Overdue · ':'')+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-text">↻ '+esc(t.repeatPattern||t.recur)+'</span>':'')+t.tags.map(g=>'<span>#'+esc(g)+'</span>').join('')+'</div>'+
     (subTotal?'<div class="subtask-list">'+t.subtasks.map(s=>'<label class="sub"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSub('+t.id+','+s.id+')"> <span>'+esc(s.text)+'</span></label>').join('')+'</div>':'')+
     '<div class="subtask-add"><input placeholder="+ add subtask" aria-label="Add subtask" onkeydown="if(event.key===\'Enter\'){addSubtask('+t.id+',this.value);this.value=\'\';}"></div></div>'+
     '<button class="del task-action" onclick="editTaskTime('+t.id+')" aria-label="Edit time">◷</button><button class="del task-action" onclick="deleteTask('+t.id+')" aria-label="Delete task">✕</button></div>';
@@ -791,7 +791,7 @@ function renderBoard(){
     '<div class="col col-'+k+'" ondragover="kanbanDragOver(event,this)" ondragleave="kanbanDragLeave(event,this)" ondrop="kanbanDrop(event,this,\''+k+'\')">'+
       '<h3><span class="col-title">'+l+'</span></h3><div class="col-drop-hint">Drop anywhere in this column</div>'+
       state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')" ondragover="kanbanCardDragOver(event,this)" ondrop="kanbanCardDrop(event,this,\''+k+'\')">'+
-        '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+(t.recur!=='none'?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
+        '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
         '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
         '<button class="linklike" onclick="editTaskTime('+t.id+')">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
 }
