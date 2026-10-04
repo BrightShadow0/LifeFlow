@@ -892,7 +892,7 @@ function saveTaskTimes(){
 }
 function openClock(target,field){
   const stored=target==='new'?newTaskTimes:timeEdit; if(!stored)return;
-  const initial=stored[field]|| (field==='end'?'10:00':'09:00');
+  const initial=stored[field]|| (field==='end'?'13:00':'12:00');
   clock={target,field,hour:Number(initial.slice(0,2)),minute:Number(initial.slice(3)),active:'hour',keyboard:false};
   renderClock();
 }
