@@ -370,7 +370,9 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function applyBackground(u){const b=u&&u.background||{type:'default',value:''};document.documentElement.style.setProperty('--lf-background',b.type==='color'?b.value:'');document.documentElement.style.setProperty('--lf-background-image',b.type==='image'?'url("'+b.value+'")':'none');document.body.classList.toggle('lf-custom-background',b.type!=='default');}\nfunction setBackground(type,value){updateUser(function(u){u.background={type:type,value:value||''};});}\nfunction applyTheme(theme){
+function applyBackground(u){const b=u&&u.background||{type:'default',value:''};document.documentElement.style.setProperty('--lf-background',b.type==='color'?b.value:'');document.documentElement.style.setProperty('--lf-background-image',b.type==='image'?'url("'+b.value+'")':'none');document.body.classList.toggle('lf-custom-background',b.type!=='default');}
+function setBackground(type,value){updateUser(function(u){u.background={type:type,value:value||''};});}
+function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
