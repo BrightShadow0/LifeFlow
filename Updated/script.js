@@ -34,17 +34,59 @@ const OAUTH_CONFIG = {
 const SESSION_TTL_MS = 7 * 24 * 3600 * 1000;
 const PBKDF2_ITERATIONS = 100000;
 
-let state = load();
+function defaultProfileState(email){
+  return {tasks:[], currentUser:email||null};
+}
+function profileStateKey(email){
+  return 'lifeflow2_state_'+encodeURIComponent(String(email||''));
+}
+function readLegacyState(){
+  try{
+    const r=localStorage.getItem('lifeflow2_state');
+    if(r) return JSON.parse(r);
+  }catch(e){}
+  return null;
+}
+function storedSessionEmail(){
+  try{
+    const s=JSON.parse(localStorage.getItem('lifeflow2_session')||'null');
+    if(s && s.token && s.email && s.expiresAt && Date.now()<s.expiresAt) return s.email;
+  }catch(e){}
+  return null;
+}
+function loadForUser(email){
+  if(!email) return defaultProfileState(null);
+  const key=profileStateKey(email);
+  try{
+    const r=localStorage.getItem(key);
+    if(r) return Object.assign(defaultProfileState(email),JSON.parse(r),{currentUser:email});
+  }catch(e){}
+  const legacy=readLegacyState();
+  if(legacy && legacy.currentUser===email){
+    const migrated=Object.assign(defaultProfileState(email),legacy,{currentUser:email});
+    try{ localStorage.setItem(key,JSON.stringify(migrated)); }catch(e){}
+    return migrated;
+  }
+  return defaultProfileState(email);
+}
+
+let state = loadForUser(storedSessionEmail());
 let view = 'today';
 let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
 let taskMasterActivationActive = false;
 
-function load(){
-  try{ const r = localStorage.getItem('lifeflow2_state'); if(r) return JSON.parse(r); }catch(e){}
-  return {tasks:[]};
+function load(){ return loadForUser(state?.currentUser || storedSessionEmail()); }
+function save(){
+  try{
+    if(state && state.currentUser) localStorage.setItem(profileStateKey(state.currentUser),JSON.stringify(state));
+  }catch(e){}
 }
-function save(){ try{ localStorage.setItem('lifeflow2_state', JSON.stringify(state)); }catch(e){} }
-window.addEventListener('storage', e=>{ if(e.key==='lifeflow2_state'){ state = load(); renderApp(); } });
+window.addEventListener('storage', e=>{
+  if(e.key===profileStateKey(state?.currentUser)){
+    state=loadForUser(state.currentUser);
+    renderApp();
+  }
+});
 
 function base64url(bytes){
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -97,10 +139,15 @@ function getSession(){
 function createSession(email){
   const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS};
   localStorage.setItem('lifeflow2_session', JSON.stringify(s));
-  state.currentUser = email; save();
+  state=loadForUser(email);
+  state.currentUser=email;
+  save();
   return s;
 }
-function destroySession(){ localStorage.removeItem('lifeflow2_session'); state.currentUser = null; save(); }
+function destroySession(){
+  localStorage.removeItem('lifeflow2_session');
+  state=defaultProfileState(null);
+}
 
 setInterval(()=>{ if(!getSession() && document.getElementById('app').style.display==='block') doLogout(); }, 60000);
 
@@ -244,6 +291,8 @@ function demoOAuthLogin(provider){
   const email = 'demo_'+provider.toLowerCase()+'@lifeflow.local';
   const users = getUsers();
   if(!users[email]) users[email] = newUserRecord(email, {name:'Demo '+provider+' User', workspace:'Demo Workspace', verified:true});
+  users[email].tier='Free';
+  users[email].colorTheme='platinum';
   users[email].connected[provider] = true;
   saveUsers(users);
   createSession(email);
