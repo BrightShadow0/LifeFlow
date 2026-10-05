@@ -18,7 +18,7 @@
     <div id="stepLogin" class="authstep active">
       <label for="loginEmail">EMAIL / USERNAME</label><input id="loginEmail" placeholder="Email">
       <label for="loginPass">PASSWORD</label>
-      <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"></button></div>
+      <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
       <div id="loginError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
       <button class="primary" onclick="doLogin()" style="width:100%">Login</button>
       <div class="oauth-row" id="oauthRow"></div>
@@ -32,7 +32,7 @@
       <div class="stepdots"><span class="on"></span><span></span><span></span></div>
       <input id="signupEmail" placeholder="Email" oninput="validateSignup1()">
       <div id="emailHint" class="notice" style="display:none"></div>
-      <div class="auth-password-wrap"><input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('signupPass',this)"></button></div>
+      <div class="auth-password-wrap"><input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('signupPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
       <div id="signupError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
       <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
       <div id="passHint" class="notice" style="display:none"></div>
