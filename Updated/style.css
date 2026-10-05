@@ -1940,3 +1940,33 @@ body::-webkit-scrollbar{
   .new-task-card .new-task-time{grid-template-columns:auto auto auto auto;justify-content:start;}
   .new-task-card .new-task-time .clear-timing{justify-self:start;}
 }
+
+/* Theme-aware native selection menus */
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] select option,
+:root[data-theme="forest"] select,
+:root[data-theme="forest"] select option,
+:root[data-theme="cobalt"] select,
+:root[data-theme="cobalt"] select option{
+  color-scheme:dark;
+}
+:root[data-theme="light"] select,
+:root[data-theme="light"] select option,
+:root[data-theme="paper"] select,
+:root[data-theme="paper"] select option{
+  color-scheme:light;
+}
+select{
+  background-color:var(--card);
+  color:var(--text);
+  border-color:var(--border);
+  accent-color:var(--accent);
+}
+select option{
+  background-color:var(--card);
+  color:var(--text);
+}
+select option:checked{
+  background-color:var(--accent-soft);
+  color:var(--text);
+}
