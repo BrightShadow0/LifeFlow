@@ -2044,3 +2044,38 @@ body:has(#authScreen){
     justify-self:start;
   }
 }
+
+.auth-password-wrap{
+  position:relative;
+  display:block;
+  width:100%;
+}
+.auth-password-wrap>input{
+  width:100%;
+  box-sizing:border-box;
+  padding-right:48px;
+}
+.password-eye{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:17px;
+  line-height:30px;
+  cursor:pointer;
+  box-shadow:none;
+}
+.password-eye:hover,
+.password-eye:focus-visible{
+  color:var(--accent);
+  background:transparent;
+  box-shadow:none;
+  transform:translateY(-50%);
+}
+.password-eye.is-visible{color:var(--accent)}
