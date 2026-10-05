@@ -626,6 +626,7 @@ function taskFormHtml(){
     <div class="time-fields new-task-time"><span class="time-label">Time</span>
       <button type="button" id="nt_start" onclick="openClock('new','start')">Start</button><span>to</span>
       <button type="button" id="nt_end" onclick="openClock('new','end')">End</button>
+      <input id="nt_tags" class="new-task-tags" aria-label="Tags" placeholder="Tags">
       <button class="clear-timing" type="button" onclick="clearNewTimes()" aria-label="Clear timing">Clear timing</button>
     </div>
     <div id="nt_timeError" class="time-error" role="alert"></div>
@@ -690,7 +691,7 @@ function submitTask(){
   const title = document.getElementById('nt_title').value.trim();
   if(!title) return;
   const dueValue = document.getElementById('nt_due').value;
-  const tags = [];
+  const tags = document.getElementById('nt_tags')?.value.split(',').map(s=>s.trim()).filter(Boolean)||[];
   const recur='daily';
   const interval=document.getElementById('nt_interval')?.value||'week';
   const startDate=dateInputToLocalDate(dueValue)||new Date();
