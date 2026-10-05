@@ -137,6 +137,7 @@ function getSession(){
   return null;
 }
 function createSession(email){
+  normalizeDemoProfile(email);
   const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS};
   localStorage.setItem('lifeflow2_session', JSON.stringify(s));
   state=loadForUser(email);
@@ -430,6 +431,14 @@ async function doReset(){
   saveUsers(users);
   pendingReset = null;
   showStep('stepDone');
+}
+function normalizeDemoProfile(email){
+  if(!email || !email.startsWith('demo_') || !email.endsWith('@lifeflow.local')) return;
+  const users=getUsers();
+  if(!users[email]) return;
+  users[email].tier='Free';
+  users[email].colorTheme='platinum';
+  saveUsers(users);
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
 function effectiveTheme(u){ if(u?.autoTheme) return systemTheme(); return ['dark','light','forest','paper'].includes(u?.theme)?u.theme:'dark'; }
@@ -1570,6 +1579,7 @@ async function deleteAccount(){
   await handleOAuthCallback();
   const session = getSession();
   if(session && !document.getElementById('app').style.display.includes('block')){
+    normalizeDemoProfile(session.email);
     state.currentUser = session.email;
     enterApp();
   }
