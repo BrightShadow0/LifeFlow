@@ -1,3 +1,8 @@
+function togglePasswordVisibility(inputId, checkbox){
+  const input=document.getElementById(inputId);
+  if(!input)return;
+  input.type=checkbox?.checked?'text':'password';
+}
 
 const OAUTH_CONFIG = {
   google: {
