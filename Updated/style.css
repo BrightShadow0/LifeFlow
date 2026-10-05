@@ -1983,29 +1983,21 @@ select option:checked{
   flex:1 1 280px;
 }
 
-.auth-password-wrap{
-  position:relative;
-  width:100%;
+.auth-password-wrap{width:100%}.auth-password-wrap>input{width:100%;box-sizing:border-box}.show-password{display:flex;align-items:center;gap:5px;margin-top:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none;width:max-content}.show-password input{width:15px;height:15px;margin:0;accent-color:var(--accent);cursor:pointer}.show-password span{line-height:1.2}
+
+/* Authentication terminal stays fixed to the viewport and never creates a page scrollbar. */
+body:has(#authScreen){
+  overflow:hidden;
 }
-.auth-password-wrap>input{
-  width:100%;
+#authScreen{
+  height:100dvh;
+  min-height:100dvh;
+  max-height:100dvh;
+  overflow:hidden;
   box-sizing:border-box;
 }
-.show-password{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  margin-top:7px;
-  color:var(--muted);
-  font-size:12px;
-  cursor:pointer;
-  user-select:none;
+#authScreen .card{
+  max-height:calc(100dvh - 28px);
+  overflow:hidden;
+  box-sizing:border-box;
 }
-.show-password input{
-  width:15px;
-  height:15px;
-  margin:0;
-  accent-color:var(--accent);
-  cursor:pointer;
-}
-.show-password span{line-height:1.2}
