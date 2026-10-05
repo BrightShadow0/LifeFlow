@@ -370,7 +370,7 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function applyTheme(theme){
+function applyBackground(u){const b=u&&u.background||{type:'default',value:''};document.documentElement.style.setProperty('--lf-background',b.type==='color'?b.value:'');document.documentElement.style.setProperty('--lf-background-image',b.type==='image'?'url("'+b.value+'")':'none');document.body.classList.toggle('lf-custom-background',b.type!=='default');}\nfunction setBackground(type,value){updateUser(function(u){u.background={type:type,value:value||''};});}\nfunction applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const actual=allowed.includes(theme)?theme:'dark';
   document.documentElement.setAttribute('data-theme',actual);
@@ -379,7 +379,7 @@ function applyTheme(theme){
   let color=u?.colorTheme||'sapphire';
   if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'sapphire');
-  document.documentElement.style.setProperty('--lf-theme-transition','1');
+  document.documentElement.style.setProperty('--lf-theme-transition','1'); applyBackground(u);
 }
 function setTheme(theme){
   const u=currentUser();
@@ -1342,14 +1342,14 @@ function subCustomisation(themes,u,a){
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
       <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
-    <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
+    <div class="card"><div class="custom-section-head"><div><h2>Background</h2><p>Customise the LifeFlow background. Available on every account tier.</p></div></div><div class="background-options"><button class="background-choice" onclick="setBackground('default','')">Default</button><button class="background-choice bg-soft" onclick="setBackground('color','#eef2f7')">Soft</button><button class="background-choice bg-warm" onclick="setBackground('color','#f4eadf')">Warm</button><label class="background-upload">Use image<input type="file" accept="image/*" onchange="uploadBackground(event)"></label></div></div><div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
       <div class="intensity-control"><div class="intensity-copy"><strong>Visual intensity</strong><span>Control how noticeable the ambient effect feels.</span></div><div class="intensity-slider"><input type="range" aria-label="Visual intensity" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)"><div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div></div><b class="intensity-value">${a.ambientIntensity}</b></div>
     </div>
     <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
   </div>`;
 }
-function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
+function uploadBackground(e){const f=e.target.files&&e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=function(){setBackground('image',reader.result);};reader.readAsDataURL(f);}\nfunction updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
 function resetCustomisation(){updateUser(u=>{u.theme='dark';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
