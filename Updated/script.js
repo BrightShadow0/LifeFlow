@@ -1351,7 +1351,8 @@ function subCustomisation(themes,u,a){
     <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
   </div>`;
 }
-function uploadBackground(e){const f=e.target.files&&e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=function(){setBackground('image',reader.result);};reader.readAsDataURL(f);}\nfunction updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
+function uploadBackground(e){const f=e.target.files&&e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=function(){setBackground('image',reader.result);};reader.readAsDataURL(f);}
+function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
 function resetCustomisation(){updateUser(u=>{u.theme='dark';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
