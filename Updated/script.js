@@ -538,7 +538,6 @@ function initAuthTheme(){
   const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
   bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
 }
-function setTheme(theme){ const u=currentUser(); const next=theme === 'light' ? 'light' : 'dark'; if(u) updateUser(user=>user.theme=next); else applyTheme(next); }
 let themePullStartY=null, themePullActive=false;
 function initThemePull(){
   const b=document.getElementById('themePull'); if(!b) return;
@@ -568,7 +567,7 @@ function initThemePull(){
       // Forest and Paper remain accessible from Profile > Customisation > Theme.
       const quickTheme=(currentUser()?.theme||'dark')==='dark'?'light':'dark';
       const u=currentUser();
-      if(u) updateUser(user=>user.theme=quickTheme);
+      if(u) updateUser(user=>{user.theme=quickTheme;user.autoTheme=false;});
       else applyTheme(quickTheme);
       setTimeout(()=>b.classList.remove('snap'),300);
     }
