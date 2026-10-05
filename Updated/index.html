@@ -17,7 +17,8 @@
     <div class="term-layout"><div class="termcontent"><div class="termeyebrow">LifeFlow OS / Authentication Service</div><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle">Sign in to access your personal planning workspace.</p>
     <div id="stepLogin" class="authstep active">
       <label for="loginEmail">EMAIL / USERNAME</label><input id="loginEmail" placeholder="Email">
-      <label for="loginPass">PASSWORD</label><input id="loginPass" type="password" placeholder="Password">
+      <label for="loginPass">PASSWORD</label>
+      <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><label class="show-password"><input type="checkbox" onchange="togglePasswordVisibility('loginPass',this)"> <span>Show password</span></label></div>
       <div id="loginError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
       <button class="primary" onclick="doLogin()" style="width:100%">Login</button>
       <div class="oauth-row" id="oauthRow"></div>
@@ -31,7 +32,7 @@
       <div class="stepdots"><span class="on"></span><span></span><span></span></div>
       <input id="signupEmail" placeholder="Email" oninput="validateSignup1()">
       <div id="emailHint" class="notice" style="display:none"></div>
-      <input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()">
+      <div class="auth-password-wrap"><input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()"><label class="show-password"><input type="checkbox" onchange="togglePasswordVisibility('signupPass',this)"> <span>Show password</span></label></div>
       <div id="signupError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
       <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
       <div id="passHint" class="notice" style="display:none"></div>
