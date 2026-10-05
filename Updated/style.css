@@ -2055,27 +2055,4 @@ body:has(#authScreen){
   box-sizing:border-box;
   padding-right:48px;
 }
-.password-eye{
-  position:absolute;
-  right:10px;
-  top:50%;
-  transform:translateY(-50%);
-  width:30px;
-  height:30px;
-  padding:0;
-  border:0;
-  background:transparent;
-  color:var(--muted);
-  font-size:17px;
-  line-height:30px;
-  cursor:pointer;
-  box-shadow:none;
-}
-.password-eye:hover,
-.password-eye:focus-visible{
-  color:var(--accent);
-  background:transparent;
-  box-shadow:none;
-  transform:translateY(-50%);
-}
-.password-eye.is-visible{color:var(--accent)}
+.password-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:30px;height:30px;padding:0;border:0;background:transparent;color:var(--muted);cursor:pointer;box-shadow:none}.password-eye::before{content:"";position:absolute;left:5px;top:9px;width:18px;height:11px;border:1.7px solid currentColor;border-radius:70% 35%;transform:rotate(0deg)}.password-eye::after{content:"";position:absolute;left:12px;top:12px;width:5px;height:5px;border-radius:50%;background:currentColor}.password-eye:hover,.password-eye:focus-visible{color:var(--accent);background:transparent;box-shadow:none;transform:translateY(-50%)}.password-eye.is-visible{color:var(--accent)}
