@@ -288,10 +288,10 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 
 /* LifeFlow visual system */
 :root{
-  --lf-glow:rgba(121,227,109,.16);
+  --lf-glow:rgba(100,170,255,.16);
   --lf-shadow:0 18px 50px rgba(0,0,0,.18);
 }
-:root[data-theme="light"]{--lf-glow:rgba(63,159,56,.12);--lf-shadow:0 18px 45px rgba(30,60,35,.10)}
+:root[data-theme="light"]{--lf-glow:rgba(40,107,232,.12);--lf-shadow:0 18px 45px rgba(30,60,35,.10)}
 
 #authScreen{
   position:relative;
