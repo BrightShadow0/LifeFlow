@@ -345,13 +345,21 @@ function enterApp(){
   window.lifeFlowLoginEntry=true;
   renderApp();
 }
+function resetAuthViewport(){
+  window.scrollTo(0,0);
+  if(document.scrollingElement) document.scrollingElement.scrollTop=0;
+  document.documentElement.scrollTop=0;
+  document.body.scrollTop=0;
+}
 function doLogout(){
   destroySession();
   document.body.classList.add('auth-open');
   document.getElementById('app').style.display='none';
   document.getElementById('authScreen').style.display='block';
+  resetAuthViewport();
   document.getElementById('oauthNotice').style.display='none';
   showStep('stepLogin');
+  requestAnimationFrame(resetAuthViewport);
 }
 let pendingReset=null;
 function sendReset(){
