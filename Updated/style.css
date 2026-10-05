@@ -1982,3 +1982,30 @@ select option:checked{
   grid-column:auto;
   flex:1 1 280px;
 }
+
+.auth-password-wrap{
+  position:relative;
+  width:100%;
+}
+.auth-password-wrap>input{
+  width:100%;
+  box-sizing:border-box;
+}
+.show-password{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:7px;
+  color:var(--muted);
+  font-size:12px;
+  cursor:pointer;
+  user-select:none;
+}
+.show-password input{
+  width:15px;
+  height:15px;
+  margin:0;
+  accent-color:var(--accent);
+  cursor:pointer;
+}
+.show-password span{line-height:1.2}
