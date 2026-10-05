@@ -1,7 +1,14 @@
-function togglePasswordVisibility(inputId, checkbox){
+function togglePasswordVisibility(inputId, button){
   const input=document.getElementById(inputId);
   if(!input)return;
-  input.type=checkbox?.checked?'text':'password';
+  const visible=input.type==='password';
+  input.type=visible?'text':'password';
+  if(button){
+    button.classList.toggle('is-visible',visible);
+    button.setAttribute('aria-label',visible?'Hide password':'Show password');
+    button.title=visible?'Hide password':'Show password';
+    button.textContent=visible?'◉':'◌';
+  }
 }
 
 const OAUTH_CONFIG = {
