@@ -1,3 +1,8 @@
+function passwordEyeIcon(hidden){
+  return hidden
+    ? '<svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/><path d="M8 39 56 5" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>'
+    : '<svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg>';
+}
 function togglePasswordVisibility(inputId, button){
   const input=document.getElementById(inputId);
   if(!input)return;
@@ -7,7 +12,7 @@ function togglePasswordVisibility(inputId, button){
     button.classList.toggle('is-visible',visible);
     button.setAttribute('aria-label',visible?'Hide password':'Show password');
     button.title=visible?'Hide password':'Show password';
-    button.textContent=visible?'◉':'◌';
+    button.innerHTML=passwordEyeIcon(!visible);
   }
 }
 
