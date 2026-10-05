@@ -1970,3 +1970,15 @@ select option:checked{
   background-color:var(--accent-soft);
   color:var(--text);
 }
+
+.new-task-card .new-task-tags{
+  min-width:180px;
+  width:100%;
+  box-sizing:border-box;
+  min-height:40px;
+  margin:0;
+}
+.new-task-card .new-task-time .new-task-tags{
+  grid-column:auto;
+  flex:1 1 280px;
+}
