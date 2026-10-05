@@ -164,7 +164,7 @@ function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_user
 function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
 function newUserRecord(email, extra){
   return Object.assign({
-    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark',
+    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark', autoTheme:false,
     workspace:'My Workspace', timezone:'UTC',
     language:'en', weekStart:'Sunday', tier:'Free',
     connected:{Google:false,Apple:false,GitHub:false},
@@ -432,24 +432,35 @@ async function doReset(){
   showStep('stepDone');
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function applyBackground(u){const b=u&&u.background||{type:'default',value:''};document.documentElement.style.setProperty('--lf-background',b.type==='color'?b.value:'');document.documentElement.style.setProperty('--lf-background-image',b.type==='image'?'url("'+b.value+'")':'none');document.body.classList.toggle('lf-custom-background',b.type!=='default');}
-function setBackground(type,value){updateUser(function(u){u.background={type:type,value:value||''};});}
+function effectiveTheme(u){ if(u?.autoTheme) return systemTheme(); return ['dark','light','forest','paper'].includes(u?.theme)?u.theme:'dark'; }
 function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
-  const actual=allowed.includes(theme)?theme:'dark';
-  document.documentElement.setAttribute('data-theme',actual);
   const u=currentUser();
+  const actual=u?.autoTheme ? systemTheme() : (allowed.includes(theme)?theme:'dark');
+  document.documentElement.setAttribute('data-theme',actual);
   const entitledColors=['sapphire','emerald','gold','platinum','amethyst','ruby'];
   let color=u?.colorTheme||'sapphire';
   if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'sapphire');
-  document.documentElement.style.setProperty('--lf-theme-transition','1'); applyBackground(u);
+  document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
   const u=currentUser();
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
-  if(u) updateUser(user=>user.theme=next); else applyTheme(next);
+  if(u) updateUser(user=>{user.theme=next;user.autoTheme=false;}); else applyTheme(next);
   if(document.getElementById('app')?.style.display==='block') renderApp();
+}
+function setAutoThemeSync(enabled){
+  const u=currentUser();
+  if(!u)return;
+  updateUser(user=>{ user.autoTheme=!!enabled; if(user.autoTheme) user.theme=systemTheme(); });
+}
+function initAppThemeSync(){
+  if(!window.matchMedia)return;
+  const mq=window.matchMedia('(prefers-color-scheme: light)');
+  const onChange=()=>{ const u=currentUser(); if(u?.autoTheme && document.getElementById('app')?.style.display==='block') renderApp(); };
+  mq.addEventListener?.('change',onChange);
+  mq.addListener?.(onChange);
 }
 function setColorTheme(theme){
   const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
@@ -1399,26 +1410,26 @@ function renderCustomisationTab(u){
 }
 function subCustomisation(themes,u,a){
   return `<div class="customisation-shell">
-    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill">Currently using <b>${themeLabel(u.theme)}</b></span></div>
+    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill">Currently using <b>${themeLabel(effectiveTheme(u))}</b></span></div>
     <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" onclick="resetCustomisation()">Reset to default</button></div>
-      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${u.theme===id}">
-        <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${u.theme===id?'✓':'○'}</span>
+      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${!u.autoTheme&&u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${!u.autoTheme&&u.theme===id}">
+        <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${!u.autoTheme&&u.theme===id?'✓':'○'}</span>
       </button>`).join('')}</div>
     </div>
+      <label class="theme-sync-row"><span><strong>Auto theme sync</strong><small>Automatically match LifeFlow to your device's light or dark mode.</small></span><span class="switch"><input type="checkbox" ${u.autoTheme?"checked":""} onchange="setAutoThemeSync(this.checked)"><span class="slider"></span></span></label>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
       <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
-    <div class="card"><div class="custom-section-head"><div><h2>Background</h2><p>Customise the LifeFlow background. Available on every account tier.</p></div></div><div class="background-options"><button class="background-choice" onclick="setBackground('default','')">Default</button><button class="background-choice bg-soft" onclick="setBackground('color','#eef2f7')">Soft</button><button class="background-choice bg-warm" onclick="setBackground('color','#f4eadf')">Warm</button><label class="background-upload">Use image<input type="file" accept="image/*" onchange="uploadBackground(event)"></label></div></div><div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
+<div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
       <div class="intensity-control"><div class="intensity-copy"><strong>Visual intensity</strong><span>Control how noticeable the ambient effect feels.</span></div><div class="intensity-slider"><input type="range" aria-label="Visual intensity" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)"><div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div></div><b class="intensity-value">${a.ambientIntensity}</b></div>
     </div>
     <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
   </div>`;
 }
-function uploadBackground(e){const f=e.target.files&&e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=function(){setBackground('image',reader.result);};reader.readAsDataURL(f);}
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
@@ -1552,6 +1563,7 @@ async function deleteAccount(){
 
 (async function boot(){
   initAuthTheme();
+  initAppThemeSync();
   renderOAuthButtons();
   if(!window.crypto || !crypto.subtle){
     showOAuthNotice('This app needs the Web Crypto API. Serve it over https or http://localhost (most browsers treat file:// and plain http as insecure).');
