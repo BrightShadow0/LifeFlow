@@ -334,6 +334,7 @@ async function doLogin(){
   enterApp();
 }
 function enterApp(){
+  document.body.classList.remove('auth-open');
   document.getElementById('authScreen').style.display='none';
   document.getElementById('app').style.display='block';
   window.lifeFlowLoginEntry=true;
@@ -341,6 +342,7 @@ function enterApp(){
 }
 function doLogout(){
   destroySession();
+  document.body.classList.add('auth-open');
   document.getElementById('app').style.display='none';
   document.getElementById('authScreen').style.display='block';
   document.getElementById('oauthNotice').style.display='none';
