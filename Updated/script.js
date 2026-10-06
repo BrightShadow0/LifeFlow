@@ -375,6 +375,9 @@ async function doLogin(){
 
   if(!u){ showAuthError('loginError','No account exists for that email here. Accounts are stored per browser and per web address (localhost vs file:// vs a different port each have separate storage) - sign up here, or go back to the address where you created it.'); return; }
 
+  // Empty password is a validation error, not an incorrect-password error.
+  if(!pass){ showAuthError('loginError','Password cannot be empty.'); return; }
+
   if(!u.passwordHash && typeof u.password === 'string'){
     if(u.password !== pass){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
     u.passwordHash = await hashPassword(pass);
