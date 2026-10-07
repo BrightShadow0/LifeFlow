@@ -1756,23 +1756,3 @@ body::-webkit-scrollbar{
 body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overflow-y:hidden!important;overscroll-behavior:none!important;}
 #authScreen{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overflow-y:hidden!important;overscroll-behavior:none!important;}
 #authScreen .term-layout,#authScreen .termcontent,#authScreen .termtheme{overflow:hidden!important;}
-
-/* Restored intended authentication layout */
-#authScreen{max-width:360px;min-height:100dvh;margin:0 auto;display:grid;place-items:center;padding:24px 16px;background:var(--bg);overflow:hidden}
-#authScreen .card{width:min(360px,100%);padding:18px;margin:0;border:1px solid var(--border);border-radius:12px;background:var(--card);box-shadow:0 18px 50px #0004}
-.auth-card-head{margin-bottom:16px}
-.auth-card-head h2{font-size:22px;line-height:1.2;margin:0 0 6px;color:var(--text);font-weight:700;letter-spacing:-.02em}
-.auth-card-head p{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
-#authScreen .authstep label{display:block;color:var(--muted);margin:10px 0 6px;font-size:11px;letter-spacing:.04em}
-#authScreen .authstep>input,#authScreen .auth-password-wrap input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;width:100%;margin:0 0 10px}
-#authScreen .auth-password-wrap{position:relative;margin-bottom:10px}
-#authScreen .auth-password-wrap input{padding-right:46px;margin-bottom:0}
-.password-eye{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:34px;height:34px;padding:5px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:6px}
-.password-eye:hover{color:var(--text);background:var(--accent-soft)}
-.password-eye-icon{width:22px;height:16px;display:block}
-#authScreen button.primary{padding:10px 14px;border-radius:8px;background:var(--accent);color:#071007;font-weight:700}
-#authScreen .oauth-row{display:flex;gap:8px;margin:10px 0}
-#authScreen .oauth-row button{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;cursor:pointer}
-#authScreen .linklike{color:var(--accent)}
-#authScreen .notice{font-size:11px}
-@media(max-height:650px){#authScreen{place-items:start center;padding-top:12px;padding-bottom:12px}.auth-card-head{margin-bottom:10px}#authScreen .authstep label{margin-top:6px}#authScreen .authstep>input,#authScreen .auth-password-wrap input{padding-top:8px;padding-bottom:8px;margin-bottom:7px}#authScreen button.primary{padding:8px 12px}}
