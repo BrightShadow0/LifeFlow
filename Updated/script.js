@@ -1105,7 +1105,111 @@ function updateKnowledgeNote(kind,id,value){const n=noteStore(kind).find(functio
 function deleteKnowledgeNote(kind,id){if(!confirm('Delete this note?'))return;const s=noteStore(kind),i=s.findIndex(function(x){return String(x.id)===String(id);});if(i>=0)s.splice(i,1);window.lfSelectedNote=null;save();renderApp();}
 function downloadKnowledgeNote(kind,id){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;const nl=String.fromCharCode(10);let md='# '+(n.title||'Untitled')+nl+nl;if(kind==='code')md+='```'+(n.language||'text')+nl+(n.code||'')+nl+'```'+nl;else md+=(n.content||'')+nl;const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(n.title||'lifeflow-note').replace(/[^a-z0-9_-]+/gi,'_')+'.md';a.click();URL.revokeObjectURL(a.href);}
 function highlightCode(s){const src=String(s||'');const re=/(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|\b(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\s*\())/g;let out='',last=0,m;while((m=re.exec(src))){out+=esc(src.slice(last,m.index));const t=m[0];let cls='';if(/^\/\//.test(t)||/^#/.test(t)||/^\/\*/.test(t))cls='code-comment';else if(/^(?:"|')/.test(t))cls='code-string';else if(/^(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)$/.test(t))cls='code-keyword';else if(/^\d/.test(t))cls='code-number';else cls='code-function';out+='<span class="'+cls+'">'+esc(t)+'</span>';last=m.index+t.length;}out+=esc(src.slice(last));return out||'<span class="code-placeholder">Start writing code…</span>';}
-function renderNotesManager(){const u=currentUser();if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';ensureKnowledgeState();const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];let html='<div class="knowledge-shell"><div class="card knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Notes Manager</h2><p>Regular notes.</p></div></div><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';html+='<div class="notes-items">';items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" onclick="lfSelectedNote=\''+n.id+'\';renderApp()"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});html+='</div></div><div class="card note-editor">';if(selected){const content=selected.content||'';html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div>';html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value)">'+esc(content)+'</textarea></div><div class="note-help">Regular notes can be downloaded as Markdown.</div>';}else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';html+='</div></div></div>';return html;}function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
+
+function safeMarkdownUrl(url){
+  const raw=String(url||'').trim();
+  try{
+    const parsed=new URL(raw,window.location.href);
+    if(['http:','https:','mailto:'].includes(parsed.protocol)) return parsed.href;
+  }catch(e){}
+  return '#';
+}
+function markdownInline(input){
+  let s=esc(String(input||'')),stash=[];
+  const hold=function(html){const key='@@LFMD'+stash.length+'@@';stash.push(html);return key;};
+  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,alt,url,title){
+    const src=safeMarkdownUrl(url);
+    if(src==='#')return _;
+    return hold('<img class="md-image" src="'+esc(src)+'" alt="'+esc(alt||'')+'"'+(title?' title="'+esc(title)+'"':'')+' loading="lazy">');
+  });
+  s=s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,label,url,title){
+    const href=safeMarkdownUrl(url);
+    if(href==='#')return _;
+    return hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>');
+  });
+  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code>'+code+'</code>');});
+  s=s.replace(/&lt;(https?:\/\/[^&\s]+)&gt;/g,function(_,url){const href=safeMarkdownUrl(url);return href==='#'?_:hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(url)+'</a>');});
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
+  s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
+  s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>').replace(/(?<!_)_([^_\n]+)_(?!_)/g,'<em>$1</em>');
+  s=s.replace(/ {2}\n/g,'<br>');
+  s=s.replace(/\n/g,'<br>');
+  stash.forEach(function(html,i){s=s.replace('@@LFMD'+i+'@@',html);});
+  return s;
+}
+function markdownToHtml(source){
+  const lines=String(source||'').replace(/\r\n?/g,'\n').split('\n');
+  let html='',i=0;
+  const isBlockStart=function(line){
+    return /^\s{0,3}(#{1,6})\s+/.test(line)||/^\s{0,3}(\`\`\`|~~~)/.test(line)||/^\s{0,3}>\s?/.test(line)||/^\s{0,3}([-*+]|\d+\.)\s+/.test(line)||/^\s{0,3}([-*_])(?:\s*\3){2,}\s*$/.test(line);
+  };
+  while(i<lines.length){
+    const line=lines[i];
+    if(!line.trim()){i++;continue;}
+    const fence=line.match(/^\s{0,3}(\`\`\`|~~~)\s*([A-Za-z0-9_+-]*)\s*$/);
+    if(fence){
+      const marker=fence[1],lang=fence[2]||'',buf=[];i++;
+      const closeRe=new RegExp('^\\s{0,3}'+marker.replace(/[.*+?^$(){}|[\]\\]/g,'\\$&')+'\\s*$');
+      while(i<lines.length&&!closeRe.test(lines[i])){buf.push(lines[i]);i++;}
+      if(i<lines.length)i++;
+      html+='<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+esc(buf.join('\n'))+'</code></pre>';
+      continue;
+    }
+    const heading=line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if(heading){const level=heading[1].length;html+='<h'+level+'>'+markdownInline(heading[2])+'</h'+level+'>';i++;continue;}
+    if(/^\s{0,3}((\*\s*){3,}|(-\s*){3,}|(_\s*){3,})$/.test(line)){html+='<hr>';i++;continue;}
+    if(/^\s{0,3}>\s?/.test(line)){
+      const buf=[];while(i<lines.length&&/^\s{0,3}>\s?/.test(lines[i])){buf.push(lines[i].replace(/^\s{0,3}>\s?/,'').replace(/\s+$/,''));i++;}
+      html+='<blockquote>'+markdownToHtml(buf.join('\n'))+'</blockquote>';continue;
+    }
+    const ul=/^\s{0,3}([-*+])\s+(.+)$/.exec(line),ol=/^\s{0,3}(\d+)\.\s+(.+)$/.exec(line);
+    if(ul||ol){
+      const ordered=!!ol,items=[];
+      while(i<lines.length){
+        const m=(ordered?/^\s{0,3}\d+\.\s+(.+)$/:/^\s{0,3}[-*+]\s+(.+)$/).exec(lines[i]);
+        if(!m)break;
+        let item=m[1],checked=false;
+        const task=item.match(/^\[(x|X| )\]\s+(.+)$/);
+        if(task){checked=/x/i.test(task[1]);item=task[2];}
+        items.push('<li>'+(task?'<input class="md-task" type="checkbox" disabled '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
+        i++;
+      }
+      html+='<'+(ordered?'ol':'ul')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
+      continue;
+    }
+    const buf=[line];i++;
+    while(i<lines.length&&lines[i].trim()&&!isBlockStart(lines[i])){buf.push(lines[i]);i++;}
+    html+='<p>'+markdownInline(buf.join('\n'))+'</p>';
+  }
+  return html||'<p class="md-empty">Nothing to preview yet.</p>';
+}
+function setKnowledgeNoteView(mode){window.lfNoteView=mode==='preview'?'preview':'edit';renderApp();}
+function refreshMarkdownPreview(){
+  const source=document.getElementById('kn_content'),preview=document.getElementById('kn_preview');
+  if(source&&preview)preview.innerHTML=markdownToHtml(source.value);
+}
+function renderNotesManager(){
+  const u=currentUser();
+  if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
+  ensureKnowledgeState();
+  const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];
+  const mode=window.lfNoteView==='preview'?'preview':'edit';
+  let html='<div class="knowledge-shell"><div class="card knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Notes Manager</h2><p>Markdown notes with live preview.</p></div></div><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
+  html+='<div class="notes-items">';
+  items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" onclick="lfSelectedNote=\''+n.id+'\';window.lfNoteView=\'edit\';renderApp()"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
+  html+='</div></div><div class="card note-editor">';
+  if(selected){
+    const content=selected.content||'';
+    html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div>';
+    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div><span class="markdown-badge">Markdown</span></div>';
+    if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
+    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write in Markdown...">'+esc(content)+'</textarea></div>';
+    html+='<div class="note-help">Markdown supported: headings, bold, italics, strikethrough, links, lists, checklists, quotes, inline code, fenced code and horizontal rules.</div>';
+  }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
+  html+='</div></div></div>';
+  return html;
+}
+function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
 function updateKnowledgeLanguage(id,v){const n=noteStore('code').find(function(x){return String(x.id)===String(id);});if(n){n.language=v;n.updatedAt=Date.now();save();renderApp();}}
 function renderBranches(){const u=currentUser();if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';ensureKnowledgeState();const nodes=state.notes.map(function(n,i){return{id:String(n.id),label:n.title||'Untitled',x:450+Math.cos(i*1.7)*220,y:280+Math.sin(i*1.7)*190,type:'note'};});let svg='';if(nodes.length>1)nodes.forEach(function(n,i){if(nodes[i+1])svg+='<line class="branch-edge" x1="'+n.x+'" y1="'+n.y+'" x2="'+nodes[i+1].x+'" y2="'+nodes[i+1].y+'"></line>';});nodes.forEach(function(n){svg+='<g class="branch-node note"><circle cx="'+n.x+'" cy="'+n.y+'" r="12"></circle><text x="'+n.x+'" y="'+(n.y+30)+'" text-anchor="middle">'+esc(n.label).slice(0,28)+'</text></g>';});return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Graph view of your notes.</p></div><span class="theme-current-pill">'+nodes.length+' nodes</span></div><div class="branch-graph"><svg viewBox="0 0 900 560">'+svg+(nodes.length?'':'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>')+'</svg></div></div>';}function renderAbout(){
   return `<section class="card lifeflow-manifesto">
