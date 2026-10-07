@@ -1756,3 +1756,25 @@ body::-webkit-scrollbar{
 body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overflow-y:hidden!important;overscroll-behavior:none!important;}
 #authScreen{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;overflow-y:hidden!important;overscroll-behavior:none!important;}
 #authScreen .term-layout,#authScreen .termcontent,#authScreen .termtheme{overflow:hidden!important;}
+
+/* AUTH SILVER POLISH: restore the clean, glossy Platinum terminal finish without changing the app themes. */
+#authScreen{background:radial-gradient(circle at 50% 42%,#20242b 0%,#0f1115 52%,#08090b 100%) !important;}
+#authScreen .card{background:linear-gradient(145deg,rgba(39,43,50,.96),rgba(16,18,22,.98)) !important;border-color:rgba(214,220,230,.42) !important;box-shadow:0 25px 80px rgba(0,0,0,.62),0 0 0 1px rgba(255,255,255,.045),0 0 38px rgba(199,204,214,.07) !important;}
+#authScreen .termbar{background:linear-gradient(180deg,rgba(64,69,78,.9),rgba(31,34,40,.92)) !important;border-bottom-color:rgba(214,220,230,.22) !important;}
+#authScreen .term-layout{background:linear-gradient(135deg,rgba(255,255,255,.025),transparent 45%) !important;}
+#authScreen .termcontent{background:linear-gradient(135deg,rgba(255,255,255,.018),transparent 55%) !important;}
+#authScreen .termtheme{background:linear-gradient(180deg,rgba(49,53,61,.72),rgba(17,19,23,.9)) !important;border-left-color:rgba(214,220,230,.22) !important;}
+#authScreen .termeyebrow,#authScreen .linklike{color:#d9dee7 !important;text-shadow:0 0 12px rgba(220,226,236,.18);}
+#authScreen .termcontent h2{color:#f4f6fa !important;text-shadow:0 1px 18px rgba(255,255,255,.08);}
+#authScreen input{background:linear-gradient(180deg,#242830,#171a1f) !important;border-color:rgba(199,204,214,.34) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.045),inset 0 -8px 18px rgba(0,0,0,.12) !important;}
+#authScreen input:focus{border-color:#dce1e9 !important;box-shadow:0 0 0 2px rgba(220,225,233,.12),inset 0 1px 0 rgba(255,255,255,.06) !important;}
+#authScreen button.primary{background:linear-gradient(180deg,#f3f5f8 0%,#c9ced7 48%,#969da8 100%) !important;color:#15181d !important;border:1px solid rgba(255,255,255,.58) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 5px 18px rgba(199,204,214,.16) !important;text-shadow:0 1px 0 rgba(255,255,255,.45);}
+#authScreen button.primary:hover{filter:brightness(1.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 7px 24px rgba(199,204,214,.23) !important;}
+#authScreen .auth-theme-btn,#authScreen .auth-auto{border-color:rgba(214,220,230,.3) !important;background:rgba(255,255,255,.035) !important;color:#cdd3dd !important;}
+#authScreen .auth-theme-btn.active,#authScreen .auth-auto.active{border-color:#dce1e9 !important;color:#fff !important;background:rgba(220,225,233,.12) !important;box-shadow:0 0 12px rgba(220,225,233,.08);}
+#authScreen .termdot{box-shadow:inset 0 1px 1px rgba(255,255,255,.3),0 0 7px rgba(255,255,255,.05);}
+#authScreen .auth-bulb .theme-cord{background:linear-gradient(90deg,#59616d,#e1e5eb,#59616d) !important;box-shadow:0 0 7px rgba(210,216,226,.18);}
+#authScreen .auth-bulb .theme-bulb-base{background:linear-gradient(90deg,#737b87,#e2e6ec,#6b737f) !important;box-shadow:0 3px 0 #4d545e,0 6px 0 #9aa2ad,0 9px 0 #4b525c !important;}
+#authScreen .auth-bulb .theme-bulb{background:radial-gradient(circle at 32% 22%,#f8fafc 0,#dce1e8 24%,#9aa2ad 58%,#535b66 100%) !important;box-shadow:0 0 0 3px rgba(220,225,233,.45),inset -5px -7px 12px rgba(0,0,0,.22),inset 5px 5px 10px rgba(255,255,255,.42),0 0 20px rgba(214,220,230,.16) !important;}
+#authScreen .auth-bulb .theme-bulb:before{background:rgba(255,255,255,.62) !important;}
+#authScreen .auth-bulb .theme-bulb:after{border-color:#68717d !important;opacity:.9 !important;}
