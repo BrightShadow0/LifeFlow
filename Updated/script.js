@@ -1117,6 +1117,7 @@ function safeMarkdownUrl(url){
 function markdownInline(input){
   let s=esc(String(input||'')),stash=[];
   const hold=function(html){const key='@@LFMD'+stash.length+'@@';stash.push(html);return key;};
+  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code>'+code+'</code>');});
   s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,alt,url,title){
     const src=safeMarkdownUrl(url);
     if(src==='#')return _;
@@ -1127,7 +1128,6 @@ function markdownInline(input){
     if(href==='#')return _;
     return hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>');
   });
-  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code>'+code+'</code>');});
   s=s.replace(/&lt;(https?:\/\/[^&\s]+)&gt;/g,function(_,url){const href=safeMarkdownUrl(url);return href==='#'?_:hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(url)+'</a>');});
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
   s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
