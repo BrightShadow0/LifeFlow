@@ -260,7 +260,7 @@ function doVerify(){
 
 function redirectUri(){ return location.href.split(/[?#]/)[0]; }
 function renderOAuthButtons(){
-  document.getElementById('oauthRow').innerHTML = ['Google','Apple'].map(p=>{
+  document.getElementById('oauthRow').innerHTML = ['Google','Apple','GitHub'].map(p=>{
     const configured = !!(OAUTH_CONFIG[p.toLowerCase()] && OAUTH_CONFIG[p.toLowerCase()].clientId);
     return `<button onclick="oauthLogin('${p}')">${p}${configured?'':' (demo)'}</button>`;
   }).join('');
