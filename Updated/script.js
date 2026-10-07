@@ -165,7 +165,7 @@ function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_user
 function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
 function newUserRecord(email, extra){
   return Object.assign({
-    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark', autoTheme:false,
+    passwordHash:null, name:email.split('@')[0], bio:'', avatar:null, theme:'dark', autoTheme:false, colorTheme:'platinum',
     workspace:'My Workspace', timezone:'UTC',
     language:'en', weekStart:'Sunday', tier:'Free',
     connected:{Google:false,Apple:false,GitHub:false},
@@ -451,9 +451,9 @@ function applyTheme(theme){
   const actual=u?.autoTheme ? systemTheme() : (allowed.includes(theme)?theme:'dark');
   document.documentElement.setAttribute('data-theme',actual);
   const entitledColors=['sapphire','emerald','gold','platinum','amethyst','ruby'];
-  let color=u?.colorTheme||'sapphire';
+  let color=u?.colorTheme||'platinum';
   if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
-  document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'sapphire');
+  document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 function setTheme(theme){
@@ -517,6 +517,7 @@ function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-
 function applyAuthTheme(mode){
   const actual=mode==='auto' ? systemTheme() : mode;
   applyTheme(actual);
+  document.documentElement.setAttribute('data-color-theme','platinum');
   const auto=document.getElementById('authAuto'), dark=document.getElementById('authDark'), light=document.getElementById('authLight'), bulb=document.getElementById('authBulb');
   if(auto) auto.classList.toggle('active',mode==='auto');
   if(dark) dark.classList.toggle('active',mode==='dark');
@@ -1438,7 +1439,7 @@ function subCustomisation(themes,u,a){
 }
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
