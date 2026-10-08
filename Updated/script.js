@@ -1117,7 +1117,7 @@ function safeMarkdownUrl(url){
 function markdownInline(input){
   let s=esc(String(input||'')),stash=[];
   const hold=function(html){const key='@@LFMD'+stash.length+'@@';stash.push(html);return key;};
-  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code>'+code+'</code>');});
+  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code class="md-inline-code">'+highlightCode(code)+'</code>');});
   s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,alt,url,title){
     const src=safeMarkdownUrl(url);
     if(src==='#')return _;
