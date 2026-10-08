@@ -1171,7 +1171,8 @@ function markdownToHtml(source){
         let item=m[1],checked=false;
         const task=item.match(/^\[(x|X| )\]\s+(.+)$/);
         if(task){checked=/x/i.test(task[1]);item=task[2];}
-        items.push('<li>'+(task?'<input class="md-task" type="checkbox" disabled '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
+        const taskLineIndex=i;
+        items.push('<li>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" onchange="toggleMarkdownTask('+taskLineIndex+',this.checked)" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
         i++;
       }
       html+='<'+(ordered?'ol':'ul')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
@@ -1182,6 +1183,40 @@ function markdownToHtml(source){
     html+='<p>'+markdownInline(buf.join('\n'))+'</p>';
   }
   return html||'<p class="md-empty">Nothing to preview yet.</p>';
+}
+function toggleMarkdownTask(lineIndex,checked){
+  const n=noteStore('regular').find(function(x){return String(x.id)===String(window.lfSelectedNote);});
+  if(!n)return;
+  const lines=String(n.content||'').replace(/\r\n?/g,'\n').split('\n');
+  if(!Number.isInteger(lineIndex)||lineIndex<0||lineIndex>=lines.length)return;
+  lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
+  n.content=lines.join('\n');n.updatedAt=Date.now();save();
+  const preview=document.getElementById('kn_preview');
+  if(preview)preview.innerHTML=markdownToHtml(n.content);
+}
+function handleMarkdownKeydown(e){
+  if(e.key!=='Enter'||e.shiftKey||e.altKey||e.ctrlKey||e.metaKey)return;
+  const ta=e.currentTarget;
+  const before=ta.value.slice(0,ta.selectionStart);
+  const lineStart=before.lastIndexOf('\n')+1;
+  const line=before.slice(lineStart);
+  const fenceCount=(before.match(new RegExp('^\\s{0,3}('+String.fromCharCode(96,96,96)+'|~~~)','gm'))||[]).length;
+  if(fenceCount%2===1)return;
+  const task=line.match(/^(\s{0,3})([-*+])\s+\[[ xX]\]\s+(.*)$/);
+  const bullet=line.match(/^(\s{0,3})([-*+])\s+(.*)$/);
+  const ordered=line.match(/^(\s{0,3})(\d+)\.\s+(.*)$/);
+  const match=task||bullet||ordered;
+  if(!match)return;
+  const content=match[3];
+  if(!content.trim())return;
+  let prefix;
+  if(task)prefix=match[1]+match[2]+' [ ] ';
+  else if(ordered)prefix=match[1]+(Number(match[2])+1)+'. ';
+  else prefix=match[1]+match[2]+' ';
+  e.preventDefault();
+  const start=ta.selectionStart,end=ta.selectionEnd;
+  ta.setRangeText('\n'+prefix,start,end,'end');
+  ta.dispatchEvent(new Event('input',{bubbles:true}));
 }
 function setKnowledgeNoteView(mode){window.lfNoteView=mode==='preview'?'preview':'edit';renderApp();}
 function refreshMarkdownPreview(){
@@ -1203,7 +1238,7 @@ function renderNotesManager(){
     html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div>';
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div><span class="markdown-badge">Markdown</span></div>';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
-    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write in Markdown...">'+esc(content)+'</textarea></div>';
+    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write in Markdown...">'+esc(content)+'</textarea></div>';
     html+='<div class="note-help">Markdown supported: headings, bold, italics, strikethrough, links, lists, checklists, quotes, inline code, fenced code and horizontal rules.</div>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
