@@ -1229,7 +1229,7 @@ function renderNotesManager(){
   ensureKnowledgeState();
   const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];
   const mode=window.lfNoteView==='preview'?'preview':'edit';
-  let html='<div class="knowledge-shell"><div class="card knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Notes Manager</h2><p>Markdown notes with live preview.</p></div></div><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
+  let html='<div class="knowledge-shell"><div class="card knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Notes Manager</h2></div></div><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
   html+='<div class="notes-items">';
   items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" onclick="lfSelectedNote=\''+n.id+'\';window.lfNoteView=\'edit\';renderApp()"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
   html+='</div></div><div class="card note-editor">';
@@ -1239,7 +1239,7 @@ function renderNotesManager(){
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div><span class="markdown-badge">Markdown</span></div>';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write here...">'+esc(content)+'</textarea></div>';
-    html+='<div class="note-help">Markdown supported · headings · bold · italics · strikethrough · links · lists · checklists · quotes · inline code · fenced code · horizontal rules</div>';
+    html+='<div class="note-help">Markdown supported</div>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
   return html;
