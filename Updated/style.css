@@ -2123,3 +2123,166 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   #app::after{display:none!important}
   #app[data-workspace-backdrop]::before{transform:none!important;transition:none!important}
 }
+
+
+/* Theme contrast correction: the base theme controls surface brightness globally.
+   Colour combinations remain accents and must not lock the interface into dark surfaces. */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f6fb;--card:#ffffff;--panel2:#edf1f8;--text:#172033;--muted:#596579;--border:#d5dce8;
+}
+:root[data-theme="paper"]{
+  color-scheme:light;
+  --bg:#f3eee4;--card:#fffaf0;--panel2:#eee5d6;--text:#302d27;--muted:#776f63;--border:#d9cfbf;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#090b10;--card:#151820;--panel2:#1c202b;--text:#eef1f7;--muted:#a5adbd;--border:#303746;
+}
+:root[data-theme="forest"]{
+  color-scheme:dark;
+  --bg:#0b1511;--card:#122018;--panel2:#172a20;--text:#edf6ee;--muted:#a5b9aa;--border:#2b4034;
+}
+/* Theme-dependent accent-soft values for every colour personality. */
+:root[data-theme="light"][data-color-theme="sapphire"]{--accent:#2868d7;--accent-soft:#e4edff;--ok:#187f68}
+:root[data-theme="light"][data-color-theme="emerald"]{--accent:#13834d;--accent-soft:#e0f7e9;--ok:#13834d}
+:root[data-theme="light"][data-color-theme="gold"]{--accent:#99610b;--accent-soft:#fff1cf;--ok:#247b4e}
+:root[data-theme="light"][data-color-theme="platinum"]{--accent:#454b56;--accent-soft:#e7e9ed;--ok:#247b69}
+:root[data-theme="light"][data-color-theme="amethyst"]{--accent:#7540c4;--accent-soft:#f0e7ff;--ok:#247b69}
+:root[data-theme="light"][data-color-theme="ruby"]{--accent:#c32f43;--accent-soft:#ffe7eb;--ok:#247b69}
+:root[data-theme="paper"][data-color-theme="sapphire"]{--accent:#285da8;--accent-soft:#e3ebf7}
+:root[data-theme="paper"][data-color-theme="emerald"]{--accent:#276b48;--accent-soft:#e0eee4}
+:root[data-theme="paper"][data-color-theme="gold"]{--accent:#8b6120;--accent-soft:#f5e9ce}
+:root[data-theme="paper"][data-color-theme="platinum"]{--accent:#575b62;--accent-soft:#e8e5df}
+:root[data-theme="paper"][data-color-theme="amethyst"]{--accent:#7042a8;--accent-soft:#eee4f7}
+:root[data-theme="paper"][data-color-theme="ruby"]{--accent:#a72f3d;--accent-soft:#f7e2e3}
+:root[data-theme="dark"][data-color-theme="sapphire"]{--accent:#6da3ff;--accent-soft:#142c50}
+:root[data-theme="dark"][data-color-theme="emerald"]{--accent:#57e39a;--accent-soft:#123b28}
+:root[data-theme="dark"][data-color-theme="gold"]{--accent:#ffc95b;--accent-soft:#493311}
+:root[data-theme="dark"][data-color-theme="platinum"]{--accent:#d0d5df;--accent-soft:#2a2d34}
+:root[data-theme="dark"][data-color-theme="amethyst"]{--accent:#bd91ff;--accent-soft:#32204e}
+:root[data-theme="dark"][data-color-theme="ruby"]{--accent:#ff7180;--accent-soft:#4a1720}
+:root[data-theme="forest"][data-color-theme="sapphire"]{--accent:#80b1ff;--accent-soft:#172e4e}
+:root[data-theme="forest"][data-color-theme="emerald"]{--accent:#9be27d;--accent-soft:#193424}
+:root[data-theme="forest"][data-color-theme="gold"]{--accent:#e9c46a;--accent-soft:#3c321a}
+:root[data-theme="forest"][data-color-theme="platinum"]{--accent:#c6d0c9;--accent-soft:#26322b}
+:root[data-theme="forest"][data-color-theme="amethyst"]{--accent:#c4a0ff;--accent-soft:#302243}
+:root[data-theme="forest"][data-color-theme="ruby"]{--accent:#ff8b94;--accent-soft:#452128}
+/* App-wide surface and text mapping, including components previously hard-coded for dark mode. */
+:root[data-theme="light"] body,
+:root[data-theme="paper"] body{background-color:var(--bg)!important;color:var(--text)!important}
+:root[data-theme="light"] #app .app-sidebar,
+:root[data-theme="paper"] #app .app-sidebar{
+  background:rgba(255,255,255,.78)!important;
+  color:var(--text)!important;
+  border-right:1px solid var(--border)!important;
+}
+:root[data-theme="light"] #app .brand,
+:root[data-theme="paper"] #app .brand,
+:root[data-theme="light"] #app .navlabel,
+:root[data-theme="paper"] #app .navlabel,
+:root[data-theme="light"] #app #nav button,
+:root[data-theme="paper"] #app #nav button,
+:root[data-theme="light"] #app .sidebar-action,
+:root[data-theme="paper"] #app .sidebar-action{
+  color:var(--text)!important;
+}
+:root[data-theme="light"] #app #nav button:hover,
+:root[data-theme="paper"] #app #nav button:hover,
+:root[data-theme="light"] #app #nav button.active,
+:root[data-theme="paper"] #app #nav button.active,
+:root[data-theme="light"] #app .sidebar-action:hover,
+:root[data-theme="paper"] #app .sidebar-action:hover{
+  background:var(--accent-soft)!important;color:var(--text)!important;
+}
+:root[data-theme="light"] #app .card,
+:root[data-theme="paper"] #app .card,
+:root[data-theme="light"] #app .stat,
+:root[data-theme="paper"] #app .stat,
+:root[data-theme="light"] #app .kcard,
+:root[data-theme="paper"] #app .kcard,
+:root[data-theme="light"] #app .col,
+:root[data-theme="paper"] #app .col,
+:root[data-theme="light"] #app .event,
+:root[data-theme="paper"] #app .event,
+:root[data-theme="light"] #app .task,
+:root[data-theme="paper"] #app .task{
+  background:var(--card)!important;color:var(--text)!important;border-color:var(--border);
+}
+:root[data-theme="light"] #app input,
+:root[data-theme="paper"] #app input,
+:root[data-theme="light"] #app select,
+:root[data-theme="paper"] #app select,
+:root[data-theme="light"] #app textarea,
+:root[data-theme="paper"] #app textarea{
+  color:var(--text)!important;background:var(--card)!important;border-color:var(--border)!important;color-scheme:light;
+}
+:root[data-theme="light"] #app .notice,
+:root[data-theme="paper"] #app .notice,
+:root[data-theme="light"] #app .empty,
+:root[data-theme="paper"] #app .empty,
+:root[data-theme="light"] #app .meta,
+:root[data-theme="paper"] #app .meta,
+:root[data-theme="light"] #app .sub,
+:root[data-theme="paper"] #app .sub{color:var(--muted)!important}
+:root[data-theme="light"] #app .theme-current-pill,
+:root[data-theme="paper"] #app .theme-current-pill,
+:root[data-theme="light"] #app .backdrop-option,
+:root[data-theme="paper"] #app .backdrop-option,
+:root[data-theme="light"] #app .theme-option,
+:root[data-theme="paper"] #app .theme-option,
+:root[data-theme="light"] #app .color-combination,
+:root[data-theme="paper"] #app .color-combination{
+  background:var(--card)!important;color:var(--text)!important;border-color:var(--border);
+}
+:root[data-theme="light"] #app .hero-welcome,
+:root[data-theme="paper"] #app .hero-welcome{
+  background:linear-gradient(120deg,var(--accent-soft),var(--card) 78%)!important;
+  color:var(--text)!important;border-color:var(--border)!important;
+}
+:root[data-theme="light"] #app .hero-welcome *,
+:root[data-theme="paper"] #app .hero-welcome *{color:var(--text)}
+:root[data-theme="light"] #app .app-sidebar .logout,
+:root[data-theme="paper"] #app .app-sidebar .logout{color:var(--danger)!important}
+:root[data-theme="dark"] #app .app-sidebar,
+:root[data-theme="forest"] #app .app-sidebar{
+  color:var(--text)!important;
+}
+:root[data-theme="dark"] #app .app-sidebar .brand,
+:root[data-theme="forest"] #app .app-sidebar .brand,
+:root[data-theme="dark"] #app .app-sidebar .navlabel,
+:root[data-theme="forest"] #app .app-sidebar .navlabel,
+:root[data-theme="dark"] #app .app-sidebar #nav button,
+:root[data-theme="forest"] #app .app-sidebar #nav button,
+:root[data-theme="dark"] #app .app-sidebar .sidebar-action,
+:root[data-theme="forest"] #app .app-sidebar .sidebar-action{color:var(--text)!important}
+:root[data-theme="dark"] #app .card,
+:root[data-theme="forest"] #app .card,
+:root[data-theme="dark"] #app .stat,
+:root[data-theme="forest"] #app .stat,
+:root[data-theme="dark"] #app .kcard,
+:root[data-theme="forest"] #app .kcard,
+:root[data-theme="dark"] #app .col,
+:root[data-theme="forest"] #app .col,
+:root[data-theme="dark"] #app .event,
+:root[data-theme="forest"] #app .event,
+:root[data-theme="dark"] #app .task,
+:root[data-theme="forest"] #app .task{
+  background:var(--card)!important;color:var(--text)!important;border-color:var(--border);
+}
+:root[data-theme="dark"] #app input,
+:root[data-theme="forest"] #app input,
+:root[data-theme="dark"] #app select,
+:root[data-theme="forest"] #app select,
+:root[data-theme="dark"] #app textarea,
+:root[data-theme="forest"] #app textarea{
+  color:var(--text)!important;background:var(--card)!important;border-color:var(--border)!important;color-scheme:dark;
+}
+:root[data-theme="dark"] #app .app-sidebar #nav button:hover,
+:root[data-theme="forest"] #app .app-sidebar #nav button:hover,
+:root[data-theme="dark"] #app .app-sidebar #nav button.active,
+:root[data-theme="forest"] #app .app-sidebar #nav button.active,
+:root[data-theme="dark"] #app .app-sidebar .sidebar-action:hover,
+:root[data-theme="forest"] #app .app-sidebar .sidebar-action:hover{background:var(--accent-soft)!important;color:var(--text)!important}
+:root[data-theme="dark"] #app .hero-welcome,
+:root[data-theme="forest"] #app .hero-welcome{background:linear-gradient(120deg,var(--accent-soft),var(--card) 78%)!important;color:var(--text)!important;border-color:var(--border)!important}
