@@ -2590,3 +2590,62 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 }
 :root[data-theme="light"] #app .hero-welcome .hero-kicker,
 :root[data-theme="light"] #app .hero-welcome .hero-summary{color:var(--muted)!important}
+
+
+/* Palette-complete scenery: each colour personality gets a matching daytime and nighttime landscape. */
+:root[data-theme="light"][data-color-theme="sapphire"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="sapphire"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff4bd 0 3%,#ffd9a6 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#8fc8f1 0%,#b6c9ee 28%,#f3c0b0 52%,#9cb7dd 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="sapphire"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#f7f5df 0 1.25%,#c8ddff 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#5376b8 0%,transparent 14%),linear-gradient(180deg,#101d43 0%,#1c3260 48%,#080f25 100%)!important
+}
+:root[data-theme="light"][data-color-theme="emerald"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="emerald"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff3b8 0 3%,#ffd8a0 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#a6d9cb 0%,#c1e1c6 30%,#f0c6a5 55%,#7fb5a0 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="emerald"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#f5f5d9 0 1.25%,#c6f3d7 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#4c9879 0%,transparent 14%),linear-gradient(180deg,#0c2c2a 0%,#17473f 48%,#071813 100%)!important
+}
+:root[data-theme="light"][data-color-theme="gold"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="gold"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff9c9 0 3%,#ffca75 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#8ec4e5 0%,#f3cb85 35%,#f49a68 57%,#d4a46f 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="gold"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#fff4cf 0 1.25%,#ffe0a1 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#a86c45 0%,transparent 14%),linear-gradient(180deg,#261c35 0%,#49304a 48%,#100e20 100%)!important
+}
+:root[data-theme="light"][data-color-theme="platinum"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="platinum"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff 0 3%,#e9edf5 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#cbd5e1 0%,#e6e7ec 35%,#d2cbd1 57%,#aab4c4 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="platinum"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#fff 0 1.25%,#e0e5f1 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#929eb6 0%,transparent 14%),linear-gradient(180deg,#171b29 0%,#303747 48%,#090b12 100%)!important
+}
+:root[data-theme="light"][data-color-theme="amethyst"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="amethyst"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff4c8 0 3%,#f5c2b5 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#9bc7ef 0%,#c5a4e6 31%,#f1b4c7 53%,#8e80c6 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="amethyst"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#fff7e8 0 1.25%,#e3cfff 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#b18be9 0%,transparent 14%),linear-gradient(180deg,#28194f 0%,#43245e 48%,#100b25 100%)!important
+}
+:root[data-theme="light"][data-color-theme="ruby"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="ruby"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 25%,#fff1ba 0 3%,#ffc3a0 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#9dc5e5 0%,#e3a4b2 31%,#f5a38c 53%,#b86c88 100%)!important
+}
+:root[data-theme="dark"][data-color-theme="ruby"] #app[data-workspace-backdrop]{
+ background:radial-gradient(circle at 76% 22%,#fff3e8 0 1.25%,#ffc8d0 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#c45c79 0%,transparent 14%),linear-gradient(180deg,#35152b 0%,#54213e 48%,#130916 100%)!important
+}
+/* Matching layered mountain silhouettes for each palette in both modes. */
+:root[data-color-theme="sapphire"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#425b8b 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#2d416c 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#1d2d50 53.2% 76%,transparent 76.2%)!important}
+:root[data-color-theme="emerald"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#477d6a 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#285848 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#173d32 53.2% 76%,transparent 76.2%)!important}
+:root[data-color-theme="gold"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#a56b57 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#875044 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#56313d 53.2% 76%,transparent 76.2%)!important}
+:root[data-color-theme="platinum"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#7c879a 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#535d70 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#30394c 53.2% 76%,transparent 76.2%)!important}
+:root[data-color-theme="amethyst"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#9a70b7 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#694b94 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#392354 53.2% 76%,transparent 76.2%)!important}
+:root[data-color-theme="ruby"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#a85d77 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#7d3c5b 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#451c38 53.2% 76%,transparent 76.2%)!important}
+/* Darken foreground mountains for nighttime, while retaining each palette identity. */
+:root[data-theme="dark"][data-color-theme="sapphire"] #app[data-workspace-backdrop]::before{filter:brightness(.65) saturate(1.1)}
+:root[data-theme="dark"][data-color-theme="emerald"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
+:root[data-theme="dark"][data-color-theme="gold"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.12)}
+:root[data-theme="dark"][data-color-theme="platinum"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(.8)}
+:root[data-theme="dark"][data-color-theme="amethyst"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
+:root[data-theme="dark"][data-color-theme="ruby"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
