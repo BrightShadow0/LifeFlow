@@ -2383,3 +2383,35 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-theme="dark"] #app .app-content .muted,
 :root[data-theme="dark"] #app .app-content small,
 :root[data-theme="dark"] #app .app-content .meta{color:var(--muted)}
+
+
+/* Sidebar legibility hotfix: keep inactive navigation readable on every theme. */
+:root[data-theme="dark"] #app .app-sidebar #nav button,
+:root[data-theme="dark"] #app .app-sidebar .sidebar-action{
+  color:#c0c9d8!important;
+  background:transparent;
+}
+:root[data-theme="dark"] #app .app-sidebar #nav button .nav-icon,
+:root[data-theme="dark"] #app .app-sidebar .sidebar-action .nav-icon{color:var(--accent)!important}
+:root[data-theme="dark"] #app .app-sidebar #nav button.active,
+:root[data-theme="dark"] #app .app-sidebar #nav button:hover,
+:root[data-theme="dark"] #app .app-sidebar .sidebar-action:hover{
+  color:#f5f7ff!important;
+  background:color-mix(in srgb,var(--accent) 17%,#151b29)!important;
+}
+:root[data-theme="dark"] #app .app-sidebar .navlabel{color:#8fa0ba!important}
+:root[data-theme="dark"] #app .app-sidebar .brand{color:#f5f7ff!important}
+:root[data-theme="light"] #app .app-sidebar #nav button,
+:root[data-theme="light"] #app .app-sidebar .sidebar-action{
+  color:#344158!important;background:transparent;
+}
+:root[data-theme="light"] #app .app-sidebar #nav button .nav-icon,
+:root[data-theme="light"] #app .app-sidebar .sidebar-action .nav-icon{color:var(--accent)!important}
+:root[data-theme="light"] #app .app-sidebar #nav button.active,
+:root[data-theme="light"] #app .app-sidebar #nav button:hover,
+:root[data-theme="light"] #app .app-sidebar .sidebar-action:hover{
+  color:#172033!important;
+  background:color-mix(in srgb,var(--accent) 12%,white)!important;
+}
+:root[data-theme="light"] #app .app-sidebar .navlabel{color:#68768d!important}
+:root[data-theme="light"] #app .app-sidebar .brand{color:#172033!important}
