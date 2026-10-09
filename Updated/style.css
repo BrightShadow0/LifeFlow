@@ -2713,3 +2713,29 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-color-theme="platinum"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#e2d6c8,#a6a3a5 48%,#4e6170 70%,#10141b)!important}
 :root[data-color-theme="amethyst"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#d7b8e7,#e99a9c 48%,#53466e 70%,#151027)!important}
 :root[data-color-theme="ruby"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#f0b3b6,#dd786d 48%,#5c3447 70%,#1a0b16)!important}
+
+
+/* The page title and bulb should float over the workspace, without a header banner. */
+#app .app-content > .app-top{
+  background:transparent!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  border-radius:0!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  padding:0!important;
+  min-height:0!important;
+}
+#app .app-content > .app-top::before,
+#app .app-content > .app-top::after{
+  content:none!important;
+  display:none!important;
+}
+#app .app-content > .app-top h1{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
