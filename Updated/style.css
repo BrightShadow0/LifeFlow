@@ -2286,3 +2286,100 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-theme="forest"] #app .app-sidebar .sidebar-action:hover{background:var(--accent-soft)!important;color:var(--text)!important}
 :root[data-theme="dark"] #app .hero-welcome,
 :root[data-theme="forest"] #app .hero-welcome{background:linear-gradient(120deg,var(--accent-soft),var(--card) 78%)!important;color:var(--text)!important;border-color:var(--border)!important}
+
+
+/* Final theme and colour harmony: Daytime and Nighttime both inherit the chosen colour personality. */
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f4f7ff;--card:#ffffff;--panel2:#eaf0fb;--text:#182235;--muted:#56647b;--border:#d5deed;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#080b14;--card:#111725;--panel2:#182237;--text:#f2f5ff;--muted:#a8b5ce;--border:#2b3b59;
+}
+/* Colour selection controls the actual environment, not only buttons and small accents. */
+:root[data-theme="light"][data-color-theme="sapphire"]{--accent:#2868d7;--accent-soft:#e4edff}
+:root[data-theme="light"][data-color-theme="emerald"]{--accent:#16834f;--accent-soft:#e2f7ec}
+:root[data-theme="light"][data-color-theme="gold"]{--accent:#98600b;--accent-soft:#fff1d1}
+:root[data-theme="light"][data-color-theme="platinum"]{--accent:#505b6c;--accent-soft:#e8ecf2}
+:root[data-theme="light"][data-color-theme="amethyst"]{--accent:#7540c4;--accent-soft:#f0e7ff}
+:root[data-theme="light"][data-color-theme="ruby"]{--accent:#c32f43;--accent-soft:#ffe7eb}
+:root[data-theme="dark"][data-color-theme="sapphire"]{--accent:#79aaff;--accent-soft:#142d52}
+:root[data-theme="dark"][data-color-theme="emerald"]{--accent:#57e39a;--accent-soft:#123b28}
+:root[data-theme="dark"][data-color-theme="gold"]{--accent:#ffc95b;--accent-soft:#493311}
+:root[data-theme="dark"][data-color-theme="platinum"]{--accent:#d0d5df;--accent-soft:#2a2d34}
+:root[data-theme="dark"][data-color-theme="amethyst"]{--accent:#bd91ff;--accent-soft:#32204e}
+:root[data-theme="dark"][data-color-theme="ruby"]{--accent:#ff7180;--accent-soft:#4a1720}
+/* The scenic workspace is colour-graded from the selected palette in both modes. */
+:root[data-theme="light"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(ellipse at 50% 8%,color-mix(in srgb,var(--accent) 14%,white),transparent 48%),
+    linear-gradient(180deg,#f7f9ff 0%,color-mix(in srgb,var(--accent) 11%,#eaf0fb) 47%,color-mix(in srgb,var(--accent) 24%,#d7e0f1) 100%)!important;
+}
+:root[data-theme="light"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(155deg,transparent 0 35%,color-mix(in srgb,var(--accent) 19%,#aabbd5) 35.2% 49%,transparent 49.2%),
+    linear-gradient(25deg,color-mix(in srgb,var(--accent) 25%,#c2cfe1) 0 23%,transparent 23.2%),
+    linear-gradient(160deg,transparent 0 47%,color-mix(in srgb,var(--accent) 33%,#9caecb) 47.2% 66%,transparent 66.2%)!important;
+  opacity:.75;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(ellipse at 50% 5%,color-mix(in srgb,var(--accent) 24%,#17182c),transparent 48%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 13%,#11152a) 0%,color-mix(in srgb,var(--accent) 20%,#16172d) 47%,#070912 100%)!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(155deg,transparent 0 35%,color-mix(in srgb,var(--accent) 29%,#282444) 35.2% 49%,transparent 49.2%),
+    linear-gradient(25deg,color-mix(in srgb,var(--accent) 23%,#100f22) 0 23%,transparent 23.2%),
+    linear-gradient(160deg,transparent 0 47%,color-mix(in srgb,var(--accent) 31%,#17182e) 47.2% 66%,transparent 66.2%)!important;
+  opacity:.88;
+}
+/* Each backdrop option keeps its composition but follows Daytime/Nighttime and the selected accent. */
+:root[data-theme="light"] #app[data-workspace-backdrop="welcome"]{
+  background:linear-gradient(180deg,#fff6e9 0%,color-mix(in srgb,var(--accent) 9%,#f3dfd2) 48%,color-mix(in srgb,var(--accent) 17%,#cdd9e8) 100%)!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop="welcome"]{
+  background:radial-gradient(ellipse at 18% 26%,color-mix(in srgb,var(--accent) 27%,#3c2730),transparent 35%),linear-gradient(145deg,#302536 0%,#172237 55%,#080c17 100%)!important;
+}
+:root[data-theme="light"] #app[data-workspace-backdrop="horizon"]{
+  background:linear-gradient(180deg,#f9f5ff 0%,color-mix(in srgb,var(--accent) 9%,#f0dcd9) 48%,color-mix(in srgb,var(--accent) 15%,#cbd8e7) 100%)!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop="horizon"]{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 17%,#1b2039) 0%,#202039 48%,#090e1b 100%)!important;
+}
+:root[data-theme="light"] #app[data-workspace-backdrop="gradient"]{
+  background:radial-gradient(ellipse at 15% 12%,color-mix(in srgb,var(--accent) 18%,white),transparent 38%),radial-gradient(ellipse at 85% 22%,color-mix(in srgb,var(--accent) 12%,white),transparent 35%),#f5f7fc!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop="gradient"]{
+  background:radial-gradient(ellipse at 15% 12%,color-mix(in srgb,var(--accent) 33%,#111421),transparent 38%),radial-gradient(ellipse at 85% 22%,color-mix(in srgb,var(--accent) 18%,#111421),transparent 35%),#080b14!important;
+}
+/* Sidebar glass uses the theme's surfaces so the selected palette remains consistent. */
+:root[data-glass-sidebar="on"][data-theme="light"] #app .app-sidebar{
+  background:color-mix(in srgb,var(--card) 76%,transparent)!important;
+  color:var(--text)!important;border-right-color:var(--border)!important;
+}
+:root[data-glass-sidebar="on"][data-theme="dark"] #app .app-sidebar{
+  background:color-mix(in srgb,var(--bg) 70%,transparent)!important;
+  color:var(--text)!important;border-right-color:var(--border)!important;
+}
+:root[data-theme="light"] #app .app-sidebar *,
+:root[data-theme="light"] #app .app-content,
+:root[data-theme="light"] #app .app-content h1,
+:root[data-theme="light"] #app .app-content h2,
+:root[data-theme="light"] #app .app-content h3,
+:root[data-theme="light"] #app .app-content p,
+:root[data-theme="light"] #app .app-content label{color:var(--text)}
+:root[data-theme="dark"] #app .app-sidebar *,
+:root[data-theme="dark"] #app .app-content,
+:root[data-theme="dark"] #app .app-content h1,
+:root[data-theme="dark"] #app .app-content h2,
+:root[data-theme="dark"] #app .app-content h3,
+:root[data-theme="dark"] #app .app-content p,
+:root[data-theme="dark"] #app .app-content label{color:var(--text)}
+:root[data-theme="light"] #app .app-content .muted,
+:root[data-theme="light"] #app .app-content small,
+:root[data-theme="light"] #app .app-content .meta{color:var(--muted)}
+:root[data-theme="dark"] #app .app-content .muted,
+:root[data-theme="dark"] #app .app-content small,
+:root[data-theme="dark"] #app .app-content .meta{color:var(--muted)}
