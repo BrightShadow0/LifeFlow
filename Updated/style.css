@@ -2415,3 +2415,58 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 }
 :root[data-theme="light"] #app .app-sidebar .navlabel{color:#68768d!important}
 :root[data-theme="light"] #app .app-sidebar .brand{color:#172033!important}
+
+
+/* Daytime and Nighttime scenery: distinct sun/sunset and moonlit mountain systems.
+   The selected colour personality grades the sky, mountain layers, highlights and UI accents. */
+:root[data-theme="light"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(circle at 76% 24%,color-mix(in srgb,var(--accent) 15%,#fff3d8) 0%,color-mix(in srgb,var(--accent) 8%,#ffd5a5) 11%,transparent 28%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,#9bc9f4) 0%,color-mix(in srgb,var(--accent) 12%,#f5c5b2) 43%,color-mix(in srgb,var(--accent) 16%,#f1b68e) 63%,color-mix(in srgb,var(--accent) 21%,#c4d5e8) 100%)!important;
+}
+:root[data-theme="light"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(148deg,transparent 0 43%,color-mix(in srgb,var(--accent) 22%,#667fa4) 43.2% 64%,transparent 64.2%),
+    linear-gradient(32deg,color-mix(in srgb,var(--accent) 20%,#8ca2c1) 0 32%,transparent 32.2%),
+    linear-gradient(155deg,transparent 0 53%,color-mix(in srgb,var(--accent) 30%,#526d91) 53.2% 76%,transparent 76.2%),
+    linear-gradient(25deg,color-mix(in srgb,var(--accent) 24%,#b2c2d8) 0 24%,transparent 24.2%)!important;
+  opacity:.78;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(circle at 76% 22%,#f2f1e8 0 1.2%,color-mix(in srgb,var(--accent) 18%,#c7d8f4) 1.4%,transparent 7%),
+    radial-gradient(ellipse at 76% 22%,color-mix(in srgb,var(--accent) 13%,#273a60),transparent 24%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 19%,#10182e) 0%,color-mix(in srgb,var(--accent) 13%,#1a2440) 53%,#080d18 100%)!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(148deg,transparent 0 43%,color-mix(in srgb,var(--accent) 26%,#182641) 43.2% 64%,transparent 64.2%),
+    linear-gradient(32deg,color-mix(in srgb,var(--accent) 22%,#101a2c) 0 32%,transparent 32.2%),
+    linear-gradient(155deg,transparent 0 53%,color-mix(in srgb,var(--accent) 31%,#111b30) 53.2% 76%,transparent 76.2%),
+    linear-gradient(25deg,color-mix(in srgb,var(--accent) 18%,#24324b) 0 24%,transparent 24.2%)!important;
+  opacity:.96;
+}
+/* Keep the sunset and moon compositions even when a different scenery preset is selected. */
+:root[data-theme="light"] #app[data-workspace-backdrop="welcome"],
+:root[data-theme="light"] #app[data-workspace-backdrop="horizon"]{
+  background:
+    radial-gradient(circle at 76% 24%,color-mix(in srgb,var(--accent) 15%,#fff3d8) 0%,color-mix(in srgb,var(--accent) 8%,#ffd5a5) 11%,transparent 28%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,#9bc9f4),color-mix(in srgb,var(--accent) 12%,#f5c5b2) 43%,color-mix(in srgb,var(--accent) 21%,#c4d5e8))!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop="welcome"],
+:root[data-theme="dark"] #app[data-workspace-backdrop="horizon"],
+:root[data-theme="dark"] #app[data-workspace-backdrop="night"]{
+  background:
+    radial-gradient(circle at 76% 22%,#f2f1e8 0 1.2%,color-mix(in srgb,var(--accent) 18%,#c7d8f4) 1.4%,transparent 7%),
+    radial-gradient(ellipse at 76% 22%,color-mix(in srgb,var(--accent) 13%,#273a60),transparent 24%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 19%,#10182e),color-mix(in srgb,var(--accent) 13%,#1a2440) 53%,#080d18)!important;
+}
+/* Theme-aware interactive and selection surfaces use the exact selected colour personality. */
+:root[data-color-theme="sapphire"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-color-theme="emerald"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-color-theme="gold"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-color-theme="platinum"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-color-theme="amethyst"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-color-theme="ruby"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+:root[data-theme="light"] #app .app-top{background:color-mix(in srgb,var(--card) 72%,transparent);border-bottom-color:color-mix(in srgb,var(--accent) 22%,var(--border))}
+:root[data-theme="dark"] #app .app-top{background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom-color:color-mix(in srgb,var(--accent) 24%,var(--border))}
