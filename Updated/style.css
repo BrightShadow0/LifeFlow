@@ -2674,3 +2674,42 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 .backdrop-waters .backdrop-preview{background:linear-gradient(180deg,#e5c4cb,#eea6a0 48%,#173e51 52%,#09202c)!important}
 .backdrop-golden .backdrop-preview{background:linear-gradient(180deg,#ffd38a,#ee9855 45%,#274a61 67%,#071522)!important}
 .backdrop-amethyst .backdrop-preview{background:linear-gradient(180deg,#513a86,#c38edb 42%,#eab5d6 56%,#30214f)!important}
+
+
+/* Ensure newly introduced atmosphere pseudo-scenes are actually created and painted. */
+#app[data-workspace-backdrop="moonlit"]::before,
+#app[data-workspace-backdrop="flow"]::before,
+#app[data-workspace-backdrop="waters"]::before,
+#app[data-workspace-backdrop="golden"]::before,
+#app[data-workspace-backdrop="amethyst"]::before{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:-1!important;
+  display:block!important;
+  pointer-events:none!important;
+}
+#app[data-workspace-backdrop="moonlit"],
+#app[data-workspace-backdrop="flow"],
+#app[data-workspace-backdrop="waters"],
+#app[data-workspace-backdrop="golden"],
+#app[data-workspace-backdrop="amethyst"]{
+  position:relative!important;
+  isolation:isolate!important;
+  min-height:100dvh!important;
+  background-attachment:fixed!important;
+  background-size:cover!important;
+  transition:background .45s ease!important;
+}
+:root[data-color-theme="sapphire"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#d9f0ff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),radial-gradient(circle at 40% 9%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#063b58,#08738a 54%,#061321)!important}
+:root[data-color-theme="emerald"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#e0ffe9 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#063b37,#08705e 54%,#061711)!important}
+:root[data-color-theme="gold"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#fff0bf 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#49301c,#8a5829 54%,#17100b)!important}
+:root[data-color-theme="platinum"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#fff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#343b4b,#596477 54%,#090b10)!important}
+:root[data-color-theme="amethyst"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#f5e6ff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),radial-gradient(circle at 38% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#261a4d,#593b83 54%,#080719)!important}
+:root[data-color-theme="ruby"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#ffe5ed 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#45162e,#87314c 54%,#100710)!important}
+:root[data-color-theme="sapphire"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#f4b7a0,#eaa06f 48%,#25506d 70%,#081b2b)!important}
+:root[data-color-theme="emerald"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#d9e3a1,#b7b85f 48%,#1c5949 70%,#061d19)!important}
+:root[data-color-theme="gold"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#ffe0a2,#f0a34e 48%,#72513d 70%,#1b1513)!important}
+:root[data-color-theme="platinum"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#e2d6c8,#a6a3a5 48%,#4e6170 70%,#10141b)!important}
+:root[data-color-theme="amethyst"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#d7b8e7,#e99a9c 48%,#53466e 70%,#151027)!important}
+:root[data-color-theme="ruby"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#f0b3b6,#dd786d 48%,#5c3447 70%,#1a0b16)!important}
