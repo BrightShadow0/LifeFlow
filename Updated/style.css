@@ -2470,3 +2470,123 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-color-theme="ruby"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
 :root[data-theme="light"] #app .app-top{background:color-mix(in srgb,var(--card) 72%,transparent);border-bottom-color:color-mix(in srgb,var(--accent) 22%,var(--border))}
 :root[data-theme="dark"] #app .app-top{background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom-color:color-mix(in srgb,var(--accent) 24%,var(--border))}
+
+
+/* Theme consistency repair: keep scenic backgrounds behind opaque, readable workspace surfaces. */
+:root[data-theme="light"]{--bg:#f5f7fc;--card:#fff;--panel2:#edf2fa;--text:#172033;--muted:#58677d;--border:#d8e0ec}
+:root[data-theme="dark"]{--bg:#0b1020;--card:#121a2b;--panel2:#1a263b;--text:#f1f5ff;--muted:#aab8cf;--border:#2b3b57}
+:root[data-theme="paper"]{--bg:#f4eee3;--card:#fffaf2;--panel2:#eee3d3;--text:#302b24;--muted:#776d60;--border:#d9cdbc}
+:root[data-theme="forest"]{--bg:#0d1812;--card:#14231a;--panel2:#1c3023;--text:#eff7ef;--muted:#a9bcae;--border:#2c4635}
+
+/* Surface elements must not become transparent over the landscape. */
+#app .app-content{min-width:0}
+#app .app-top{
+  position:relative;
+  background:var(--card)!important;
+  color:var(--text)!important;
+  border:1px solid var(--border)!important;
+  border-radius:16px;
+  box-shadow:0 8px 24px rgba(15,25,45,.07);
+}
+#app .app-content .card,
+#app .app-content .stat,
+#app .app-content .kcard,
+#app .app-content .col,
+#app .app-content .event,
+#app .app-content .task,
+#app .app-content .command-panel,
+#app .app-content .time-edit-card,
+#app .app-content .manifesto-card,
+#app .app-content .manifesto-principles{
+  background:var(--card)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+#app .app-content .card h2,
+#app .app-content .col h3,
+#app .app-content .meta,
+#app .app-content .sub,
+#app .app-content .empty,
+#app .app-content .muted,
+#app .app-content .card small,
+#app .app-content .color-combination small{color:var(--muted)!important}
+#app .app-content input,
+#app .app-content select,
+#app .app-content textarea{
+  color:var(--text)!important;
+  background:var(--bg)!important;
+  border-color:var(--border)!important;
+}
+#app .app-content button:not(.primary):not(.active):not(.theme-pull):not(.time-chip){
+  color:var(--text);
+}
+#app .app-content button.primary,
+#app .app-content .primary{
+  color:#fff!important;
+  background:var(--accent)!important;
+  border-color:var(--accent)!important;
+}
+#app .app-sidebar{
+  background:color-mix(in srgb,var(--card) 94%,transparent)!important;
+  color:var(--text)!important;
+  border-right:1px solid var(--border)!important;
+  backdrop-filter:blur(18px);
+}
+#app .app-sidebar #nav button{color:var(--text)!important}
+#app .app-sidebar #nav button.active{
+  color:var(--text)!important;
+  background:color-mix(in srgb,var(--accent) 16%,var(--card))!important;
+  box-shadow:inset 3px 0 var(--accent);
+}
+#app .app-sidebar #nav button:hover,
+#app .app-sidebar .sidebar-action:hover{
+  color:var(--text)!important;
+  background:color-mix(in srgb,var(--accent) 10%,var(--card))!important;
+}
+#app .app-sidebar .nav-icon{color:var(--accent)!important}
+
+/* Give the Daytime preset a clear sunset; Nighttime gets a distinct moonlit sky. */
+:root[data-theme="light"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(circle at 76% 25%,#fff3bd 0 3.2%,#ffd69b 3.5% 5.5%,transparent 16%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 12%,#8bc4ed) 0%,color-mix(in srgb,var(--accent) 8%,#f2b9a0) 43%,color-mix(in srgb,var(--accent) 14%,#f3c5a2) 61%,color-mix(in srgb,var(--accent) 24%,#a7bad5) 100%)!important;
+}
+:root[data-theme="light"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(150deg,transparent 0 42%,color-mix(in srgb,var(--accent) 26%,#6d819f) 42.2% 61%,transparent 61.2%),
+    linear-gradient(28deg,color-mix(in srgb,var(--accent) 22%,#879dbb) 0 28%,transparent 28.2%),
+    linear-gradient(158deg,transparent 0 52%,color-mix(in srgb,var(--accent) 33%,#536985) 52.2% 75%,transparent 75.2%)!important;
+  opacity:.82;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]{
+  background:
+    radial-gradient(circle at 76% 22%,#fff8dd 0 1.25%,#dbe8ff 1.5% 1.9%,transparent 2.2%),
+    radial-gradient(circle at 76% 22%,color-mix(in srgb,var(--accent) 25%,#819bc8) 0%,transparent 13%),
+    radial-gradient(ellipse at 70% 30%,color-mix(in srgb,var(--accent) 15%,#182748),transparent 38%),
+    linear-gradient(180deg,color-mix(in srgb,var(--accent) 20%,#0c1730) 0%,color-mix(in srgb,var(--accent) 12%,#172441) 54%,#080d18 100%)!important;
+}
+:root[data-theme="dark"] #app[data-workspace-backdrop]::before{
+  background:
+    linear-gradient(150deg,transparent 0 42%,color-mix(in srgb,var(--accent) 27%,#192b49) 42.2% 61%,transparent 61.2%),
+    linear-gradient(28deg,color-mix(in srgb,var(--accent) 24%,#101b30) 0 28%,transparent 28.2%),
+    linear-gradient(158deg,transparent 0 52%,color-mix(in srgb,var(--accent) 32%,#101a2d) 52.2% 75%,transparent 75.2%)!important;
+  opacity:.96;
+}
+/* Forest and Paper remain readable, but still inherit the selected palette. */
+:root[data-theme="forest"] #app[data-workspace-backdrop]{
+  background:radial-gradient(circle at 76% 22%,#e9f1d2 0 1.3%,transparent 2.2%),linear-gradient(180deg,color-mix(in srgb,var(--accent) 16%,#10241f),color-mix(in srgb,var(--accent) 12%,#20352c) 52%,#09120e)!important;
+}
+:root[data-theme="paper"] #app[data-workspace-backdrop]{
+  background:radial-gradient(circle at 76% 24%,#fff0c9 0 3%,#ffd8a4 3.5% 5.5%,transparent 16%),linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,#d5e7f1),color-mix(in srgb,var(--accent) 8%,#f0c9b2) 50%,color-mix(in srgb,var(--accent) 17%,#d3d9df))!important;
+}
+/* Avoid an almost-black progress ornament in the light hero card. */
+:root[data-theme="light"] #app .hero-welcome{
+  background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 12%,var(--card)),var(--card) 78%)!important;
+  color:var(--text)!important;border-color:color-mix(in srgb,var(--accent) 28%,var(--border))!important;
+}
+:root[data-theme="light"] #app .hero-welcome:before,
+:root[data-theme="light"] #app .hero-welcome:after{
+  border-color:color-mix(in srgb,var(--accent) 20%,transparent)!important;
+}
+:root[data-theme="light"] #app .hero-welcome .hero-kicker,
+:root[data-theme="light"] #app .hero-welcome .hero-summary{color:var(--muted)!important}
