@@ -459,7 +459,7 @@ function applyTheme(theme){
 function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
   const app=document.getElementById('app');
-  const backdrop=['landscape','welcome','horizon','gradient','night'].includes(u?.workspaceBackdrop)?u.workspaceBackdrop:'landscape';
+  const backdrop=['moonlit','flow','waters','golden','amethyst'].includes(u?.workspaceBackdrop)?u.workspaceBackdrop:'amethyst';
   if(app) app.setAttribute('data-workspace-backdrop',backdrop);
   root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
   root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
@@ -494,7 +494,7 @@ function initWorkspaceAtmosphereInteraction(){
   reduced?.addEventListener?.('change',()=>{if(reduced.matches)resetPointer();});
 }
 function setWorkspaceBackdrop(backdrop){
-  const allowed=['landscape','welcome','horizon','gradient','night'];
+  const allowed=['moonlit','flow','waters','golden','amethyst'];
   if(!allowed.includes(backdrop))return;
   updateUser(u=>{u.workspaceBackdrop=backdrop;});
 }
@@ -1615,11 +1615,11 @@ function subCustomisation(themes,u,a){
     <div class="card workspace-atmosphere-card">
       <div class="custom-section-head"><div><h2>Workspace atmosphere</h2><p>Choose a scenic background for your workspace. The sidebar can be translucent so the scene carries through the layout.</p></div></div>
       <div class="backdrop-gallery">
-        <button type="button" class="backdrop-option backdrop-landscape ${(u.workspaceBackdrop||'landscape')==='landscape'?'active':''}" onclick="setWorkspaceBackdrop('landscape')" aria-pressed="${(u.workspaceBackdrop||'landscape')==='landscape'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Ambient Landscape</strong><small>Layered mountains in a soft evening palette</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'landscape')==='landscape'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-welcome ${u.workspaceBackdrop==='welcome'?'active':''}" onclick="setWorkspaceBackdrop('welcome')" aria-pressed="${u.workspaceBackdrop==='welcome'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Welcome Back</strong><small>A cinematic mountain sunset</small></span><b class="backdrop-check">${u.workspaceBackdrop==='welcome'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-horizon ${u.workspaceBackdrop==='horizon'?'active':''}" onclick="setWorkspaceBackdrop('horizon')" aria-pressed="${u.workspaceBackdrop==='horizon'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Quiet Horizon</strong><small>A calm, open horizon</small></span><b class="backdrop-check">${u.workspaceBackdrop==='horizon'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-gradient ${u.workspaceBackdrop==='gradient'?'active':''}" onclick="setWorkspaceBackdrop('gradient')" aria-pressed="${u.workspaceBackdrop==='gradient'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Living Gradient</strong><small>Flowing colour and soft light</small></span><b class="backdrop-check">${u.workspaceBackdrop==='gradient'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-night ${u.workspaceBackdrop==='night'?'active':''}" onclick="setWorkspaceBackdrop('night')" aria-pressed="${u.workspaceBackdrop==='night'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Night Terminal</strong><small>A deep, atmospheric night scene</small></span><b class="backdrop-check">${u.workspaceBackdrop==='night'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-moonlit ${(u.workspaceBackdrop||'amethyst')==='moonlit'?'active':''}" onclick="setWorkspaceBackdrop('moonlit')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='moonlit'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Moonlit Peaks</strong><small>Starry mountain silhouettes for nighttime</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='moonlit'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-flow ${(u.workspaceBackdrop||'amethyst')==='flow'?'active':''}" onclick="setWorkspaceBackdrop('flow')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='flow'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Prismatic Flow</strong><small>Glowing purple and cyan ribbons</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='flow'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-waters ${(u.workspaceBackdrop||'amethyst')==='waters'?'active':''}" onclick="setWorkspaceBackdrop('waters')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='waters'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Quiet Waters</strong><small>A peaceful sea at sunset</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='waters'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-golden ${(u.workspaceBackdrop||'amethyst')==='golden'?'active':''}" onclick="setWorkspaceBackdrop('golden')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='golden'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Golden Summit</strong><small>Warm sunset over layered mountains</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='golden'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-amethyst ${(u.workspaceBackdrop||'amethyst')==='amethyst'?'active':''}" onclick="setWorkspaceBackdrop('amethyst')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='amethyst'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Amethyst Dawn</strong><small>Lavender sky, glowing horizon and forested peaks</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='amethyst'?'✓':'○'}</b></button>
       </div>
       <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
       <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} onchange="setInteractiveAtmosphere(this.checked)"><span class="slider"></span></span></label>
@@ -1636,7 +1636,7 @@ function subCustomisation(themes,u,a){
 }
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='landscape';u.translucentSidebar=true;u.interactiveAtmosphere=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='amethyst';u.translucentSidebar=true;u.interactiveAtmosphere=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
