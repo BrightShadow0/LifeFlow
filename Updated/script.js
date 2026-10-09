@@ -556,7 +556,7 @@ function applyAmbientEnvironment(){
   root.style.setProperty('--lf-load',String(load));
   root.style.setProperty('--lf-ambient-intensity',String(intensity));
 }
-function themeLabel(theme){ return ({dark:'Deep Night',light:'Clean Light',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Deep Night'; }
+function themeLabel(theme){ return ({dark:'Nighttime',light:'Daytime',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Nighttime'; }
 function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
 function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
 function applyAuthTheme(mode){
@@ -1598,7 +1598,7 @@ function renderProfileTab(u){
   </div>`;
 }
 function renderCustomisationTab(u){
-  const themes=[['dark','Deep Night','Deep, focused, high-contrast workspace'],['light','Clean Light','Open, crisp and airy']];
+  const themes=[['dark','Nighttime','A deep evening palette with clear, bright text'],['light','Daytime','A bright sky-inspired palette with dark, readable text']];
   const a=ambientSettings(u);
   return subCustomisation(themes,u,a);
 }
