@@ -2106,3 +2106,20 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 .backdrop-option-copy small{font-size:10px;line-height:1.4;color:var(--muted)}
 .backdrop-check{font-size:13px;color:var(--accent);padding:0 3px}
 @media(max-width:760px){.backdrop-gallery{grid-template-columns:1fr}.backdrop-option{grid-template-columns:92px minmax(0,1fr) auto}.backdrop-preview{height:60px}}
+
+
+/* Interactive in-app atmosphere: pointer-responsive lighting and subtle depth */
+#app{--lf-pointer-x:50%;--lf-pointer-y:35%;--lf-depth-x:0px;--lf-depth-y:0px;transition:background .35s ease}
+#app::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse 38rem 30rem at var(--lf-pointer-x) var(--lf-pointer-y),rgba(208,198,255,.2),rgba(121,109,230,.075) 42%,transparent 72%);transition:opacity .4s ease}
+:root[data-interactive-atmosphere="on"] #app::after{opacity:1}
+:root[data-interactive-atmosphere="off"] #app::after{opacity:0}
+:root[data-interactive-atmosphere="on"] #app[data-workspace-backdrop="landscape"]::before,
+:root[data-interactive-atmosphere="on"] #app[data-workspace-backdrop="welcome"]::before,
+:root[data-interactive-atmosphere="on"] #app[data-workspace-backdrop="horizon"]::before,
+:root[data-interactive-atmosphere="on"] #app[data-workspace-backdrop="night"]::before{transform:translate3d(var(--lf-depth-x),var(--lf-depth-y),0);transition:transform .25s ease-out}
+#app .app-sidebar,#app .app-content{position:relative;z-index:1}
+#app .app-sidebar{position:fixed;z-index:6}
+@media(pointer:coarse),(prefers-reduced-motion:reduce){
+  #app::after{display:none!important}
+  #app[data-workspace-backdrop]::before{transform:none!important;transition:none!important}
+}
