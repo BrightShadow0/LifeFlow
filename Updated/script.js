@@ -456,6 +456,20 @@ function applyTheme(theme){
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
+function applyWorkspaceAppearance(u=currentUser()){
+  const root=document.documentElement;
+  const backdrop=['landscape','welcome','horizon','gradient','night'].includes(u?.workspaceBackdrop)?u.workspaceBackdrop:'landscape';
+  root.setAttribute('data-workspace-backdrop',backdrop);
+  root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
+}
+function setWorkspaceBackdrop(backdrop){
+  const allowed=['landscape','welcome','horizon','gradient','night'];
+  if(!allowed.includes(backdrop))return;
+  updateUser(u=>{u.workspaceBackdrop=backdrop;});
+}
+function setTranslucentSidebar(enabled){
+  updateUser(u=>{u.translucentSidebar=!!enabled;});
+}
 function setTheme(theme){
   const u=currentUser();
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
@@ -1040,7 +1054,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyAmbientEnvironment();
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -1566,6 +1580,18 @@ function subCustomisation(themes,u,a){
       </button>`).join('')}</div>
       <label class="theme-sync-row"><span><strong>Auto theme sync</strong><small>Automatically match LifeFlow to your device's light or dark mode.</small></span><span class="switch"><input type="checkbox" ${u.autoTheme?"checked":""} onchange="setAutoThemeSync(this.checked)"><span class="slider"></span></span></label>
     </div>
+
+    <div class="card workspace-atmosphere-card">
+      <div class="custom-section-head"><div><h2>Workspace atmosphere</h2><p>Choose a scenic background for your workspace. The sidebar can be translucent so the scene carries through the layout.</p></div></div>
+      <div class="backdrop-gallery">
+        <button type="button" class="backdrop-option backdrop-landscape ${(u.workspaceBackdrop||'landscape')==='landscape'?'active':''}" onclick="setWorkspaceBackdrop('landscape')" aria-pressed="${(u.workspaceBackdrop||'landscape')==='landscape'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Ambient Landscape</strong><small>Layered mountains in a soft evening palette</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'landscape')==='landscape'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-welcome ${u.workspaceBackdrop==='welcome'?'active':''}" onclick="setWorkspaceBackdrop('welcome')" aria-pressed="${u.workspaceBackdrop==='welcome'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Welcome Back</strong><small>A cinematic mountain sunset</small></span><b class="backdrop-check">${u.workspaceBackdrop==='welcome'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-horizon ${u.workspaceBackdrop==='horizon'?'active':''}" onclick="setWorkspaceBackdrop('horizon')" aria-pressed="${u.workspaceBackdrop==='horizon'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Quiet Horizon</strong><small>A calm, open horizon</small></span><b class="backdrop-check">${u.workspaceBackdrop==='horizon'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-gradient ${u.workspaceBackdrop==='gradient'?'active':''}" onclick="setWorkspaceBackdrop('gradient')" aria-pressed="${u.workspaceBackdrop==='gradient'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Living Gradient</strong><small>Flowing colour and soft light</small></span><b class="backdrop-check">${u.workspaceBackdrop==='gradient'?'✓':'○'}</b></button>
+        <button type="button" class="backdrop-option backdrop-night ${u.workspaceBackdrop==='night'?'active':''}" onclick="setWorkspaceBackdrop('night')" aria-pressed="${u.workspaceBackdrop==='night'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Night Terminal</strong><small>A deep, atmospheric night scene</small></span><b class="backdrop-check">${u.workspaceBackdrop==='night'?'✓':'○'}</b></button>
+      </div>
+      <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
+    </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
       <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
@@ -1578,7 +1604,7 @@ function subCustomisation(themes,u,a){
 }
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='landscape';u.translucentSidebar=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
