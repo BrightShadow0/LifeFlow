@@ -458,9 +458,40 @@ function applyTheme(theme){
 }
 function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
+  const app=document.getElementById('app');
   const backdrop=['landscape','welcome','horizon','gradient','night'].includes(u?.workspaceBackdrop)?u.workspaceBackdrop:'landscape';
-  root.setAttribute('data-workspace-backdrop',backdrop);
+  if(app) app.setAttribute('data-workspace-backdrop',backdrop);
   root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
+  root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
+}
+function setInteractiveAtmosphere(enabled){
+  updateUser(u=>{u.interactiveAtmosphere=!!enabled;});
+}
+function initWorkspaceAtmosphereInteraction(){
+  if(document.documentElement.dataset.atmosphereInteractionReady==='true')return;
+  document.documentElement.dataset.atmosphereInteractionReady='true';
+  const app=document.getElementById('app');
+  if(!app)return;
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const finePointer=window.matchMedia?.('(pointer: fine)');
+  const updatePointer=e=>{
+    if(!getSession()||reduced?.matches||!finePointer?.matches||document.documentElement.dataset.interactiveAtmosphere==='off')return;
+    const x=Math.max(0,Math.min(1,e.clientX/window.innerWidth));
+    const y=Math.max(0,Math.min(1,e.clientY/window.innerHeight));
+    app.style.setProperty('--lf-pointer-x',(x*100).toFixed(1)+'%');
+    app.style.setProperty('--lf-pointer-y',(y*100).toFixed(1)+'%');
+    app.style.setProperty('--lf-depth-x',((x-.5)*10).toFixed(2)+'px');
+    app.style.setProperty('--lf-depth-y',((y-.5)*8).toFixed(2)+'px');
+  };
+  const resetPointer=()=>{
+    app.style.setProperty('--lf-pointer-x','50%');
+    app.style.setProperty('--lf-pointer-y','35%');
+    app.style.setProperty('--lf-depth-x','0px');
+    app.style.setProperty('--lf-depth-y','0px');
+  };
+  window.addEventListener('pointermove',updatePointer,{passive:true});
+  window.addEventListener('blur',resetPointer);
+  reduced?.addEventListener?.('change',()=>{if(reduced.matches)resetPointer();});
 }
 function setWorkspaceBackdrop(backdrop){
   const allowed=['landscape','welcome','horizon','gradient','night'];
@@ -1054,7 +1085,7 @@ function renderApp(){
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',about:'Why LifeFlow',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); applyAmbientEnvironment();
+  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); initWorkspaceAtmosphereInteraction(); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
   if(view==='today') el.innerHTML = renderToday();
@@ -1591,6 +1622,7 @@ function subCustomisation(themes,u,a){
         <button type="button" class="backdrop-option backdrop-night ${u.workspaceBackdrop==='night'?'active':''}" onclick="setWorkspaceBackdrop('night')" aria-pressed="${u.workspaceBackdrop==='night'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Night Terminal</strong><small>A deep, atmospheric night scene</small></span><b class="backdrop-check">${u.workspaceBackdrop==='night'?'✓':'○'}</b></button>
       </div>
       <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
+      <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} onchange="setInteractiveAtmosphere(this.checked)"><span class="slider"></span></span></label>
     </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
       <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
@@ -1604,7 +1636,7 @@ function subCustomisation(themes,u,a){
 }
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='landscape';u.translucentSidebar=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='landscape';u.translucentSidebar=true;u.interactiveAtmosphere=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
