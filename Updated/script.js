@@ -494,14 +494,7 @@ function normalizedBackdropTheme(u=currentUser()){
 }
 function workspaceBackdropOptions(u=currentUser()){
   const theme=normalizedBackdropTheme(u);
-  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
-  const options=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire):[
-    ['moonlit','Moonlit Peaks','Starry mountain silhouettes for nighttime'],
-    ['flow','Prismatic Flow','Glowing purple and cyan ribbons'],
-    ['waters','Quiet Waters','A peaceful sea at sunset'],
-    ['golden','Golden Summit','Warm sunset over layered mountains'],
-    ['amethyst','Amethyst Dawn','Lavender sky, glowing horizon and forested peaks']
-  ];
+  const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
   const selected=options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0];
   return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" onclick="setWorkspaceBackdrop('${id}')" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
 }
@@ -512,10 +505,7 @@ function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
   const app=document.getElementById('app');
   const theme=normalizedBackdropTheme(u);
-  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
-  const options=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire):[
-    ['moonlit'],['flow'],['waters'],['golden'],['amethyst']
-  ];
+  const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
   const validIds=options.map(option=>option[0]);
   let backdrop=u?.workspaceBackdrop;
   if(!validIds.includes(backdrop)){
@@ -561,8 +551,7 @@ function initWorkspaceAtmosphereInteraction(){
 function setWorkspaceBackdrop(backdrop){
   const u=currentUser();
   const theme=normalizedBackdropTheme(u);
-  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
-  const allowed=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]):['moonlit','flow','waters','golden','amethyst'];
+  const allowed=(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
   if(!allowed.includes(backdrop))return;
   updateUser(user=>{user.workspaceBackdrop=backdrop;});
 }
