@@ -450,6 +450,16 @@ function applyTheme(theme){
   const u=currentUser();
   const actual=u?.autoTheme ? systemTheme() : (allowed.includes(theme)?theme:'dark');
   document.documentElement.setAttribute('data-theme',actual);
+  document.documentElement.setAttribute('data-mouse-light',actual==='light'?'off':'on');
+  if(actual==='light'){
+    const app=document.getElementById('app');
+    if(app){
+      app.style.setProperty('--lf-pointer-x','50%');
+      app.style.setProperty('--lf-pointer-y','35%');
+      app.style.setProperty('--lf-depth-x','0px');
+      app.style.setProperty('--lf-depth-y','0px');
+    }
+  }
   const entitledColors=['sapphire','emerald','gold','platinum','amethyst','ruby'];
   let color=u?.colorTheme||'platinum';
   if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
@@ -475,7 +485,7 @@ function initWorkspaceAtmosphereInteraction(){
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const finePointer=window.matchMedia?.('(pointer: fine)');
   const updatePointer=e=>{
-    if(!getSession()||reduced?.matches||!finePointer?.matches||document.documentElement.dataset.interactiveAtmosphere==='off')return;
+    if(!getSession()||reduced?.matches||!finePointer?.matches||document.documentElement.dataset.interactiveAtmosphere==='off'||document.documentElement.dataset.theme==='light'){resetPointer();return;}
     const x=Math.max(0,Math.min(1,e.clientX/window.innerWidth));
     const y=Math.max(0,Math.min(1,e.clientY/window.innerHeight));
     app.style.setProperty('--lf-pointer-x',(x*100).toFixed(1)+'%');
