@@ -3140,3 +3140,44 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
     min-height:100dvh !important;
   }
 }
+
+
+/* LifeFlow inner atmosphere scenes: use full landscape imagery as the real workspace background. */
+#app[data-workspace-backdrop="blue-hour"]{
+  background-image:linear-gradient(180deg,rgba(5,18,43,.16),rgba(4,10,26,.58)),url("https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="green-hour"]{
+  background-image:linear-gradient(180deg,rgba(7,25,20,.12),rgba(4,16,12,.58)),url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="yellow-hour"]{
+  background-image:linear-gradient(180deg,rgba(42,22,10,.08),rgba(30,13,9,.5)),url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="grey-hour"]{
+  background-image:linear-gradient(180deg,rgba(14,24,37,.14),rgba(5,10,18,.56)),url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="purple-hour"]{
+  background-image:linear-gradient(180deg,rgba(35,10,63,.12),rgba(12,7,31,.56)),url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="red-hour"]{
+  background-image:linear-gradient(180deg,rgba(57,8,20,.12),rgba(18,5,12,.58)),url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=2200&q=90")!important;
+}
+#app[data-workspace-backdrop="blue-hour"],
+#app[data-workspace-backdrop="green-hour"],
+#app[data-workspace-backdrop="yellow-hour"],
+#app[data-workspace-backdrop="grey-hour"],
+#app[data-workspace-backdrop="purple-hour"],
+#app[data-workspace-backdrop="red-hour"]{
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+}
+#app[data-workspace-backdrop="blue-hour"]::before,
+#app[data-workspace-backdrop="green-hour"]::before,
+#app[data-workspace-backdrop="yellow-hour"]::before,
+#app[data-workspace-backdrop="grey-hour"]::before,
+#app[data-workspace-backdrop="purple-hour"]::before,
+#app[data-workspace-backdrop="red-hour"]::before{
+  background:none!important;
+  opacity:0!important;
+}
