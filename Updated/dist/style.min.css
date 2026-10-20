@@ -1781,3 +1781,42 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-theme="light"] .progress-track span{min-width:0;background:var(--accent)!important;box-shadow:none!important;opacity:1!important}
 :root[data-theme="dark"] .progress-track{opacity:1!important}
 :root[data-theme="dark"] .progress-track span{opacity:1!important}
+
+
+/* Task Master follows the active LifeFlow theme at rest; hover only animates the pixel flame. */
+.task-master-button{
+  background:var(--card, var(--panel, transparent))!important;
+  color:var(--text)!important;
+  border:1px solid color-mix(in srgb,var(--accent) 58%,transparent)!important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 8%,transparent)!important;
+  transform:none!important;
+  transition:border-color .18s ease,box-shadow .18s ease!important;
+}
+.task-master-button:hover{
+  background:var(--card, var(--panel, transparent))!important;
+  color:var(--text)!important;
+  border-color:var(--accent)!important;
+  box-shadow:0 0 18px color-mix(in srgb,var(--accent) 22%,transparent),inset 0 0 14px color-mix(in srgb,var(--accent) 8%,transparent)!important;
+  transform:none!important;
+}
+.task-master-button .task-master-flame i,
+.task-master-button .task-master-flame b,
+.task-master-button .task-master-flame em{animation:none!important}
+.task-master-button:hover .task-master-flame i{animation:pixelFlameOuter .6s steps(2,end) infinite!important}
+.task-master-button:hover .task-master-flame b{animation:pixelFlameInner .42s steps(2,end) infinite!important}
+.task-master-button:hover .task-master-flame em{animation:pixelFlameCore .3s steps(2,end) infinite!important}
+.task-master-flame{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 40%,transparent))}
+:root[data-theme="light"] .task-master-button,
+:root[data-theme="paper"] .task-master-button{
+  background:var(--card, #fff)!important;
+  color:var(--text, #20242b)!important;
+  border-color:color-mix(in srgb,var(--accent) 55%,#b7c0ce)!important;
+  box-shadow:0 1px 4px rgba(20,30,50,.07)!important;
+}
+:root[data-theme="light"] .task-master-button:hover,
+:root[data-theme="paper"] .task-master-button:hover{
+  background:var(--card, #fff)!important;
+  color:var(--text, #20242b)!important;
+  border-color:var(--accent)!important;
+  box-shadow:0 0 16px color-mix(in srgb,var(--accent) 18%,transparent)!important;
+}
