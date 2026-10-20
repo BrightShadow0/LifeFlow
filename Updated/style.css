@@ -2982,3 +2982,29 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 .backdrop-moonlit .backdrop-preview,.backdrop-blue-hour .backdrop-preview,.backdrop-blue-waters .backdrop-preview,.backdrop-forest-glow .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview,.backdrop-sunset-horizon .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview,.backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview,.backdrop-grey-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{
   background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
 }
+
+
+/* Prevent the browser's rectangular text/element selection while pulling the theme cord. */
+.theme-pull,
+.theme-pull *,
+.auth-bulb,
+.auth-bulb *,
+.top-theme-pull,
+.top-theme-pull *{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+.theme-pull,
+.auth-bulb{
+  touch-action:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  outline:none;
+}
+.theme-pull:focus-visible,
+.auth-bulb:focus-visible{
+  outline:2px solid var(--accent)!important;
+  outline-offset:3px;
+}
