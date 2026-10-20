@@ -3113,3 +3113,30 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-interactive-atmosphere="on"] #app::after{
   z-index:0!important;
 }
+
+
+/* Desktop sidebar follows the document scroll instead of sticking to the viewport. */
+@media (min-width:901px){
+  #app{
+    align-items:stretch !important;
+  }
+  #app > .app-sidebar{
+    position:relative !important;
+    top:auto !important;
+    left:auto !important;
+    right:auto !important;
+    bottom:auto !important;
+    flex:0 0 245px !important;
+    width:245px !important;
+    height:auto !important;
+    min-height:100% !important;
+    max-height:none !important;
+    align-self:stretch !important;
+    overflow:visible !important;
+    margin:0 !important;
+  }
+  #app > .app-content{
+    align-self:stretch !important;
+    min-height:100dvh !important;
+  }
+}
