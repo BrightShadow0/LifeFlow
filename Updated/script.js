@@ -466,10 +466,78 @@ function applyTheme(theme){
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
+const WORKSPACE_BACKDROP_GROUPS={
+  sapphire:[
+    ['blue-hour','Blue Hour','Cobalt twilight and deep blue silhouettes'],
+    ['moonlit','Moonlit Peaks','Starry mountain silhouettes for nighttime'],
+    ['blue-waters','Blue Waters','A calm lake beneath a midnight sky']
+  ],
+  emerald:[
+    ['forest-glow','Forest Glow','Sunlight filtering through a lush forest'],
+    ['quiet-waters','Quiet Waters','A peaceful lake framed by dark trees'],
+    ['emerald-canopy','Emerald Canopy','Deep green woodland at dusk']
+  ],
+  gold:[
+    ['sunset-horizon','G2 · Sunset Horizon','Glowing sunset over layered mountains'],
+    ['forest-gold','G3 · Forest Glow','Golden sunlight filtering through trees'],
+    ['golden-clouds','G5 · Golden Clouds','Dramatic amber clouds and warm light']
+  ],
+  platinum:[
+    ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones'],
+    ['misty-peaks','Misty Peaks','Muted mountains beneath a pale moon'],
+    ['silver-night','Silver Night','A quiet monochrome night landscape']
+  ],
+  amethyst:[
+    ['purple-hour','Purple Hour','Violet twilight and deep indigo silhouettes'],
+    ['lavender-dawn','Lavender Dawn','Soft lavender skies over distant peaks'],
+    ['prismatic-flow','Prismatic Flow','Glowing violet and cyan ribbons']
+  ],
+  ruby:[
+    ['crimson-sky','R1 · Crimson Sky','Fiery red clouds above a dark horizon'],
+    ['cloud-drama','R5 · Cloud Drama','Textured crimson storm clouds'],
+    ['highway-glow','R4 · Highway Glow','A cinematic highway under a red sky'],
+    ['silhouette-trees','R6 · Silhouette Trees','Dark branches against a vivid red sun']
+  ]
+};
+function normalizedBackdropTheme(u=currentUser()){
+  const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  let theme=allowed.includes(u?.colorTheme)?u.colorTheme:'platinum';
+  if(theme==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) theme='sapphire';
+  return theme;
+}
+function workspaceBackdropOptions(u=currentUser()){
+  const theme=normalizedBackdropTheme(u);
+  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
+  const options=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire):[
+    ['moonlit','Moonlit Peaks','Starry mountain silhouettes for nighttime'],
+    ['flow','Prismatic Flow','Glowing purple and cyan ribbons'],
+    ['waters','Quiet Waters','A peaceful sea at sunset'],
+    ['golden','Golden Summit','Warm sunset over layered mountains'],
+    ['amethyst','Amethyst Dawn','Lavender sky, glowing horizon and forested peaks']
+  ];
+  const selected=options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0];
+  return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" onclick="setWorkspaceBackdrop('${id}')" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
+}
+function defaultBackdropForTheme(theme){
+  return (WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire)[0][0];
+}
 function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
   const app=document.getElementById('app');
-  const backdrop=['moonlit','flow','waters','golden','amethyst'].includes(u?.workspaceBackdrop)?u.workspaceBackdrop:'amethyst';
+  const theme=normalizedBackdropTheme(u);
+  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
+  const options=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire):[
+    ['moonlit'],['flow'],['waters'],['golden'],['amethyst']
+  ];
+  const validIds=options.map(option=>option[0]);
+  let backdrop=u?.workspaceBackdrop;
+  if(!validIds.includes(backdrop)){
+    backdrop=darkMode?defaultBackdropForTheme(theme):'amethyst';
+    if(u && u.workspaceBackdrop!==backdrop){
+      const users=getUsers();
+      if(users[state.currentUser]){users[state.currentUser].workspaceBackdrop=backdrop;saveUsers(users);}
+    }
+  }
   if(app) app.setAttribute('data-workspace-backdrop',backdrop);
   root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
   root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
@@ -504,9 +572,12 @@ function initWorkspaceAtmosphereInteraction(){
   reduced?.addEventListener?.('change',()=>{if(reduced.matches)resetPointer();});
 }
 function setWorkspaceBackdrop(backdrop){
-  const allowed=['moonlit','flow','waters','golden','amethyst'];
+  const u=currentUser();
+  const theme=normalizedBackdropTheme(u);
+  const darkMode=(u?.autoTheme?systemTheme():u?.theme||'dark')==='dark';
+  const allowed=darkMode?(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]):['moonlit','flow','waters','golden','amethyst'];
   if(!allowed.includes(backdrop))return;
-  updateUser(u=>{u.workspaceBackdrop=backdrop;});
+  updateUser(user=>{user.workspaceBackdrop=backdrop;});
 }
 function setTranslucentSidebar(enabled){
   updateUser(u=>{u.translucentSidebar=!!enabled;});
@@ -539,7 +610,14 @@ function setColorTheme(theme){
   const next=allowed.includes(theme)?theme:'sapphire';
   document.documentElement.setAttribute('data-color-theme',next);
   if(u){
-    updateUser(user=>{user.colorTheme=next;});
+    updateUser(user=>{
+      user.colorTheme=next;
+      const darkMode=(user.autoTheme?systemTheme():user.theme||'dark')==='dark';
+      if(darkMode){
+        const valid=(WORKSPACE_BACKDROP_GROUPS[next]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
+        if(!valid.includes(user.workspaceBackdrop)) user.workspaceBackdrop=defaultBackdropForTheme(next);
+      }
+    });
   }else{
     renderApp();
   }
@@ -1632,13 +1710,7 @@ function subCustomisation(themes,u,a){
 
     <div class="card workspace-atmosphere-card">
       <div class="custom-section-head"><div><h2>Workspace atmosphere</h2><p>Choose a scenic background for your workspace. The sidebar can be translucent so the scene carries through the layout.</p></div></div>
-      <div class="backdrop-gallery">
-        <button type="button" class="backdrop-option backdrop-moonlit ${(u.workspaceBackdrop||'amethyst')==='moonlit'?'active':''}" onclick="setWorkspaceBackdrop('moonlit')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='moonlit'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Moonlit Peaks</strong><small>Starry mountain silhouettes for nighttime</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='moonlit'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-flow ${(u.workspaceBackdrop||'amethyst')==='flow'?'active':''}" onclick="setWorkspaceBackdrop('flow')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='flow'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Prismatic Flow</strong><small>Glowing purple and cyan ribbons</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='flow'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-waters ${(u.workspaceBackdrop||'amethyst')==='waters'?'active':''}" onclick="setWorkspaceBackdrop('waters')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='waters'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Quiet Waters</strong><small>A peaceful sea at sunset</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='waters'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-golden ${(u.workspaceBackdrop||'amethyst')==='golden'?'active':''}" onclick="setWorkspaceBackdrop('golden')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='golden'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Golden Summit</strong><small>Warm sunset over layered mountains</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='golden'?'✓':'○'}</b></button>
-        <button type="button" class="backdrop-option backdrop-amethyst ${(u.workspaceBackdrop||'amethyst')==='amethyst'?'active':''}" onclick="setWorkspaceBackdrop('amethyst')" aria-pressed="${(u.workspaceBackdrop||'amethyst')==='amethyst'}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>Amethyst Dawn</strong><small>Lavender sky, glowing horizon and forested peaks</small></span><b class="backdrop-check">${(u.workspaceBackdrop||'amethyst')==='amethyst'?'✓':'○'}</b></button>
-      </div>
+      <div class="backdrop-gallery">${workspaceBackdropOptions(u)}</div>
       <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
       <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} onchange="setInteractiveAtmosphere(this.checked)"><span class="slider"></span></span></label>
     </div>
