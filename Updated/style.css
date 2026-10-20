@@ -2765,16 +2765,16 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 
 /* Theme-aware dark-mode workspace atmosphere choices.
    These layered scenes are intentionally independent from the UI accent palette. */
-#app[data-workspace-backdrop="sunset-horizon"]{
+#app[data-workspace-backdrop="sunset-hour"]{
   background:radial-gradient(ellipse at 72% 38%,#fff5b0 0 1.4%,#ffb64e 2.5% 7%,transparent 23%),linear-gradient(180deg,#422044 0%,#d65b2e 37%,#ffad48 53%,#57364a 68%,#101523 100%)!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"]::before{
+#app[data-workspace-backdrop="sunset-hour"]::before{
   background:linear-gradient(164deg,transparent 0 49%,#33263b 49.2% 66%,transparent 66.2%),linear-gradient(22deg,#17202b 0 35%,transparent 35.2%),linear-gradient(155deg,transparent 0 60%,#101621 60.2% 82%,transparent 82.2%)!important;opacity:1!important;
 }
-#app[data-workspace-backdrop="forest-gold"],#app[data-workspace-backdrop="forest-glow"]{
+#app[data-workspace-backdrop="forest-gold"],#app[data-workspace-backdrop="forest-hour"]{
   background:radial-gradient(ellipse at 53% 30%,#fff1a4 0 2%,#e9a52c 4% 13%,transparent 31%),linear-gradient(180deg,#30231b 0%,#70451f 45%,#19251d 100%)!important;
 }
-#app[data-workspace-backdrop="forest-gold"]::before,#app[data-workspace-backdrop="forest-glow"]::before{
+#app[data-workspace-backdrop="forest-gold"]::before,#app[data-workspace-backdrop="forest-hour"]::before{
   background:repeating-linear-gradient(80deg,transparent 0 7%,#100f0d 7.5% 9%,transparent 9.5% 16%),linear-gradient(180deg,transparent 0 52%,#101812 52.2% 100%)!important;opacity:.9!important;
 }
 #app[data-workspace-backdrop="golden-clouds"]{
@@ -2783,10 +2783,10 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="golden-clouds"]::before{
   background:radial-gradient(ellipse at 22% 44%,#f3a04b 0 8%,transparent 24%),radial-gradient(ellipse at 63% 52%,#ffcc70 0 9%,transparent 25%),linear-gradient(180deg,transparent 0 64%,#171522 64.2% 100%)!important;opacity:.86!important;
 }
-#app[data-workspace-backdrop="crimson-sky"]{
+#app[data-workspace-backdrop="crimson-hour"]{
   background:radial-gradient(ellipse at 72% 55%,#ff422e 0 2%,#b20e21 7% 18%,transparent 39%),linear-gradient(180deg,#170d1b 0%,#750d20 39%,#e22a25 58%,#160c16 100%)!important;
 }
-#app[data-workspace-backdrop="crimson-sky"]::before{
+#app[data-workspace-backdrop="crimson-hour"]::before{
   background:linear-gradient(165deg,transparent 0 40%,#270d1b 40.2% 52%,transparent 52.2%),linear-gradient(20deg,#080a10 0 34%,transparent 34.2%),linear-gradient(155deg,transparent 0 62%,#080910 62.2% 100%)!important;opacity:1!important;
 }
 #app[data-workspace-backdrop="cloud-drama"]{
@@ -2825,7 +2825,7 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="emerald-canopy"]{
   background:radial-gradient(ellipse at 55% 28%,#c4d89a 0%,#4c9169 13%,transparent 31%),linear-gradient(180deg,#0d3430 0%,#245b45 48%,#071a17 100%)!important;
 }
-#app[data-workspace-backdrop="grey-hour"]{
+#app[data-workspace-backdrop="silver-hour"]{
   background:radial-gradient(ellipse at 65% 35%,#aeb7c3 0%,transparent 23%),linear-gradient(180deg,#3b4654 0%,#7b8791 46%,#242b34 100%)!important;
 }
 #app[data-workspace-backdrop="misty-peaks"]{
@@ -2843,13 +2843,13 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="prismatic-flow"]{
   background:radial-gradient(ellipse at 75% 35%,#3edbe8 0%,transparent 27%),radial-gradient(ellipse at 28% 62%,#a74cff 0%,transparent 34%),linear-gradient(135deg,#100b29,#251448 55%,#07121e)!important;
 }
-#app[data-workspace-backdrop="lavender-dawn"]::before,#app[data-workspace-backdrop="purple-hour"]::before,#app[data-workspace-backdrop="silver-night"]::before,#app[data-workspace-backdrop="misty-peaks"]::before,#app[data-workspace-backdrop="grey-hour"]::before,#app[data-workspace-backdrop="prismatic-flow"]::before{
+#app[data-workspace-backdrop="lavender-dawn"]::before,#app[data-workspace-backdrop="purple-hour"]::before,#app[data-workspace-backdrop="silver-night"]::before,#app[data-workspace-backdrop="misty-peaks"]::before,#app[data-workspace-backdrop="silver-hour"]::before,#app[data-workspace-backdrop="prismatic-flow"]::before{
   background:linear-gradient(145deg,transparent 0 48%,#111322 48.2% 67%,transparent 67.2%),linear-gradient(25deg,#111322 0 35%,transparent 35.2%)!important;opacity:.75!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"]::before,
+#app[data-workspace-backdrop="sunset-hour"]::before,
 #app[data-workspace-backdrop="forest-gold"]::before,
 #app[data-workspace-backdrop="golden-clouds"]::before,
-#app[data-workspace-backdrop="crimson-sky"]::before,
+#app[data-workspace-backdrop="crimson-hour"]::before,
 #app[data-workspace-backdrop="cloud-drama"]::before,
 #app[data-workspace-backdrop="highway-glow"]::before,
 #app[data-workspace-backdrop="silhouette-trees"]::before,
@@ -2861,15 +2861,15 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="purple-hour"]::before,
 #app[data-workspace-backdrop="silver-night"]::before,
 #app[data-workspace-backdrop="misty-peaks"]::before,
-#app[data-workspace-backdrop="grey-hour"]::before,
+#app[data-workspace-backdrop="silver-hour"]::before,
 #app[data-workspace-backdrop="prismatic-flow"]::before{
   content:""!important;position:fixed!important;inset:0!important;z-index:-1!important;display:block!important;pointer-events:none!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"],
+#app[data-workspace-backdrop="sunset-hour"],
 #app[data-workspace-backdrop="forest-gold"],
-#app[data-workspace-backdrop="forest-glow"],
+#app[data-workspace-backdrop="forest-hour"],
 #app[data-workspace-backdrop="golden-clouds"],
-#app[data-workspace-backdrop="crimson-sky"],
+#app[data-workspace-backdrop="crimson-hour"],
 #app[data-workspace-backdrop="cloud-drama"],
 #app[data-workspace-backdrop="highway-glow"],
 #app[data-workspace-backdrop="silhouette-trees"],
@@ -2877,7 +2877,7 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="blue-waters"],
 #app[data-workspace-backdrop="quiet-waters"],
 #app[data-workspace-backdrop="emerald-canopy"],
-#app[data-workspace-backdrop="grey-hour"],
+#app[data-workspace-backdrop="silver-hour"],
 #app[data-workspace-backdrop="misty-peaks"],
 #app[data-workspace-backdrop="silver-night"],
 #app[data-workspace-backdrop="purple-hour"],
@@ -2885,11 +2885,11 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="prismatic-flow"]{
   position:relative!important;isolation:isolate!important;min-height:100dvh!important;background-attachment:fixed!important;background-size:cover!important;transition:background .45s ease!important;
 }
-.backdrop-sunset-horizon .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-golden-clouds .backdrop-preview{background:linear-gradient(180deg,#ffd98a,#ff9c36 48%,#4b2a2b 100%)!important}
-.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview{background:linear-gradient(180deg,#420d28,#e72832 52%,#090911 100%)!important}
+.backdrop-sunset-hour .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-golden-clouds .backdrop-preview{background:linear-gradient(180deg,#ffd98a,#ff9c36 48%,#4b2a2b 100%)!important}
+.backdrop-crimson-hour .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview{background:linear-gradient(180deg,#420d28,#e72832 52%,#090911 100%)!important}
 .backdrop-blue-hour .backdrop-preview,.backdrop-blue-waters .backdrop-preview{background:linear-gradient(180deg,#092c69,#367ed0 48%,#061323 100%)!important}
-.backdrop-forest-glow .backdrop-preview,.backdrop-quiet-waters .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background:linear-gradient(180deg,#244e3c,#66945b 48%,#071b18 100%)!important}
-.backdrop-grey-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview{background:linear-gradient(180deg,#b7c0cc,#697788 48%,#202733 100%)!important}
+.backdrop-forest-hour .backdrop-preview,.backdrop-quiet-waters .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background:linear-gradient(180deg,#244e3c,#66945b 48%,#071b18 100%)!important}
+.backdrop-silver-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview{background:linear-gradient(180deg,#b7c0cc,#697788 48%,#202733 100%)!important}
 .backdrop-purple-hour .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview{background:linear-gradient(135deg,#24144e,#9b56cf 48%,#241633 100%)!important}
 
 
@@ -2906,14 +2906,14 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="quiet-waters"]{
   background-image:linear-gradient(180deg,rgba(4,26,48,.18),rgba(3,14,28,.62)),url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="forest-glow"],
+#app[data-workspace-backdrop="forest-hour"],
 #app[data-workspace-backdrop="forest-gold"],
 #app[data-workspace-backdrop="emerald-canopy"]{
   background-image:linear-gradient(180deg,rgba(5,26,20,.18),rgba(2,12,10,.66)),url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"],
+#app[data-workspace-backdrop="sunset-hour"],
 #app[data-workspace-backdrop="lavender-dawn"],
-#app[data-workspace-backdrop="crimson-sky"],
+#app[data-workspace-backdrop="crimson-hour"],
 #app[data-workspace-backdrop="cloud-drama"],
 #app[data-workspace-backdrop="golden-clouds"]{
   background-image:linear-gradient(180deg,rgba(29,14,42,.18),rgba(10,8,24,.62)),url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2000&q=85")!important;
@@ -2926,14 +2926,14 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="silhouette-trees"]{
   background-image:linear-gradient(180deg,rgba(74,8,24,.24),rgba(10,5,16,.68)),url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="grey-hour"]{
+#app[data-workspace-backdrop="silver-hour"]{
   background-image:linear-gradient(180deg,rgba(27,35,47,.18),rgba(7,10,17,.66)),url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"]::before,
+#app[data-workspace-backdrop="sunset-hour"]::before,
 #app[data-workspace-backdrop="forest-gold"]::before,
-#app[data-workspace-backdrop="forest-glow"]::before,
+#app[data-workspace-backdrop="forest-hour"]::before,
 #app[data-workspace-backdrop="golden-clouds"]::before,
-#app[data-workspace-backdrop="crimson-sky"]::before,
+#app[data-workspace-backdrop="crimson-hour"]::before,
 #app[data-workspace-backdrop="cloud-drama"]::before,
 #app[data-workspace-backdrop="highway-glow"]::before,
 #app[data-workspace-backdrop="silhouette-trees"]::before,
@@ -2945,15 +2945,15 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="purple-hour"]::before,
 #app[data-workspace-backdrop="silver-night"]::before,
 #app[data-workspace-backdrop="misty-peaks"]::before,
-#app[data-workspace-backdrop="grey-hour"]::before,
+#app[data-workspace-backdrop="silver-hour"]::before,
 #app[data-workspace-backdrop="prismatic-flow"]::before{
   background:linear-gradient(180deg,rgba(5,8,20,.06),rgba(5,8,20,.26) 50%,rgba(5,8,20,.60))!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"],
+#app[data-workspace-backdrop="sunset-hour"],
 #app[data-workspace-backdrop="forest-gold"],
-#app[data-workspace-backdrop="forest-glow"],
+#app[data-workspace-backdrop="forest-hour"],
 #app[data-workspace-backdrop="golden-clouds"],
-#app[data-workspace-backdrop="crimson-sky"],
+#app[data-workspace-backdrop="crimson-hour"],
 #app[data-workspace-backdrop="cloud-drama"],
 #app[data-workspace-backdrop="highway-glow"],
 #app[data-workspace-backdrop="silhouette-trees"],
@@ -2961,7 +2961,7 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="blue-waters"],
 #app[data-workspace-backdrop="quiet-waters"],
 #app[data-workspace-backdrop="emerald-canopy"],
-#app[data-workspace-backdrop="grey-hour"],
+#app[data-workspace-backdrop="silver-hour"],
 #app[data-workspace-backdrop="misty-peaks"],
 #app[data-workspace-backdrop="silver-night"],
 #app[data-workspace-backdrop="purple-hour"],
@@ -2974,12 +2974,12 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 .backdrop-moonlit .backdrop-preview,.backdrop-silver-night .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=80")!important}
 .backdrop-blue-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=700&q=80")!important}
 .backdrop-blue-waters .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=700&q=80")!important}
-.backdrop-forest-glow .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=80")!important}
-.backdrop-sunset-horizon .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-forest-hour .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-sunset-hour .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-hour .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=700&q=80")!important}
 .backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=700&q=80")!important}
 .backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80")!important}
-.backdrop-grey-hour .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=700&q=80")!important}
-.backdrop-moonlit .backdrop-preview,.backdrop-blue-hour .backdrop-preview,.backdrop-blue-waters .backdrop-preview,.backdrop-forest-glow .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview,.backdrop-sunset-horizon .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview,.backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview,.backdrop-grey-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{
+.backdrop-silver-hour .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-moonlit .backdrop-preview,.backdrop-blue-hour .backdrop-preview,.backdrop-blue-waters .backdrop-preview,.backdrop-forest-hour .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview,.backdrop-sunset-hour .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-hour .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview,.backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview,.backdrop-silver-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{
   background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
 }
 
@@ -3087,14 +3087,14 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="quiet-waters"]::before{
   background-image:linear-gradient(180deg,rgba(4,26,48,.16),rgba(3,14,28,.54)),url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="forest-glow"]::before,
+#app[data-workspace-backdrop="forest-hour"]::before,
 #app[data-workspace-backdrop="forest-gold"]::before,
 #app[data-workspace-backdrop="emerald-canopy"]::before{
   background-image:linear-gradient(180deg,rgba(5,26,20,.16),rgba(2,12,10,.56)),url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="sunset-horizon"]::before,
+#app[data-workspace-backdrop="sunset-hour"]::before,
 #app[data-workspace-backdrop="lavender-dawn"]::before,
-#app[data-workspace-backdrop="crimson-sky"]::before,
+#app[data-workspace-backdrop="crimson-hour"]::before,
 #app[data-workspace-backdrop="cloud-drama"]::before,
 #app[data-workspace-backdrop="golden-clouds"]::before{
   background-image:linear-gradient(180deg,rgba(29,14,42,.14),rgba(10,8,24,.52)),url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2000&q=85")!important;
@@ -3107,7 +3107,7 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app[data-workspace-backdrop="silhouette-trees"]::before{
   background-image:linear-gradient(180deg,rgba(74,8,24,.18),rgba(10,5,16,.58)),url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=2000&q=85")!important;
 }
-#app[data-workspace-backdrop="grey-hour"]::before{
+#app[data-workspace-backdrop="silver-hour"]::before{
   background-image:linear-gradient(180deg,rgba(27,35,47,.14),rgba(7,10,17,.56)),url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=85")!important;
 }
 :root[data-interactive-atmosphere="on"] #app::after{
