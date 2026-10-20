@@ -1,16 +1,35 @@
 # LifeFlow
 
-LifeFlow is a personal planning workspace.
+**A personal planning workspace built around productivity, customisation, and visual design.**
 
-## Updated
+LifeFlow brings daily planning, task management, scheduling, and personalisation into one workspace.
 
-The updated working version of LifeFlow is maintained from the initial deployment baseline. Future feature changes and refinements will be developed here.
+## Features
 
-## Version structure
+- **Today Dashboard:** Daily tasks, progress tracking, and schedule overview.
+- **Task Management:** Create, prioritise, schedule, and complete tasks.
+- **Calendar:** Organise tasks by date.
+- **Kanban Board:** Manage work across To Do, Doing, and Done.
+- **Daytime & Nighttime Themes:** Light and dark modes, with optional device synchronisation.
+- **Colour Themes:** Sapphire, Emerald, Gold, Platinum, Amethyst, and Ruby.
+- **Workspace Atmosphere:** Five scenic background concepts, translucent sidebar, and interactive visual effects.
+- **Ambient Controls:** Adjust visual intensity and ambient effects.
+- **Profile & Settings:** Manage profile, localisation, sessions, and preferences.
+- **Notes Manager and Your Branches:** Additional organisation tools for eligible account tiers.
+- **Data Export:** Export task data to CSV or JSON.
+- **Task Master Easter Egg:** Generate 15 randomly scheduled tasks across yesterday, today, and tomorrow.
+- **Account Tiers:** Free, Premium, and Team Admin, with tier-based feature access.
+- **Persistent Preferences:** Save supported settings and application state in browser storage.
 
-The project keeps two major versions separate:
+## Technology
 
-- **Initial**: the original frozen version from the initial deployment (do not edit this folder).
-- **Updated**: the active development version. All new LifeFlow changes should go here.
+- HTML
+- CSS
+- JavaScript
+- Browser local storage
 
-The original Initial version is also preserved in Git history at commit `b167d85`.
+## Project Structure
+
+- **`Updated/`**: The sole maintained application version. All future development takes place here.
+
+The former `Initial/` snapshot is removed from the current project structure; its earlier state remains available in Git history.
