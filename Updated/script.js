@@ -1109,9 +1109,14 @@ function currentLocalClockTime(){
   roundedTime.setMinutes(roundedMinutes,0,0);
   return String(roundedTime.getHours()).padStart(2,'0')+':'+String(roundedTime.getMinutes()).padStart(2,'0');
 }
+function timePlusOneHour(value){
+  const [hour,minute]=value.split(':').map(Number);
+  return String((hour+1)%24).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+}
 function openClock(target,field){
   const stored=target==='new'?newTaskTimes:timeEdit; if(!stored)return;
-  const initial=stored[field]||(field==='start'?currentLocalClockTime():'13:00');
+  const startDefault=stored.start||currentLocalClockTime();
+  const initial=stored[field]||(field==='start'?startDefault:timePlusOneHour(startDefault));
   clock={target,field,hour:Number(initial.slice(0,2)),minute:Number(initial.slice(3)),active:'hour',keyboard:false};
   renderClock();
 }
