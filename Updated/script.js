@@ -596,44 +596,52 @@ function initAuthTheme(){
   const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
   bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
 }
-let themePullStartY=null, themePullActive=false;
+let themePullStartY=null,themePullActive=false,themePullPointerId=null;
 function initThemePull(){
-  const b=document.getElementById('themePull'); if(!b) return;
+  const b=document.getElementById('themePull');if(!b||b.dataset.pullReady==='true')return;
+  b.dataset.pullReady='true';
+  const reset=()=>{
+    themePullActive=false;themePullStartY=null;themePullPointerId=null;
+    b.classList.remove('pulling');
+    b.style.removeProperty('--pull-y');
+    b.style.removeProperty('transform');
+  };
   const begin=e=>{
-    themePullStartY=e.clientY;
-    themePullActive=true;
+    if(e.button!==undefined&&e.button!==0)return;
+    reset();
+    themePullStartY=e.clientY;themePullPointerId=e.pointerId;themePullActive=true;
     b.classList.add('pulling');
-    b.setPointerCapture?.(e.pointerId);
+    try{b.setPointerCapture?.(e.pointerId);}catch(_){}
     e.preventDefault();
   };
   const move=e=>{
-    if(!themePullActive)return;
-    const dy=Math.max(0,Math.min(24,e.clientY-themePullStartY));
-
+    if(!themePullActive||e.pointerId!==themePullPointerId)return;
+    const dy=Math.max(0,Math.min(34,e.clientY-themePullStartY));
     b.style.setProperty('--pull-y',dy+'px');
+    b.style.transform='translateY('+dy+'px)';
+    e.preventDefault();
   };
-  const end=e=>{
-    if(!themePullActive)return;
-    const dy=Math.max(0,e.clientY-themePullStartY);
-    themePullActive=false;
-    b.classList.remove('pulling');
-    b.style.setProperty('--pull-y','0px');
-    b.releasePointerCapture?.(e.pointerId);
-    if(dy>8){
+  const finish=(e,commit)=>{
+    if(!themePullActive||(e&&e.pointerId!==undefined&&e.pointerId!==themePullPointerId))return;
+    const dy=e&&Number.isFinite(e.clientY)?Math.max(0,e.clientY-themePullStartY):0;
+    const pointerId=themePullPointerId;
+    reset();
+    if(pointerId!==null){try{if(b.hasPointerCapture?.(pointerId))b.releasePointerCapture(pointerId);}catch(_){}}
+    if(commit&&dy>=18){
       b.classList.add('snap');
-      // The lightbulb is intentionally limited to the two quick themes.
-      // Forest and Paper remain accessible from Profile > Customisation > Theme.
-      const quickTheme=(currentUser()?.theme||'dark')==='dark'?'light':'dark';
-      const u=currentUser();
-      if(u) updateUser(user=>{user.theme=quickTheme;user.autoTheme=false;});
+      const u=currentUser(),quickTheme=(u?.theme||'dark')==='dark'?'light':'dark';
+      if(u)updateUser(user=>{user.theme=quickTheme;user.autoTheme=false;});
       else applyTheme(quickTheme);
-      setTimeout(()=>b.classList.remove('snap'),300);
+      window.setTimeout(()=>b.classList.remove('snap'),300);
     }
   };
   b.addEventListener('pointerdown',begin);
   b.addEventListener('pointermove',move);
-  b.addEventListener('pointerup',end);
-  b.addEventListener('pointercancel',end);
+  b.addEventListener('pointerup',e=>finish(e,true));
+  b.addEventListener('pointercancel',e=>finish(e,false));
+  b.addEventListener('lostpointercapture',e=>finish(e,false));
+  window.addEventListener('blur',()=>finish(null,false));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)finish(null,false);});
 }
 function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
 
