@@ -1102,9 +1102,16 @@ function saveTaskTimes(){
   const t=state.tasks.find(x=>x.id===timeEdit.id);if(!t)return;
   t.startTime=timeEdit.start;t.endTime=timeEdit.end;save();closeTimeEditor();renderApp();
 }
+function currentLocalClockTime(){
+  const now=new Date();
+  const roundedMinutes=Math.round(now.getMinutes()/5)*5;
+  const roundedTime=new Date(now);
+  roundedTime.setMinutes(roundedMinutes,0,0);
+  return String(roundedTime.getHours()).padStart(2,'0')+':'+String(roundedTime.getMinutes()).padStart(2,'0');
+}
 function openClock(target,field){
   const stored=target==='new'?newTaskTimes:timeEdit; if(!stored)return;
-  const initial=stored[field]|| (field==='end'?'13:00':'12:00');
+  const initial=stored[field]||(field==='start'?currentLocalClockTime():'13:00');
   clock={target,field,hour:Number(initial.slice(0,2)),minute:Number(initial.slice(3)),active:'hour',keyboard:false};
   renderClock();
 }
