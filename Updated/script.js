@@ -468,35 +468,22 @@ function applyTheme(theme){
 }
 const WORKSPACE_BACKDROP_GROUPS={
   sapphire:[
-    ['blue-hour','Blue Hour','Cobalt twilight and deep blue silhouettes'],
-    ['moonlit','Moonlit Peaks','Starry mountain silhouettes for nighttime'],
-    ['blue-waters','Blue Waters','A calm lake beneath a midnight sky']
+    ['blue-hour','Blue Hour','Cobalt twilight and deep blue silhouettes']
   ],
   emerald:[
-    ['forest-glow','Forest Glow','Sunlight filtering through a lush forest'],
-    ['quiet-waters','Quiet Waters','A peaceful lake framed by dark trees'],
-    ['emerald-canopy','Emerald Canopy','Deep green woodland at dusk']
+    ['forest-glow','Forest Glow','Sunlight filtering through a lush forest']
   ],
   gold:[
-    ['sunset-horizon','G2 · Sunset Horizon','Glowing sunset over layered mountains'],
-    ['forest-gold','G3 · Forest Glow','Golden sunlight filtering through trees'],
-    ['golden-clouds','G5 · Golden Clouds','Dramatic amber clouds and warm light']
+    ['sunset-horizon','Sunset Horizon','Glowing sunset over layered mountains']
   ],
   platinum:[
-    ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones'],
-    ['misty-peaks','Misty Peaks','Muted mountains beneath a pale moon'],
-    ['silver-night','Silver Night','A quiet monochrome night landscape']
+    ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones']
   ],
   amethyst:[
-    ['purple-hour','Purple Hour','Violet twilight and deep indigo silhouettes'],
-    ['lavender-dawn','Lavender Dawn','Soft lavender skies over distant peaks'],
-    ['prismatic-flow','Prismatic Flow','Glowing violet and cyan ribbons']
+    ['purple-hour','Purple Hour','Violet twilight and deep indigo silhouettes']
   ],
   ruby:[
-    ['crimson-sky','R1 · Crimson Sky','Fiery red clouds above a dark horizon'],
-    ['cloud-drama','R5 · Cloud Drama','Textured crimson storm clouds'],
-    ['highway-glow','R4 · Highway Glow','A cinematic highway under a red sky'],
-    ['silhouette-trees','R6 · Silhouette Trees','Dark branches against a vivid red sun']
+    ['crimson-sky','Crimson Sky','Fiery red clouds above a dark horizon']
   ]
 };
 function normalizedBackdropTheme(u=currentUser()){
