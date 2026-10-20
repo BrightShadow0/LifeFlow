@@ -2891,3 +2891,94 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 .backdrop-forest-glow .backdrop-preview,.backdrop-quiet-waters .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background:linear-gradient(180deg,#244e3c,#66945b 48%,#071b18 100%)!important}
 .backdrop-grey-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview{background:linear-gradient(180deg,#b7c0cc,#697788 48%,#202733 100%)!important}
 .backdrop-purple-hour .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview{background:linear-gradient(135deg,#24144e,#9b56cf 48%,#241633 100%)!important}
+
+
+/* Real photographic workspace atmospheres. Images are remote photo assets; color overlays keep each palette cohesive. */
+#app[data-workspace-backdrop="moonlit"],
+#app[data-workspace-backdrop="silver-night"]{
+  background-image:linear-gradient(180deg,rgba(5,14,35,.22),rgba(3,9,22,.56)),url("https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="blue-hour"],
+#app[data-workspace-backdrop="misty-peaks"]{
+  background-image:linear-gradient(180deg,rgba(5,24,62,.25),rgba(3,12,30,.62)),url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="blue-waters"],
+#app[data-workspace-backdrop="quiet-waters"]{
+  background-image:linear-gradient(180deg,rgba(4,26,48,.18),rgba(3,14,28,.62)),url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="forest-glow"],
+#app[data-workspace-backdrop="forest-gold"],
+#app[data-workspace-backdrop="emerald-canopy"]{
+  background-image:linear-gradient(180deg,rgba(5,26,20,.18),rgba(2,12,10,.66)),url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="sunset-horizon"],
+#app[data-workspace-backdrop="lavender-dawn"],
+#app[data-workspace-backdrop="crimson-sky"],
+#app[data-workspace-backdrop="cloud-drama"],
+#app[data-workspace-backdrop="golden-clouds"]{
+  background-image:linear-gradient(180deg,rgba(29,14,42,.18),rgba(10,8,24,.62)),url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="purple-hour"],
+#app[data-workspace-backdrop="prismatic-flow"]{
+  background-image:linear-gradient(135deg,rgba(39,10,75,.30),rgba(11,8,36,.62)),url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="highway-glow"],
+#app[data-workspace-backdrop="silhouette-trees"]{
+  background-image:linear-gradient(180deg,rgba(74,8,24,.24),rgba(10,5,16,.68)),url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="grey-hour"]{
+  background-image:linear-gradient(180deg,rgba(27,35,47,.18),rgba(7,10,17,.66)),url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2000&q=85")!important;
+}
+#app[data-workspace-backdrop="sunset-horizon"]::before,
+#app[data-workspace-backdrop="forest-gold"]::before,
+#app[data-workspace-backdrop="forest-glow"]::before,
+#app[data-workspace-backdrop="golden-clouds"]::before,
+#app[data-workspace-backdrop="crimson-sky"]::before,
+#app[data-workspace-backdrop="cloud-drama"]::before,
+#app[data-workspace-backdrop="highway-glow"]::before,
+#app[data-workspace-backdrop="silhouette-trees"]::before,
+#app[data-workspace-backdrop="blue-hour"]::before,
+#app[data-workspace-backdrop="blue-waters"]::before,
+#app[data-workspace-backdrop="quiet-waters"]::before,
+#app[data-workspace-backdrop="emerald-canopy"]::before,
+#app[data-workspace-backdrop="lavender-dawn"]::before,
+#app[data-workspace-backdrop="purple-hour"]::before,
+#app[data-workspace-backdrop="silver-night"]::before,
+#app[data-workspace-backdrop="misty-peaks"]::before,
+#app[data-workspace-backdrop="grey-hour"]::before,
+#app[data-workspace-backdrop="prismatic-flow"]::before{
+  background:linear-gradient(180deg,rgba(5,8,20,.06),rgba(5,8,20,.26) 50%,rgba(5,8,20,.60))!important;
+}
+#app[data-workspace-backdrop="sunset-horizon"],
+#app[data-workspace-backdrop="forest-gold"],
+#app[data-workspace-backdrop="forest-glow"],
+#app[data-workspace-backdrop="golden-clouds"],
+#app[data-workspace-backdrop="crimson-sky"],
+#app[data-workspace-backdrop="cloud-drama"],
+#app[data-workspace-backdrop="highway-glow"],
+#app[data-workspace-backdrop="silhouette-trees"],
+#app[data-workspace-backdrop="blue-hour"],
+#app[data-workspace-backdrop="blue-waters"],
+#app[data-workspace-backdrop="quiet-waters"],
+#app[data-workspace-backdrop="emerald-canopy"],
+#app[data-workspace-backdrop="grey-hour"],
+#app[data-workspace-backdrop="misty-peaks"],
+#app[data-workspace-backdrop="silver-night"],
+#app[data-workspace-backdrop="purple-hour"],
+#app[data-workspace-backdrop="lavender-dawn"],
+#app[data-workspace-backdrop="prismatic-flow"],
+#app[data-workspace-backdrop="moonlit"]{
+  background-position:center!important;background-repeat:no-repeat!important;background-size:cover!important;background-attachment:fixed!important;
+}
+/* Use the same real imagery in the atmosphere selection cards, rather than gradient swatches. */
+.backdrop-moonlit .backdrop-preview,.backdrop-silver-night .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-blue-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-blue-waters .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-forest-glow .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-sunset-horizon .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-grey-hour .backdrop-preview{background-image:url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=700&q=80")!important}
+.backdrop-moonlit .backdrop-preview,.backdrop-blue-hour .backdrop-preview,.backdrop-blue-waters .backdrop-preview,.backdrop-forest-glow .backdrop-preview,.backdrop-forest-gold .backdrop-preview,.backdrop-emerald-canopy .backdrop-preview,.backdrop-sunset-horizon .backdrop-preview,.backdrop-lavender-dawn .backdrop-preview,.backdrop-crimson-sky .backdrop-preview,.backdrop-cloud-drama .backdrop-preview,.backdrop-golden-clouds .backdrop-preview,.backdrop-purple-hour .backdrop-preview,.backdrop-prismatic-flow .backdrop-preview,.backdrop-highway-glow .backdrop-preview,.backdrop-silhouette-trees .backdrop-preview,.backdrop-grey-hour .backdrop-preview,.backdrop-misty-peaks .backdrop-preview,.backdrop-silver-night .backdrop-preview,.backdrop-quiet-waters .backdrop-preview{
+  background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+}
