@@ -471,19 +471,19 @@ const WORKSPACE_BACKDROP_GROUPS={
     ['blue-hour','Blue Hour','Cobalt twilight and deep blue silhouettes']
   ],
   emerald:[
-    ['forest-hour','Forest Hour','Sunlight filtering through a lush forest']
+    ['green-hour','Green Hour','Sunlight filtering through a lush forest']
   ],
   gold:[
-    ['sunset-hour','Sunset Hour','Glowing sunset over layered mountains']
+    ['yellow-hour','Yellow Hour','Glowing sunset over layered mountains']
   ],
   platinum:[
-    ['silver-hour','Silver Hour','Foggy trees and soft silver-grey tones']
+    ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones']
   ],
   amethyst:[
     ['purple-hour','Purple Hour','Violet twilight and deep indigo silhouettes']
   ],
   ruby:[
-    ['crimson-hour','Crimson Hour','Fiery red clouds above a dark horizon']
+    ['red-hour','Red Hour','Fiery red clouds above a dark horizon']
   ]
 };
 function normalizedBackdropTheme(u=currentUser()){
