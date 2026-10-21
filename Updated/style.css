@@ -3141,3 +3141,23 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   }
 }
 
+
+
+/* Safety fallback: keep dashboard content visible if an entry animation is interrupted. */
+#app #main{visibility:visible!important;opacity:1!important}
+#app #main .hero-welcome,
+#app #main .hero-welcome .hero-copy,
+#app #main .hero-welcome .hero-kicker,
+#app #main .hero-welcome h2,
+#app #main .hero-welcome p,
+#app #main .hero-welcome .hero-summary,
+#app #main .hero-welcome .hero-progress,
+#app #main .today-grid,
+#app #main .today-grid>.card,
+#app #main .today-grid .card,
+#app #main .today-grid .task-form,
+#app #main .today-grid .empty{
+  visibility:visible!important;
+  opacity:1!important;
+  animation:none!important;
+}
