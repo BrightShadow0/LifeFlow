@@ -3161,3 +3161,30 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   opacity:1!important;
   animation:none!important;
 }
+
+
+/* Recovery guard: never let the workspace's main content remain hidden by an interrupted entrance animation. */
+#app #main,
+#app #main.page-enter {
+  visibility: visible !important;
+  opacity: 1 !important;
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+#app #main > *,
+#app #main .card,
+#app #main .hero-welcome,
+#app #main .today-grid,
+#app #main .task,
+#app #main .kcard,
+#app #main .col,
+#app #main .cal-grid,
+#app #main .cal-day,
+#app #main .section-heading,
+#app #main .manifesto-card,
+#app #main .manifesto-principles {
+  visibility: visible !important;
+  opacity: 1 !important;
+  animation: none !important;
+}
