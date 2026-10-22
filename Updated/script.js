@@ -509,7 +509,8 @@ function applyWorkspaceAppearance(u=currentUser()){
   const validIds=options.map(option=>option[0]);
   let backdrop=u?.workspaceBackdrop;
   if(!validIds.includes(backdrop)){
-    backdrop=darkMode?defaultBackdropForTheme(theme):'amethyst';
+    // `darkMode` was never defined; this branch could throw before any page content rendered.
+    backdrop=defaultBackdropForTheme(theme);
     if(u && u.workspaceBackdrop!==backdrop){
       const users=getUsers();
       if(users[state.currentUser]){users[state.currentUser].workspaceBackdrop=backdrop;saveUsers(users);}
