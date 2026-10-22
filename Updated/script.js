@@ -1172,6 +1172,8 @@ function renderApp(){
   const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); initWorkspaceAtmosphereInteraction(); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
+  // Clear any interrupted entry animation before rendering a new page.
+  el.classList.remove('page-enter');
   if(view==='today') el.innerHTML = renderToday();
   else if(view==='list') el.innerHTML = renderList();
   else if(view==='board') el.innerHTML = renderBoard();
