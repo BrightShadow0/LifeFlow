@@ -3188,3 +3188,19 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   opacity: 1 !important;
   animation: none !important;
 }
+
+
+/* Markdown task lists use a checkbox instead of a list bullet. */
+.markdown-preview li.md-task-item{
+  list-style:none !important;
+  display:flex;
+  align-items:flex-start;
+  gap:0.55em;
+  margin-left:-1.25em;
+}
+.markdown-preview li.md-task-item::marker{content:"";}
+.markdown-preview li.md-task-item .md-task{
+  flex:0 0 auto;
+  margin:0.22em 0 0;
+  accent-color:var(--accent);
+}
