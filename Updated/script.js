@@ -1165,6 +1165,8 @@ let temporaryThemeTimer=null;
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession()) return; // no valid session: stay on the auth screen
+  // Clear a stale entry animation before any theme or page rendering can fail.
+  document.getElementById('main')?.classList.remove('page-enter');
   applyDensity();
   renderNav();
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',about:'Why LifeFlow',account:'Profile & settings'};
@@ -1172,8 +1174,6 @@ function renderApp(){
   const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); initWorkspaceAtmosphereInteraction(); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
   const el = document.getElementById('main');
-  // Clear any interrupted entry animation before rendering a new page.
-  el.classList.remove('page-enter');
   if(view==='today') el.innerHTML = renderToday();
   else if(view==='list') el.innerHTML = renderList();
   else if(view==='board') el.innerHTML = renderBoard();
