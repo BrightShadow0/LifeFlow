@@ -1304,7 +1304,7 @@ function markdownToHtml(source){
         const task=item.match(/^\[(x|X| )\]\s+(.+)$/);
         if(task){checked=/x/i.test(task[1]);item=task[2];}
         const taskLineIndex=i;
-        items.push('<li>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" onchange="toggleMarkdownTask('+taskLineIndex+',this.checked)" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
+        items.push('<li'+(task?' class="md-task-item"':'')+'>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" onchange="toggleMarkdownTask('+taskLineIndex+',this.checked)" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
         i++;
       }
       html+='<'+(ordered?'ol':'ul')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
