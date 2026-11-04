@@ -1246,6 +1246,41 @@ function deleteKnowledgeNote(kind,id){if(!confirm('Delete this note?'))return;co
 function downloadKnowledgeNote(kind,id){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;const nl=String.fromCharCode(10);let md='# '+(n.title||'Untitled')+nl+nl;if(kind==='code')md+='```'+(n.language||'text')+nl+(n.code||'')+nl+'```'+nl;else md+=(n.content||'')+nl;const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(n.title||'lifeflow-note').replace(/[^a-z0-9_-]+/gi,'_')+'.md';a.click();URL.revokeObjectURL(a.href);}
 function highlightCode(s){const src=String(s||'');const re=/(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|\b(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\s*\())/g;let out='',last=0,m;while((m=re.exec(src))){out+=esc(src.slice(last,m.index));const t=m[0];let cls='';if(/^\/\//.test(t)||/^#/.test(t)||/^\/\*/.test(t))cls='code-comment';else if(/^(?:"|')/.test(t))cls='code-string';else if(/^(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)$/.test(t))cls='code-keyword';else if(/^\d/.test(t))cls='code-number';else cls='code-function';out+='<span class="'+cls+'">'+esc(t)+'</span>';last=m.index+t.length;}out+=esc(src.slice(last));return out||'<span class="code-placeholder">Start writing code…</span>';}
 
+function highlightCodeBlock(source,language){
+  const code=String(source||'');
+  const lang=String(language||'').toLowerCase();
+  const keywords={
+    c:'auto break case char const continue default do double else enum extern float for goto if inline int long register restrict return short signed sizeof static struct switch typedef union unsigned void volatile while',
+    cpp:'alignas alignof auto bool break case char class const constexpr continue default delete do double else enum explicit export extern false float for friend goto if inline int long namespace new noexcept nullptr operator private protected public register return short signed sizeof static static_assert struct switch template this throw true try typedef typename union unsigned using virtual void volatile while',
+    javascript:'async await break case catch class const continue debugger default delete do else export extends false finally for from function get if import in instanceof let new null of return set static super switch this throw true try typeof undefined var void while with yield',
+    python:'and as assert async await break class continue def del elif else except False finally for from global if import in is lambda None nonlocal not or pass raise return True try while with yield',
+    java:'abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while',
+    csharp:'abstract as base bool break byte case catch char checked class const continue decimal default delegate do double else enum event explicit extern false finally fixed float for foreach goto if implicit in int interface internal is lock long namespace new object operator out override params private protected public readonly ref return sbyte sealed short sizeof stackalloc static string struct switch this throw true try typeof uint ulong unchecked unsafe ushort using var virtual void volatile while',
+    sql:'add all alter as asc begin between by case cast check column commit constraint create cross current_date current_time database default delete desc distinct drop else end except exists false fetch for foreign from full group having in index inner insert intersect into is join key left like limit not null offset on or order outer primary references right rollback row select set table then true union unique update use values view when where with',
+    bash:'case do done elif else esac fi for function if in local return select then time until while'
+  };
+  const words=(keywords[lang]||keywords.c).split(/\\s+/);
+  const keywordSet=new Set(words);
+  const typeSet=new Set('size_t ssize_t uint8_t uint16_t uint32_t uint64_t int8_t int16_t int32_t int64_t FILE NULL'.split(' '));
+  const re=/(\\/\\*[\\s\\S]*?\\*\\/|\\/\\/[^\\n]*|#[^\\n]*|"(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*'|\\b(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?[uUlLfF]*\\b|\\b[A-Za-z_$][\\w$]*\\b|[^\\s])/g;
+  let out='',last=0,m;
+  while((m=re.exec(code))){
+    out+=esc(code.slice(last,m.index));
+    const token=m[0];let cls='';
+    if(/^\\/\\//.test(token)||/^\\/\\*/.test(token))cls='code-comment';
+    else if(/^#/.test(token)&&lang!=='sql')cls='code-preprocessor';
+    else if(/^(?:"|')/.test(token))cls='code-string';
+    else if(/^\\d|^\\.\\d/.test(token))cls='code-number';
+    else if(keywordSet.has(token))cls='code-keyword';
+    else if(typeSet.has(token))cls='code-type';
+    else if(/^[A-Za-z_$]/.test(token)&&/^\\s*\\(/.test(code.slice(re.lastIndex)))cls='code-function';
+    else if(/^(?:[+\\-*\\/%=<>!&|^~?:]+|[{}()[\\];,.])$/.test(token))cls='code-operator';
+    out+=cls?'<span class="'+cls+'">'+esc(token)+'</span>':esc(token);
+    last=re.lastIndex;
+  }
+  out+=esc(code.slice(last));
+  return out;
+}
 function safeMarkdownUrl(url){
   const raw=String(url||'').trim();
   try{
@@ -1347,7 +1382,7 @@ function markdownToHtml(source){
   renderer.code=function(token){
     const lang=String(token.lang||'').trim().split(/\s+/)[0].toLowerCase();
     if(lang==='mermaid')return '<pre class="md-mermaid"><code>'+esc(token.text||'')+'</code></pre>';
-    return '<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+esc(token.text||'')+'</code></pre>';
+    return '<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+highlightCodeBlock(token.text||'',lang)+'</code></pre>';
   };
   renderer.listitem=function(token){
     const body=this.parser.parse(token.tokens||[]);
