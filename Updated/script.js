@@ -1316,7 +1316,10 @@ function markdownToHtml(source){
         items.push('<li'+(task?' class="md-task-item"':'')+'>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" onchange="toggleMarkdownTask('+taskLineIndex+',this.checked)" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
         i++;
       }
-      html+='<'+(ordered?'ol':'ul')+(hasTasks?' class="md-task-list"':'')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
+      const listStart=ordered?Number(ol[1]):1;
+      const startAttr=ordered&&listStart!==1?' start="'+listStart+'"':'';
+      const listClass=hasTasks?' class="md-task-list"':'';
+      html+='<'+(ordered?'ol':'ul')+startAttr+listClass+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
       continue;
     }
     const buf=[line];i++;
