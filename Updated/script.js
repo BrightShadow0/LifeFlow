@@ -1368,7 +1368,7 @@ function renderNotesManager(){
   if(selected){
     const content=selected.content||'';
     html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div>';
-    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div><span class="markdown-badge">Markdown</span></div>';
+    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div></div>';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write here...">'+esc(content)+'</textarea></div>';
     html+='<div class="note-help">Markdown supported</div>';
