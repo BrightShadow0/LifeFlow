@@ -1254,6 +1254,11 @@ function safeMarkdownUrl(url){
   }catch(e){}
   return '#';
 }
+function safeMarkdownImageUrl(url){
+  const raw=String(url||'').trim();
+  if(/^data:image\/(?:png|jpeg|gif|webp|avif|bmp|x-icon);base64,/i.test(raw))return raw;
+  return safeMarkdownUrl(raw)==='#'?'#':safeMarkdownUrl(raw);
+}
 function markdownInline(input){
   let s=esc(String(input||'')),stash=[];
   const hold=function(html){const key='@@LFMD'+stash.length+'@@';stash.push(html);return key;};
@@ -1333,7 +1338,7 @@ function markdownToHtml(source){
   let taskIndex=0;
   const renderer=new window.marked.Renderer();
   renderer.image=function(token){
-    const src=safeMarkdownUrl(token.href||'');
+    const src=safeMarkdownImageUrl(token.href||'');
     if(src==='#')return esc(token.text||'');
     const alt=esc(token.text||'');
     const title=token.title?' title="'+esc(token.title)+'"':'';
@@ -1375,6 +1380,13 @@ function toggleMarkdownTaskByIndex(index,checked){
 }
 function renderMarkdownPreview(element,source){
   element.innerHTML=markdownToHtml(source);
+  element.querySelectorAll('img.md-image').forEach(function(img){
+    img.addEventListener('error',function(){
+      img.classList.add('md-image-error');
+      img.alt=img.alt||'Image could not be loaded. Check the image URL or hosting permissions.';
+      img.title='Image could not be loaded. Check the image URL or hosting permissions.';
+    },{once:true});
+  });
   element.querySelectorAll('input.md-task[data-md-task-index]').forEach(function(input){
     input.addEventListener('change',function(){toggleMarkdownTaskByIndex(Number(input.dataset.mdTaskIndex),input.checked);});
   });
