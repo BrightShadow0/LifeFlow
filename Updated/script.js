@@ -1362,7 +1362,7 @@ function renderNotesManager(){
   ensureKnowledgeState();
   const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];
   const mode=window.lfNoteView==='preview'?'preview':'edit';
-  let html='<div class="knowledge-shell"><div class="card knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Notes Manager</h2></div></div><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
+  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
   html+='<div class="notes-items">';
   items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" onclick="lfSelectedNote=\''+n.id+'\';window.lfNoteView=\'edit\';renderApp()"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
   html+='</div></div><div class="card note-editor">';
