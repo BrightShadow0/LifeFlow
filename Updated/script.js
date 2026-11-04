@@ -1259,22 +1259,21 @@ function highlightCodeBlock(source,language){
     sql:'add all alter as asc begin between by case cast check column commit constraint create cross current_date current_time database default delete desc distinct drop else end except exists false fetch for foreign from full group having in index inner insert intersect into is join key left like limit not null offset on or order outer primary references right rollback row select set table then true union unique update use values view when where with',
     bash:'case do done elif else esac fi for function if in local return select then time until while'
   };
-  const words=(keywords[lang]||keywords.c).split(/\\s+/);
-  const keywordSet=new Set(words);
+  const keywordSet=new Set((keywords[lang]||keywords.c).split(/\s+/));
   const typeSet=new Set('size_t ssize_t uint8_t uint16_t uint32_t uint64_t int8_t int16_t int32_t int64_t FILE NULL'.split(' '));
-  const re=/(\\/\\*[\\s\\S]*?\\*\\/|\\/\\/[^\\n]*|#[^\\n]*|"(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*'|\\b(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?[uUlLfF]*\\b|\\b[A-Za-z_$][\\w$]*\\b|[^\\s])/g;
+  const re=/(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?[uUlLfF]*\b|\b[A-Za-z_$][\w$]*\b|[^\s])/g;
   let out='',last=0,m;
   while((m=re.exec(code))){
     out+=esc(code.slice(last,m.index));
     const token=m[0];let cls='';
-    if(/^\\/\\//.test(token)||/^\\/\\*/.test(token))cls='code-comment';
+    if(/^\/\//.test(token)||/^\/\*/.test(token))cls='code-comment';
     else if(/^#/.test(token)&&lang!=='sql')cls='code-preprocessor';
     else if(/^(?:"|')/.test(token))cls='code-string';
-    else if(/^\\d|^\\.\\d/.test(token))cls='code-number';
+    else if(/^\d|^\.\d/.test(token))cls='code-number';
     else if(keywordSet.has(token))cls='code-keyword';
     else if(typeSet.has(token))cls='code-type';
-    else if(/^[A-Za-z_$]/.test(token)&&/^\\s*\\(/.test(code.slice(re.lastIndex)))cls='code-function';
-    else if(/^(?:[+\\-*\\/%=<>!&|^~?:]+|[{}()[\\];,.])$/.test(token))cls='code-operator';
+    else if(/^[A-Za-z_$]/.test(token)&&/^\s*\(/.test(code.slice(re.lastIndex)))cls='code-function';
+    else if(/^(?:[+\-*\/%=<>!&|^~?:]+|[{}()[\];,.])$/.test(token))cls='code-operator';
     out+=cls?'<span class="'+cls+'">'+esc(token)+'</span>':esc(token);
     last=re.lastIndex;
   }
