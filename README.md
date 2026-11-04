@@ -7,7 +7,7 @@ LifeFlow brings daily planning, task management, scheduling, notes, and personal
 ## Features
 
 - **Today Dashboard:** View daily priorities, task progress, and your schedule.
-- **Task Management:** Create, prioritise, schedule, and complete tasks.
+- **Task Management:** Create, prioritise, schedule, and complete tasks. Use **Complete all** to mark every unfinished task as done at once, or **Clear completed tasks** to remove finished tasks.
 - **Calendar:** Organise and review tasks by date in a monthly calendar.
 - **Kanban Board:** Manage work across To Do, Doing, and Done.
 - **Notes Manager:** Create and manage notes in a dedicated workspace.
