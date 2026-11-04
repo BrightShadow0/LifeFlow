@@ -3346,3 +3346,33 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   margin:0;
   accent-color:var(--accent);
 }
+
+
+/* Checklist preview: remove the group border; keep only each checkbox boxed. */
+#app .markdown-preview ul.md-task-list{
+  display:block;
+  margin:12px 0 16px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+#app .markdown-preview ul.md-task-list li.md-task-item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0 0 7px;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+#app .markdown-preview ul.md-task-list li.md-task-item .md-task{
+  appearance:auto;
+  -webkit-appearance:checkbox;
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  margin:0;
+  padding:0;
+  accent-color:var(--accent);
+}
