@@ -3204,3 +3204,53 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   margin:0.22em 0 0;
   accent-color:var(--accent);
 }
+
+
+/* Notes Manager Write / Preview tabs follow the selected LifeFlow theme. */
+#app .markdown-tabs{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--panel2);
+}
+#app .markdown-tabs button{
+  min-height:34px;
+  padding:7px 14px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  font:inherit;
+  font-size:13px;
+  font-weight:600;
+  box-shadow:none;
+}
+#app .markdown-tabs button:hover:not(:disabled){
+  background:var(--accent-soft);
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border));
+  color:var(--text);
+  transform:none;
+}
+#app .markdown-tabs button.active,
+#app .markdown-tabs button.active:hover{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+  box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 24%,transparent);
+}
+:root[data-theme="light"] #app .markdown-tabs,
+:root[data-theme="paper"] #app .markdown-tabs{
+  background:var(--panel2);
+  border-color:var(--border);
+}
+:root[data-theme="light"] #app .markdown-tabs button,
+:root[data-theme="paper"] #app .markdown-tabs button{
+  color:var(--text);
+}
+:root[data-theme="light"] #app .markdown-tabs button.active,
+:root[data-theme="paper"] #app .markdown-tabs button.active{
+  color:#fff;
+}
