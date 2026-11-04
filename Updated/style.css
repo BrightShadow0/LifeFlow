@@ -3477,14 +3477,43 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app .markdown-preview pre code{padding:0;border:0;background:transparent;color:inherit}
 #app .markdown-preview pre.md-code{white-space:pre;tab-size:4}
 #app .markdown-preview pre.md-code code{display:block;min-width:max-content;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;line-height:1.65}
-#app .markdown-preview .code-comment{color:#8b949e}
-#app .markdown-preview .code-string{color:#e6a36b}
-#app .markdown-preview .code-keyword{color:#c792ea}
-#app .markdown-preview .code-function{color:#82aaff}
-#app .markdown-preview .code-number{color:#f78c6c}
-#app .markdown-preview .code-type{color:#ffcb6b}
-#app .markdown-preview .code-preprocessor{color:#f07178}
-#app .markdown-preview .code-operator{color:#89ddff}
+/* Code block palette follows the supplied editor references.
+   Light themes use the muted blue/red palette; dark themes use orange/cyan/purple. */
+#app .markdown-preview .code-comment{color:#777777}
+#app .markdown-preview .code-string{color:#98545b}
+#app .markdown-preview .code-keyword{color:#5269bd}
+#app .markdown-preview .code-function{color:#5269bd}
+#app .markdown-preview .code-number{color:#98545b}
+#app .markdown-preview .code-type{color:#5269bd}
+#app .markdown-preview .code-preprocessor{color:#777777}
+#app .markdown-preview .code-operator{color:#5269bd}
+#app .markdown-preview .code-identifier{color:var(--text)}
+:root[data-theme="dark"] #app .markdown-preview .code-comment,
+:root[data-theme="forest"] #app .markdown-preview .code-comment{color:#a0a0a0}
+:root[data-theme="dark"] #app .markdown-preview .code-string,
+:root[data-theme="forest"] #app .markdown-preview .code-string{color:#55d8f2}
+:root[data-theme="dark"] #app .markdown-preview .code-keyword,
+:root[data-theme="forest"] #app .markdown-preview .code-keyword{color:#ff9b32}
+:root[data-theme="dark"] #app .markdown-preview .code-function,
+:root[data-theme="forest"] #app .markdown-preview .code-function{color:#d39aff}
+:root[data-theme="dark"] #app .markdown-preview .code-number,
+:root[data-theme="forest"] #app .markdown-preview .code-number{color:#ff9b32}
+:root[data-theme="dark"] #app .markdown-preview .code-type,
+:root[data-theme="forest"] #app .markdown-preview .code-type{color:#f0f0f0}
+:root[data-theme="dark"] #app .markdown-preview .code-preprocessor,
+:root[data-theme="forest"] #app .markdown-preview .code-preprocessor{color:#ff9b32}
+:root[data-theme="dark"] #app .markdown-preview .code-operator,
+:root[data-theme="forest"] #app .markdown-preview .code-operator{color:#55d8f2}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-comment{color:#a0a0a0}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-string{color:#55d8f2}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-keyword{color:#ff9b32}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-function{color:#d39aff}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-number{color:#ff9b32}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-type{color:#f0f0f0}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-preprocessor{color:#ff9b32}
+  :root:not([data-theme="light"]):not([data-theme="paper"]) #app .markdown-preview .code-operator{color:#55d8f2}
+}
 #app .markdown-preview hr{border:0;border-top:1px solid var(--border);margin:1.3em 0}
 #app .markdown-preview .md-task-item{list-style:none;display:flex;align-items:flex-start;gap:9px}
 #app .markdown-preview .md-task{flex:0 0 16px;width:16px;height:16px;margin:.25em 0 0;accent-color:var(--accent)}
