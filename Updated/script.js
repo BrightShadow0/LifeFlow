@@ -1277,7 +1277,7 @@ function markdownInline(input){
   stash.forEach(function(html,i){s=s.replace('@@LFMD'+i+'@@',html);});
   return s;
 }
-function markdownToHtml(source){
+function markdownToHtmlFallback(source){
   const lines=String(source||'').replace(/\r\n?/g,'\n').split('\n');
   let html='',i=0;
   const isBlockStart=function(line){
@@ -1328,6 +1328,59 @@ function markdownToHtml(source){
   }
   return html||'<p class="md-empty">Nothing to preview yet.</p>';
 }
+function markdownToHtml(source){
+  if(!window.marked||typeof window.marked.parse!=='function')return markdownToHtmlFallback(source);
+  let taskIndex=0;
+  const renderer=new window.marked.Renderer();
+  renderer.code=function(token){
+    const lang=String(token.lang||'').trim().split(/\s+/)[0].toLowerCase();
+    if(lang==='mermaid')return '<pre class="md-mermaid"><code>'+esc(token.text||'')+'</code></pre>';
+    return '<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+esc(token.text||'')+'</code></pre>';
+  };
+  renderer.listitem=function(token){
+    const body=this.parser.parse(token.tokens||[]);
+    if(token.task){
+      const index=taskIndex++;
+      return '<li class="md-task-item"><input class="md-task" type="checkbox" data-md-task-index="'+index+'" onchange="toggleMarkdownTaskByIndex('+index+',this.checked)" '+(token.checked?'checked':'')+'> '+body+'</li>\n';
+    }
+    return '<li>'+body+'</li>\n';
+  };
+  const raw=window.marked.parse(String(source||''),{gfm:true,breaks:false,headerIds:false,mangle:false,renderer});
+  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','class','start','checked','disabled','data-md-task-index']}):raw;
+  return clean||'<p class="md-empty">Nothing to preview yet.</p>';
+}
+function toggleMarkdownTaskByIndex(index,checked){
+  const n=noteStore('regular').find(function(x){return String(x.id)===String(window.lfSelectedNote);});
+  if(!n)return;
+  const lines=String(n.content||'').replace(/\r\n?/g,'\n').split('\n');
+  let current=0,matched=-1;
+  for(let i=0;i<lines.length;i++){
+    if(/^\s{0,3}[-*+]\s+\[[ xX]\]\s+/.test(lines[i])){
+      if(current===index){matched=i;break;}
+      current++;
+    }
+  }
+  if(matched<0)return;
+  lines[matched]=lines[matched].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
+  n.content=lines.join('\n');n.updatedAt=Date.now();save();
+  const preview=document.getElementById('kn_preview');
+  if(preview)renderMarkdownPreview(preview,n.content);
+}
+function renderMarkdownPreview(element,source){
+  element.innerHTML=markdownToHtml(source);
+  const diagrams=element.querySelectorAll('.md-mermaid');
+  if(diagrams.length&&window.mermaid){
+    diagrams.forEach(function(node){
+      const code=node.querySelector('code');
+      if(!code)return;
+      const holder=document.createElement('div');
+      holder.className='mermaid';
+      holder.textContent=code.textContent;
+      node.replaceWith(holder);
+    });
+    window.mermaid.run({nodes:element.querySelectorAll('.mermaid')}).catch(function(){});
+  }
+}
 function toggleMarkdownTask(lineIndex,checked){
   const n=noteStore('regular').find(function(x){return String(x.id)===String(window.lfSelectedNote);});
   if(!n)return;
@@ -1365,7 +1418,7 @@ function handleMarkdownKeydown(e){
 function setKnowledgeNoteView(mode){window.lfNoteView=mode==='preview'?'preview':'edit';renderApp();}
 function refreshMarkdownPreview(){
   const source=document.getElementById('kn_content'),preview=document.getElementById('kn_preview');
-  if(source&&preview)preview.innerHTML=markdownToHtml(source.value);
+  if(source&&preview)renderMarkdownPreview(preview,source.value);
 }
 function renderNotesManager(){
   const u=currentUser();
