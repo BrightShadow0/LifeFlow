@@ -3449,3 +3449,23 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   padding:0;
   accent-color:var(--accent);
 }
+
+/* Markdown preview elements */
+#app .markdown-preview{overflow-wrap:anywhere;line-height:1.65}
+#app .markdown-preview h1,#app .markdown-preview h2,#app .markdown-preview h3,#app .markdown-preview h4,#app .markdown-preview h5,#app .markdown-preview h6{line-height:1.25;margin:1.1em 0 .55em;color:var(--text)}
+#app .markdown-preview p{margin:.65em 0}
+#app .markdown-preview ul,#app .markdown-preview ol{padding-left:1.7em;margin:.65em 0}
+#app .markdown-preview li{margin:.25em 0}
+#app .markdown-preview blockquote{margin:1em 0;padding:.25em 1em;border-left:3px solid var(--accent);color:var(--muted);background:var(--surface-2);border-radius:0 8px 8px 0}
+#app .markdown-preview table{width:100%;border-collapse:collapse;margin:1em 0;display:block;overflow-x:auto}
+#app .markdown-preview th,#app .markdown-preview td{border:1px solid var(--border);padding:8px 11px;text-align:left}
+#app .markdown-preview th{background:var(--surface-2);font-weight:700}
+#app .markdown-preview a{color:var(--accent);text-decoration:underline}
+#app .markdown-preview img{max-width:100%;height:auto;border-radius:8px}
+#app .markdown-preview pre{max-width:100%;overflow:auto;padding:14px 16px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text)}
+#app .markdown-preview code.md-inline-code{padding:2px 5px;border-radius:5px;background:var(--surface-2);color:var(--accent);font-family:ui-monospace,Consolas,monospace}
+#app .markdown-preview pre code{padding:0;border:0;background:transparent;color:inherit}
+#app .markdown-preview hr{border:0;border-top:1px solid var(--border);margin:1.3em 0}
+#app .markdown-preview .md-task-item{list-style:none;display:flex;align-items:flex-start;gap:9px}
+#app .markdown-preview .md-task{flex:0 0 16px;width:16px;height:16px;margin:.25em 0 0;accent-color:var(--accent)}
+#app .markdown-preview .mermaid{max-width:100%;overflow:auto;padding:12px;margin:1em 0;border:1px solid var(--border);border-radius:9px;background:var(--surface-2)}
