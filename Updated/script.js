@@ -1332,6 +1332,13 @@ function markdownToHtml(source){
   if(!window.marked||typeof window.marked.parse!=='function')return markdownToHtmlFallback(source);
   let taskIndex=0;
   const renderer=new window.marked.Renderer();
+  renderer.image=function(token){
+    const src=safeMarkdownUrl(token.href||'');
+    if(src==='#')return esc(token.text||'');
+    const alt=esc(token.text||'');
+    const title=token.title?' title="'+esc(token.title)+'"':'';
+    return '<img class="md-image" src="'+esc(src)+'" alt="'+alt+'"'+title+' loading="lazy" decoding="async">';
+  };
   renderer.code=function(token){
     const lang=String(token.lang||'').trim().split(/\s+/)[0].toLowerCase();
     if(lang==='mermaid')return '<pre class="md-mermaid"><code>'+esc(token.text||'')+'</code></pre>';
@@ -1346,7 +1353,7 @@ function markdownToHtml(source){
     return '<li>'+body+'</li>\n';
   };
   const raw=window.marked.parse(String(source||''),{gfm:true,breaks:false,headerIds:false,mangle:false,renderer});
-  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','class','start','checked','disabled','data-md-task-index']}):markdownToHtmlFallback(source);
+  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','decoding','class','start','checked','disabled','data-md-task-index']}):markdownToHtmlFallback(source);
   return clean||'<p class="md-empty">Nothing to preview yet.</p>';
 }
 function toggleMarkdownTaskByIndex(index,checked){
