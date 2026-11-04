@@ -1355,13 +1355,13 @@ function toggleMarkdownTaskByIndex(index,checked){
   const lines=String(n.content||'').replace(/\r\n?/g,'\n').split('\n');
   let current=0,matched=-1;
   for(let i=0;i<lines.length;i++){
-    if(/^\s{0,3}[-*+]\s+\[[ xX]\]\s+/.test(lines[i])){
+    if(/^\s*[-*+]\s+\[[ xX]\]\s+/.test(lines[i])){
       if(current===index){matched=i;break;}
       current++;
     }
   }
   if(matched<0)return;
-  lines[matched]=lines[matched].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
+  lines[matched]=lines[matched].replace(/^(\s*[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
   n.content=lines.join('\n');n.updatedAt=Date.now();save();
   const preview=document.getElementById('kn_preview');
   if(preview)renderMarkdownPreview(preview,n.content);
