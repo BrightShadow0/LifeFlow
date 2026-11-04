@@ -1188,7 +1188,7 @@ function renderApp(){
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='branches') el.innerHTML = renderBranches();
-  else if(view==='notes') el.innerHTML = renderNotesManager();
+  else if(view==='notes'){ el.innerHTML = renderNotesManager(); const preview=el.querySelector('#kn_preview'); if(preview)renderMarkdownPreview(preview,noteStore('regular').find(function(n){return String(n.id)===String(window.lfSelectedNote);})?.content||''); }
   else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
   if(window.lifeFlowLoginEntry){
