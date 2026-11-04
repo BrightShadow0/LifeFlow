@@ -1346,7 +1346,7 @@ function markdownToHtml(source){
     return '<li>'+body+'</li>\n';
   };
   const raw=window.marked.parse(String(source||''),{gfm:true,breaks:false,headerIds:false,mangle:false,renderer});
-  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','class','start','checked','disabled','data-md-task-index']}):raw;
+  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','class','start','checked','disabled','data-md-task-index']}):markdownToHtmlFallback(source);
   return clean||'<p class="md-empty">Nothing to preview yet.</p>';
 }
 function toggleMarkdownTaskByIndex(index,checked){
