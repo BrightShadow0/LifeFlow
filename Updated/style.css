@@ -1691,6 +1691,36 @@ body::-webkit-scrollbar{
   cursor:default;
 }
 
+/* Complete all tasks control, positioned before Clear completed tasks. */
+.complete-all-button{
+  appearance:none;
+  flex:0 0 auto;
+  padding:7px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--accent);
+  color:#fff;
+  font:inherit;
+  font-size:12px;
+  font-weight:650;
+  line-height:1.2;
+  box-shadow:none;
+  cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,color .2s ease,opacity .2s ease;
+}
+.complete-all-button:hover:not(:disabled){
+  background:var(--accent-hover,var(--accent));
+  border-color:var(--accent);
+  filter:brightness(1.06);
+}
+.complete-all-button:disabled{
+  background:var(--bg);
+  color:var(--muted);
+  border-color:var(--border);
+  opacity:.55;
+  cursor:default;
+}
+
 /* Theme-aware completed-task control */
 .clear-completed-button{
   appearance:none;
