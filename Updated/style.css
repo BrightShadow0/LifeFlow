@@ -3254,3 +3254,48 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-theme="paper"] #app .markdown-tabs button.active{
   color:#fff;
 }
+
+
+/* Calendar: keep every date number anchored consistently in its grid cell. */
+#app #main .calendar-wrap{width:100%;min-width:0}
+#app #main .cal-grid{
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  align-items:stretch;
+}
+#app #main .cal-day{
+  box-sizing:border-box;
+  align-self:stretch;
+  height:auto;
+  min-height:112px;
+  max-height:none;
+  padding:9px;
+  overflow:hidden;
+}
+#app #main .cal-day .dnum{
+  display:grid;
+  place-items:center;
+  width:24px;
+  min-width:24px;
+  height:22px;
+  margin:0 0 6px;
+  padding:0;
+  line-height:1;
+  text-align:center;
+  border-radius:7px;
+  background:transparent;
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+#app #main .cal-day.today .dnum{
+  display:grid;
+  width:24px;
+  height:22px;
+  background:var(--card);
+  color:var(--accent);
+}
+#app #main .cal-day.today:after{top:7px;right:7px}
+#app #main .cal-empty{min-height:112px;box-sizing:border-box}
+@media(max-width:600px){
+  #app #main .cal-day,
+  #app #main .cal-empty{min-height:84px}
+}
