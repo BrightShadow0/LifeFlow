@@ -2,20 +2,27 @@
 
 **A personal planning workspace built around productivity, customisation, and visual design.**
 
-LifeFlow brings daily planning, task management, scheduling, and personalisation into one workspace.
+LifeFlow brings daily planning, task management, scheduling, notes, and personalisation into one workspace.
 
 ## Features
 
-- **Today Dashboard:** Daily tasks, progress tracking, and schedule overview.
+- **Today Dashboard:** View daily priorities, task progress, and your schedule.
 - **Task Management:** Create, prioritise, schedule, and complete tasks.
-- **Calendar:** Organise tasks by date.
+- **Calendar:** Organise and review tasks by date in a monthly calendar.
 - **Kanban Board:** Manage work across To Do, Doing, and Done.
-- **Daytime & Nighttime Themes:** Light and dark modes, with optional device synchronisation.
+- **Notes Manager:** Create and manage notes in a dedicated workspace.
+  - Write notes using Markdown.
+  - Switch between Write and Preview modes.
+  - Preview headings, lists, and interactive checklist checkboxes.
+  - Download notes as Markdown (`.md`) files.
+  - Use a spacious, bordered writing and preview area that follows the selected theme.
+- **Your Branches:** Visualise notes as a connected graph.
+- **Daytime & Nighttime Themes:** Switch between light and dark modes, with optional device synchronisation.
 - **Colour Themes:** Sapphire, Emerald, Gold, Platinum, Amethyst, and Ruby.
-- **Workspace Atmosphere:** Five scenic background concepts, translucent sidebar, and interactive visual effects.
-- **Ambient Controls:** Adjust visual intensity and ambient effects.
-- **Profile & Settings:** Manage profile, localisation, sessions, and preferences.
-- **Notes Manager and Your Branches:** Additional organisation tools for eligible account tiers.
+- **Workspace Atmosphere:** Scenic background options, a translucent sidebar, and interactive visual effects.
+- **Ambient Controls:** Adjust ambient effects and visual intensity.
+- **Theme Quick Switch:** Change between light and dark appearance using the interactive dashboard bulb.
+- **Profile & Settings:** Manage profile details, localisation, sessions, and preferences.
 - **Data Export:** Export task data to CSV or JSON.
 - **Task Master Easter Egg:** Generate 15 randomly scheduled tasks across yesterday, today, and tomorrow.
 - **Account Tiers:** Free, Premium, and Team Admin, with tier-based feature access.
