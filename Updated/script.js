@@ -562,8 +562,31 @@ function setTranslucentSidebar(enabled){
 function setTheme(theme){
   const u=currentUser();
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
-  if(u) updateUser(user=>{user.theme=next;user.autoTheme=false;}); else applyTheme(next);
-  if(document.getElementById('app')?.style.display==='block') renderApp();
+  const appVisible=document.getElementById('app')?.style.display==='block';
+  const main=document.getElementById('main');
+  const scrollState={
+    x:window.scrollX||window.pageXOffset||0,
+    y:window.scrollY||window.pageYOffset||document.scrollingElement?.scrollTop||0,
+    mainTop:main?.scrollTop||0,
+    mainLeft:main?.scrollLeft||0
+  };
+  if(u){
+    const users=getUsers();
+    if(users[state.currentUser]){
+      users[state.currentUser].theme=next;
+      users[state.currentUser].autoTheme=false;
+      saveUsers(users);
+    }
+  }
+  applyTheme(next);
+  applyWorkspaceAppearance(currentUser());
+  if(appVisible){
+    requestAnimationFrame(()=>{
+      window.scrollTo(scrollState.x,scrollState.y);
+      const currentMain=document.getElementById('main');
+      if(currentMain){currentMain.scrollTop=scrollState.mainTop;currentMain.scrollLeft=scrollState.mainLeft;}
+    });
+  }
 }
 function setAutoThemeSync(enabled){
   const u=currentUser();
