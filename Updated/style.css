@@ -3461,7 +3461,7 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app .markdown-preview th,#app .markdown-preview td{border:1px solid var(--border);padding:8px 11px;text-align:left}
 #app .markdown-preview th{background:var(--surface-2);font-weight:700}
 #app .markdown-preview a{color:var(--accent);text-decoration:underline}
-#app .markdown-preview img{display:block;max-width:100%;max-height:70vh;width:auto;height:auto;margin:14px auto;border-radius:8px;object-fit:contain}#app .markdown-preview img.md-image{cursor:zoom-in}#app .markdown-preview p:has(>img.md-image){margin:1em 0}
+#app .markdown-preview img{display:block;max-width:100%;max-height:70vh;width:auto;height:auto;margin:14px auto;border-radius:8px;object-fit:contain}#app .markdown-preview img.md-image{cursor:zoom-in}#app .markdown-preview img.md-image-error{display:inline-block;min-width:180px;min-height:36px;padding:8px;border:1px dashed var(--danger);background:var(--surface-2);color:var(--danger);font-size:13px;object-fit:contain}#app .markdown-preview p:has(>img.md-image){margin:1em 0}
 #app .markdown-preview pre{max-width:100%;overflow:auto;padding:14px 16px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text)}
 #app .markdown-preview code.md-inline-code{padding:2px 5px;border-radius:5px;background:var(--surface-2);color:var(--accent);font-family:ui-monospace,Consolas,monospace}
 #app .markdown-preview pre code{padding:0;border:0;background:transparent;color:inherit}
