@@ -1,10 +1,12 @@
 # 🚀 LifeFlow
 
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 > A personal productivity workspace to plan your day, manage tasks, organise notes, and shape your workflow.
 
-**© 2026 BrightShadow0. All rights reserved.**
+**© 2026 BrightShadow0.**
 
-LifeFlow is a proprietary project. Its source code is publicly visible for viewing and evaluation only. No licence is granted to copy, modify, adapt, redistribute, publish, sublicense, or commercially use any part of this project without prior written permission from the copyright holder.
+LifeFlow is free and open source under the MIT License. You are welcome to use, copy, modify, and distribute the project in accordance with the licence terms.
 
 ---
 
@@ -62,8 +64,6 @@ LifeFlow is a browser-based application. There is no Node.js installation, packa
 
 ### Local Preview
 
-The repository is public so visitors can inspect the source code. Viewing or downloading the source does not grant permission to reuse or redistribute it.
-
 For personal evaluation, the application can be opened from `Updated/index.html` in a modern browser. A local web server can also be started from the repository root:
 
 ```bash
@@ -74,27 +74,15 @@ Then visit [http://localhost:8000/Updated/](http://localhost:8000/Updated/).
 
 ---
 
-## 🤝 Feedback & Permissions
+## 🤝 Contributing
 
-Suggestions and bug reports are welcome through the repository's GitHub Issues.
-
-If you would like to use, reproduce, modify, distribute, or incorporate any part of LifeFlow into another project, please contact the copyright holder and obtain written permission first. Submitting a suggestion or reporting an issue does not grant any rights to the project's code or assets.
+Suggestions, bug reports, and contributions are welcome through GitHub Issues and Pull Requests. For application changes, work in the **`Updated/`** directory.
 
 ---
 
-## 🛡️ Copyright & Usage Restrictions
+## 📝 License
 
-**© 2026 BrightShadow0. All rights reserved.**
-
-Unless you have obtained prior written permission, you may not:
-
-- Copy, reproduce, or redistribute this project's source code or substantial portions of it.
-- Modify, adapt, translate, or create derivative works from the project.
-- Publish or distribute copies, forks, or modified versions.
-- Use the code, design, or assets in a commercial product or service.
-- Remove or alter copyright and proprietary notices.
-
-This notice expresses the copyright holder's intent. Public hosting on GitHub does not itself prevent viewing, downloading, or platform-supported forking. No open-source licence is granted by this repository.
+LifeFlow is distributed under the **MIT License**. See the [MIT License](https://opensource.org/licenses/MIT) for the terms. Please retain the copyright and licence notice in copies or substantial portions of the project.
 
 ---
 
