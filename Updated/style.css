@@ -3299,3 +3299,50 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   #app #main .cal-day,
   #app #main .cal-empty{min-height:84px}
 }
+
+
+/* Notes Manager: give the writing surface comfortable inset spacing. */
+#app .note-editor .regular-note-source-wrap{width:100%;min-width:0}
+#app .note-editor textarea.regular-note-source{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  padding:16px 18px;
+  line-height:1.6;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface-2);
+  color:var(--text);
+}
+#app .note-editor textarea.regular-note-source:focus{
+  outline:2px solid color-mix(in srgb,var(--accent) 28%,transparent);
+  outline-offset:1px;
+}
+
+/* Preview: show a checklist as one contained group, not loose floating boxes. */
+#app .markdown-preview ul.md-task-list{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:12px 0 16px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface-2);
+}
+#app .markdown-preview ul.md-task-list li.md-task-item{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0;
+  padding:2px 0;
+  list-style:none;
+}
+#app .markdown-preview ul.md-task-list li.md-task-item .md-task{
+  width:16px;
+  height:16px;
+  flex:0 0 16px;
+  margin:0;
+  accent-color:var(--accent);
+}
