@@ -1297,17 +1297,18 @@ function markdownToHtml(source){
     const ul=/^\s{0,3}([-*+])\s+(.+)$/.exec(line),ol=/^\s{0,3}(\d+)\.\s+(.+)$/.exec(line);
     if(ul||ol){
       const ordered=!!ol,items=[];
+      let hasTasks=false;
       while(i<lines.length){
         const m=(ordered?/^\s{0,3}\d+\.\s+(.+)$/:/^\s{0,3}[-*+]\s+(.+)$/).exec(lines[i]);
         if(!m)break;
         let item=m[1],checked=false;
         const task=item.match(/^\[(x|X| )\]\s+(.+)$/);
-        if(task){checked=/x/i.test(task[1]);item=task[2];}
+        if(task){hasTasks=true;checked=/x/i.test(task[1]);item=task[2];}
         const taskLineIndex=i;
         items.push('<li'+(task?' class="md-task-item"':'')+'>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" onchange="toggleMarkdownTask('+taskLineIndex+',this.checked)" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
         i++;
       }
-      html+='<'+(ordered?'ol':'ul')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
+      html+='<'+(ordered?'ol':'ul')+(hasTasks?' class="md-task-list"':'')+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
       continue;
     }
     const buf=[line];i++;
