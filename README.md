@@ -1,8 +1,10 @@
 # 🚀 LifeFlow
 
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-
 > A personal productivity workspace to plan your day, manage tasks, organise notes, and shape your workflow.
+
+**© 2026 BrightShadow0. All rights reserved.**
+
+LifeFlow is a proprietary project. Its source code is publicly visible for viewing and evaluation only. No licence is granted to copy, modify, adapt, redistribute, publish, sublicense, or commercially use any part of this project without prior written permission from the copyright holder.
 
 ---
 
@@ -58,65 +60,46 @@ LifeFlow is a browser-based application. There is no Node.js installation, packa
 - A modern web browser
 - An internet connection to load the CDN-hosted Markdown and diagram libraries
 
-### Installation & Setup
+### Local Preview
 
-1. **Clone the repository:**
+The repository is public so visitors can inspect the source code. Viewing or downloading the source does not grant permission to reuse or redistribute it.
 
-   ```bash
-   git clone https://github.com/BrightShadow0/LifeFlow.git
-   cd LifeFlow
-   ```
+For personal evaluation, the application can be opened from `Updated/index.html` in a modern browser. A local web server can also be started from the repository root:
 
-2. **Open the application:**
+```bash
+python -m http.server 8000
+```
 
-   Open `Updated/index.html` in a modern browser.
-
-   Alternatively, start a local web server from the repository root:
-
-   ```bash
-   python -m http.server 8000
-   ```
-
-   Then visit [http://localhost:8000/Updated/](http://localhost:8000/Updated/).
+Then visit [http://localhost:8000/Updated/](http://localhost:8000/Updated/).
 
 ---
 
-## 💡 Usage
+## 🤝 Feedback & Permissions
 
-1. Open LifeFlow and create a local account or sign in.
-2. Add tasks, set priorities and dates, and organise them using the calendar or Kanban board.
-3. Open **Notes Manager** to write Markdown and switch to Preview to see the rendered result.
-4. Personalise the workspace from your profile and customisation settings.
-5. Export task data as CSV or JSON whenever you need a copy.
+Suggestions and bug reports are welcome through the repository's GitHub Issues.
 
-### Data & Authentication Notes
-
-LifeFlow currently stores its application data in the browser's Local Storage. Data is local to the browser and device, so it does not automatically sync across devices. The account activation, password-reset, and external sign-in flows shown in the interface are not a substitute for a configured production authentication backend. Do not use real or sensitive credentials in a demo deployment.
+If you would like to use, reproduce, modify, distribute, or incorporate any part of LifeFlow into another project, please contact the copyright holder and obtain written permission first. Submitting a suggestion or reporting an issue does not grant any rights to the project's code or assets.
 
 ---
 
-## 🤝 Contributing
+## 🛡️ Copyright & Usage Restrictions
 
-Contributions, suggestions, and bug reports are welcome.
+**© 2026 BrightShadow0. All rights reserved.**
 
-1. Fork the project.
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to your branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+Unless you have obtained prior written permission, you may not:
 
-For application changes, work in the **`Updated/`** directory.
+- Copy, reproduce, or redistribute this project's source code or substantial portions of it.
+- Modify, adapt, translate, or create derivative works from the project.
+- Publish or distribute copies, forks, or modified versions.
+- Use the code, design, or assets in a commercial product or service.
+- Remove or alter copyright and proprietary notices.
 
----
-
-## 📝 License
-
-This project is presented under the MIT License. See the [MIT License](https://opensource.org/licenses/MIT) for details.
+This notice expresses the copyright holder's intent. Public hosting on GitHub does not itself prevent viewing, downloading, or platform-supported forking. No open-source licence is granted by this repository.
 
 ---
 
 ## ✉️ Contact
 
-- **GitHub:** [@BrightShadow0](https://github.com/BrightShadow0)
+- **Copyright holder:** [@BrightShadow0](https://github.com/BrightShadow0)
 - **Email:** turingtestdummy1@gmail.com
 - **Project Repository:** [BrightShadow0/LifeFlow](https://github.com/BrightShadow0/LifeFlow)
