@@ -661,38 +661,44 @@ function initAuthTheme(){
   const end=e=>{if(!active)return;active=false;bulb.style.setProperty('--pull-y','0px');bulb.releasePointerCapture?.(e.pointerId);};
   bulb.addEventListener('pointerdown',down);bulb.addEventListener('pointermove',move);bulb.addEventListener('pointerup',end);bulb.addEventListener('pointercancel',end);
 }
-let themePullStartY=null,themePullActive=false,themePullPointerId=null;
+let themePullStartY=null,themePullActive=false,themePullPointerId=null,themePullMaxDy=0;
 function initThemePull(){
   const b=document.getElementById('themePull');if(!b||b.dataset.pullReady==='true')return;
   b.dataset.pullReady='true';
   const reset=()=>{
-    themePullActive=false;themePullStartY=null;themePullPointerId=null;
+    themePullActive=false;themePullStartY=null;themePullPointerId=null;themePullMaxDy=0;
     b.classList.remove('pulling');
     b.style.removeProperty('--pull-y');
     b.style.removeProperty('transform');
   };
   const begin=e=>{
     if(e.button!==undefined&&e.button!==0)return;
-    reset();
-    themePullStartY=e.clientY;themePullPointerId=e.pointerId;themePullActive=true;
+    if(themePullActive)reset();
+    themePullStartY=e.clientY;
+    themePullPointerId=e.pointerId;
+    themePullMaxDy=0;
+    themePullActive=true;
     b.classList.add('pulling');
     try{b.setPointerCapture?.(e.pointerId);}catch(_){}
     e.preventDefault();
   };
   const move=e=>{
     if(!themePullActive||e.pointerId!==themePullPointerId)return;
-    const dy=Math.max(0,Math.min(34,e.clientY-themePullStartY));
+    const rawDy=e.clientY-themePullStartY;
+    themePullMaxDy=Math.max(themePullMaxDy,rawDy);
+    const dy=Math.max(0,Math.min(42,rawDy));
     b.style.setProperty('--pull-y',dy+'px');
     b.style.transform='translateY('+dy+'px)';
     e.preventDefault();
   };
   const finish=(e,commit)=>{
     if(!themePullActive||(e&&e.pointerId!==undefined&&e.pointerId!==themePullPointerId))return;
-    const dy=e&&Number.isFinite(e.clientY)?Math.max(0,e.clientY-themePullStartY):0;
+    const finalDy=e&&Number.isFinite(e.clientY)?e.clientY-themePullStartY:0;
+    const pulled=Math.max(themePullMaxDy,finalDy);
     const pointerId=themePullPointerId;
     reset();
     if(pointerId!==null){try{if(b.hasPointerCapture?.(pointerId))b.releasePointerCapture(pointerId);}catch(_){}}
-    if(commit&&dy>=18){
+    if(commit&&pulled>=12){
       b.classList.add('snap');
       const u=currentUser(),quickTheme=(u?.theme||'dark')==='dark'?'light':'dark';
       if(u)updateUser(user=>{user.theme=quickTheme;user.autoTheme=false;});
@@ -705,6 +711,8 @@ function initThemePull(){
   b.addEventListener('pointerup',e=>finish(e,true));
   b.addEventListener('pointercancel',e=>finish(e,false));
   b.addEventListener('lostpointercapture',e=>finish(e,false));
+  // Fallback for browsers/devices that deliver pointerup outside the captured control.
+  window.addEventListener('pointerup',e=>finish(e,true),true);
   window.addEventListener('blur',()=>finish(null,false));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)finish(null,false);});
 }
