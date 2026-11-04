@@ -1341,7 +1341,7 @@ function markdownToHtml(source){
     const body=this.parser.parse(token.tokens||[]);
     if(token.task){
       const index=taskIndex++;
-      return '<li class="md-task-item"><input class="md-task" type="checkbox" data-md-task-index="'+index+'" onchange="toggleMarkdownTaskByIndex('+index+',this.checked)" '+(token.checked?'checked':'')+'> '+body+'</li>\n';
+      return '<li class="md-task-item"><input class="md-task" type="checkbox" data-md-task-index="'+index+'" '+(token.checked?'checked':'')+'> '+body+'</li>\n';
     }
     return '<li>'+body+'</li>\n';
   };
@@ -1368,6 +1368,9 @@ function toggleMarkdownTaskByIndex(index,checked){
 }
 function renderMarkdownPreview(element,source){
   element.innerHTML=markdownToHtml(source);
+  element.querySelectorAll('input.md-task[data-md-task-index]').forEach(function(input){
+    input.addEventListener('change',function(){toggleMarkdownTaskByIndex(Number(input.dataset.mdTaskIndex),input.checked);});
+  });
   const diagrams=element.querySelectorAll('.md-mermaid');
   if(diagrams.length&&window.mermaid){
     diagrams.forEach(function(node){
