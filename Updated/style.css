@@ -3415,13 +3415,23 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 }
 #app .note-content-surface .markdown-preview{
   min-height:326px;
+  max-height:60vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:var(--accent) var(--surface-2);
   box-sizing:border-box;
-  padding:0;
+  padding:0 10px 0 0;
   margin:0;
   border:0;
   background:transparent;
   color:var(--text);
 }
+#app .note-content-surface .markdown-preview::-webkit-scrollbar{width:9px}
+#app .note-content-surface .markdown-preview::-webkit-scrollbar-track{background:var(--surface-2);border-radius:8px}
+#app .note-content-surface .markdown-preview::-webkit-scrollbar-thumb{background:var(--accent);border:2px solid var(--surface-2);border-radius:8px}
+#app .note-content-surface .markdown-preview::-webkit-scrollbar-thumb:hover{background:var(--accent-hover,var(--accent))}
 #app .markdown-preview ul.md-task-list{
   display:block;
   margin:12px 0 16px;
