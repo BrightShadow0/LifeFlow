@@ -983,6 +983,18 @@ function renderToday(){
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
 
+function completeAllTasks(){
+  const remaining=state.tasks.filter(t=>!t.done);
+  if(!remaining.length){
+    toast('All tasks are already completed.');
+    return;
+  }
+  remaining.forEach(t=>{t.done=true;t.status='done';});
+  save();
+  renderApp();
+  toast(remaining.length+' task'+(remaining.length===1?'':'s')+' marked as completed.');
+}
+
 function clearCompletedTasks(){
   const completed=state.tasks.filter(t=>t.done);
   if(!completed.length){
@@ -1002,7 +1014,7 @@ function renderList(){
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
   const completedCount=state.tasks.filter(t=>t.done).length;
-  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><button type="button" class="clear-completed-button" onclick="clearCompletedTasks()" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
+  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><button type="button" class="complete-all-button" onclick="completeAllTasks()" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" onclick="clearCompletedTasks()" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
