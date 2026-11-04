@@ -3475,6 +3475,16 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 #app .markdown-preview pre{max-width:100%;overflow:auto;padding:14px 16px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text)}
 #app .markdown-preview code.md-inline-code{padding:2px 5px;border-radius:5px;background:var(--surface-2);color:var(--accent);font-family:ui-monospace,Consolas,monospace}
 #app .markdown-preview pre code{padding:0;border:0;background:transparent;color:inherit}
+#app .markdown-preview pre.md-code{white-space:pre;tab-size:4}
+#app .markdown-preview pre.md-code code{display:block;min-width:max-content;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;line-height:1.65}
+#app .markdown-preview .code-comment{color:#8b949e}
+#app .markdown-preview .code-string{color:#e6a36b}
+#app .markdown-preview .code-keyword{color:#c792ea}
+#app .markdown-preview .code-function{color:#82aaff}
+#app .markdown-preview .code-number{color:#f78c6c}
+#app .markdown-preview .code-type{color:#ffcb6b}
+#app .markdown-preview .code-preprocessor{color:#f07178}
+#app .markdown-preview .code-operator{color:#89ddff}
 #app .markdown-preview hr{border:0;border-top:1px solid var(--border);margin:1.3em 0}
 #app .markdown-preview .md-task-item{list-style:none;display:flex;align-items:flex-start;gap:9px}
 #app .markdown-preview .md-task{flex:0 0 16px;width:16px;height:16px;margin:.25em 0 0;accent-color:var(--accent)}
