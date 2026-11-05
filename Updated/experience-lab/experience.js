@@ -141,16 +141,20 @@ async function loadModels(){
   }
  }
  if(models.road){
-  const roadData=prepModel(models.road,1,'road'),roadTemplate=roadData.root;
-  const tileBounds=new THREE.Box3().setFromObject(roadTemplate),sz=tileBounds.getSize(new THREE.Vector3());
-  const longAxis=sz.x>sz.z?'x':'z';
-  const tileLength=Math.max(sz.x,sz.z);
-  const count=Math.ceil(curve.getLength()/Math.max(4,tileLength*.78));
+  const roadTemplate=prepModel(models.road,1,'road').root;
+  const bendTemplate=models.bend?prepModel(models.bend,1,'road').root:null;
+  const baseBounds=new THREE.Box3().setFromObject(roadTemplate),baseSize=baseBounds.getSize(new THREE.Vector3());
+  const baseLongAxis=baseSize.x>baseSize.z?'x':'z';
+  const baseTileLength=Math.max(baseSize.x,baseSize.z);
+  const count=Math.ceil(curve.getLength()/Math.max(4,baseTileLength*.78));
   for(let i=0;i<count;i++){
    const t=(i+.5)/count,{p,tangent}=frameAt(t);
-   const tile=roadTemplate.clone(true);
-   const baseAngle=longAxis==='x'?Math.PI/2:0;
-   tile.rotation.y=baseAngle;
+   const tA=curve.getTangentAt(clamp(t-.012)),tB=curve.getTangentAt(clamp(t+.012));
+   const curvature=1-tA.dot(tB);
+   const template=bendTemplate&&curvature>.018?bendTemplate:roadTemplate;
+   const size=new THREE.Box3().setFromObject(template).getSize(new THREE.Vector3());
+   const longAxis=size.x>size.z?'x':'z',baseAngle=longAxis==='x'?Math.PI/2:0;
+   const tile=template.clone(true);tile.rotation.y=baseAngle;
    const actual=new THREE.Box3().setFromObject(tile),as=actual.getSize(new THREE.Vector3());
    tile.scale.set(tile.scale.x*(8.1/as.x),tile.scale.y,tile.scale.z*(curve.getLength()/count/as.z));
    const pathRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);
@@ -276,7 +280,7 @@ function setupPointer(){
 function animate(){
  const dt=Math.min(clock.getDelta(),.04),time=clock.elapsedTime;
  scrollLive=damp(scrollLive,scrollTarget,2.8,dt);
- if(window.scrollY<20&&!reduced)scrollLive=clamp(scrollLive+dt*.0008,.02,.98);
+ if(window.scrollY<20&&!reduced)scrollLive=clamp(scrollLive+dt*.003,.02,.98);
  if(sceneState.car){
   placeCar(scrollLive,dt);
   sceneState.world.rotation.y=damp(sceneState.world.rotation.y,pointer.tx*.009,1.5,dt);
@@ -295,4 +299,4 @@ function boot(){
  if(reduced){document.querySelectorAll('.story-beat').forEach(x=>x.classList.add('active'));document.querySelector('.story').style.height='auto';}
  animate();
 }
-document.addEventListener('DOMContentLoaded',boot);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
