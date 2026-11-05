@@ -3731,3 +3731,16 @@ body::-webkit-scrollbar-corner{
 #app .note-rename-btn:hover{border-color:var(--accent);background:var(--accent-soft);transform:none}
 .note-title-edit{width:min(260px,48vw);min-width:130px;min-height:36px;padding:7px 10px;border:1px solid var(--accent)!important;border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit}
 @media(max-width:600px){#app .markdown-toolbar{align-items:flex-start}.note-title-actions{width:100%}.note-title-edit{flex:1;width:auto}}
+
+/* Embedded auth presentation used only by the scrollytelling landing page */
+body.auth-embed{height:100%;min-height:100%;max-height:none;overflow:auto;background:#080c12}
+body.auth-embed #authScreen{width:100%;max-width:none;height:auto;min-height:100%;max-height:none;overflow:visible;margin:0;padding:0;background:transparent}
+body.auth-embed #authScreen>.card{width:100%;min-height:100%;margin:0;border:0;border-radius:0;padding:0;background:var(--card);box-shadow:none}
+body.auth-embed #authScreen .termbar{padding:13px 20px}
+body.auth-embed #authScreen .term-layout{grid-template-columns:minmax(0,1fr) 164px;min-height:620px}
+body.auth-embed #authScreen .termcontent{padding:34px clamp(22px,4vw,52px)}
+body.auth-embed #authScreen .termcontent h2{font-size:32px}
+body.auth-embed #authScreen .termtheme{padding:24px 18px}
+body.auth-embed #authScreen .termtheme p{font-size:11px}
+body.auth-embed #authScreen .auth-bulb{transform:scale(1.06);margin:8px 0}
+@media(max-width:620px){body.auth-embed #authScreen .term-layout{grid-template-columns:1fr;min-height:0}body.auth-embed #authScreen .termcontent{padding:24px 18px}body.auth-embed #authScreen .termtheme{border-left:0;border-top:1px solid var(--border);padding:16px;min-height:140px}}
