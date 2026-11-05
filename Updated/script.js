@@ -1794,28 +1794,25 @@ function initBranchesGraph(root){
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
-    <div class="manifesto-hero">
-      <div class="manifesto-hero-copy">
-        <div class="manifesto-kicker"><span class="manifesto-kicker-dot"></span> THE IDEA BEHIND LIFEFLOW</div>
-        <h2>Life is bigger than a task list<span>.</span></h2>
-        <p class="manifesto-lead">A calmer way to see what matters, make room for what matters next, and keep moving without losing sight of the bigger picture.</p>
-      </div>
-      <div class="manifesto-hero-mark" aria-hidden="true"><div class="manifesto-orbit orbit-one"></div><div class="manifesto-orbit orbit-two"></div><div class="manifesto-orbit-core">L<span>F</span></div><i class="manifesto-orbit-dot dot-one"></i><i class="manifesto-orbit-dot dot-two"></i><i class="manifesto-orbit-dot dot-three"></i></div>
-    </div>
-    <div class="manifesto-section-label"><span>THE THINKING</span><span>01 — 09</span></div>
+    <div class="manifesto-kicker">THE IDEA BEHIND LIFEFLOW</div>
+    <h2>Life is bigger than a task list.</h2>
+    <p class="manifesto-lead">LifeFlow exists to help you see what is competing for your time, understand what matters today, and move through your day with less friction.</p>
     <div class="manifesto-grid">
-      <article class="manifesto-card manifesto-card-feature"><span class="manifesto-number">01</span><div class="manifesto-card-content"><h3>Why it exists</h3><p>Planning tools often make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p></div><span class="manifesto-card-mark" aria-hidden="true">↗</span></article>
-      <article class="manifesto-card"><span class="manifesto-number">02</span><div class="manifesto-card-content"><h3>Who it is for</h3><p>People balancing work or study, responsibilities, personal priorities and the things they want to make progress on.</p></div></article>
-      <article class="manifesto-card"><span class="manifesto-number">03</span><div class="manifesto-card-content"><h3>What it manages</h3><p>Tasks are the starting point. The bigger picture is your time, attention, commitments and progress.</p></div></article>
-      <article class="manifesto-card"><span class="manifesto-number">04</span><div class="manifesto-card-content"><h3>Your first 30 seconds</h3><p>Quickly understand what needs attention today, what is already handled, and where your time is going.</p></div></article>
-      <article class="manifesto-card"><span class="manifesto-number">05</span><div class="manifesto-card-content"><h3>How it should feel</h3><p>Clear. Calm. Focused. Human. In control. LifeFlow should never feel like another system demanding that you keep up with it.</p></div></article>
-      <article class="manifesto-card"><span class="manifesto-number">06</span><div class="manifesto-card-content"><h3>Why “Flow”</h3><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p></div></article>
-      <article class="manifesto-card manifesto-card-wide"><span class="manifesto-number">07</span><div class="manifesto-card-content"><h3>The six-month test</h3><p>Success is not a perfectly maintained planner. It is fewer forgotten commitments, clearer days, better use of time, and a stronger sense of progress in the parts of life that matter.</p></div><span class="manifesto-inline-note">PROGRESS OVER PERFECTION</span></article>
-      <article class="manifesto-card manifesto-card-wide"><span class="manifesto-number">08</span><div class="manifesto-card-content"><h3>Local by design</h3><p>LifeFlow runs in your browser. Your tasks, notes, plans and settings stay on your device instead of syncing to a central LifeFlow server.</p></div><span class="manifesto-inline-note">YOUR DATA, YOUR DEVICE</span></article>
-      <article class="manifesto-card manifesto-card-notes"><span class="manifesto-number">09</span><div class="manifesto-card-content"><div class="manifesto-notes-eyebrow">WRITE · CONNECT · EXPLORE</div><h3>A Markdown-powered Notes Manager</h3><p>Turn thoughts into a connected knowledge space. Format notes with headings, emphasis, lists, checklists, links, tables and code blocks. Switch between Write and Preview, link notes with <code>[[Project Planning]]</code> and autocomplete, then explore those connections in Your Branches.</p></div><div class="manifesto-notes-symbol" aria-hidden="true"><span></span><span></span><span></span><i></i></div></article>
+      <div class="manifesto-card"><span>01</span><h3>Why it exists</h3><p>Planning tools often make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p></div>
+      <div class="manifesto-card"><span>02</span><h3>Who it is for</h3><p>People balancing multiple parts of life: work or study, responsibilities, personal priorities and the things they want to make progress on.</p></div>
+      <div class="manifesto-card"><span>03</span><h3>What it manages</h3><p>Tasks are the starting point, but the centre is broader: your time, attention, commitments and progress.</p></div>
+      <div class="manifesto-card"><span>04</span><h3>Your first 30 seconds</h3><p>You should quickly understand what needs attention today, what is already handled, and where your time is going.</p></div>
+      <div class="manifesto-card"><span>05</span><h3>How it should feel</h3><p>Clear. Calm. Focused. Human. In control. LifeFlow should never feel like another system demanding that you keep up with it.</p></div>
+      <div class="manifesto-card"><span>06</span><h3>Why “Flow”</h3><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p></div>
+      <div class="manifesto-card manifesto-wide"><span>07</span><h3>The six-month test</h3><p>Success is not having a perfectly maintained planner. It is having fewer forgotten commitments, clearer days, better use of time, and a stronger sense of progress in the parts of life that matter.</p></div>
+      <div class="manifesto-card manifesto-wide"><span>08</span><h3>Local by design</h3><p>LifeFlow runs locally in your browser, so your tasks, notes, plans and settings are stored on your device instead of being synced to a central LifeFlow server. Your life stays close to you.</p></div>
+      <div class="manifesto-card manifesto-wide"><span>09</span><h3>A Markdown-powered Notes Manager</h3><p>Notes Manager gives you a flexible writing space with Markdown support. Format ideas with headings, bold and italic text, lists, checklists, links, tables and code blocks. Switch between Write and Preview to see your formatted notes as you work. Use double-square-bracket links like <code>[[Project Planning]]</code> to connect notes by title, with autocomplete to find existing notes. Open linked notes directly and explore the connections in Your Branches.</p></div>
     </div>
   </section>
-  <section class="card manifesto-principles"><div class="manifesto-principle-icon" aria-hidden="true">✳</div><div><div class="manifesto-kicker">THE GUIDING PRINCIPLE</div><h2>Help you decide, not just record.</h2><p>A task is useful when it helps you understand what deserves your attention and take the next meaningful step.</p></div></section>`;
+  <section class="card manifesto-principles">
+    <h2>One principle</h2>
+    <p><strong>LifeFlow should help you decide, not just record.</strong> A task is useful when it helps you understand what deserves your attention and take the next meaningful step.</p>
+  </section>`;
 }
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
