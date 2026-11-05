@@ -193,7 +193,7 @@ function animate(){
 let lastChapter = -1;
 function setChapter(index){
  const count=Math.min(3,Math.max(0,index));if(count===lastChapter)return;lastChapter=count;
- const copies=[...document.querySelectorAll('.chapter-copy')];const count=Math.min(3,Math.max(0,index));
+ const copies=[...document.querySelectorAll('.chapter-copy')];
  copies.forEach((el,i)=>{
   const is=i===count;el.classList.toggle('active',is);
   if(window.gsap){gsap.to(el,{autoAlpha:is?1:0,y:is?0:-22,duration:.36,ease:'power2.out',overwrite:true});}
