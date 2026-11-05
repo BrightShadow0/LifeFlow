@@ -1399,6 +1399,7 @@ function markdownInline(input){
     return hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>');
   });
   s=s.replace(/&lt;(https?:\/\/[^&\s]+)&gt;/g,function(_,url){const href=safeMarkdownUrl(url);return href==='#'?_:hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(url)+'</a>');});
+  s=s.replace(/\[\[\s*([^\]\n]+?)\s*\]\]/g,function(_,title){const clean=title.trim();return hold('<a href="#" class="md-note-link" data-note-title="'+esc(clean)+'">'+esc(clean)+'</a>');});
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
   s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
   s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>').replace(/(?<!_)_([^_\n]+)_(?!_)/g,'<em>$1</em>');
@@ -1505,6 +1506,7 @@ function toggleMarkdownTaskByIndex(index,checked){
 }
 function renderMarkdownPreview(element,source){
   element.innerHTML=markdownToHtml(source);
+  element.querySelectorAll('a.md-note-link').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();openKnowledgeNoteByTitle(link.dataset.noteTitle||'');});});
   element.querySelectorAll('img.md-image').forEach(function(img){
     img.addEventListener('error',function(){
       img.classList.add('md-image-error');
@@ -1539,6 +1541,13 @@ function toggleMarkdownTask(lineIndex,checked){
   if(preview)preview.innerHTML=markdownToHtml(n.content);
 }
 function handleMarkdownKeydown(e){
+  const menu=document.getElementById('noteLinkSuggestions');
+  if(menu&&menu.style.display!=='none'){
+    const options=Array.from(menu.querySelectorAll('.note-link-option'));
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&options.length){e.preventDefault();window.lfNoteLinkActive=(Number(window.lfNoteLinkActive||0)+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;options.forEach(function(option,i){option.classList.toggle('active',i===window.lfNoteLinkActive);});return;}
+    if(e.key==='Enter'&&options.length){e.preventDefault();chooseNoteLink(Number(window.lfNoteLinkActive||0));return;}
+    if(e.key==='Escape'){menu.style.display='none';return;}
+  }
   if(e.key!=='Enter'||e.shiftKey||e.altKey||e.ctrlKey||e.metaKey)return;
   const ta=e.currentTarget;
   const before=ta.value.slice(0,ta.selectionStart);
@@ -1567,6 +1576,44 @@ function refreshMarkdownPreview(){
   const source=document.getElementById('kn_content'),preview=document.getElementById('kn_preview');
   if(source&&preview)renderMarkdownPreview(preview,source.value);
 }
+function findNoteLinkQuery(text,cursor){
+  const before=String(text||'').slice(0,cursor),open=before.lastIndexOf('[[');
+  if(open<0)return null;
+  const tail=before.slice(open+2);
+  if(tail.includes(']]')||tail.includes('\n'))return null;
+  return {start:open,end:cursor,query:tail.trimStart()};
+}
+function handleNoteLinkAutocomplete(e){
+  const ta=e.currentTarget||document.getElementById('kn_content'),menu=document.getElementById('noteLinkSuggestions');
+  if(!ta||!menu)return;
+  const match=findNoteLinkQuery(ta.value,ta.selectionStart);
+  if(!match){menu.style.display='none';menu.innerHTML='';return;}
+  const q=match.query.toLowerCase();
+  const notes=noteStore('regular').filter(function(n){return String(n.title||'').toLowerCase().includes(q);}).slice(0,8);
+  if(!notes.length){menu.style.display='none';menu.innerHTML='';return;}
+  window.lfNoteLinkMatches=notes.map(function(n){return n.id;});window.lfNoteLinkActive=0;
+  menu.innerHTML=notes.map(function(n,i){return '<button type="button" class="note-link-option '+(i===0?'active':'')+'" onclick="chooseNoteLink('+i+')"><strong>'+esc(n.title||'Untitled')+'</strong></button>';}).join('');
+  menu.style.display='block';
+}
+function chooseNoteLink(index){
+  const ta=document.getElementById('kn_content'),menu=document.getElementById('noteLinkSuggestions');
+  if(!ta||!menu)return;
+  const ids=window.lfNoteLinkMatches||[];
+  const n=noteStore('regular').find(function(item){return String(item.id)===String(ids[index]);});
+  const match=findNoteLinkQuery(ta.value,ta.selectionStart);
+  if(!n||!match)return;
+  ta.setRangeText('[['+(n.title||'Untitled')+']]',match.start,match.end,'end');
+  ta.dispatchEvent(new Event('input',{bubbles:true}));menu.style.display='none';ta.focus();
+}
+function openKnowledgeNoteByTitle(title){
+  const clean=String(title||'').trim();if(!clean)return;
+  let n=noteStore('regular').find(function(item){return String(item.title||'').trim().toLowerCase()===clean.toLowerCase();});
+  if(!n){
+    n={id:uid(),noteCode:makeKnowledgeNoteCode(),title:clean,noteNumber:null,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
+    noteStore('regular').unshift(n);showToast('Created note: '+clean);
+  }
+  window.lfNoteMode='regular';window.lfSelectedNote=n.id;window.lfNoteView='edit';save();renderApp();
+}
 function renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
@@ -1579,11 +1626,11 @@ function renderNotesManager(){
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-    html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div><div class="note-code-row"><small>NOTE CODE: <strong>'+esc(selected.noteCode||'')+'</strong></small><button class="hbtn" type="button" onclick="copyKnowledgeNoteCode(\''+selected.id+'\')">Copy code</button><small>Link another note with <code>[[ '+esc(selected.noteCode||'')+' ]]</code></small></div>';
+    html+='<div class="note-code-row"><small>Type <code>[[</code> to link another note by title.</small></div>';
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div></div>';
     html+='<div class="note-content-surface">';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
-    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);refreshMarkdownPreview()" placeholder="Write here...">'+esc(content)+'</textarea></div>';
+    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);handleNoteLinkAutocomplete(event);refreshMarkdownPreview()" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" style="display:none"></div></div>';
     html+='</div><div class="note-help">Markdown supported</div>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
@@ -1614,12 +1661,13 @@ function renderBranches(){
   const seenLinks={};
   items.forEach(function(n){
     const source=positions[String(n.noteCode)];
-    const matches=String(n.content||'').match(/\[\[\s*([A-Za-z0-9-]+)\s*\]\]/g)||[];
+    const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
     matches.forEach(function(token){
-      const code=token.replace(/^\[\[\s*/,'').replace(/\s*\]\]$/,'').trim();
-      const target=positions[code];
-      if(!target||!source||code===n.noteCode)return;
-      const key=[String(n.noteCode),code].sort().join('|');
+      const title=token.replace(/^\[\[\s*/,'').replace(/\s*\]\]$/,'').trim();
+      const targetNote=items.find(function(item){return String(item.title||'').trim().toLowerCase()===title.toLowerCase();});
+      const target=targetNote?positions[String(targetNote.noteCode)]:null;
+      if(!target||!source||targetNote.id===n.id)return;
+      const key=[String(n.id),String(targetNote.id)].sort().join('|');
       if(seenLinks[key])return;
       seenLinks[key]=true;
       svg+='<line x1="'+source.x+'" y1="'+source.y+'" x2="'+target.x+'" y2="'+target.y+'" stroke="var(--accent,var(--primary,#16c784))" stroke-width="2.5" opacity=".72" />';
@@ -1631,7 +1679,7 @@ function renderBranches(){
     svg+='<g class="branch-node note branch-unconnected"><circle cx="'+p.x+'" cy="'+p.y+'" r="13"></circle><text x="'+p.x+'" y="'+(p.y+34)+'" text-anchor="middle">'+label+'</text><text x="'+p.x+'" y="'+(p.y+51)+'" text-anchor="middle" class="branch-note-code">'+esc(n.noteCode||'')+'</text></g>';
   });
   const empty=count?'':'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Link notes by adding <code>[[ NOTE-CODE ]]</code> in their content.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Link notes with <code>[[Note Title]]</code> and choose from autocomplete.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
