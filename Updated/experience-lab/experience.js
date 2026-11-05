@@ -81,7 +81,7 @@ function initHero(){
 }
 function initJourney(){
  const canvas=document.getElementById('journey-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer)return;
+ const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
  const scene=new THREE.Scene();
  const camera=new THREE.PerspectiveCamera(38,1,.1,100);camera.position.set(0,0,8.5);
  scene.add(new THREE.AmbientLight('#c7d8c9',1.25));
@@ -113,7 +113,7 @@ function initJourney(){
 }
 function initClosing(){
  const canvas=document.getElementById('closing-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer)return;
+ const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
  const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,0,7.2);
  scene.add(new THREE.AmbientLight('#d9f0d8',1.4));
  const light=new THREE.PointLight('#c9ff58',110,18);light.position.set(2,3,4);scene.add(light);
