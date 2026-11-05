@@ -4,3 +4,7 @@ let busy=false;function update(){const max=document.documentElement.scrollHeight
 if('IntersectionObserver'in window){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const s=e.target.dataset.scene;stage.dataset.scene=s;status.textContent=labels[s][0];index.textContent=labels[s][1];chapters.forEach(c=>c.classList.toggle('active',c===e.target))}}),{rootMargin:'-38% 0px -38% 0px'});chapters.forEach(c=>io.observe(c))}
 if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&matchMedia('(pointer:fine)').matches){const art=document.getElementById('heroArt'),wrap=document.querySelector('.stage-wrap');art.addEventListener('pointermove',e=>{const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;art.style.transform='perspective(900px) rotateY('+(x*5)+'deg) rotateX('+(-y*4)+'deg)'});art.addEventListener('pointerleave',()=>art.style.transform='');wrap.addEventListener('pointermove',e=>{const r=wrap.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;stage.style.transform='perspective(1200px) rotateY('+(x*2.5)+'deg) rotateX('+(-y*2)+'deg)'});wrap.addEventListener('pointerleave',()=>stage.style.transform='')}
 })();
+window.addEventListener('message',function(event){
+  if(event.origin!==window.location.origin||!event.data||event.data.type!=='lifeflow-authenticated')return;
+  window.location.assign('../index.html');
+});
