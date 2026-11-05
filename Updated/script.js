@@ -820,7 +820,7 @@ function renderNav(){
   sidebar.innerHTML='<div class="brand">LifeFlow<i class="brand-mark">.</i></div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" onclick="exportData(\'csv\')"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" onclick="exportData(\'json\')"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" onclick="doLogout()"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
   if(hasPremiumAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
-  tabs.push(['about','Why LifeFlow','✦'],['account','Profile & settings','◎']);
+  tabs.push(['account','Profile & settings','◎']);
   document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" title="'+x[1]+'" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" onclick="setView(\''+x[0]+'\')"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
 function setView(v){const u=currentUser();if((v==='branches'||v==='notes')&&!hasPremiumAccess(u)){toast('This feature is available to Premium and Team Admin accounts.');return;}view=v;clearNewTimes();renderApp();}
@@ -1217,7 +1217,7 @@ function renderApp(){
   document.getElementById('main')?.classList.remove('page-enter');
   applyDensity();
   renderNav();
-  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',about:'Why LifeFlow',account:'Profile & settings'};
+  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
   const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); initWorkspaceAtmosphereInteraction(); applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
@@ -1269,7 +1269,7 @@ function closeCommandPalette(){document.getElementById('lfCommandPalette')?.remo
 function renderCommandResults(){
   const input=document.getElementById('lfCommandInput'); const host=document.getElementById('lfCommandResults'); if(!input||!host)return;
   const q=input.value.trim().toLowerCase();
-  const pages=[['today','Today','See what needs attention now'],['list','Tasks','Browse and manage tasks'],['calendar','Calendar','View deadlines and scheduled time'],['board','Board','Move work through the flow'],['about','Why LifeFlow','Read the product principles'],['account','Profile & settings','Personalize LifeFlow']];
+  const pages=[['today','Today','See what needs attention now'],['list','Tasks','Browse and manage tasks'],['calendar','Calendar','View deadlines and scheduled time'],['board','Board','Move work through the flow'],['account','Profile & settings','Personalize LifeFlow']];
   const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" onclick="view=\''+x[0]+'\';closeCommandPalette();renderApp()"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
   const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,8).map(t=>'<button type="button" class="command-result" onclick="view=\'list\';closeCommandPalette();renderApp();setTimeout(()=>document.querySelector(\'[data-task-id="'+t.id+'"]\')?.focus(),50)"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
   host.innerHTML=(matches.concat(tasks)).slice(0,10).join('')||'<div class="command-empty">No matching pages or tasks.</div>';
