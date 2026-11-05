@@ -1645,16 +1645,17 @@ function renderBranches(){
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
   const items=state.notes, count=items.length, positions={};
-  const width=1200,height=820;
+  const width=1200,height=820;let addedPositions=false;
   const hash=function(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
   items.forEach(function(n,i){
     if(!Number.isFinite(n.graphX)||!Number.isFinite(n.graphY)){
       const h=hash(String(n.id||n.noteCode||i));
       n.graphX=100+(h%10000)/10000*(width-200);
-      n.graphY=90+((h>>>10)%10000)/10000*(height-180);
+      n.graphY=90+((h>>>10)%10000)/10000*(height-180);addedPositions=true;
     }
     positions[String(n.id)]={x:n.graphX,y:n.graphY};
   });
+  if(addedPositions)save();
   const edges=[],seen={};
   items.forEach(function(n){
     const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
