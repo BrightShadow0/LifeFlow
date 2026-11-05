@@ -1463,6 +1463,7 @@ function markdownToHtml(source){
   if(!window.marked||typeof window.marked.parse!=='function')return markdownToHtmlFallback(source);
   let taskIndex=0;
   const renderer=new window.marked.Renderer();
+  renderer.text=function(token){return markdownInline(token.text||'');};
   renderer.image=function(token){
     const src=safeMarkdownImageUrl(token.href||'');
     if(src==='#')return esc(token.text||'');
@@ -1484,7 +1485,7 @@ function markdownToHtml(source){
     return '<li>'+body+'</li>\n';
   };
   const raw=window.marked.parse(String(source||''),{gfm:true,breaks:false,headerIds:false,mangle:false,renderer});
-  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','decoding','class','start','checked','disabled','data-md-task-index']}):markdownToHtmlFallback(source);
+  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','decoding','class','start','checked','disabled','data-md-task-index','data-note-title']}):markdownToHtmlFallback(source);
   return clean||'<p class="md-empty">Nothing to preview yet.</p>';
 }
 function toggleMarkdownTaskByIndex(index,checked){
