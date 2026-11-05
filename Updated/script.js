@@ -1278,11 +1278,12 @@ function noteStore(kind){ensureKnowledgeState();return kind==='code'?state.codeN
 function nextKnowledgeNoteNumber(kind){
   const notes=noteStore(kind);
   if(!notes.length)return 1;
-  return notes.reduce(function(max,n){
+  const highest=notes.reduce(function(max,n){
     const stored=Number(n.noteNumber)||0;
-    const match=String(n.title||'').match(/^Untitled Note\\s+(\\d+)$/i);
+    const match=String(n.title||'').match(/^Untitled Note\s+(\d+)$/i);
     return Math.max(max,stored,match?Number(match[1]):0);
-  },0)+1;
+  },0);
+  return Math.max(notes.length,highest)+1;
 }
 function newKnowledgeNote(kind){
   ensureKnowledgeState();
