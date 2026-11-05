@@ -1574,7 +1574,8 @@ function renderBranches(){
   items.forEach(function(n,i){
     const col=i%columns;
     const row=Math.floor(i/columns);
-    const x=startX+col*220;
+    const rowCount=Math.min(columns,count-row*columns);
+    const x=(900-(rowCount-1)*220)/2+col*220;
     const y=90+row*120;
     const label=esc(n.title||'Untitled').slice(0,28);
     svg+='<g class="branch-node note branch-unconnected"><circle cx="'+x+'" cy="'+y+'" r="13"></circle><text x="'+x+'" y="'+(y+34)+'" text-anchor="middle">'+label+'</text></g>';
