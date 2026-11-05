@@ -1560,7 +1560,31 @@ function renderNotesManager(){
 }
 function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
 function updateKnowledgeLanguage(id,v){const n=noteStore('code').find(function(x){return String(x.id)===String(id);});if(n){n.language=v;n.updatedAt=Date.now();save();renderApp();}}
-function renderBranches(){const u=currentUser();if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';ensureKnowledgeState();const nodes=state.notes.map(function(n,i){return{id:String(n.id),label:n.title||'Untitled',x:450+Math.cos(i*1.7)*220,y:280+Math.sin(i*1.7)*190,type:'note'};});let svg='';if(nodes.length>1)nodes.forEach(function(n,i){if(nodes[i+1])svg+='<line class="branch-edge" x1="'+n.x+'" y1="'+n.y+'" x2="'+nodes[i+1].x+'" y2="'+nodes[i+1].y+'"></line>';});nodes.forEach(function(n){svg+='<g class="branch-node note"><circle cx="'+n.x+'" cy="'+n.y+'" r="12"></circle><text x="'+n.x+'" y="'+(n.y+30)+'" text-anchor="middle">'+esc(n.label).slice(0,28)+'</text></g>';});return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Graph view of your notes.</p></div><span class="theme-current-pill">'+nodes.length+' nodes</span></div><div class="branch-graph"><svg viewBox="0 0 900 560">'+svg+(nodes.length?'':'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>')+'</svg></div></div>';}function renderAbout(){
+function renderBranches(){
+  const u=currentUser();
+  if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
+  ensureKnowledgeState();
+  const items=state.notes;
+  const count=items.length;
+  const columns=Math.min(4,Math.max(1,count));
+  const rows=count?Math.ceil(count/columns):1;
+  const graphHeight=Math.max(560,rows*120+80);
+  const startX=(900-(columns-1)*220)/2;
+  let svg='';
+  items.forEach(function(n,i){
+    const col=i%columns;
+    const row=Math.floor(i/columns);
+    const x=startX+col*220;
+    const y=90+row*120;
+    const label=esc(n.title||'Untitled').slice(0,28);
+    svg+='<g class="branch-node note branch-unconnected"><circle cx="'+x+'" cy="'+y+'" r="13"></circle><text x="'+x+'" y="'+(y+34)+'" text-anchor="middle">'+label+'</text></g>';
+  });
+  const empty=count
+    ?'<text x="450" y="'+(graphHeight-24)+'" text-anchor="middle" class="branch-empty">No related notes found. Each note is shown separately.</text>'
+    :'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Graph view of your notes.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
+}
+function renderAbout(){
   return `<section class="card lifeflow-manifesto">
     <div class="manifesto-kicker">THE IDEA BEHIND LIFEFLOW</div>
     <h2>Life is bigger than a task list.</h2>
