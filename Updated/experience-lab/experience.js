@@ -190,7 +190,9 @@ function animate(){
  if(close&&activeSections.closing){close.root.rotation.y+=dt*.1;close.c.core.rotation.x+=dt*.09;close.c.rings.forEach((r,i)=>{r.rotation.z+=dt*(i%2?.07:-.055);r.rotation.y+=dt*.025});close.c.shell.material.emissiveIntensity=.34+Math.sin(t*.8)*.1;close.dust.rotation.y+=dt*.006;close.camera.lookAt(0,0,0);close.renderer.render(close.scene,close.camera);}
  requestAnimationFrame(animate);
 }
+let lastChapter = -1;
 function setChapter(index){
+ const count=Math.min(3,Math.max(0,index));if(count===lastChapter)return;lastChapter=count;
  const copies=[...document.querySelectorAll('.chapter-copy')];const count=Math.min(3,Math.max(0,index));
  copies.forEach((el,i)=>{
   const is=i===count;el.classList.toggle('active',is);
@@ -224,6 +226,8 @@ function setupAnimations(){
       targetProgress=state.p= self.progress;
       const active=Math.min(3,Math.floor(self.progress*4.0001));setChapter(active);
       document.getElementById('chapterProgress').style.width=(self.progress*100)+'%';
+      document.getElementById('flowIndex').innerHTML=String(Math.round(self.progress*100)).padStart(2,'0')+'<span>%</span>';
+      document.getElementById('flowBar').style.width=(self.progress*100)+'%';
       document.getElementById('readingProgress').style.width=((window.scrollY/(document.documentElement.scrollHeight-innerHeight))*100)+'%';
       const velocity=Math.min(1,Math.abs(self.getVelocity())/2600);
       document.documentElement.style.setProperty('--scroll-velocity',velocity.toFixed(3));
