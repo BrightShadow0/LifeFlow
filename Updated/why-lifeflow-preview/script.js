@@ -8,3 +8,11 @@ window.addEventListener('message',function(event){
   if(event.origin!==window.location.origin||!event.data||event.data.type!=='lifeflow-authenticated')return;
   window.location.assign('../index.html');
 });
+
+(function(){
+ const items=document.querySelectorAll('[data-why-reveal]');
+ if(!items.length)return;
+ if(!('IntersectionObserver'in window)){items.forEach(el=>el.classList.add('why-visible'));return;}
+ const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('why-visible');observer.unobserve(entry.target);}}),{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+ items.forEach(el=>observer.observe(el));
+})();
