@@ -61,11 +61,11 @@ main{position:relative;z-index:1}
 .feature-intro p{font-size:14px;line-height:1.8;color:#626b58;max-width:420px;margin:0}
 .feature-index{align-self:flex-end;margin-bottom:12px;color:#71834f;font:9px var(--mono);letter-spacing:.17em;white-space:nowrap}
 .feature-index span{color:#7f8877}
-.feature-rail{height:400vh;position:relative;background:#0c100b}
+.feature-rail{height:500vh;position:relative;background:#0c100b}
 .feature-rail-sticky{position:sticky;top:0;height:100svh;overflow:hidden;background:#0c100b}
 .feature-rail-heading{position:absolute;z-index:4;top:24px;left:clamp(24px,5vw,78px);right:clamp(24px,5vw,78px);display:flex;justify-content:space-between;color:#a1ab95;font:8px var(--mono);letter-spacing:.16em}
 .feature-rail-heading b{color:var(--lime);margin-left:6px}
-.feature-track{height:100%;width:400vw;display:flex;will-change:transform;transform:translate3d(0,0,0)}
+.feature-track{height:100%;width:500vw;display:flex;will-change:transform;transform:translate3d(0,0,0)}
 .feature-panel{height:100%;width:100vw;flex:0 0 100vw;position:relative;overflow:hidden;padding:100px clamp(28px,8vw,128px) 70px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(350px,.9fr);gap:6vw;align-items:center}
 .feature-panel-dark{background:radial-gradient(ellipse at 25% 45%,#202e1b,transparent 54%),#0c100b;color:#f1f2e8}
 .feature-panel-light{background:radial-gradient(ellipse at 78% 40%,#d5dfbd,transparent 52%),#e8eadf;color:#151a11}
@@ -206,3 +206,16 @@ main{position:relative;z-index:1}
 .timeline-list article b{color:#c6e98c}
 .timeline-list article p{color:#b7c1ae}
 .timeline-note{border-top-color:#ffffff25;color:#a5b195}
+
+.art-customise{width:min(39vw,540px);height:min(57vh,470px);min-height:310px;position:relative;padding:30px;border:1px solid #c7f45b47;border-radius:17px;background:linear-gradient(145deg,#172017,#0d120d);box-shadow:0 25px 85px #0007;transform:rotate(3deg)}
+.customise-head{display:flex;justify-content:space-between;padding-bottom:19px;border-bottom:1px solid #ffffff22;color:#e9eee2;font:9px var(--mono);letter-spacing:.12em}
+.customise-head span{color:#9eaa91;font-size:8px}
+.theme-swatches{display:flex;gap:13px;margin:40px 0 30px}
+.swatch{display:block;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff28;box-shadow:0 6px 18px #0005}
+.swatch.sapphire{background:#5479ca}.swatch.emerald{background:#4d9465}.swatch.gold{background:#c59b46}.swatch.amethyst{background:#8b69bd}.swatch.ruby{background:#b95c61}
+.customise-preview{position:relative;padding:18px;border:1px solid #c7f45b3e;border-radius:12px;background:#0a100b}
+.customise-preview b{display:block;font-size:13px;color:#eef2e7}
+.customise-preview span{display:block;margin-top:8px;font:8px var(--mono);letter-spacing:.13em;color:#b9e56b}
+.customise-preview i{display:block;width:90%;height:4px;margin-top:15px;background:#34432e;border-radius:5px}
+.customise-preview i:last-child{width:64%;background:#46583a}
+@media(max-width:760px){.art-customise{width:100%;max-width:470px;height:300px;min-height:270px;align-self:center}}
