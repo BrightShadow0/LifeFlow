@@ -228,6 +228,12 @@ function setupAnimations(){
   gs.from('.hero-lead,.hero-scroll',{y:24,autoAlpha:0,duration:.8,stagger:.12,delay:.75,ease:'power3.out'});
   gs.from('.hero-scene',{scale:.82,autoAlpha:0,duration:1.5,delay:.25,ease:'power3.out'});
   const state={p:0};
+  const taskX=gs.quickTo('.ui-task','x',{duration:.42,ease:'power2.out'});
+  const taskY=gs.quickTo('.ui-task','y',{duration:.42,ease:'power2.out'});
+  const taskR=gs.quickTo('.ui-task','rotation',{duration:.42,ease:'power2.out'});
+  const noteX=gs.quickTo('.ui-note','x',{duration:.42,ease:'power2.out'});
+  const noteY=gs.quickTo('.ui-note','y',{duration:.42,ease:'power2.out'});
+  const noteR=gs.quickTo('.ui-note','rotation',{duration:.42,ease:'power2.out'});
   if(!isMobile)gs.to(state,{p:1,ease:'none',scrollTrigger:{
     trigger:'#journey',start:'top top',end:'bottom bottom',pin:'.journey-pin',pinSpacing:false,scrub:1.05,anticipatePin:1,invalidateOnRefresh:true,
     onUpdate:self=>{
@@ -239,8 +245,8 @@ function setupAnimations(){
       document.getElementById('readingProgress').style.width=((window.scrollY/(document.documentElement.scrollHeight-innerHeight))*100)+'%';
       const velocity=Math.min(1,Math.abs(self.getVelocity())/2600);
       document.documentElement.style.setProperty('--scroll-velocity',velocity.toFixed(3));
-      gs.to('.ui-task',{x:Math.sin(self.progress*Math.PI*4)*18,y:Math.cos(self.progress*Math.PI*3)*11,rotation:-4+self.progress*8,duration:.5,overwrite:true});
-      gs.to('.ui-note',{x:-Math.sin(self.progress*Math.PI*3)*20,y:Math.cos(self.progress*Math.PI*4)*12,rotation:4-self.progress*8,duration:.5,overwrite:true});
+      taskX(Math.sin(self.progress*Math.PI*4)*18);taskY(Math.cos(self.progress*Math.PI*3)*11);taskR(-4+self.progress*8);
+      noteX(-Math.sin(self.progress*Math.PI*3)*20);noteY(Math.cos(self.progress*Math.PI*4)*12);noteR(4-self.progress*8);
     }
   }});
   gs.from('.manifesto-title h2',{y:90,autoAlpha:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:'.manifesto-title',start:'top 78%',end:'top 35%',scrub:1}});
