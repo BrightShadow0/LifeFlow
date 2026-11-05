@@ -3723,3 +3723,11 @@ body::-webkit-scrollbar-corner{
   color:var(--muted) !important;
   box-shadow:none;
 }
+
+/* Notes Manager: rename control */
+#app .markdown-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.note-title-actions{display:flex;align-items:center;gap:8px;min-width:0}
+#app .note-rename-btn{min-height:34px;padding:7px 13px;border:1px solid var(--border);border-radius:9px;background:var(--panel2);color:var(--text);font:inherit;font-size:13px;font-weight:600;box-shadow:none}
+#app .note-rename-btn:hover{border-color:var(--accent);background:var(--accent-soft);transform:none}
+.note-title-edit{width:min(260px,48vw);min-width:130px;min-height:36px;padding:7px 10px;border:1px solid var(--accent)!important;border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit}
+@media(max-width:600px){#app .markdown-toolbar{align-items:flex-start}.note-title-actions{width:100%}.note-title-edit{flex:1;width:auto}}
