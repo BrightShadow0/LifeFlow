@@ -1275,9 +1275,33 @@ window.addEventListener('keydown',e=>{
 });
 function ensureKnowledgeState(){if(!Array.isArray(state.notes))state.notes=[];if(!Array.isArray(state.codeNotes))state.codeNotes=[];if(!Array.isArray(state.noteLinks))state.noteLinks=[];}
 function noteStore(kind){ensureKnowledgeState();return kind==='code'?state.codeNotes:state.notes;}
-function newKnowledgeNote(kind){ensureKnowledgeState();const n={id:uid(),title:kind==='code'?'Untitled Code Note':'Untitled Note',content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};noteStore(kind).unshift(n);window.lfNoteMode=kind;window.lfSelectedNote=n.id;save();renderApp();}
+function nextKnowledgeNoteNumber(kind){
+  const notes=noteStore(kind);
+  if(!notes.length)return 1;
+  return notes.reduce(function(max,n){
+    const stored=Number(n.noteNumber)||0;
+    const match=String(n.title||'').match(/(\d+)\s*$/);
+    return Math.max(max,stored,match?Number(match[1]):0);
+  },0)+1;
+}
+function newKnowledgeNote(kind){
+  ensureKnowledgeState();
+  const number=kind==='regular'?nextKnowledgeNoteNumber(kind):null;
+  const n={id:uid(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
+  noteStore(kind).unshift(n);window.lfNoteMode=kind;window.lfSelectedNote=n.id;save();renderApp();
+}
 function updateKnowledgeNote(kind,id,value){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;if(kind==='code')n.code=value;else n.content=value;n.updatedAt=Date.now();save();}function refreshCodeEditor(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(!t||!h)return;h.innerHTML=highlightCode(t.value);syncCodeScroll();}function syncCodeScroll(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(t&&h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft;}}
 function deleteKnowledgeNote(kind,id){if(!confirm('Delete this note?'))return;const s=noteStore(kind),i=s.findIndex(function(x){return String(x.id)===String(id);});if(i>=0)s.splice(i,1);window.lfSelectedNote=null;save();renderApp();}
+function deleteAllKnowledgeNotes(kind){
+  const notes=noteStore(kind);
+  if(!notes.length)return;
+  if(!confirm('Delete all '+notes.length+' notes? This cannot be undone.'))return;
+  notes.splice(0,notes.length);
+  window.lfSelectedNote=null;
+  window.lfNoteView='edit';
+  save();
+  renderApp();
+}
 function downloadKnowledgeNote(kind,id){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;const nl=String.fromCharCode(10);let md='# '+(n.title||'Untitled')+nl+nl;if(kind==='code')md+='```'+(n.language||'text')+nl+(n.code||'')+nl+'```'+nl;else md+=(n.content||'')+nl;const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(n.title||'lifeflow-note').replace(/[^a-z0-9_-]+/gi,'_')+'.md';a.click();URL.revokeObjectURL(a.href);}
 function highlightCode(s){const src=String(s||'');const re=/(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|\b(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\s*\())/g;let out='',last=0,m;while((m=re.exec(src))){out+=esc(src.slice(last,m.index));const t=m[0];let cls='';if(/^\/\//.test(t)||/^#/.test(t)||/^\/\*/.test(t))cls='code-comment';else if(/^(?:"|')/.test(t))cls='code-string';else if(/^(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)$/.test(t))cls='code-keyword';else if(/^\d/.test(t))cls='code-number';else cls='code-function';out+='<span class="'+cls+'">'+esc(t)+'</span>';last=m.index+t.length;}out+=esc(src.slice(last));return out||'<span class="code-placeholder">Start writing code…</span>';}
 
@@ -1517,7 +1541,7 @@ function renderNotesManager(){
   ensureKnowledgeState();
   const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];
   const mode=window.lfNoteView==='preview'?'preview':'edit';
-  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button></div>';
+  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" onclick="newKnowledgeNote(\'regular\')">+ New</button><button class="del notes-delete-all" onclick="deleteAllKnowledgeNotes(\'regular\')" ${items.length?'':'disabled'}>Delete all</button></div></div>';
   html+='<div class="notes-items">';
   items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" onclick="lfSelectedNote=\''+n.id+'\';window.lfNoteView=\'edit\';renderApp()"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
   html+='</div></div><div class="card note-editor">';
