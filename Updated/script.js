@@ -392,6 +392,10 @@ async function doLogin(){
   enterApp();
 }
 function enterApp(){
+  if(window.self!==window.top && new URLSearchParams(window.location.search).get('embed')==='1'){
+    window.parent.postMessage({type:'lifeflow-authenticated'},window.location.origin);
+    return;
+  }
   document.body.classList.remove('auth-open');
   document.getElementById('authScreen').style.display='none';
   document.getElementById('app').style.display='block';
