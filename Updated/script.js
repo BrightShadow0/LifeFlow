@@ -1303,7 +1303,24 @@ function deleteAllKnowledgeNotes(kind){
   save();
   renderApp();
 }
-function downloadKnowledgeNote(kind,id){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;const nl=String.fromCharCode(10);let md='# '+(n.title||'Untitled')+nl+nl;if(kind==='code')md+='```'+(n.language||'text')+nl+(n.code||'')+nl+'```'+nl;else md+=(n.content||'')+nl;const blob=new Blob([md],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(n.title||'lifeflow-note').replace(/[^a-z0-9_-]+/gi,'_')+'.md';a.click();URL.revokeObjectURL(a.href);}
+function downloadKnowledgeNote(kind,id){
+  const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});
+  if(!n)return;
+  const nl=String.fromCharCode(10);
+  let md='# '+(n.title||'Untitled')+nl+nl;
+  const fence=String.fromCharCode(96).repeat(3);
+  if(kind==='code')md+=fence+(n.language||'text')+nl+(n.code||'')+nl+fence+nl;
+  else md+=(n.content||'')+nl;
+  const blob=new Blob([md],{type:'text/markdown;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=(n.title||'lifeflow-note').replace(/[^a-z0-9_-]+/gi,'_')+'.md';
+  a.style.display='none';
+  document.body.appendChild(a);
+  a.click();
+  window.setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);
+}
 function highlightCode(s){const src=String(s||'');const re=/(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"])*"|'(?:\\.|[^'])*'|\b(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)\b|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*(?=\s*\())/g;let out='',last=0,m;while((m=re.exec(src))){out+=esc(src.slice(last,m.index));const t=m[0];let cls='';if(/^\/\//.test(t)||/^#/.test(t)||/^\/\*/.test(t))cls='code-comment';else if(/^(?:"|')/.test(t))cls='code-string';else if(/^(?:function|return|const|let|var|class|if|else|for|while|def|import|from|public|private|static|void|int|float|boolean|new|true|false|null|None)$/.test(t))cls='code-keyword';else if(/^\d/.test(t))cls='code-number';else cls='code-function';out+='<span class="'+cls+'">'+esc(t)+'</span>';last=m.index+t.length;}out+=esc(src.slice(last));return out||'<span class="code-placeholder">Start writing code…</span>';}
 
 function highlightCodeBlock(source,language){
