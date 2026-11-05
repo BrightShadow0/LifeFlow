@@ -214,13 +214,16 @@ function setupAnimations(){
  const gs=window.gsap,ST=window.ScrollTrigger;
  if(!gs||!ST){fallbackScroll();return;}
  gs.registerPlugin(ST);
+ const isMobile=window.matchMedia('(max-width:760px)').matches;
+ if(reduceMotion){document.getElementById('journey').style.height='auto';document.querySelector('.journey-pin').style.height='auto';document.querySelectorAll('.chapter-copy').forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';});setChapter(0);return;}
+ if(isMobile){document.querySelectorAll('.chapter-copy').forEach(el=>gs.fromTo(el,{y:35,autoAlpha:0},{y:0,autoAlpha:1,ease:'none',scrollTrigger:{trigger:el,start:'top 88%',end:'top 62%',scrub:.7}}));setChapter(0);}
  if(!reduceMotion){
   gs.from('.hero-copy .overline',{y:18,autoAlpha:0,duration:.8,delay:.25,ease:'power3.out'});
   gs.from('.hero h1',{y:70,autoAlpha:0,duration:1.2,delay:.3,ease:'power4.out'});
   gs.from('.hero-lead,.hero-scroll',{y:24,autoAlpha:0,duration:.8,stagger:.12,delay:.75,ease:'power3.out'});
   gs.from('.hero-scene',{scale:.82,autoAlpha:0,duration:1.5,delay:.25,ease:'power3.out'});
   const state={p:0};
-  gs.to(state,{p:1,ease:'none',scrollTrigger:{
+  if(!isMobile)gs.to(state,{p:1,ease:'none',scrollTrigger:{
     trigger:'#journey',start:'top top',end:'bottom bottom',pin:'.journey-pin',pinSpacing:false,scrub:1.05,anticipatePin:1,invalidateOnRefresh:true,
     onUpdate:self=>{
       targetProgress=state.p= self.progress;
