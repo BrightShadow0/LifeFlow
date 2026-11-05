@@ -1806,6 +1806,7 @@ function renderAbout(){
       <div class="manifesto-card"><span>06</span><h3>Why “Flow”</h3><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p></div>
       <div class="manifesto-card manifesto-wide"><span>07</span><h3>The six-month test</h3><p>Success is not having a perfectly maintained planner. It is having fewer forgotten commitments, clearer days, better use of time, and a stronger sense of progress in the parts of life that matter.</p></div>
       <div class="manifesto-card manifesto-wide"><span>08</span><h3>Local by design</h3><p>LifeFlow runs locally in your browser, so your tasks, notes, plans and settings are stored on your device instead of being synced to a central LifeFlow server. Your life stays close to you.</p></div>
+      <div class="manifesto-card manifesto-wide"><span>09</span><h3>A Markdown-powered Notes Manager</h3><p>Notes Manager gives you a flexible writing space with Markdown support. Format ideas with headings, bold and italic text, lists, checklists, links, tables and code blocks. Switch between Write and Preview to see your formatted notes as you work. Use double-square-bracket links like <code>[[Project Planning]]</code> to connect notes by title, with autocomplete to find existing notes. Open linked notes directly and explore the connections in Your Branches.</p></div>
     </div>
   </section>
   <section class="card manifesto-principles">
