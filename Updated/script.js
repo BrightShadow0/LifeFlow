@@ -2089,8 +2089,11 @@ function renderProfileTab(u){
     <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
     <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>
-  <div class="card">
-    <h2>Change Password</h2>
+  <div class="card change-password-launcher">
+    <button type="button" class="primary" id="toggleChangePassword" aria-expanded="false" aria-controls="changePasswordPanel" onclick="toggleChangePasswordPanel()">Change password</button>
+  </div>
+  <div class="card change-password-panel" id="changePasswordPanel" hidden>
+    <div class="custom-section-head"><div><h2>Change Password</h2><p>Update your account password securely.</p></div><button type="button" class="hbtn" onclick="toggleChangePasswordPanel(false)">Close</button></div>
     <input id="changeCurrentPassword" type="password" autocomplete="current-password" placeholder="Current password">
     <input id="changeNewPassword" type="password" autocomplete="new-password" placeholder="New password" style="margin-top:8px">
     <input id="changeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password" style="margin-top:8px">
@@ -2156,6 +2159,15 @@ function saveLocalization(){
     user.weekStart=week||user.weekStart;
   });
   if(exact) activateCobaltSequence();
+}
+function toggleChangePasswordPanel(force){
+  const panel=document.getElementById('changePasswordPanel');
+  const button=document.getElementById('toggleChangePassword');
+  if(!panel||!button)return;
+  const open=typeof force==='boolean'?force:panel.hidden;
+  panel.hidden=!open;
+  button.setAttribute('aria-expanded',String(open));
+  if(open)panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function changePassword(){
   const current=document.getElementById('changeCurrentPassword')?.value||'';
