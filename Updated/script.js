@@ -1703,19 +1703,32 @@ function renderBranches(){
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
   return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" onclick="branchesZoom(1.2)" aria-label="Zoom in">+</button><button type="button" onclick="branchesZoom(.8333)" aria-label="Zoom out">−</button><button type="button" onclick="branchesResetView()">Reset view</button></div></div></div>';
 }
-function branchesZoom(factor){
-  const svg=document.getElementById('branchesSvg'),g=document.getElementById('branchesViewport');if(!svg||!g)return;
-  const z=Math.max(.45,Math.min(2.8,(window.lfBranchesZoom||1)*factor));window.lfBranchesZoom=z;
-  const x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;g.setAttribute('transform','translate('+x+' '+y+') scale('+z+')');
+function branchesApplyTransform(){
+  const g=document.getElementById('branchesViewport');if(!g)return;
+  const z=window.lfBranchesZoom||1,x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;
+  g.setAttribute('transform','translate('+x+' '+y+') scale('+z+')');
 }
+function branchesZoomAt(factor,pivotX,pivotY){
+  const svg=document.getElementById('branchesSvg'),g=document.getElementById('branchesViewport');if(!svg||!g)return;
+  const oldZ=window.lfBranchesZoom||1,newZ=Math.max(.35,Math.min(4,oldZ*factor));
+  const x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;
+  const px=Number.isFinite(pivotX)?pivotX:svg.viewBox.baseVal.width/2;
+  const py=Number.isFinite(pivotY)?pivotY:svg.viewBox.baseVal.height/2;
+  const worldX=(px-x)/oldZ,worldY=(py-y)/oldZ;
+  window.lfBranchesZoom=newZ;
+  window.lfBranchesPanX=px-worldX*newZ;
+  window.lfBranchesPanY=py-worldY*newZ;
+  branchesApplyTransform();
+}
+function branchesZoom(factor){branchesZoomAt(factor);}
 function branchesResetView(){
-  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;
-  const g=document.getElementById('branchesViewport');if(g)g.setAttribute('transform','translate(0 0) scale(1)');
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;branchesApplyTransform();
 }
 function initBranchesGraph(root){
   const svg=root.querySelector('#branchesSvg'),viewport=root.querySelector('#branchesViewport');if(!svg||!viewport)return;
-  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;branchesApplyTransform();
   let drag=null;
+  const svgPoint=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());};
   const point=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(viewport.getScreenCTM().inverse());};
   const moveNode=function(id,x,y){
     const node=viewport.querySelector('[data-note-id="'+CSS.escape(id)+'"]');if(!node)return;
@@ -1727,8 +1740,9 @@ function initBranchesGraph(root){
   };
   viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
     node.addEventListener('pointerdown',function(e){
-      e.preventDefault();const p=point(e),id=node.dataset.noteId;
-      drag={type:'node',id,dx:p.x-Number(node.transform.baseVal.consolidate().matrix.e),dy:p.y-Number(node.transform.baseVal.consolidate().matrix.f)};
+      e.preventDefault();e.stopPropagation();const p=point(e),id=node.dataset.noteId;
+      const matrix=node.transform.baseVal.consolidate().matrix;
+      drag={type:'node',id,dx:p.x-matrix.e,dy:p.y-matrix.f,moved:false};
       node.classList.add('dragging');svg.setPointerCapture(e.pointerId);
     });
     node.addEventListener('click',function(e){
@@ -1738,16 +1752,24 @@ function initBranchesGraph(root){
     });
     node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}});
   });
-  svg.addEventListener('pointerdown',function(e){if(e.target.closest('.interactive-branch-node'))return;drag={type:'pan',x:e.clientX,y:e.clientY,px:window.lfBranchesPanX||0,py:window.lfBranchesPanY||0};svg.setPointerCapture(e.pointerId);});
+  svg.addEventListener('pointerdown',function(e){
+    if(e.target.closest('.interactive-branch-node'))return;
+    const p=svgPoint(e);
+    drag={type:'pan',x:p.x,y:p.y,px:window.lfBranchesPanX||0,py:window.lfBranchesPanY||0};
+    svg.setPointerCapture(e.pointerId);
+  });
   svg.addEventListener('pointermove',function(e){
     if(!drag)return;
     if(drag.type==='node'){
       const p=point(e),x=p.x-drag.dx,y=p.y-drag.dy;
-      const node=viewport.querySelector('[data-note-id="'+CSS.escape(drag.id)+'"]');if(node)node.dataset.moved='1';
+      if(Math.abs(x-(drag.lastX??x))>1||Math.abs(y-(drag.lastY??y))>1)drag.moved=true;
+      drag.lastX=x;drag.lastY=y;
+      const node=viewport.querySelector('[data-note-id="'+CSS.escape(drag.id)+'"]');if(node&&drag.moved)node.dataset.moved='1';
       moveNode(drag.id,x,y);
     }else{
-      window.lfBranchesPanX=drag.px+(e.clientX-drag.x);window.lfBranchesPanY=drag.py+(e.clientY-drag.y);
-      viewport.setAttribute('transform','translate('+window.lfBranchesPanX+' '+window.lfBranchesPanY+') scale('+(window.lfBranchesZoom||1)+')');
+      const p=svgPoint(e);
+      window.lfBranchesPanX=drag.px+(p.x-drag.x);window.lfBranchesPanY=drag.py+(p.y-drag.y);
+      branchesApplyTransform();
     }
   });
   const finish=function(){
@@ -1764,7 +1786,11 @@ function initBranchesGraph(root){
     drag=null;
   };
   svg.addEventListener('pointerup',finish);svg.addEventListener('pointercancel',finish);
-  svg.addEventListener('wheel',function(e){e.preventDefault();branchesZoom(e.deltaY<0?1.1:.91);},{passive:false});
+  svg.addEventListener('wheel',function(e){
+    e.preventDefault();
+    const p=svgPoint(e),factor=Math.exp(-e.deltaY*.0015);
+    branchesZoomAt(factor,p.x,p.y);
+  },{passive:false});
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
