@@ -2290,7 +2290,9 @@ async function deleteAccount(){
     showOAuthNotice('This app needs the Web Crypto API. Serve it over https or http://localhost (most browsers treat file:// and plain http as insecure).');
   }
   await handleOAuthCallback();
-  const authEntry = new URLSearchParams(window.location.search).get('auth');
+  const authParams = new URLSearchParams(window.location.search);
+  const authEntry = authParams.get('auth');
+  if(authParams.get('embed')==='1') document.body.classList.add('auth-embed');
   if(authEntry === 'signup') startSignup();
   else if(authEntry === 'login') showStep('stepLogin');
   const session = getSession();
