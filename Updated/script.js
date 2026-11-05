@@ -1273,7 +1273,21 @@ function renderCommandResults(){
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeCommandPalette();
 });
-function ensureKnowledgeState(){if(!Array.isArray(state.notes))state.notes=[];if(!Array.isArray(state.codeNotes))state.codeNotes=[];if(!Array.isArray(state.noteLinks))state.noteLinks=[];}
+function makeKnowledgeNoteCode(){
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  do{code='LF-';for(let i=0;i<6;i++)code+=alphabet[Math.floor(Math.random()*alphabet.length)];}
+  while([...(state.notes||[]),...(state.codeNotes||[])].some(function(n){return n.noteCode===code;}));
+  return code;
+}
+function ensureKnowledgeState(){
+  if(!Array.isArray(state.notes))state.notes=[];
+  if(!Array.isArray(state.codeNotes))state.codeNotes=[];
+  if(!Array.isArray(state.noteLinks))state.noteLinks=[];
+  let changed=false;
+  [...state.notes,...state.codeNotes].forEach(function(n){if(!n.noteCode){n.noteCode=makeKnowledgeNoteCode();changed=true;}});
+  if(changed)save();
+}
 function noteStore(kind){ensureKnowledgeState();return kind==='code'?state.codeNotes:state.notes;}
 function nextKnowledgeNoteNumber(kind){
   const notes=noteStore(kind);
@@ -1288,7 +1302,7 @@ function nextKnowledgeNoteNumber(kind){
 function newKnowledgeNote(kind){
   ensureKnowledgeState();
   const number=kind==='regular'?nextKnowledgeNoteNumber(kind):null;
-  const n={id:uid(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
+  const n={id:uid(),noteCode:makeKnowledgeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
   noteStore(kind).unshift(n);window.lfNoteMode=kind;window.lfSelectedNote=n.id;save();renderApp();
 }
 function updateKnowledgeNote(kind,id,value){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;if(kind==='code')n.code=value;else n.content=value;n.updatedAt=Date.now();save();}function refreshCodeEditor(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(!t||!h)return;h.innerHTML=highlightCode(t.value);syncCodeScroll();}function syncCodeScroll(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(t&&h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft;}}
@@ -1565,7 +1579,7 @@ function renderNotesManager(){
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-    html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div>';
+    html+='<div class="note-editor-head"><input id="kn_title" value="'+esc(selected.title||'')+'" placeholder="Title" oninput="updateKnowledgeTitle(\'regular\',\''+selected.id+'\',this.value)"><div class="note-editor-actions"><button class="hbtn" onclick="downloadKnowledgeNote(\'regular\',\''+selected.id+'\')">Download .md</button><button class="del" onclick="deleteKnowledgeNote(\'regular\',\''+selected.id+'\')">Delete</button></div></div><div class="note-code-row"><small>NOTE CODE: <strong>'+esc(selected.noteCode||'')+'</strong></small><button class="hbtn" type="button" onclick="copyKnowledgeNoteCode(\''+selected.id+'\')">Copy code</button><small>Link another note with <code>[[ '+esc(selected.noteCode||'')+' ]]</code></small></div>';
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div></div>';
     html+='<div class="note-content-surface">';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
@@ -1575,6 +1589,7 @@ function renderNotesManager(){
   html+='</div></div></div>';
   return html;
 }
+function copyKnowledgeNoteCode(id){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const value=n.noteCode||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){showToast('Note code copied');}).catch(function(){showToast(value);});}else showToast(value);}
 function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
 function updateKnowledgeLanguage(id,v){const n=noteStore('code').find(function(x){return String(x.id)===String(id);});if(n){n.language=v;n.updatedAt=Date.now();save();renderApp();}}
 function renderBranches(){
@@ -1585,22 +1600,38 @@ function renderBranches(){
   const count=items.length;
   const columns=Math.min(4,Math.max(1,count));
   const rows=count?Math.ceil(count/columns):1;
-  const graphHeight=Math.max(560,rows*120+80);
-  const startX=(900-(columns-1)*220)/2;
+  const graphHeight=Math.max(560,rows*150+60);
+  const positions={};
   let svg='';
   items.forEach(function(n,i){
-    const col=i%columns;
-    const row=Math.floor(i/columns);
+    const col=i%columns,row=Math.floor(i/columns);
     const rowCount=Math.min(columns,count-row*columns);
-    const x=(900-(rowCount-1)*220)/2+col*220;
-    const y=90+row*120;
-    const label=esc(n.title||'Untitled').slice(0,28);
-    svg+='<g class="branch-node note branch-unconnected"><circle cx="'+x+'" cy="'+y+'" r="13"></circle><text x="'+x+'" y="'+(y+34)+'" text-anchor="middle">'+label+'</text></g>';
+    positions[String(n.noteCode)]={
+      x:(900-(rowCount-1)*220)/2+col*220,
+      y:90+row*150
+    };
   });
-  const empty=count
-    ?''
-    :'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Graph view of your notes.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
+  const seenLinks={};
+  items.forEach(function(n){
+    const source=positions[String(n.noteCode)];
+    const matches=String(n.content||'').match(/\[\[\s*([A-Za-z0-9-]+)\s*\]\]/g)||[];
+    matches.forEach(function(token){
+      const code=token.replace(/^\[\[\s*/,'').replace(/\s*\]\]$/,'').trim();
+      const target=positions[code];
+      if(!target||!source||code===n.noteCode)return;
+      const key=[String(n.noteCode),code].sort().join('|');
+      if(seenLinks[key])return;
+      seenLinks[key]=true;
+      svg+='<line x1="'+source.x+'" y1="'+source.y+'" x2="'+target.x+'" y2="'+target.y+'" stroke="var(--accent,var(--primary,#16c784))" stroke-width="2.5" opacity=".72" />';
+    });
+  });
+  items.forEach(function(n){
+    const p=positions[String(n.noteCode)];
+    const label=esc(n.title||'Untitled').slice(0,28);
+    svg+='<g class="branch-node note branch-unconnected"><circle cx="'+p.x+'" cy="'+p.y+'" r="13"></circle><text x="'+p.x+'" y="'+(p.y+34)+'" text-anchor="middle">'+label+'</text><text x="'+p.x+'" y="'+(p.y+51)+'" text-anchor="middle" class="branch-note-code">'+esc(n.noteCode||'')+'</text></g>';
+  });
+  const empty=count?'':'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Link notes by adding <code>[[ NOTE-CODE ]]</code> in their content.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
