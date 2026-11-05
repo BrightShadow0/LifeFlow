@@ -1878,7 +1878,6 @@ function renderProfileTab(u){
       </div>
     </div>
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
-    <input id="prof_bio" value="${esc(u.bio||'')}" placeholder="Bio" style="margin-top:8px">
     <button class="primary" style="margin-top:8px" onclick="saveProfile()">Save</button>
   </div>
   <div class="card">
@@ -1948,7 +1947,7 @@ function onAvatarChange(e){
   reader.onload = ()=>{ updateUser(u=>u.avatar = reader.result); };
   reader.readAsDataURL(file);
 }
-function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); u.bio=document.getElementById('prof_bio').value.trim(); }); }
+function saveProfile(){ updateUser(u=>{ u.name=document.getElementById('prof_name').value.trim(); }); }
 function saveLocalizationField(field,value){
   const u=currentUser(); if(!u)return;
   updateUser(user=>{ user[field]=value; });
