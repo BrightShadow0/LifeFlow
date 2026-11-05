@@ -21,11 +21,19 @@ footer{padding:25px clamp(22px,5vw,76px);border-top:1px solid var(--line);displa
 @media(max-width:600px){.closing h2{line-height:1.08;letter-spacing:-.045em}.closing h2 em{line-height:1.1;letter-spacing:-.04em}}
 
 
-/* Embedded original LifeFlow authentication screen */
-.closing{min-height:100svh;padding:100px 24px 110px}
-.closing-content{width:min(1120px,100%);position:relative;z-index:2}
-.closing-content>p{margin-bottom:32px}
-.embedded-auth{width:min(1080px,100%);height:760px;margin:0 auto;border:1px solid #c9ff5830;border-radius:22px;overflow:hidden;background:#080c12;box-shadow:0 30px 100px #0008,0 0 60px #c9ff580d}
+
+/* Final authentication section: separate from the closing sphere */
+.closing{min-height:88svh;padding:110px 24px 95px}
+.login-section{position:relative;min-height:100svh;padding:90px clamp(24px,5vw,76px);display:grid;grid-template-columns:minmax(250px,.72fr) minmax(600px,1.55fr);align-items:center;gap:clamp(28px,4vw,64px);background:radial-gradient(ellipse at 72% 48%,#193b302c,transparent 52%),#090e13;border-top:1px solid #c9ff5818}
+.login-intro{position:relative;isolation:isolate;min-height:480px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left}
+.login-intro .eyebrow{justify-content:flex-start;color:var(--lime)}
+.login-intro h2{font-size:clamp(44px,5vw,72px);line-height:.98;letter-spacing:-.07em;margin:24px 0}
+.login-intro h2 em{display:block;color:var(--lime);font-family:Georgia,serif;font-weight:500}
+.login-intro p{max-width:340px;color:#9aa8a4;font-size:15px;line-height:1.75}
+.login-orbit{position:absolute;z-index:-1;width:min(34vw,390px);aspect-ratio:1;border:1px solid #c9ff5820;border-radius:50%;left:-12%;top:50%;transform:translateY(-50%);box-shadow:inset 0 0 80px #c9ff5808,0 0 90px #c9ff5808}
+.login-orbit:before,.login-orbit:after{content:"";position:absolute;inset:12%;border:1px solid #c9ff5818;border-radius:50%;transform:rotateX(65deg) rotateZ(28deg)}
+.login-orbit:after{inset:25%;transform:rotateX(65deg) rotateZ(-35deg)}
+.embedded-auth{width:100%;height:690px;margin:0;border:1px solid #c9ff5830;border-radius:18px;overflow:hidden;background:#080c12;box-shadow:0 28px 90px #0008,0 0 55px #c9ff580b}
 .embedded-auth iframe{display:block;width:100%;height:100%;border:0;background:transparent}
-@media(max-width:800px){.closing{padding:80px 14px 90px}.embedded-auth{height:780px;border-radius:16px}}
-@media(max-width:520px){.embedded-auth{height:820px}}
+@media(max-width:1100px){.login-section{grid-template-columns:1fr;gap:28px;padding:80px 28px}.login-intro{min-height:250px}.login-orbit{width:300px;left:auto;right:0;top:50%}.embedded-auth{height:700px}}
+@media(max-width:620px){.closing{min-height:75svh;padding:95px 20px}.login-section{padding:65px 12px;gap:20px}.login-intro{padding:0 12px;min-height:220px}.login-intro h2{font-size:48px;margin:18px 0}.login-intro p{font-size:13px}.embedded-auth{height:780px;border-radius:13px}}
