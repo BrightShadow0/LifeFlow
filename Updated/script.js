@@ -1627,7 +1627,7 @@ function renderNotesManager(){
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-    html+='<div class="note-code-row"><small>Type <code>[[</code> to link another note by title.</small></div>';
+
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div></div>';
     html+='<div class="note-content-surface">';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
