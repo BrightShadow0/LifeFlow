@@ -1598,7 +1598,7 @@ function renderBranches(){
     svg+='<g class="branch-node note branch-unconnected"><circle cx="'+x+'" cy="'+y+'" r="13"></circle><text x="'+x+'" y="'+(y+34)+'" text-anchor="middle">'+label+'</text></g>';
   });
   const empty=count
-    ?'<text x="450" y="'+(graphHeight-24)+'" text-anchor="middle" class="branch-empty">No related notes found. Each note is shown separately.</text>'
+    ?''
     :'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
   return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Graph view of your notes.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
 }
