@@ -3,115 +3,115 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090b09">
-<meta name="description" content="LifeFlow — a better way to move through everything that matters.">
-<title>LifeFlow — The Journey</title>
+<meta name="theme-color" content="#090d09">
+<meta name="description" content="LifeFlow. Your time, tasks, plans and ideas in one connected space.">
+<title>LifeFlow — Find Your Flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=lando-redesign-03">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"}}</script>
+<link rel="stylesheet" href="style.css?v=20261106-worlddrive1">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/ScrollTrigger.min.js" defer></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}</script>
+<script type="module" src="experience.js?v=20261106-worlddrive1"></script>
 </head>
 <body>
-<div class="loading" id="loading"><div class="loading-word">LIFEFLOW<span>.</span></div><div class="loading-rule"><i id="loadProgress"></i></div><small>GETTING THINGS MOVING</small></div>
-<div class="top-progress"><i id="topProgress"></i></div>
-<header class="topbar">
- <a class="logo" href="#home"><span class="logo-glyph">L</span><span>LIFEFLOW</span></a>
- <nav><a href="#journey">THE JOURNEY</a><a href="#access">SIGN IN <b>↗</b></a></nav>
- <span class="edition">A BETTER WAY TO MOVE THROUGH LIFE</span>
+<div id="world-stage" aria-hidden="true"><canvas id="worldCanvas"></canvas><div class="world-vignette"></div></div>
+<div class="site-progress"><i id="siteProgress"></i></div>
+<header class="site-header">
+ <a class="brand" href="#home"><span class="brand-mark">L</span><span>LIFEFLOW</span></a>
+ <nav><a href="#story">THE JOURNEY</a><a href="#features">WHAT'S INSIDE</a><a href="#access">SIGN IN <b>↗</b></a></nav>
+ <span class="header-note">YOUR TIME. YOUR SPACE. YOUR FLOW.</span>
 </header>
+
 <main>
 <section class="home" id="home">
  <div class="home-copy">
-  <div class="eyebrow"><i></i> YOUR LIFE, IN MOTION</div>
+  <div class="eyebrow"><i></i> A PERSONAL SPACE FOR THE MOVING PARTS</div>
   <h1>MAKE ROOM<br>FOR WHAT<br><em>MATTERS.</em></h1>
-  <p>All the moving parts. One place to bring them together.</p>
-  <a href="#journey" class="go"><span>TAKE THE JOURNEY</span><b>↓</b></a>
+  <p>Your time, tasks, plans and ideas are connected. Your workspace should be too.</p>
+  <a class="start-link" href="#story"><span>FOLLOW THE ROAD</span><b>↓</b></a>
  </div>
- <div class="drive-view">
-  <canvas id="driveCanvas" aria-label="Interactive 3D LifeFlow journey course"></canvas>
-  <div class="drive-hud"><span>LF / 001</span><span>PERSONAL FLOW COURSE</span></div>
-  <div class="drive-tip"><span class="tip-dot"></span> SCROLL TO MOVE THROUGH THE JOURNEY</div>
-  <div class="drive-word">FLOW<span> / </span>FORWARD</div>
- </div>
- <div class="home-foot"><span>YOUR TIME. YOUR SPACE. YOUR FLOW.</span><span>SCROLL TO START <b>↓</b></span></div>
+ <div class="home-scene-label"><span>LF / OPEN ROAD</span><span>THE JOURNEY STARTS NOW</span></div>
+ <div class="home-bottom"><span>ONE SPACE. MANY MOVING PARTS.</span><span>SCROLL TO MOVE FORWARD <b>↓</b></span></div>
 </section>
 
-<section class="journey" id="journey">
- <div class="journey-pin">
-  <div class="journey-top"><span>THE LIFEFLOW JOURNEY</span><span><b id="chapterNumber">01</b><i> / 09</i></span></div>
-  <canvas id="journeyCanvas" aria-label="A small vehicle follows the LifeFlow route as you scroll"></canvas>
-  <div class="road-label"><span>ROUTE / LIFE IN MOTION</span><b id="routePoint">CHECKPOINT 01</b></div>
-  <div class="beat-list">
-   <article class="beat active" data-beat="0">
-    <div class="beat-kicker">01 / THE PURPOSE</div><h2>Life is bigger<br>than a <em>task list.</em></h2>
-    <p>Planning tools can make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p>
-    <div class="beat-meta"><span>THE STARTING POINT</span><b>Tasks · Time · Attention · Progress</b></div>
+<section class="story" id="story">
+ <div class="story-stage">
+  <div class="story-top"><span>THE LIFEFLOW JOURNEY</span><span><b id="chapterNo">01</b> <i>/ 09</i></span></div>
+  <div class="story-copy">
+   <article class="story-beat active" data-beat="0"><div class="beat-kicker">01 / WHY IT EXISTS</div><h2>Life is bigger<br>than a <em>task list.</em></h2><p>Planning tools can make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p><div class="beat-detail"><span>THE PURPOSE</span><b>Tasks · Commitments · Time · Progress</b></div></article>
+   <article class="story-beat" data-beat="1"><div class="beat-kicker">02 / WHO IT IS FOR</div><h2>For every side<br>of <em>your life.</em></h2><p>For people balancing multiple parts of life: work or study, responsibilities, personal priorities and the things they want to make progress on.</p><div class="beat-detail"><span>ONE SPACE</span><b>Work · Study · Responsibilities · Personal goals</b></div></article>
+   <article class="story-beat" data-beat="2"><div class="beat-kicker">03 / WHAT IT MANAGES</div><h2>More than tasks.<br><em>Your whole day.</em></h2><p>Tasks are the starting point, but the centre is broader: your time, attention, commitments and progress.</p><div class="beat-detail"><span>THE BIGGER PICTURE</span><b>Time · Attention · Commitments · Progress</b></div></article>
+   <article class="story-beat" data-beat="3"><div class="beat-kicker">04 / YOUR FIRST 30 SECONDS</div><h2>Know what needs<br><em>your attention.</em></h2><p>Quickly understand what needs attention today, what is already handled, and where your time is going.</p><div class="beat-detail"><span>AT A GLANCE</span><b>Today's focus · What's handled · What's next</b></div></article>
+   <article class="story-beat" data-beat="4"><div class="beat-kicker">05 / HOW IT SHOULD FEEL</div><h2>Clear. Calm.<br><em>In control.</em></h2><p>Focused, human and calm. LifeFlow should never feel like another system demanding that you keep up with it.</p><div class="beat-detail"><span>THE FEELING</span><b>Clarity · Calm · Focus · Control</b></div></article>
+   <article class="story-beat" data-beat="5"><div class="beat-kicker">06 / WHY FLOW</div><h2>Give your energy<br>to what <em>matters.</em></h2><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p><div class="beat-detail"><span>KEEP MOVING</span><b>See · Focus · Make progress</b></div></article>
+   <article class="story-beat" data-beat="6"><div class="beat-kicker">07 / THE SIX-MONTH TEST</div><h2>Progress you<br>can <em>feel.</em></h2><p>Success is fewer forgotten commitments, clearer days, better use of time and a stronger sense of progress, not a perfectly maintained planner.</p><div class="beat-detail"><span>THE LONG VIEW</span><b>Progress over perfection</b></div></article>
+   <article class="story-beat" data-beat="7"><div class="beat-kicker">08 / LOCAL BY DESIGN</div><h2>Your life stays<br><em>close to you.</em></h2><p>LifeFlow runs locally in your browser. Your tasks, notes, plans and settings are stored on your device instead of being synced to a central LifeFlow server.</p><div class="beat-detail"><span>YOUR SPACE</span><b>Your browser · Your device · Your data</b></div></article>
+   <article class="story-beat" data-beat="8"><div class="beat-kicker">09 / NOTES MANAGER</div><h2>Ideas connect.<br><em>Thoughts take shape.</em></h2><p>Write in Markdown, format ideas, link notes with [[Title]] and explore their relationships in Your Branches. From quick thoughts to connected knowledge.</p><div class="beat-detail"><span>WRITE & CONNECT</span><b>Markdown · Linked Notes · Your Branches</b></div></article>
+  </div>
+  <div class="story-footer"><span id="storyLabel">WHY IT EXISTS</span><div class="story-track"><i id="storyTrack"></i></div><span id="storyNumber">01 / 09</span></div>
+  <div class="world-hint"><span class="live-dot"></span> THE ROAD MOVES WITH YOU</div>
+ </div>
+</section>
+
+<section class="feature-intro" id="features">
+ <div class="feature-intro-copy">
+  <div class="eyebrow dark"><i></i> THE WORKSPACE, AT YOUR PACE</div>
+  <h2>Built around<br><em>real life.</em></h2>
+  <p>Everything has a place. Nothing needs to compete for your attention.</p>
+ </div>
+ <div class="feature-index">02 <span>/ WHAT'S INSIDE</span></div>
+</section>
+
+<section class="feature-rail" aria-label="LifeFlow features">
+ <div class="feature-rail-sticky">
+  <div class="feature-rail-heading"><span>THE LIFEFlow TOOLKIT</span><span>SCROLL TO EXPLORE <b>↓</b></span></div>
+  <div class="feature-track" id="featureTrack">
+   <article class="feature-panel feature-panel-dark">
+    <div class="feature-panel-number">01 / FOCUS</div><div class="feature-art art-focus"><div class="art-date">TODAY <b>09:41</b></div><div class="art-task"><i></i><span>Plan the day</span><b>NOW</b></div><div class="art-task"><i></i><span>Review priorities</span><b>10:30</b></div><div class="art-task muted"><i></i><span>Follow up</span><b>13:00</b></div><div class="art-line"></div></div>
+    <div class="feature-copy"><span>TASK MANAGER</span><h3>Know what<br>comes <em>next.</em></h3><p>Bring the important things forward. See the day clearly and move through it one step at a time.</p></div>
    </article>
-   <article class="beat" data-beat="1">
-    <div class="beat-kicker">02 / WHO IT IS FOR</div><h2>For every side<br>of <em>your life.</em></h2>
-    <p>For people balancing work or study, responsibilities, personal priorities and the things they want to make progress on.</p>
-    <div class="beat-meta"><span>ONE SPACE</span><b>Work · Study · Life</b></div>
+   <article class="feature-panel feature-panel-light">
+    <div class="feature-panel-number">02 / STRUCTURE</div><div class="art-calendar"><div class="calendar-top"><b>YOUR WEEK</b><span>MON — SUN</span></div><div class="calendar-grid"><i>MON</i><i>TUE</i><i>WED</i><i>THU</i><i>FRI</i><i>SAT</i><i>SUN</i><b>03</b><b>04</b><b>05</b><b>06</b><b>07</b><b>08</b><b>09</b><span></span><span class="cal-active"></span><span></span><span class="cal-active"></span><span></span><span></span><span></span></div></div>
+    <div class="feature-copy"><span>CALENDAR & BOARD</span><h3>Give your plans<br>a <em>place.</em></h3><p>Move between time and structure. A calendar for the bigger picture, a board for the work in motion.</p></div>
    </article>
-   <article class="beat" data-beat="2">
-    <div class="beat-kicker">03 / WHAT IT MANAGES</div><h2>More than tasks.<br><em>Your whole day.</em></h2>
-    <p>Tasks are the starting point, but the centre is broader: your time, attention, commitments and progress.</p>
-    <div class="beat-meta"><span>THE BIGGER PICTURE</span><b>Time · Attention · Commitments</b></div>
+   <article class="feature-panel feature-panel-dark">
+    <div class="feature-panel-number">03 / THINKING</div><div class="art-notes"><div class="note-paper"><small>NOTES / 03</small><b>Ideas worth<br>keeping.</b><i></i><i></i><i></i><div class="note-tag">MARKDOWN</div></div><div class="note-link"></div><div class="note-node">[[IDEAS]]</div></div>
+    <div class="feature-copy"><span>MARKDOWN NOTES</span><h3>Let ideas<br><em>take shape.</em></h3><p>Write freely with rich Markdown formatting. Keep projects, references and thoughts together.</p></div>
    </article>
-   <article class="beat" data-beat="3">
-    <div class="beat-kicker">04 / YOUR FIRST 30 SECONDS</div><h2>Know what needs<br><em>your attention.</em></h2>
-    <p>Quickly understand what needs attention today, what is already handled, and where your time is going.</p>
-    <div class="beat-meta"><span>AT A GLANCE</span><b>Today · Handled · Next</b></div>
-   </article>
-   <article class="beat" data-beat="4">
-    <div class="beat-kicker">05 / HOW IT SHOULD FEEL</div><h2>Clear. Calm.<br><em>In control.</em></h2>
-    <p>Focused, human and calm. LifeFlow should never feel like another system demanding that you keep up with it.</p>
-    <div class="beat-meta"><span>THE FEELING</span><b>Clarity · Calm · Focus · Control</b></div>
-   </article>
-   <article class="beat" data-beat="5">
-    <div class="beat-kicker">06 / WHY FLOW</div><h2>Give your energy<br>to what <em>matters.</em></h2>
-    <p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p>
-    <div class="beat-meta"><span>KEEP MOVING</span><b>See · Focus · Progress</b></div>
-   </article>
-   <article class="beat" data-beat="6">
-    <div class="beat-kicker">07 / THE SIX-MONTH TEST</div><h2>Progress you<br>can <em>feel.</em></h2>
-    <p>Success is fewer forgotten commitments, clearer days, better use of time and a stronger sense of progress, not a perfectly maintained planner.</p>
-    <div class="beat-meta"><span>THE LONG VIEW</span><b>Progress over perfection</b></div>
-   </article>
-   <article class="beat" data-beat="7">
-    <div class="beat-kicker">08 / LOCAL BY DESIGN</div><h2>Your life stays<br><em>close to you.</em></h2>
-    <p>LifeFlow runs locally in your browser. Your tasks, notes, plans and settings are stored on your device instead of being synced to a central LifeFlow server.</p>
-    <div class="beat-meta"><span>YOUR SPACE</span><b>Your browser · Your device · Your data</b></div>
-   </article>
-   <article class="beat" data-beat="8">
-    <div class="beat-kicker">09 / NOTES MANAGER</div><h2>Ideas connect.<br><em>Thoughts take shape.</em></h2>
-    <p>Write in Markdown, format ideas, link notes with [[Title]] and explore their relationships in Your Branches. From quick thoughts to connected knowledge.</p>
-    <div class="beat-meta"><span>WRITE & CONNECT</span><b>Markdown · Linked Notes · Your Branches</b></div>
+   <article class="feature-panel feature-panel-light">
+    <div class="feature-panel-number">04 / CONNECTIONS</div><div class="art-branches"><div class="branch-lines"><i></i><i></i><i></i><i></i><i></i><i></i></div><b class="branch-center">FLOW</b><span class="branch-node one">IDEA</span><span class="branch-node two">PLAN</span><span class="branch-node three">WORK</span><span class="branch-node four">LIFE</span></div>
+    <div class="feature-copy"><span>YOUR BRANCHES</span><h3>See the links<br>between <em>things.</em></h3><p>Connect notes by title and explore how ideas relate through an interactive knowledge graph.</p></div>
    </article>
   </div>
-  <div class="journey-bottom"><span id="journeyLabel">THE PURPOSE</span><div class="track-progress"><i id="trackProgress"></i></div><span id="journeyPercent">01 / 09</span></div>
-  <div class="journey-instruction">KEEP SCROLLING <b>↓</b></div>
  </div>
 </section>
 
-<section class="on-off">
- <div class="onoff-heading"><span class="eyebrow"><i></i> A WORKSPACE THAT MOVES WITH YOU</span><h2>IN LIFE.<br><em>IN FLOW.</em></h2></div>
- <div class="onoff-grid">
-  <article class="onoff-card on-card"><span>01 / IN FOCUS</span><h3>What's on<br>your plate.</h3><p>Tasks, plans and priorities. See what needs you now and what can wait.</p><div class="card-graphic focus-graphic"><i></i><i></i><i></i><b>TODAY</b></div></article>
-  <article class="onoff-card off-card"><span>02 / BEYOND THE LIST</span><h3>What's on<br>your mind.</h3><p>Notes, ideas and connections. Keep the bigger picture close while you work through the details.</p><div class="card-graphic notes-graphic"><i></i><i></i><i></i><b>IDEAS</b></div></article>
+<section class="timeline">
+ <div class="timeline-heading"><div class="eyebrow"><i></i> A LITTLE MORE ROOM, EVERY DAY</div><h2>From scattered<br>to <em>in flow.</em></h2></div>
+ <div class="timeline-list">
+  <div class="timeline-line"><i></i></div>
+  <article><span>01</span><div><b>NOTICE</b><p>See what deserves your attention.</p></div></article>
+  <article><span>02</span><div><b>SHAPE</b><p>Give your time and plans a structure.</p></div></article>
+  <article><span>03</span><div><b>CONNECT</b><p>Bring notes, projects and ideas together.</p></div></article>
+  <article><span>04</span><div><b>MOVE</b><p>Make meaningful progress at your pace.</p></div></article>
  </div>
+ <div class="timeline-note">A WORKSPACE THAT HELPS YOU DECIDE, NOT JUST RECORD.</div>
 </section>
 
 <section class="closing" id="closing">
- <div class="closing-side">LIFEFLOW / THE WAY FORWARD</div>
- <div class="closing-main"><div class="eyebrow"><i></i> THE POINT IS NOT TO DO MORE</div><h2>FIND YOUR<br><em>OWN FLOW.</em></h2><p>Bring the moving parts together. Give your energy to the parts that count.</p><a href="#access" class="closing-link">CONTINUE <b>↓</b></a></div>
- <div class="closing-bottom"><span>YOUR TIME. YOUR SPACE.</span><span>YOUR FLOW.</span></div>
+ <div class="closing-overline">THE POINT IS NOT TO DO MORE</div>
+ <h2>FIND YOUR<br><em>OWN FLOW.</em></h2>
+ <p>Bring the moving parts together. Give your energy to the parts that count.</p>
+ <a href="#access" class="closing-button"><span>ENTER LIFEFLOW</span><b>↗</b></a>
+ <div class="closing-footer"><span>YOUR TIME. YOUR SPACE.</span><span>YOUR FLOW.</span></div>
 </section>
 
 <section class="access" id="access">
- <div class="access-top"><span>YOUR SPACE STARTS HERE</span><span>LIFEFLOW ACCESS / 01</span></div>
  <div class="access-frame"><iframe title="LifeFlow sign in and account creation" src="../index.html?auth=login&amp;embed=1&amp;v=20261106-auth-split1" loading="lazy" allow="clipboard-read; clipboard-write"></iframe></div>
 </section>
 </main>
-<script type="module" src="experience.js?v=lando-redesign-03"></script>
+<script type="module" src="experience.js?v=20261106-worlddrive1"></script>
 </body></html>
