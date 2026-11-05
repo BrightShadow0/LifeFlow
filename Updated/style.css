@@ -3681,3 +3681,6 @@ body::-webkit-scrollbar-thumb:hover{
 body::-webkit-scrollbar-corner{
   background:var(--surface-2,var(--surface,#17211e));
 }
+
+/* Unique note identifiers and linked-note graph labels. */
+.note-code-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 2px 12px;color:var(--muted);font-size:12px}.note-code-row strong{color:var(--accent,var(--primary))}.note-code-row code{color:var(--accent,var(--primary));font-size:12px}.branch-note-code{font-size:10px;opacity:.72;fill:var(--muted,var(--text))}
