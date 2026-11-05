@@ -1222,7 +1222,7 @@ function renderApp(){
   else if(view==='list') el.innerHTML = renderList();
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
-  else if(view==='branches') el.innerHTML = renderBranches();
+  else if(view==='branches'){ el.innerHTML = renderBranches(); initBranchesGraph(el); }
   else if(view==='notes'){ el.innerHTML = renderNotesManager(); const preview=el.querySelector('#kn_preview'); if(preview)renderMarkdownPreview(preview,noteStore('regular').find(function(n){return String(n.id)===String(window.lfSelectedNote);})?.content||''); }
   else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
@@ -1644,43 +1644,102 @@ function renderBranches(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
-  const items=state.notes;
-  const count=items.length;
-  const columns=Math.min(4,Math.max(1,count));
-  const rows=count?Math.ceil(count/columns):1;
-  const graphHeight=Math.max(560,rows*150+60);
-  const positions={};
-  let svg='';
+  const items=state.notes, count=items.length, positions={};
+  const width=1200,height=820;
+  const hash=function(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
   items.forEach(function(n,i){
-    const col=i%columns,row=Math.floor(i/columns);
-    const rowCount=Math.min(columns,count-row*columns);
-    positions[String(n.noteCode)]={
-      x:(900-(rowCount-1)*220)/2+col*220,
-      y:90+row*150
-    };
+    if(!Number.isFinite(n.graphX)||!Number.isFinite(n.graphY)){
+      const h=hash(String(n.id||n.noteCode||i));
+      n.graphX=100+(h%10000)/10000*(width-200);
+      n.graphY=90+((h>>>10)%10000)/10000*(height-180);
+    }
+    positions[String(n.id)]={x:n.graphX,y:n.graphY};
   });
-  const seenLinks={};
+  const edges=[],seen={};
   items.forEach(function(n){
-    const source=positions[String(n.noteCode)];
     const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
     matches.forEach(function(token){
       const title=token.replace(/^\[\[\s*/,'').replace(/\s*\]\]$/,'').trim();
-      const targetNote=items.find(function(item){return String(item.title||'').trim().toLowerCase()===title.toLowerCase();});
-      const target=targetNote?positions[String(targetNote.noteCode)]:null;
-      if(!target||!source||targetNote.id===n.id)return;
-      const key=[String(n.id),String(targetNote.id)].sort().join('|');
-      if(seenLinks[key])return;
-      seenLinks[key]=true;
-      svg+='<line x1="'+source.x+'" y1="'+source.y+'" x2="'+target.x+'" y2="'+target.y+'" stroke="var(--accent,var(--primary,#16c784))" stroke-width="2.5" opacity=".72" />';
+      const target=items.find(function(item){return String(item.title||'').trim().toLowerCase()===title.toLowerCase();});
+      if(!target||target.id===n.id)return;
+      const key=[String(n.id),String(target.id)].sort().join('|');
+      if(seen[key])return;seen[key]=true;edges.push({from:String(n.id),to:String(target.id)});
     });
   });
-  items.forEach(function(n){
-    const p=positions[String(n.noteCode)];
-    const label=esc(n.title||'Untitled').slice(0,28);
-    svg+='<g class="branch-node note branch-unconnected"><circle cx="'+p.x+'" cy="'+p.y+'" r="13"></circle><text x="'+p.x+'" y="'+(p.y+34)+'" text-anchor="middle">'+label+'</text><text x="'+p.x+'" y="'+(p.y+51)+'" text-anchor="middle" class="branch-note-code">'+esc(n.noteCode||'')+'</text></g>';
+  let svg='';
+  edges.forEach(function(edge){
+    const a=positions[edge.from],b=positions[edge.to];
+    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line>';
   });
-  const empty=count?'':'<text x="450" y="280" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>Link notes with <code>[[Note Title]]</code> and choose from autocomplete.</p></div><span class="theme-current-pill">'+count+' nodes</span></div><div class="branch-graph '+(count?'has-unconnected-notes':'')+'"><svg viewBox="0 0 900 '+graphHeight+'" style="height:'+graphHeight+'px">'+svg+empty+'</svg></div></div>';
+  items.forEach(function(n){
+    const p=positions[String(n.id)],label=esc(n.title||'Untitled').slice(0,34);
+    svg+='<g class="branch-node interactive-branch-node" data-note-id="'+esc(String(n.id))+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Open '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
+  });
+  if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" onclick="branchesZoom(1.2)" aria-label="Zoom in">+</button><button type="button" onclick="branchesZoom(.8333)" aria-label="Zoom out">−</button><button type="button" onclick="branchesResetView()">Reset view</button></div></div></div>';
+}
+function branchesZoom(factor){
+  const svg=document.getElementById('branchesSvg'),g=document.getElementById('branchesViewport');if(!svg||!g)return;
+  const z=Math.max(.45,Math.min(2.8,(window.lfBranchesZoom||1)*factor));window.lfBranchesZoom=z;
+  const x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;g.setAttribute('transform','translate('+x+' '+y+') scale('+z+')');
+}
+function branchesResetView(){
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;
+  const g=document.getElementById('branchesViewport');if(g)g.setAttribute('transform','translate(0 0) scale(1)');
+}
+function initBranchesGraph(root){
+  const svg=root.querySelector('#branchesSvg'),viewport=root.querySelector('#branchesViewport');if(!svg||!viewport)return;
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;
+  let drag=null;
+  const point=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(viewport.getScreenCTM().inverse());};
+  const moveNode=function(id,x,y){
+    const node=viewport.querySelector('[data-note-id="'+CSS.escape(id)+'"]');if(!node)return;
+    node.setAttribute('transform','translate('+x+' '+y+')');
+    viewport.querySelectorAll('.branch-edge').forEach(function(line){
+      if(line.dataset.from===id){line.setAttribute('x1',x);line.setAttribute('y1',y);}
+      if(line.dataset.to===id){line.setAttribute('x2',x);line.setAttribute('y2',y);}
+    });
+  };
+  viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
+    node.addEventListener('pointerdown',function(e){
+      e.preventDefault();const p=point(e),id=node.dataset.noteId;
+      drag={type:'node',id,dx:p.x-Number(node.transform.baseVal.consolidate().matrix.e),dy:p.y-Number(node.transform.baseVal.consolidate().matrix.f)};
+      node.classList.add('dragging');svg.setPointerCapture(e.pointerId);
+    });
+    node.addEventListener('click',function(e){
+      if(node.dataset.moved==='1'){node.dataset.moved='0';return;}
+      const n=noteStore('regular').find(function(item){return String(item.id)===String(node.dataset.noteId);});
+      if(n){window.lfNoteMode='regular';window.lfSelectedNote=n.id;window.lfNoteView='edit';renderApp();}
+    });
+    node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}});
+  });
+  svg.addEventListener('pointerdown',function(e){if(e.target.closest('.interactive-branch-node'))return;drag={type:'pan',x:e.clientX,y:e.clientY,px:window.lfBranchesPanX||0,py:window.lfBranchesPanY||0};svg.setPointerCapture(e.pointerId);});
+  svg.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    if(drag.type==='node'){
+      const p=point(e),x=p.x-drag.dx,y=p.y-drag.dy;
+      const node=viewport.querySelector('[data-note-id="'+CSS.escape(drag.id)+'"]');if(node)node.dataset.moved='1';
+      moveNode(drag.id,x,y);
+    }else{
+      window.lfBranchesPanX=drag.px+(e.clientX-drag.x);window.lfBranchesPanY=drag.py+(e.clientY-drag.y);
+      viewport.setAttribute('transform','translate('+window.lfBranchesPanX+' '+window.lfBranchesPanY+') scale('+(window.lfBranchesZoom||1)+')');
+    }
+  });
+  const finish=function(){
+    if(!drag)return;
+    if(drag.type==='node'){
+      const node=viewport.querySelector('[data-note-id="'+CSS.escape(drag.id)+'"]');
+      if(node){
+        node.classList.remove('dragging');
+        const matrix=node.transform.baseVal.consolidate().matrix;
+        const n=noteStore('regular').find(function(item){return String(item.id)===String(drag.id);});
+        if(n){n.graphX=matrix.e;n.graphY=matrix.f;save();}
+      }
+    }
+    drag=null;
+  };
+  svg.addEventListener('pointerup',finish);svg.addEventListener('pointercancel',finish);
+  svg.addEventListener('wheel',function(e){e.preventDefault();branchesZoom(e.deltaY<0?1.1:.91);},{passive:false});
 }
 function renderAbout(){
   return `<section class="card lifeflow-manifesto">
