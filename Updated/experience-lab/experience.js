@@ -1,294 +1,190 @@
 import * as THREE from 'three';
 
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
-const clamp = (v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const damp = (a,b,k,dt)=>THREE.MathUtils.damp(a,b,k,dt);
-const canvases = {};
-const scenes = {};
-let targetProgress=0, liveProgress=0, pointer={x:0,y:0,tx:0,ty:0};
-let activeSections={hero:true,journey:false,closing:false};
+const prefersReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile=matchMedia('(max-width:760px)').matches;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const damp=(a,b,k,dt)=>THREE.MathUtils.damp(a,b,k,dt);
 const clock=new THREE.Clock();
+const scenes={};
+let scrollTarget=0,scrollLive=0,lastChapter=-1;
+const active={hero:true,journey:false,closing:false};
 
-function makeRenderer(canvas){
-  try{
-    const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!coarsePointer,powerPreference:'high-performance'});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
-    renderer.setSize(canvas.clientWidth||canvas.parentElement.clientWidth,canvas.clientHeight||canvas.parentElement.clientHeight,false);
-    renderer.outputColorSpace=THREE.SRGBColorSpace;
-    renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure=1.18;
-    return renderer;
-  }catch(e){canvas.classList.add('no-webgl');return null;}
-}
-function resizeRenderer(renderer,camera,canvas){
-  if(!renderer)return;
-  const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);
-  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
-}
-function material(color,emissive=color,opacity=1){
- return new THREE.MeshPhysicalMaterial({color,emissive,emissiveIntensity:.12,metalness:.42,roughness:.3,clearcoat:.9,clearcoatRoughness:.2,transparent:opacity<1,opacity});
-}
-function addDust(scene,count=750,spread=9){
- const g=new THREE.BufferGeometry(),p=new Float32Array(count*3),c=new Float32Array(count*3),sizes=new Float32Array(count);
- const green=new THREE.Color('#c9ff58'),white=new THREE.Color('#b9d3c4');
- for(let i=0;i<count;i++){
-  const r=2+Math.random()*spread,t=Math.random()*Math.PI*2,u=Math.acos(2*Math.random()-1);
-  p[i*3]=r*Math.sin(u)*Math.cos(t);p[i*3+1]=r*Math.cos(u);p[i*3+2]=r*Math.sin(u)*Math.sin(t);
-  const col=Math.random()>.78?green:white;c[i*3]=col.r;c[i*3+1]=col.g;c[i*3+2]=col.b;sizes[i]=Math.random();
+function createRibbonGeometry(segments=180,slices=18){
+ const geometry=new THREE.BufferGeometry();
+ const positions=new Float32Array((segments+1)*(slices+1)*3);
+ const uvs=new Float32Array((segments+1)*(slices+1)*2);
+ const indices=[];
+ for(let i=0;i<=segments;i++)for(let j=0;j<=slices;j++){
+  const k=i*(slices+1)+j;uvs[k*2]=i/segments;uvs[k*2+1]=j/slices;
+  if(i<segments&&j<slices){const a=k,b=k+slices+1;indices.push(a,b,a+1,b,b+1,a+1);}
  }
- g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));g.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
- const m=new THREE.PointsMaterial({size:.023,vertexColors:true,transparent:true,opacity:.72,depthWrite:false,sizeAttenuation:true});
- const pts=new THREE.Points(g,m);scene.add(pts);return pts;
+ geometry.setIndex(indices);
+ geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new THREE.BufferAttribute(uvs,2));
+ return geometry;
 }
-function createCore(group,scale=1){
- const core=new THREE.Group();group.add(core);
- const geo=new THREE.IcosahedronGeometry(1,5);
- const shell=new THREE.Mesh(geo,material('#648c45','#345a27'));
- shell.scale.setScalar(scale);core.add(shell);
- const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(1.025,2),new THREE.MeshBasicMaterial({color:'#dcff9b',wireframe:true,transparent:true,opacity:.075}));
- wire.scale.setScalar(scale);core.add(wire);
- const inner=new THREE.Mesh(new THREE.SphereGeometry(.63,48,48),new THREE.MeshStandardMaterial({color:'#15271a',metalness:.7,roughness:.18,emissive:'#476b23',emissiveIntensity:.5}));
- inner.scale.setScalar(scale);core.add(inner);
- const rings=[];
- [1.48,1.78,2.05].forEach((r,i)=>{
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(r*scale,.007+(i===1?.004:0),8,180),new THREE.MeshBasicMaterial({color:i===1?'#c9ff58':'#a9d9b2',transparent:true,opacity:i===1?.62:.27}));
-  ring.rotation.set(.5+i*.48,.25+i*.7,.18+i*.4);core.add(ring);rings.push(ring);
- });
- const halo=new THREE.Mesh(new THREE.TorusGeometry(2.35*scale,.002,6,180),new THREE.MeshBasicMaterial({color:'#c9ff58',transparent:true,opacity:.28}));
- halo.rotation.x=Math.PI/2.4;core.add(halo);rings.push(halo);
- return {core,shell,wire,inner,rings};
-}
-function initHero(){
- const canvas=document.getElementById('hero-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
- const scene=new THREE.Scene();scene.fog=new THREE.FogExp2('#07100d',.025);
- const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,.15,8.1);
- const ambient=new THREE.AmbientLight('#b7d9bd',.72);scene.add(ambient);
- const key=new THREE.PointLight('#c9ff58',48,18);key.position.set(3,4,4);scene.add(key);
- const rim=new THREE.PointLight('#407d91',55,18);rim.position.set(-4,-2,-3);scene.add(rim);
- const root=new THREE.Group();scene.add(root);
- root.position.x=.72;const c=createCore(root,.86);
- const dust=addDust(scene,1050,8);
- const nodes=[];
- for(let i=0;i<9;i++){
-  const n=new THREE.Mesh(new THREE.SphereGeometry(.035+(i%3)*.012,16,16),new THREE.MeshBasicMaterial({color:i%3===0?'#c9ff58':'#a5c8aa'}));
-  const a=i/9*Math.PI*2,r=2.65+(i%2)*.26;n.position.set(Math.cos(a)*r,Math.sin(a*1.6)*.5,Math.sin(a)*r);root.add(n);nodes.push(n);
+function updateRibbon(mesh,progress,time,variant=0){
+ const geo=mesh.geometry,pos=geo.attributes.position.array;
+ const segments=180,slices=18,phase=progress*Math.PI*2;
+ const center=(t)=>{
+  const x=(t-.5)*6.1;
+  const y=Math.sin(t*Math.PI*2+phase*.72+variant)*(.42+.11*Math.sin(phase))+
+          Math.sin(t*Math.PI*4-phase*.34)*.10;
+  const z=Math.cos(t*Math.PI*2+phase*.48+variant)*(.66+.12*Math.cos(phase))+
+          Math.sin(t*Math.PI*3+variant)*.13;
+  return new THREE.Vector3(x,y,z);
+ };
+ for(let i=0;i<=segments;i++){
+  const t=i/segments,c=center(t),tangent=center(Math.min(1,t+.002)).sub(center(Math.max(0,t-.002))).normalize();
+  let widthDir=new THREE.Vector3().crossVectors(tangent,new THREE.Vector3(0,0,1)).normalize();
+  if(widthDir.lengthSq()<.01)widthDir.set(0,1,0);
+  const depthDir=new THREE.Vector3().crossVectors(tangent,widthDir).normalize();
+  const width=(.34+.11*Math.sin(t*Math.PI*2+phase*.4+variant))*(.55+Math.pow(Math.sin(Math.PI*t),.42)*.7);
+  const twist=Math.sin(t*Math.PI*2+phase*.58+variant)*(.72+progress*.24);
+  for(let j=0;j<=slices;j++){
+   const v=j/slices-.5;
+   const rolled=widthDir.clone().multiplyScalar(Math.cos(twist)).addScaledVector(depthDir,Math.sin(twist)).normalize();
+   const p=c.clone().addScaledVector(rolled,v*width*2);
+   p.z+=Math.sin(t*Math.PI*2+time*.12)*Math.pow(Math.abs(v)*2,2)*.035;
+   const k=(i*(slices+1)+j)*3;pos[k]=p.x;pos[k+1]=p.y;pos[k+2]=p.z;
+  }
  }
- const linePositions=new Float32Array(nodes.length*6);const lineGeo=new THREE.BufferGeometry();lineGeo.setAttribute('position',new THREE.BufferAttribute(linePositions,3));
- const line=new THREE.LineSegments(lineGeo,new THREE.LineBasicMaterial({color:'#c9ff58',transparent:true,opacity:.13}));root.add(line);
- scenes.hero={renderer,scene,camera,root,c,dust,nodes,line,canvas};
+ geo.attributes.position.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();
 }
-function initJourney(){
- const canvas=document.getElementById('journey-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
+function createScene(canvasId,kind){
+ const canvas=document.getElementById(canvasId);if(!canvas)return null;
+ let renderer;
+ try{
+  renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!isMobile,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
+  renderer.setSize(Math.max(1,canvas.clientWidth),Math.max(1,canvas.clientHeight),false);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.04;
+ }catch(e){canvas.parentElement.classList.add('webgl-fallback');return null;}
  const scene=new THREE.Scene();
- const camera=new THREE.PerspectiveCamera(38,1,.1,100);camera.position.set(0,0,8.5);
- scene.add(new THREE.AmbientLight('#c7d8c9',1.25));
- const light=new THREE.PointLight('#c9ff58',100,20);light.position.set(2,4,5);scene.add(light);
- const blue=new THREE.PointLight('#497a84',75,20);blue.position.set(-4,-2,-3);scene.add(blue);
- const root=new THREE.Group();scene.add(root);
- const c=createCore(root,.88);
- const dust=addDust(scene,1300,9);
- const nodes=[],initial=[],organized=[],graph=[];
- const count=16;
- for(let i=0;i<count;i++){
-  const n=new THREE.Mesh(new THREE.IcosahedronGeometry(.055+(i%4)*.009,1),new THREE.MeshStandardMaterial({color:i%4===0?'#d9ff8c':'#98bfa5',metalness:.5,roughness:.25,emissive:'#37522c',emissiveIntensity:.55}));
-  root.add(n);nodes.push(n);
-  initial.push(new THREE.Vector3((Math.random()-.5)*7,(Math.random()-.5)*5,(Math.random()-.5)*4));
-  const a=i/count*Math.PI*2,rr=2.15+(i%3)*.12;
-  organized.push(new THREE.Vector3(Math.cos(a)*rr,Math.sin(a)*rr*.7,Math.sin(a*2)*.5));
-  const ga=i%4,gb=Math.floor(i/4);
-  graph.push(new THREE.Vector3((ga-1.5)*1.05,(1.5-gb)*.9,Math.sin(i*2.7)*.28));
- }
- const edgePairs=[];for(let i=0;i<count;i++){edgePairs.push([i,(i+1)%count]);if(i%2===0)edgePairs.push([i,(i+5)%count]);}
- const edgeGeo=new THREE.BufferGeometry();const positions=new Float32Array(edgePairs.length*6);edgeGeo.setAttribute('position',new THREE.BufferAttribute(positions,3));
- const edges=new THREE.LineSegments(edgeGeo,new THREE.LineBasicMaterial({color:'#c9ff58',transparent:true,opacity:.35,depthWrite:false}));root.add(edges);
- const explodeBits=[];
- for(let i=0;i<6;i++){
-  const mesh=new THREE.Mesh(new THREE.TorusGeometry(1.2+i*.13,.008,8,120),new THREE.MeshBasicMaterial({color:i%2?'#d1e5c8':'#c9ff58',transparent:true,opacity:.55}));
-  mesh.rotation.set(.4+i*.2,.5*i,.3*i);root.add(mesh);explodeBits.push(mesh);
- }
- scenes.journey={renderer,scene,camera,root,c,dust,nodes,initial,organized,graph,edgePairs,edgeGeo,edges,explodeBits,canvas};
+ const camera=new THREE.PerspectiveCamera(35,1,.1,50);
+ camera.position.set(0,.12,kind==='journey'?8.7:8.0);
+ scene.add(new THREE.AmbientLight('#d4dfd0',.9));
+ const key=new THREE.DirectionalLight('#e3f3c7',2.0);key.position.set(-3,5,5);scene.add(key);
+ const fill=new THREE.PointLight('#93b982',18,18);fill.position.set(3,-2,3);scene.add(fill);
+ const rim=new THREE.DirectionalLight('#a6c6a0',.75);rim.position.set(1,-3,-4);scene.add(rim);
+ const group=new THREE.Group();scene.add(group);
+ const geometry=createRibbonGeometry();
+ const material=new THREE.MeshPhysicalMaterial({color:'#839e65',metalness:.22,roughness:.34,clearcoat:.95,clearcoatRoughness:.24,side:THREE.DoubleSide});
+ const ribbon=new THREE.Mesh(geometry,material);group.add(ribbon);
+ const edgeMaterial=new THREE.MeshBasicMaterial({color:'#c5dc9a',transparent:true,opacity:.18,side:THREE.DoubleSide});
+ // A restrained central sheen, not a second shape.
+ const sheen=new THREE.Mesh(geometry,edgeMaterial);sheen.scale.set(1.001,1.001,1.001);group.add(sheen);
+ const sceneState={canvas,renderer,scene,camera,group,ribbon,sheen,kind};
+ const ro=new ResizeObserver(()=>resize(sceneState));ro.observe(canvas.parentElement);
+ resize(sceneState);updateRibbon(ribbon,kind==='hero'?.17:kind==='closing'?.72:0,0,kind==='closing'?.8:0);
+ scenes[kind]=sceneState;
+ return sceneState;
 }
-function initClosing(){
- const canvas=document.getElementById('closing-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
- const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,0,7.2);
- scene.add(new THREE.AmbientLight('#d9f0d8',1.4));
- const light=new THREE.PointLight('#c9ff58',110,18);light.position.set(2,3,4);scene.add(light);
- const root=new THREE.Group();scene.add(root);const c=createCore(root,1.18);const dust=addDust(scene,900,7);
- scenes.closing={renderer,scene,camera,root,c,dust,canvas};
+function resize(s){
+ if(!s||!s.renderer)return;
+ const w=Math.max(1,s.canvas.clientWidth),h=Math.max(1,s.canvas.clientHeight);
+ s.renderer.setSize(w,h,false);s.camera.aspect=w/h;s.camera.updateProjectionMatrix();
 }
-function updateEdges(s){
- const arr=s.edgeGeo.attributes.position.array;
- s.edgePairs.forEach(([a,b],i)=>{
-  const pa=s.nodes[a].position,pb=s.nodes[b].position,k=i*6;
-  arr[k]=pa.x;arr[k+1]=pa.y;arr[k+2]=pa.z;arr[k+3]=pb.x;arr[k+4]=pb.y;arr[k+5]=pb.z;
- });
- s.edgeGeo.attributes.position.needsUpdate=true;s.edgeGeo.computeBoundingSphere();
-}
-function updateJourney(p,dt){
- const s=scenes.journey;if(!s)return;
- const q=clamp(p);s.root.rotation.y=damp(s.root.rotation.y,.12+q*1.7,2.2,dt);s.root.rotation.x=damp(s.root.rotation.x,Math.sin(q*Math.PI)*.24,2,dt);
- const scatter=clamp(1-q*4),order=clamp(1-Math.abs(q-.34)*5),network=clamp(1-Math.abs(q-.67)*5),flow=clamp((q-.73)*4);
- const arrange=clamp(q*3.3);
- s.nodes.forEach((n,i)=>{
-  const a=s.initial[i],b=s.organized[i],g=s.graph[i];
-  const mid=a.clone().lerp(b,arrange);
-  const late=clamp((q-.48)*3.4);mid.lerp(g,late);
-  const final=clamp((q-.75)*4.0);
-  const orbitAngle=i/ s.nodes.length*Math.PI*2+q*1.2;
-  const orbit=new THREE.Vector3(Math.cos(orbitAngle)*2.05,Math.sin(orbitAngle)*1.35,Math.sin(orbitAngle*2)*.36);
-  mid.lerp(orbit,final);
-  n.position.lerp(mid,1-Math.exp(-dt*4.5));
-  const sc=1+Math.sin(q*18+i)*.08;n.scale.setScalar(sc);
-  n.material.opacity=1;
- });
- updateEdges(s);
- s.edges.material.opacity=.08+network*.58+flow*.3;
- s.c.core.scale.setScalar(.86);
- s.c.shell.material.emissiveIntensity=.22+q*.58;
- s.c.rings.forEach((r,i)=>{
-  const separation=1+Math.sin(q*Math.PI*2+i*.5)*.12;
-  r.scale.setScalar(separation+(q>.4&&q<.62?.24:0));
-  r.rotation.z+=dt*(i%2?.09:-.07);
-  r.rotation.x+=dt*.025;
-  r.material.opacity=.2+q*.4;
- });
- s.explodeBits.forEach((m,i)=>{
-  const phase=clamp(1-Math.abs(q-.52)*3);
-  const scatterDist=1+phase*(.16+i*.035);
-  m.scale.setScalar(scatterDist);
-  m.rotation.x+=dt*(.045+i*.012);m.rotation.z+=dt*(.065+i*.018);
-  m.position.set(Math.sin(i*1.7)*phase*.36,Math.cos(i*2.1)*phase*.32,Math.sin(i)*phase*.3);
- });
- s.dust.rotation.y+=dt*.02;
- s.camera.position.z=damp(s.camera.position.z,8.5,2,dt);
- s.camera.position.x=damp(s.camera.position.x,Math.sin(q*Math.PI*2)*.12,2,dt);
- s.camera.position.y=damp(s.camera.position.y,Math.cos(q*Math.PI)*.08,2,dt);
+function initScenes(){createScene('hero-canvas','hero');createScene('journey-canvas','journey');createScene('closing-canvas','closing');}
+function updateScene(s,progress,time,dt){
+ if(!s||!s.renderer)return;
+ const variant=s.kind==='closing'?.85:s.kind==='hero'?.12:progress*.7;
+ updateRibbon(s.ribbon,progress,time,variant);
+ s.group.rotation.y=damp(s.group.rotation.y,(s.kind==='hero'?.18:0)+Math.sin(progress*Math.PI*2)*.08,2,dt);
+ s.group.rotation.x=damp(s.group.rotation.x,Math.sin(progress*Math.PI)*.08,2,dt);
+ s.group.rotation.z=damp(s.group.rotation.z,Math.sin(progress*Math.PI*2)*.025,2,dt);
+ const scale=s.kind==='journey'?1.08:s.kind==='hero'?1.12:1.16;
+ s.group.scale.setScalar(scale);
  s.camera.lookAt(0,0,0);
+ s.renderer.render(s.scene,s.camera);
 }
-function animate(){
- const dt=Math.min(clock.getDelta(),.04),t=clock.elapsedTime;
- pointer.x=damp(pointer.x,pointer.tx,5,dt);pointer.y=damp(pointer.y,pointer.ty,5,dt);
- const hero=scenes.hero;
- if(hero&&activeSections.hero){
-  hero.root.rotation.y+=dt*.16;hero.root.rotation.x=damp(hero.root.rotation.x,pointer.y*.18,3,dt);
-  hero.root.rotation.z=damp(hero.root.rotation.z,pointer.x*.11,3,dt);
-  hero.c.core.rotation.y+=dt*.12;hero.c.rings.forEach((r,i)=>{r.rotation.z+=dt*(i%2?.09:-.07);r.rotation.x+=dt*.025});
-  hero.c.shell.material.emissiveIntensity=.2+Math.sin(t*.75)*.12;
-  hero.nodes.forEach((n,i)=>{const a=t*.16+i/hero.nodes.length*Math.PI*2,r=2.7+(i%2)*.23;n.position.set(Math.cos(a)*r,Math.sin(a*1.7)*.42,Math.sin(a)*r)});
-  const a=hero.line.geometry.attributes.position.array;
-  hero.nodes.forEach((n,i)=>{const b=hero.nodes[(i+1)%hero.nodes.length],k=i*6;a[k]=n.position.x;a[k+1]=n.position.y;a[k+2]=n.position.z;a[k+3]=b.position.x;a[k+4]=b.position.y;a[k+5]=b.position.z});
-  hero.line.geometry.attributes.position.needsUpdate=true;hero.dust.rotation.y+=dt*.008;
-  hero.camera.position.x=damp(hero.camera.position.x,pointer.x*.4,2,dt);hero.camera.position.y=damp(hero.camera.position.y,-pointer.y*.25,2,dt);hero.camera.lookAt(0,0,0);
-  hero.renderer.render(hero.scene,hero.camera);
- }
- if(scenes.journey&&activeSections.journey){liveProgress=damp(liveProgress,targetProgress,5,dt);updateJourney(liveProgress,dt);const s=scenes.journey;s.dust.rotation.y+=dt*.009;s.renderer.render(s.scene,s.camera);}
- const close=scenes.closing;
- if(close&&activeSections.closing){close.root.rotation.y+=dt*.1;close.c.core.rotation.x+=dt*.09;close.c.rings.forEach((r,i)=>{r.rotation.z+=dt*(i%2?.07:-.055);r.rotation.y+=dt*.025});close.c.shell.material.emissiveIntensity=.34+Math.sin(t*.8)*.1;close.dust.rotation.y+=dt*.006;close.camera.lookAt(0,0,0);close.renderer.render(close.scene,close.camera);}
- requestAnimationFrame(animate);
-}
-let lastChapter = -1;
 function setChapter(index){
  const copies=[...document.querySelectorAll('.chapter-copy')];
- const count=Math.max(0,Math.min(copies.length-1,index));
- if(count===lastChapter)return;
- lastChapter=count;
+ const n=Math.max(0,Math.min(copies.length-1,index));
+ if(n===lastChapter)return;lastChapter=n;
  copies.forEach((el,i)=>{
-  const is=i===count;el.classList.toggle('active',is);
-  if(window.gsap){gsap.to(el,{autoAlpha:is?1:0,y:is?0:-22,duration:.42,ease:'power2.out',overwrite:true});}
-  else{el.style.opacity=is?'1':'0';el.style.visibility=is?'visible':'hidden';}
+  if(isMobile||prefersReduced){el.classList.add('active');el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';return;}
+  const show=i===n;el.classList.toggle('active',show);
+  if(window.gsap)gsap.to(el,{autoAlpha:show?1:0,y:show?0:-17,duration:.38,ease:'power2.out',overwrite:true});
+  else{el.style.opacity=show?'1':'0';el.style.visibility=show?'visible':'hidden';el.style.transform=show?'none':'translateY(-17px)';}
  });
  const names=['01 — WHY IT EXISTS','02 — WHO IT IS FOR','03 — WHAT IT MANAGES','04 — YOUR FIRST 30 SECONDS','05 — HOW IT SHOULD FEEL','06 — WHY FLOW','07 — THE SIX-MONTH TEST','08 — LOCAL BY DESIGN','09 — MARKDOWN NOTES MANAGER'];
  const hints=['SCATTERED → IN FOCUS','MANY ROLES → ONE SPACE','TASKS → PERSPECTIVE','UNCERTAINTY → CLARITY','FRICTION → FLOW','MOTION → MOMENTUM','PERFECTION → PROGRESS','CENTRAL SERVER → YOUR SPACE','IDEAS → CONNECTIONS'];
- const tags=['DISPERSED','BALANCING','PRIORITISING','CLARITY','CALM','FLOW','MOMENTUM','LOCAL','CONNECTED'];
- const total=String(copies.length).padStart(2,'0');
- const counter=String(count+1).padStart(2,'0');
- document.getElementById('journeyKicker').textContent=names[count];
- document.getElementById('journeyHint').textContent=hints[count];
- document.getElementById('visualTag').lastChild.textContent=' SYSTEM / '+tags[count];
- document.getElementById('journeyCounter').innerHTML=counter+' <i>/</i> '+total;
- document.getElementById('visualCoord').textContent=String(count+1).padStart(3,'0');
- document.getElementById('flowIndex').innerHTML=String(Math.round((count+1)/copies.length*100)).padStart(2,'0')+'<span>%</span>';
- document.getElementById('flowBar').style.width=((count+1)/copies.length*100)+'%';
+ const count=String(n+1).padStart(2,'0'),total=String(copies.length).padStart(2,'0');
+ document.getElementById('journeyKicker').textContent=names[n];
+ document.getElementById('journeyHint').textContent=hints[n];
+ document.getElementById('journeyCounter').innerHTML=count+' <i>/</i> '+total;
+ const cap=document.getElementById('ribbonCaption');if(cap)cap.textContent='THE FORM / '+count;
+ document.getElementById('chapterProgress').style.width=((n+1)/copies.length*100)+'%';
 }
-function setupAnimations(){
+function setupScroll(){
  const gs=window.gsap,ST=window.ScrollTrigger;
- if(!gs||!ST){
+ const chapters=document.querySelectorAll('.chapter-copy');
+ if(prefersReduced||isMobile||!gs||!ST){
   document.getElementById('journey').style.height='auto';
   document.querySelector('.journey-pin').style.height='auto';
-  document.querySelectorAll('.chapter-copy').forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.display='block';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';});
+  chapters.forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.display='block';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';el.classList.add('active');});
+  const kicker=document.getElementById('journeyKicker');kicker.textContent='THE LIFEFLOW STORY';
   return;
  }
  gs.registerPlugin(ST);
- const isMobile=window.matchMedia('(max-width:760px)').matches;
- if(reduceMotion){document.getElementById('journey').style.height='auto';document.querySelector('.journey-pin').style.height='auto';document.querySelectorAll('.chapter-copy').forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';});return;}
- if(isMobile){document.querySelectorAll('.chapter-copy').forEach(el=>gs.fromTo(el,{y:35,autoAlpha:0},{y:0,autoAlpha:1,ease:'none',scrollTrigger:{trigger:el,start:'top 88%',end:'top 62%',scrub:.7}}));setChapter(0);}
- if(!reduceMotion){
-  gs.from('.hero-copy .overline',{y:18,autoAlpha:0,duration:.8,delay:.25,ease:'power3.out'});
-  gs.from('.hero h1',{y:70,autoAlpha:0,duration:1.2,delay:.3,ease:'power4.out'});
-  gs.from('.hero-lead,.hero-scroll',{y:24,autoAlpha:0,duration:.8,stagger:.12,delay:.75,ease:'power3.out'});
-  gs.from('.hero-scene',{scale:.82,autoAlpha:0,duration:1.5,delay:.25,ease:'power3.out'});
-  const state={p:0};
-  const taskX=gs.quickTo('.ui-task','x',{duration:.42,ease:'power2.out'});
-  const taskY=gs.quickTo('.ui-task','y',{duration:.42,ease:'power2.out'});
-  const taskR=gs.quickTo('.ui-task','rotation',{duration:.42,ease:'power2.out'});
-  const noteX=gs.quickTo('.ui-note','x',{duration:.42,ease:'power2.out'});
-  const noteY=gs.quickTo('.ui-note','y',{duration:.42,ease:'power2.out'});
-  const noteR=gs.quickTo('.ui-note','rotation',{duration:.42,ease:'power2.out'});
-  if(!isMobile)gs.to(state,{p:1,ease:'none',scrollTrigger:{
-    trigger:'#journey',start:'top top',end:'bottom bottom',pin:'.journey-pin',pinSpacing:false,scrub:1.05,anticipatePin:1,invalidateOnRefresh:true,
-    onUpdate:self=>{
-      targetProgress=state.p= self.progress;
-      const chapterCount=document.querySelectorAll('.chapter-copy').length;const active=Math.min(chapterCount-1,Math.floor(self.progress*chapterCount+0.0001));setChapter(active);
-      document.getElementById('chapterProgress').style.width=(self.progress*100)+'%';
-      document.getElementById('flowIndex').innerHTML=String(Math.round(self.progress*100)).padStart(2,'0')+'<span>%</span>';
-      document.getElementById('flowBar').style.width=(self.progress*100)+'%';
-      document.getElementById('readingProgress').style.width=((window.scrollY/(document.documentElement.scrollHeight-innerHeight))*100)+'%';
-      const velocity=Math.min(1,Math.abs(self.getVelocity())/2600);
-      document.documentElement.style.setProperty('--scroll-velocity',velocity.toFixed(3));
-      taskX(Math.sin(self.progress*Math.PI*4)*18);taskY(Math.cos(self.progress*Math.PI*3)*11);taskR(-4+self.progress*8);
-      noteX(-Math.sin(self.progress*Math.PI*3)*20);noteY(Math.cos(self.progress*Math.PI*4)*12);noteR(4-self.progress*8);
-    }
-  }});
-  gs.from('.manifesto-title h2',{y:90,autoAlpha:0,duration:1,ease:'power3.out',scrollTrigger:{trigger:'.manifesto-title',start:'top 78%',end:'top 35%',scrub:1}});
-  gs.from('.manifesto-statement',{y:55,autoAlpha:0,stagger:.16,ease:'power2.out',scrollTrigger:{trigger:'.manifesto-grid',start:'top 82%',end:'bottom 60%',scrub:1}});
-  gs.from('.closing-copy',{scale:.84,y:45,autoAlpha:0,ease:'power3.out',scrollTrigger:{trigger:'#closing',start:'top 78%',end:'center center',scrub:1}});
-  gs.from('.access-frame',{y:70,scale:.96,autoAlpha:0,ease:'power2.out',scrollTrigger:{trigger:'#access',start:'top 70%',end:'top 25%',scrub:1}});
- }else{setChapter(0);}
+ gs.from('.hero-copy .overline',{y:14,autoAlpha:0,duration:.7,delay:.15,ease:'power3.out'});
+ gs.from('.hero h1',{y:38,autoAlpha:0,duration:1,delay:.2,ease:'power3.out'});
+ gs.from('.hero-lead,.hero-scroll',{y:16,autoAlpha:0,duration:.7,stagger:.12,delay:.55});
+ gs.from('.hero-scene',{autoAlpha:0,x:25,duration:1.1,delay:.2,ease:'power2.out'});
+ const proxy={progress:0};
+ gs.to(proxy,{progress:1,ease:'none',scrollTrigger:{
+  trigger:'#journey',start:'top top',end:'bottom bottom',pin:'.journey-pin',pinSpacing:false,scrub:1.15,anticipatePin:1,invalidateOnRefresh:true,
+  onUpdate:self=>{
+   scrollTarget=self.progress;
+   const index=Math.min(chapters.length-1,Math.floor(self.progress*chapters.length));
+   setChapter(index);
+   const progress=document.getElementById('chapterProgress');progress.style.width=(self.progress*100)+'%';
+  }
+ }});
+ gs.from('.closing-copy',{y:36,autoAlpha:0,ease:'power2.out',scrollTrigger:{trigger:'#closing',start:'top 76%',end:'center center',scrub:1}});
+ gs.from('.access-frame',{y:38,autoAlpha:0,ease:'power2.out',scrollTrigger:{trigger:'#access',start:'top 85%',end:'top 45%',scrub:1}});
  ST.refresh();
 }
-function fallbackScroll(){
- const section=document.getElementById('journey');
- const update=()=>{const r=section.getBoundingClientRect(),p=clamp(-r.top/(r.height-innerHeight));targetProgress=p;setChapter(Math.min(document.querySelectorAll('.chapter-copy').length-1,Math.floor(p*document.querySelectorAll('.chapter-copy').length+0.0001)));document.getElementById('chapterProgress').style.width=(p*100)+'%';};
- addEventListener('scroll',update,{passive:true});update();
-}
-function setupObservers(){
- const map=[['hero','hero'],['journey','journey'],['closing','closing']];
- const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){activeSections[e.target.id]=true}else{activeSections[e.target.id]=false}}),{threshold:.02});
- map.forEach(([id])=>{const el=document.getElementById(id);if(el)io.observe(el)});
+function observeSections(){
+ const observer=new IntersectionObserver(entries=>entries.forEach(e=>{active[e.target.id]=e.isIntersecting;}),{threshold:.01});
+ ['hero','journey','closing'].forEach(id=>{const el=document.getElementById(id);if(el)observer.observe(el);});
  const bar=document.getElementById('readingProgress');
  addEventListener('scroll',()=>{const max=document.documentElement.scrollHeight-innerHeight;bar.style.width=(max>0?scrollY/max*100:0)+'%'},{passive:true});
 }
-function setupPointer(){
- if(reduceMotion)return;
- addEventListener('pointermove',e=>{pointer.tx=(e.clientX/innerWidth-.5)*2;pointer.ty=(e.clientY/innerHeight-.5)*2;},{passive:true});
- const hero=document.querySelector('.hero-scene');
- if(hero&&!coarsePointer)hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect();hero.style.setProperty('--pointer-x',((e.clientX-r.left)/r.width-.5).toFixed(3));hero.style.setProperty('--pointer-y',((e.clientY-r.top)/r.height-.5).toFixed(3));},{passive:true});
- document.querySelectorAll('.float-ui').forEach(el=>el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.transform='translate3d('+((e.clientX-r.left)/r.width-.5)*8+'px,'+((e.clientY-r.top)/r.height-.5)*8+'px,0)';}));
+function pointerEffects(){
+ if(prefersReduced||isMobile)return;
+ const target={x:0,y:0},live={x:0,y:0};
+ addEventListener('pointermove',e=>{target.x=(e.clientX/innerWidth-.5)*2;target.y=(e.clientY/innerHeight-.5)*2;},{passive:true});
+ scenes.hero.canvas.parentElement.addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();target.x=((e.clientX-r.left)/r.width-.5)*1.3;target.y=((e.clientY-r.top)/r.height-.5)*1.3;},{passive:true});
+ scenes.hero.pointer={target,live};
 }
-function setupLinkMotion(){
- document.querySelectorAll('a').forEach(a=>{if(a.hash){a.addEventListener('click',e=>{const target=document.querySelector(a.hash);if(target){e.preventDefault();target.scrollIntoView({behavior:reduceMotion?'auto':'smooth'});}})}});
+function animate(){
+ const dt=Math.min(clock.getDelta(),.04),time=clock.elapsedTime;
+ Object.entries(scenes).forEach(([name,s])=>{
+  if(!s||!active[name])return;
+  if(name==='journey'){scrollLive=damp(scrollLive,scrollTarget,3.5,dt);updateScene(s,scrollLive,time,dt);}
+  else updateScene(s,name==='hero'?.17:.72,time,dt);
+ });
+ if(scenes.hero?.pointer){
+  const {target,live}=scenes.hero.pointer;
+  live.x=damp(live.x,target.x,3,dt);live.y=damp(live.y,target.y,3,dt);
+  scenes.hero.group.rotation.y+=live.x*dt*.12;
+  scenes.hero.group.rotation.x+=live.y*dt*.08;
+ }
+ requestAnimationFrame(animate);
+}
+function setupLinks(){
+ document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
+  const target=document.querySelector(a.getAttribute('href'));if(!target)return;
+  e.preventDefault();target.scrollIntoView({behavior:prefersReduced?'auto':'smooth'});
+ }));
 }
 function boot(){
- initHero();initJourney();initClosing();
- const sizes=()=>{Object.values(scenes).forEach(s=>resizeRenderer(s.renderer,s.camera,s.canvas));if(window.ScrollTrigger)ScrollTrigger.refresh();};
- addEventListener('resize',sizes,{passive:true});setupObservers();setupPointer();setupLinkMotion();setupAnimations();
- animate();
+ initScenes();observeSections();pointerEffects();setupLinks();setupScroll();
  const loader=document.getElementById('loader'),fill=document.getElementById('loaderFill');
- if(fill)fill.style.width='100%';
- setTimeout(()=>loader?.classList.add('done'),650);
+ if(fill)fill.style.width='100%';setTimeout(()=>loader?.classList.add('done'),500);
+ animate();
 }
 document.addEventListener('DOMContentLoaded',boot);
