@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b0e">
+<meta name="description" content="LifeFlow. Make room for what matters.">
+<title>LifeFlow — Find Your Flow / Experience Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/ScrollTrigger.min.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"}}</script>
+<script defer type="module" src="experience.js"></script>
+</head>
+<body>
+<div class="loader" id="loader"><div class="loader-mark">LF<span>.</span></div><div class="loader-track"><i id="loaderFill"></i></div><div class="loader-caption">SETTING YOUR SPACE IN MOTION</div></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="reading-progress"><i id="readingProgress"></i></div>
+<header class="site-header">
+  <a href="#top" class="wordmark"><span class="wordmark-symbol">↗</span><span>LIFEFLOW</span></a>
+  <nav class="header-nav"><a href="#journey">THE JOURNEY</a><a href="#principle">THE IDEA</a><a href="#access">SIGN IN <b>↗</b></a></nav>
+  <div class="header-index">EXPERIENCE LAB <span> / 02</span></div>
+</header>
+
+<main id="top">
+<section class="hero" id="hero">
+  <div class="hero-backdrop"></div>
+  <div class="hero-copy">
+    <div class="overline"><span class="overline-line"></span> A PERSONAL SPACE FOR THE MOVING PARTS</div>
+    <h1>Make room<br>for what <em>matters.</em></h1>
+    <p class="hero-lead">Your time, tasks, plans and ideas are connected. Your workspace should be too.</p>
+    <a class="hero-scroll" href="#journey"><span class="scroll-disc">↓</span><span>SCROLL TO ENTER THE FLOW</span></a>
+  </div>
+  <div class="hero-scene">
+    <div class="hero-scene-glow"></div>
+    <canvas id="hero-canvas" aria-label="Interactive three-dimensional LifeFlow core"></canvas>
+    <div class="scene-coordinates coord-one">L/F — CORE 001<br>LATENT ENERGY</div>
+    <div class="scene-coordinates coord-two">01 / 04<br>ORIGIN</div>
+    <div class="hero-orbit-label">MOVE YOUR POINTER AROUND THE CORE</div>
+  </div>
+  <div class="hero-footer"><span>ONE SPACE. MANY MOVING PARTS.</span><span>SCROLL TO BEGIN <b>↓</b></span></div>
+  <div class="hero-index">01</div>
+</section>
+
+<section class="journey" id="journey">
+  <div class="journey-pin">
+    <div class="journey-topline"><span>THE LIFEFLOW SYSTEM</span><span id="journeyCounter">01 <i>/</i> 04</span></div>
+    <div class="journey-layout">
+      <div class="journey-narrative">
+        <div class="journey-kicker" id="journeyKicker">01 — THE PURPOSE</div>
+        <div class="chapter-copy active" data-copy="0">
+          <h2>Life is bigger<br>than a <em>task list.</em></h2>
+          <p>Planning tools can make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p>
+          <div class="chapter-facts"><span>BUILT FOR</span><b>Work / Study / Life</b><span>AT ITS CORE</span><b>Time · Attention · Progress</b></div>
+        </div>
+        <div class="chapter-copy" data-copy="1">
+          <h2>See what matters.<br>Know what comes <em>next.</em></h2>
+          <p>In your first moments, understand what needs attention, what is already handled and where your time is going. Your day should feel clear, calm, focused and human.</p>
+          <div class="chapter-facts"><span>YOUR VIEW</span><b>Today · Calendar · Board</b><span>THE FEELING</span><b>Less friction. More room.</b></div>
+        </div>
+        <div class="chapter-copy" data-copy="2">
+          <h2>Let good ideas<br>find each <em>other.</em></h2>
+          <p>Write in Markdown. Link notes by title. Follow the connections in Your Branches. Keep your notes, tasks and settings close, stored locally in your browser.</p>
+          <div class="chapter-facts"><span>WRITE</span><b>Markdown Notes</b><span>CONNECT</span><b>Linked Notes · Your Branches</b></div>
+        </div>
+        <div class="chapter-copy" data-copy="3">
+          <h2>Make space<br>for <em>momentum.</em></h2>
+          <p>Six months from now, success is fewer forgotten commitments, clearer days and meaningful progress, not a perfectly maintained planner. LifeFlow should help you decide, not just record.</p>
+          <div class="chapter-facts"><span>THE LONG VIEW</span><b>Progress over perfection</b><span>ONE PRINCIPLE</span><b>Take the next meaningful step</b></div>
+        </div>
+        <div class="journey-bottom"><span id="journeyHint">SCATTERED → IN FOCUS</span><div class="chapter-progress"><i id="chapterProgress"></i></div></div>
+      </div>
+      <div class="journey-visual">
+        <canvas id="journey-canvas" aria-label="Three-dimensional scene transforms as the story progresses"></canvas>
+        <div class="visual-reticle"></div>
+        <div class="visual-tag" id="visualTag"><span class="tag-dot"></span> SYSTEM / DISPERSED</div>
+        <div class="visual-axis axis-a"></div><div class="visual-axis axis-b"></div>
+        <div class="visual-coordinate">LF—<span id="visualCoord">001</span><br><small>LIVE SYSTEM MODEL</small></div>
+        <div class="float-ui ui-task"><span class="ui-icon">◷</span><div><b>Today's focus</b><small>Bring the important things forward</small></div><i>01</i></div>
+        <div class="float-ui ui-note"><span class="ui-icon">⌘</span><div><b>Connected thought</b><small>One idea leads to another</small></div><i>↗</i></div>
+        <div class="dial-readout"><span>FLOW INDEX</span><b id="flowIndex">08<span>%</span></b><i><span id="flowBar"></span></i></div>
+      </div>
+    </div>
+    <div class="journey-foot"><span>SCROLL PROGRESS DRIVES THE SYSTEM</span><span>DRAG / MOVE / EXPLORE</span></div>
+  </div>
+</section>
+
+<section class="manifesto" id="principle">
+  <div class="manifesto-top"><span>02 / THE WAY FORWARD</span><span>LESS FRICTION. MORE INTENTION.</span></div>
+  <div class="manifesto-title"><div class="manifesto-small">A DIFFERENT KIND OF WORKSPACE</div><h2>Not more to manage.<br><em>More room to live.</em></h2></div>
+  <div class="manifesto-grid">
+    <div class="manifesto-statement"><span class="statement-number">01</span><p>Clear enough to orient you in seconds. Flexible enough to hold the many sides of your day.</p></div>
+    <div class="manifesto-statement"><span class="statement-number">02</span><p>Local by design. Your notes, plans and settings stay in your browser, close to you.</p></div>
+    <div class="manifesto-statement"><span class="statement-number">03</span><p>Made for the long run. The goal is not perfect planning. It is meaningful progress.</p></div>
+  </div>
+  <div class="manifesto-bottom"><span>THE SIX-MONTH TEST</span><b>FEWER FORGOTTEN THINGS. CLEARER DAYS. A STRONGER SENSE OF PROGRESS.</b></div>
+</section>
+
+<section class="closing" id="closing">
+  <div class="closing-canvas-wrap"><canvas id="closing-canvas" aria-label="A final three-dimensional LifeFlow sphere"></canvas></div>
+  <div class="closing-copy">
+    <div class="overline"><span class="overline-line"></span> THE POINT IS NOT TO DO MORE</div>
+    <h2>Find your<br><em>own flow.</em></h2>
+    <p>Bring the moving parts together. Give your energy to the parts that count.</p>
+    <a href="#access" class="closing-link"><span>CONTINUE TO LIFEFLOW</span><b>↓</b></a>
+  </div>
+  <div class="closing-stamp">FLOW / FOUND</div>
+</section>
+
+<section class="access" id="access">
+  <div class="access-topline"><span>03 / YOUR SPACE STARTS HERE</span><span>LIFEFLOW ACCESS</span></div>
+  <div class="access-heading"><span class="overline-line"></span><h2>Step into<br><em>your flow.</em></h2></div>
+  <div class="access-frame">
+    <iframe title="LifeFlow sign in and account creation" src="../index.html?auth=login&amp;embed=1&amp;v=20261105-auth-split1" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+  </div>
+  <div class="access-footer"><span>YOUR TIME. YOUR SPACE. YOUR FLOW.</span><a href="#top">BACK TO THE BEGINNING ↑</a></div>
+</section>
+</main>
+<script src="experience.js" type="module"></script>
+</body></html>
