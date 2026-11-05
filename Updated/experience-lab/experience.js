@@ -147,26 +147,26 @@ function updateJourney(p,dt){
  });
  updateEdges(s);
  s.edges.material.opacity=.08+network*.58+flow*.3;
- s.c.core.scale.setScalar(.72+Math.sin(q*Math.PI)*.12+flow*.42);
+ s.c.core.scale.setScalar(.86);
  s.c.shell.material.emissiveIntensity=.22+q*.58;
  s.c.rings.forEach((r,i)=>{
   const separation=1+Math.sin(q*Math.PI*2+i*.5)*.12;
   r.scale.setScalar(separation+(q>.4&&q<.62?.24:0));
-  r.rotation.x+=dt*(.1+i*.09)*(i%2?1:-1);
-  r.rotation.y+=dt*(.16+i*.1);
+  r.rotation.z+=dt*(i%2?.09:-.07);
+  r.rotation.x+=dt*.025;
   r.material.opacity=.2+q*.4;
  });
  s.explodeBits.forEach((m,i)=>{
   const phase=clamp(1-Math.abs(q-.52)*3);
-  const scatterDist=1+phase*(.8+i*.14);
+  const scatterDist=1+phase*(.16+i*.035);
   m.scale.setScalar(scatterDist);
-  m.rotation.x+=dt*(.08+i*.025);m.rotation.z+=dt*(.13+i*.04);
+  m.rotation.x+=dt*(.045+i*.012);m.rotation.z+=dt*(.065+i*.018);
   m.position.set(Math.sin(i*1.7)*phase*.36,Math.cos(i*2.1)*phase*.32,Math.sin(i)*phase*.3);
  });
  s.dust.rotation.y+=dt*.02;
- s.camera.position.z=damp(s.camera.position.z,8.4-q*1.55,2,dt);
- s.camera.position.x=damp(s.camera.position.x,Math.sin(q*Math.PI*2)*.28,2,dt);
- s.camera.position.y=damp(s.camera.position.y,Math.cos(q*Math.PI)*.18,2,dt);
+ s.camera.position.z=damp(s.camera.position.z,8.5,2,dt);
+ s.camera.position.x=damp(s.camera.position.x,Math.sin(q*Math.PI*2)*.12,2,dt);
+ s.camera.position.y=damp(s.camera.position.y,Math.cos(q*Math.PI)*.08,2,dt);
  s.camera.lookAt(0,0,0);
 }
 function animate(){
@@ -262,7 +262,7 @@ function setupAnimations(){
 }
 function fallbackScroll(){
  const section=document.getElementById('journey');
- const update=()=>{const r=section.getBoundingClientRect(),p=clamp(-r.top/(r.height-innerHeight));targetProgress=p;setChapter(Math.min(3,Math.floor(p*4.0001)));document.getElementById('chapterProgress').style.width=(p*100)+'%';};
+ const update=()=>{const r=section.getBoundingClientRect(),p=clamp(-r.top/(r.height-innerHeight));targetProgress=p;setChapter(Math.min(document.querySelectorAll('.chapter-copy').length-1,Math.floor(p*document.querySelectorAll('.chapter-copy').length+0.0001)));document.getElementById('chapterProgress').style.width=(p*100)+'%';};
  addEventListener('scroll',update,{passive:true});update();
 }
 function setupObservers(){
