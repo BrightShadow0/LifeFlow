@@ -74,3 +74,116 @@
  .chapter-copy{position:relative;top:auto;display:block;opacity:1;visibility:visible;transform:none;max-height:none;overflow:visible;margin:0 0 44px}
  .journey-bottom{display:none}
 }
+
+/* Experience Lab refresh: one continuous flow ribbon, no orbits or atom motifs */
+:root{--bg:#080d0f;--text:#f1f4ee;--muted:#abb6ab;--lime:#b9e96a;--line:rgba(210,230,210,.14)}
+html,body{background:#080d0f;color:var(--text)}
+.hero{width:100%;max-width:1640px;min-height:100svh;margin:0 auto;padding:125px clamp(26px,7vw,110px) 76px;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);gap:clamp(18px,3.5vw,58px);align-items:center}
+.hero:before{background:radial-gradient(ellipse at 77% 48%,#223a2b2b,transparent 48%),linear-gradient(120deg,#080d0f,#0a1110 65%,#080d0f)}
+.hero:after{display:none}
+.hero-copy{grid-column:1;max-width:610px;min-width:0}
+.hero h1{font-size:clamp(58px,7.2vw,108px);line-height:.96;letter-spacing:-.075em;margin:26px 0 24px;text-wrap:balance}
+.hero h1 em{display:inline-block;line-height:1.05;padding-bottom:.07em;color:#b9e96a}
+.hero-lead{max-width:420px;color:#b5c0b5;line-height:1.8}
+.hero-scene{grid-column:2;width:100%;height:clamp(350px,58vh,610px);min-height:0;max-height:650px;margin:0;aspect-ratio:1.28;position:relative;overflow:visible;isolation:isolate}
+.hero-scene:before{content:"";position:absolute;inset:15% 7%;z-index:-1;background:radial-gradient(ellipse,#344a3027,transparent 68%);filter:blur(22px)}
+.hero-scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block;outline:none}
+.ribbon-caption{position:absolute;left:5%;bottom:7%;font:8px var(--mono);letter-spacing:.18em;color:#778579;pointer-events:none}
+.hero-footer{left:clamp(26px,7vw,110px);right:clamp(26px,7vw,110px);bottom:23px;color:#7a887d}
+.hero-footer b{color:var(--lime)}
+/* Nine chapters, one pinned canvas, fixed proportions */
+.journey{height:920vh;position:relative;background:linear-gradient(180deg,#0a1010,#091012 76%,#080d0f)}
+.journey-pin{height:100svh;min-height:0;padding:78px clamp(26px,7vw,110px) 38px;background:transparent}
+.journey-pin:before{background:radial-gradient(ellipse at 77% 52%,#203b2b1e,transparent 49%),linear-gradient(110deg,#0a1111,#080d10)}
+.journey-pin:after{display:none}
+.journey-topline,.journey-foot{color:#839084}
+.journey-layout{height:calc(100% - 38px);grid-template-columns:minmax(0,.88fr) minmax(0,1.12fr);gap:clamp(26px,5vw,82px);align-items:center;max-width:1500px}
+.journey-narrative{height:min(590px,76vh);min-height:0;width:100%;display:block;padding:0;position:relative;overflow:visible}
+.journey-kicker{position:absolute;top:4%;left:0;margin:0;color:#c7eb8d;font-size:9px;letter-spacing:.16em}
+.chapter-copy{position:absolute;top:50%;left:0;right:0;max-width:560px;max-height:82%;overflow:auto;overflow-x:hidden;padding:0 12px 12px 0;scrollbar-width:thin;scrollbar-color:#b9e96a55 transparent;transform:translateY(-50%);text-wrap:pretty}
+.chapter-copy h2{display:flex;flex-direction:column;align-items:flex-start;gap:.025em;max-width:100%;font-size:clamp(37px,4.2vw,64px);line-height:1.055;letter-spacing:-.06em;margin:0 0 20px;font-weight:750;color:#f2f4ef;overflow:visible;text-wrap:balance}
+.chapter-copy h2 span,.chapter-copy h2 em{display:block;max-width:100%;overflow-wrap:normal;word-break:normal}
+.chapter-copy h2 em{color:#b9e96a;line-height:1.09;padding:0 0 .04em;font-family:"Playfair Display",Georgia,serif;font-weight:500;letter-spacing:-.045em}
+.chapter-copy p{max-width:510px;font-size:clamp(13px,1.05vw,15px);line-height:1.8;color:#c0c9bf;margin:0}
+.chapter-facts{margin-top:25px;padding-top:16px;border-top:1px solid #b9e96a36;display:grid;grid-template-columns:minmax(82px,112px) minmax(0,1fr);gap:9px 14px;align-items:start}
+.chapter-facts span{font:8px/1.55 var(--mono);letter-spacing:.1em;color:#a8be96;overflow-wrap:anywhere}
+.chapter-facts b{font:11px/1.6 var(--mono);font-weight:400;color:#e3ebdf;min-width:0;overflow-wrap:anywhere}
+.journey-bottom{bottom:0;color:#8a968a}
+.chapter-progress{background:#ffffff20}
+.chapter-progress i{background:#b9e96a}
+.journey-visual{width:100%;height:clamp(340px,63vh,630px);min-height:0;max-height:680px;aspect-ratio:1.22;position:relative;overflow:hidden;isolation:isolate}
+.journey-visual:before{display:none}
+.journey-visual canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.journey-ribbon-caption{left:5%;bottom:5%;color:#7e8d7e}
+.visual-reticle,.visual-tag,.visual-axis,.visual-coordinate,.float-ui,.dial-readout{display:none!important}
+.journey-foot{bottom:15px;color:#758276}
+.journey-foot span:last-child{display:none}
+/* Quiet editorial interlude */
+.manifesto{display:none!important}
+/* Final ribbon replaces the large glowing sphere */
+.closing{height:94svh;min-height:620px;background:radial-gradient(ellipse at 50% 55%,#20352720,transparent 52%),#080d0f}
+.closing:before{display:none}
+.closing-canvas-wrap{position:absolute;inset:18% 0 5%;z-index:0;opacity:.62;pointer-events:none}
+.closing-canvas-wrap canvas{display:block;width:100%;height:100%}
+.closing-copy{z-index:2}
+.closing h2{font-size:clamp(65px,9vw,124px);line-height:.96;letter-spacing:-.08em}
+.closing h2 em{line-height:1.05;padding-bottom:.06em}
+.closing p{color:#b7c2b7}
+.closing-link{color:#c6ee83}
+/* Access screen: keep focus on the actual authentication design */
+.access{min-height:100svh;padding:36px clamp(12px,4vw,58px);display:flex;align-items:center;justify-content:center;background:#080d0f}
+.access-frame{width:min(1240px,100%);height:min(790px,calc(100svh - 72px));min-height:630px;margin:0 auto;border:1px solid #b9e96a35;border-radius:12px;overflow:hidden;background:#080d12;box-shadow:0 26px 85px #0007}
+.access-frame iframe{width:100%;height:100%;display:block;border:0;background:#080d12}
+@media(max-width:1100px) and (min-width:761px){
+ .hero{padding-inline:5vw;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:18px}
+ .hero h1{font-size:clamp(52px,6.4vw,78px)}
+ .journey-pin{padding-inline:5vw}
+ .journey-layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px}
+ .chapter-copy h2{font-size:clamp(35px,4.2vw,52px)}
+ .chapter-copy p{font-size:13px}
+ .journey-visual{height:min(60vh,520px)}
+}
+@media(max-height:760px) and (min-width:761px){
+ .journey-pin{padding-top:66px;padding-bottom:34px}
+ .journey-layout{height:calc(100% - 34px)}
+ .journey-narrative{height:min(540px,76vh)}
+ .chapter-copy{max-height:82%;top:51%}
+ .chapter-copy h2{font-size:clamp(34px,3.8vw,55px);margin-bottom:14px}
+ .chapter-copy p{font-size:12px;line-height:1.72}
+ .chapter-facts{margin-top:17px;padding-top:12px}
+ .journey-visual{height:min(58vh,510px)}
+}
+@media(max-width:760px){
+ .hero{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;padding:120px 22px 58px;min-height:100svh}
+ .hero-copy{width:100%;max-width:650px}
+ .hero h1{font-size:clamp(54px,11vw,82px);line-height:.98;margin:22px 0}
+ .hero-scene{width:100%;height:clamp(260px,42vh,390px);min-height:0;max-height:390px;margin:0;align-self:center;aspect-ratio:1.35}
+ .hero-footer{left:22px;right:22px;bottom:19px;font-size:7px}
+ .journey{height:auto}
+ .journey-pin{height:auto;min-height:0;padding:76px 22px 38px;overflow:visible}
+ .journey-layout{height:auto;display:flex;flex-direction:column;align-items:stretch;gap:22px}
+ .journey-visual{order:-1;width:100%;height:clamp(240px,58vw,390px);min-height:0;max-height:390px;aspect-ratio:1.35}
+ .journey-narrative{height:auto;min-height:0;display:block;padding:0;overflow:visible}
+ .journey-kicker{position:static;display:block;margin:0 0 18px}
+ .chapter-copy{position:relative;top:auto;left:auto;right:auto;display:block;max-height:none;overflow:visible;transform:none;margin:0 0 48px;padding:0;opacity:1;visibility:visible}
+ .chapter-copy h2{font-size:clamp(39px,9vw,58px);line-height:1.06;margin-bottom:16px}
+ .chapter-copy p{font-size:14px;line-height:1.78}
+ .chapter-facts{margin-top:18px;grid-template-columns:minmax(75px,100px) minmax(0,1fr)}
+ .journey-bottom,.journey-foot{display:none}
+ .closing{height:82svh;min-height:560px}
+ .closing-canvas-wrap{inset:23% 0 4%;opacity:.45}
+ .access{padding:10px 0;min-height:100svh}
+ .access-frame{width:100%;height:800px;min-height:0;border-radius:0;border-left:0;border-right:0}
+}
+@media(max-width:430px){
+ .hero h1{font-size:52px}
+ .chapter-copy h2{font-size:40px}
+ .chapter-facts{grid-template-columns:78px minmax(0,1fr);gap:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .journey{height:auto}.journey-pin{height:auto;min-height:0;overflow:visible}
+ .journey-layout{height:auto}
+ .journey-narrative{height:auto}
+ .chapter-copy{position:relative;top:auto;display:block;max-height:none;overflow:visible;transform:none;opacity:1;visibility:visible;margin:0 0 45px}
+ .journey-bottom,.journey-foot{display:none}
+}
