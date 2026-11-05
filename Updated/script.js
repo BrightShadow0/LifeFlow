@@ -1645,17 +1645,41 @@ function renderBranches(){
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
   const items=state.notes, count=items.length, positions={};
-  const width=1200,height=820;let addedPositions=false;
+  const width=1400,height=Math.max(900,Math.ceil(Math.sqrt(Math.max(1,count)))*260);
+  let changed=false;
   const hash=function(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
+  const labelWidth=function(n){return Math.max(92,Math.min(250,String(n.title||'Untitled').slice(0,34).length*7.2));};
   items.forEach(function(n,i){
     if(!Number.isFinite(n.graphX)||!Number.isFinite(n.graphY)){
       const h=hash(String(n.id||n.noteCode||i));
-      n.graphX=100+(h%10000)/10000*(width-200);
-      n.graphY=90+((h>>>10)%10000)/10000*(height-180);addedPositions=true;
+      n.graphX=90+(h%10000)/10000*(width-180);
+      n.graphY=80+((h>>>10)%10000)/10000*(height-160);changed=true;
     }
     positions[String(n.id)]={x:n.graphX,y:n.graphY};
   });
-  if(addedPositions)save();
+  // Relax overlapping node labels while retaining the user's saved layout.
+  for(let pass=0;pass<220;pass++){
+    let moved=false;
+    for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
+      const a=items[i],b=items[j],pa=positions[String(a.id)],pb=positions[String(b.id)];
+      let dx=pb.x-pa.x,dy=pb.y-pa.y;
+      const minX=(labelWidth(a)+labelWidth(b))/2+34,minY=88;
+      if(Math.abs(dx)<minX&&Math.abs(dy)<minY){
+        if(Math.abs(dx)<1)dx=(i%2?1:-1)*2;
+        if(Math.abs(dy)<1)dy=(j%2?1:-1)*2;
+        const ox=(minX-Math.abs(dx))*.055*Math.sign(dx);
+        const oy=(minY-Math.abs(dy))*.055*Math.sign(dy);
+        pa.x-=ox;pb.x+=ox;pa.y-=oy;pb.y+=oy;moved=true;
+      }
+    }
+    items.forEach(function(n){
+      const p=positions[String(n.id)],x=Math.max(110,Math.min(width-110,p.x)),y=Math.max(80,Math.min(height-65,p.y));
+      if(x!==p.x||y!==p.y)moved=true;p.x=x;p.y=y;
+    });
+    if(!moved)break;
+  }
+  items.forEach(function(n){const p=positions[String(n.id)];if(Math.abs(n.graphX-p.x)>.5||Math.abs(n.graphY-p.y)>.5)changed=true;n.graphX=p.x;n.graphY=p.y;});
+  if(changed)save();
   const edges=[],seen={};
   items.forEach(function(n){
     const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
