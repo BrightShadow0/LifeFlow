@@ -192,7 +192,7 @@ function buildCheckpointSigns(){
   group.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);sceneState.world.add(group);
  }
 }
-function initWorld(){
+async function initWorld(){
  const canvas=document.getElementById('worldCanvas');
  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:!mobile,powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
@@ -210,7 +210,7 @@ function initWorld(){
  const world=new THREE.Group();scene.add(world);
  sceneState.renderer=renderer;sceneState.scene=scene;sceneState.camera=camera;sceneState.world=world;sceneState.curve=curve;
  buildTerrain();buildRoadRibbon();addRoadside();buildCheckpointSigns();createFallbackCar();
- loadModels().catch(err=>console.warn('LifeFlow model loading failed; using fallback scene',err));
+ try{await Promise.race([loadModels(),new Promise(resolve=>setTimeout(resolve,4500))]);}catch(err){console.warn('LifeFlow model loading failed; using fallback scene',err);}
  addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();},{passive:true});
 }
 function placeCar(progress,dt){
@@ -295,8 +295,8 @@ function setupAnchors(){
   e.preventDefault();target.scrollIntoView({behavior:reduced?'auto':'smooth'});
  }));
 }
-function boot(){
- initWorld();setupScroll();setupPointer();setupAnchors();
+async function boot(){
+ await initWorld();setupScroll();setupPointer();setupAnchors();
  if(reduced){document.querySelectorAll('.story-beat').forEach(x=>x.classList.add('active'));document.querySelector('.story').style.height='auto';}
  animate();
 }
