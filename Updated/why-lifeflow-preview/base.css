@@ -45,3 +45,8 @@ footer{padding:25px clamp(22px,5vw,76px);border-top:1px solid var(--line);displa
 .chapter-note span{display:block;color:#82918b;font-size:11px;line-height:1.65}
 .chapter p{max-width:390px}
 @media(max-width:760px){.chapter-note{margin-top:18px}.chapter{min-height:76svh}}
+
+/* Keep the final authentication terminal clean and fully focused */
+.login-section{grid-template-columns:minmax(0,1fr);justify-items:center;min-height:100svh;padding:clamp(50px,7vh,90px) clamp(16px,5vw,72px)}
+.login-section .embedded-auth{width:min(1080px,100%);height:min(760px,calc(100svh - 100px));min-height:660px;margin:0 auto}
+@media(max-width:620px){.login-section{padding:45px 12px}.login-section .embedded-auth{height:780px;min-height:0}}
