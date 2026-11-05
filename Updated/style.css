@@ -3647,3 +3647,37 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
   #app .note-editor-actions{width:100%;flex-wrap:wrap}
   #app .note-editor-actions button{flex:1 1 auto}
 }
+
+
+/* Global theme-aware scrollbars: keep every scrollable surface in sync with the active LifeFlow theme. */
+:root,
+body,
+#app,
+#app *{
+  scrollbar-color:var(--accent,var(--primary,#16c784)) var(--surface-2,var(--surface,#17211e)) !important;
+  scrollbar-width:thin !important;
+}
+#app *::-webkit-scrollbar,
+body::-webkit-scrollbar{
+  width:10px;
+  height:10px;
+}
+#app *::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track{
+  background:var(--surface-2,var(--surface,#17211e));
+  border-radius:10px;
+}
+#app *::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb{
+  background:var(--accent,var(--primary,#16c784));
+  border:2px solid var(--surface-2,var(--surface,#17211e));
+  border-radius:10px;
+}
+#app *::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover{
+  background:var(--accent-hover,var(--accent,var(--primary,#16c784)));
+}
+#app *::-webkit-scrollbar-corner,
+body::-webkit-scrollbar-corner{
+  background:var(--surface-2,var(--surface,#17211e));
+}
