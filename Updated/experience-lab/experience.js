@@ -12,15 +12,15 @@ const active={hero:true,journey:false,closing:false};
 function createRibbonGeometry(segments=180,slices=18){
  const geometry=new THREE.BufferGeometry();
  const positions=new Float32Array((segments+1)*(slices+1)*3);
- const uvs=new Float32Array((segments+1)*(slices+1)*2);
+ const uvs=new Float32Array((segments+1)*(slices+1)*2);\n const colors=new Float32Array((segments+1)*(slices+1)*3);
  const indices=[];
  for(let i=0;i<=segments;i++)for(let j=0;j<=slices;j++){
-  const k=i*(slices+1)+j;uvs[k*2]=i/segments;uvs[k*2+1]=j/slices;
+  const k=i*(slices+1)+j;uvs[k*2]=i/segments;uvs[k*2+1]=j/slices;\n  const t=i/segments,v=j/slices;const col=new THREE.Color('#728d61').lerp(new THREE.Color('#b2c985'),Math.pow(Math.sin(Math.PI*t),1.1)*(.28+Math.abs(v-.5)*.12));colors[k*3]=col.r;colors[k*3+1]=col.g;colors[k*3+2]=col.b;
   if(i<segments&&j<slices){const a=k,b=k+slices+1;indices.push(a,b,a+1,b,b+1,a+1);}
  }
  geometry.setIndex(indices);
  geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));
- geometry.setAttribute('uv',new THREE.BufferAttribute(uvs,2));
+ geometry.setAttribute('uv',new THREE.BufferAttribute(uvs,2));\n geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
  return geometry;
 }
 function updateRibbon(mesh,progress,time,variant=0){
@@ -70,7 +70,7 @@ function createScene(canvasId,kind){
  const rim=new THREE.DirectionalLight('#a6c6a0',.75);rim.position.set(1,-3,-4);scene.add(rim);
  const group=new THREE.Group();scene.add(group);
  const geometry=createRibbonGeometry();
- const material=new THREE.MeshPhysicalMaterial({color:'#839e65',metalness:.22,roughness:.34,clearcoat:.95,clearcoatRoughness:.24,side:THREE.DoubleSide});
+ const material=new THREE.MeshPhysicalMaterial({color:'#ffffff',vertexColors:true,metalness:.18,roughness:.38,clearcoat:.88,clearcoatRoughness:.28,side:THREE.DoubleSide});
  const ribbon=new THREE.Mesh(geometry,material);group.add(ribbon);
  const edgeMaterial=new THREE.MeshBasicMaterial({color:'#c5dc9a',transparent:true,opacity:.18,side:THREE.DoubleSide});
  // A restrained central sheen, not a second shape.
@@ -157,7 +157,7 @@ function pointerEffects(){
  if(prefersReduced||isMobile)return;
  const target={x:0,y:0},live={x:0,y:0};
  addEventListener('pointermove',e=>{target.x=(e.clientX/innerWidth-.5)*2;target.y=(e.clientY/innerHeight-.5)*2;},{passive:true});
- scenes.hero.canvas.parentElement.addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();target.x=((e.clientX-r.left)/r.width-.5)*1.3;target.y=((e.clientY-r.top)/r.height-.5)*1.3;},{passive:true});
+ if(!scenes.hero)return;\n scenes.hero.canvas.parentElement.addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();target.x=((e.clientX-r.left)/r.width-.5)*1.3;target.y=((e.clientY-r.top)/r.height-.5)*1.3;},{passive:true});
  scenes.hero.pointer={target,live};
 }
 function animate(){
