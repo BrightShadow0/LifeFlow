@@ -3690,3 +3690,18 @@ body::-webkit-scrollbar-corner{
 .note-link-option{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;border:0;border-radius:7px;background:transparent;color:var(--text);text-align:left;cursor:pointer}
 .note-link-option:hover,.note-link-option.active{background:var(--surface-2,var(--accent))}
 .md-note-link{color:var(--accent,var(--primary));text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;cursor:pointer}
+
+/* Organic, interactive note constellation. */
+.interactive-branch-graph{position:relative;overflow:hidden;touch-action:none;min-height:560px}
+.interactive-branch-graph svg{width:100%;height:min(72vh,760px);min-height:560px;min-width:0;cursor:grab;touch-action:none}
+.interactive-branch-graph:active svg{cursor:grabbing}
+.interactive-branch-node{cursor:grab;outline:none}
+.interactive-branch-node circle{r:15;transition:r .18s ease,filter .18s ease}
+.interactive-branch-node:hover circle,.interactive-branch-node:focus circle{r:20;filter:drop-shadow(0 0 9px var(--accent))}
+.interactive-branch-node.dragging{cursor:grabbing}
+.interactive-branch-node text{font-size:13px;pointer-events:none;paint-order:stroke;stroke:var(--surface-2);stroke-width:3px;stroke-linejoin:round}
+.interactive-branch-node.dragging circle{r:20}
+.branch-edge{stroke:var(--accent,var(--primary));stroke-width:2;opacity:.42;pointer-events:none}
+.branch-graph-controls{position:absolute;right:12px;bottom:12px;display:flex;gap:6px;padding:6px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.branch-graph-controls button{min-width:34px;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);cursor:pointer}
+.branch-graph-controls button:hover{border-color:var(--accent);color:var(--accent)}
