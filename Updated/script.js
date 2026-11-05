@@ -1628,16 +1628,19 @@ function renderNotesManager(){
   if(selected){
     const content=selected.content||'';
 
-    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div></div>';
+    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" onclick="setKnowledgeNoteView(\'edit\')">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" onclick="setKnowledgeNoteView(\'preview\')">Preview</button></div><div class="note-title-actions"><button type="button" class="note-rename-btn" onclick="beginKnowledgeNoteRename(\''+selected.id+'\')">Rename</button><input id="kn_title_edit" class="note-title-edit" value="'+esc(selected.title||'Untitled')+'" maxlength="80" aria-label="Note title" style="display:none" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}if(event.key===\'Escape\'){this.dataset.cancel=\'1\';this.blur();}" onblur="finishKnowledgeNoteRename(\''+selected.id+'\',this)"></div></div>';
     html+='<div class="note-content-surface">';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
-    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);handleNoteLinkAutocomplete(event);refreshMarkdownPreview()" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" style="display:none"></div></div>';
+    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" onkeydown="handleMarkdownKeydown(event)" oninput="updateKnowledgeNote(\'regular\',\''+selected.id+'\',this.value);handleNoteLinkAutocomplete(event);refreshMarkdownPreview()" onblur="autoTitleKnowledgeNote(\''+selected.id+'\',this.value)" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" style="display:none"></div></div>';
     html+='</div>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
   return html;
 }
 function copyKnowledgeNoteCode(id){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const value=n.noteCode||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){showToast('Note code copied');}).catch(function(){showToast(value);});}else showToast(value);}
+function beginKnowledgeNoteRename(id){const input=document.getElementById('kn_title_edit');if(!input)return;input.style.display='block';input.focus();input.select();}
+function finishKnowledgeNoteRename(id,input){if(!input||input.dataset.cancel==='1'){if(input)delete input.dataset.cancel;return;}const title=String(input.value||'').trim();if(!title)return;const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n||n.title===title)return;n.title=title;n.updatedAt=Date.now();save();renderApp();}
+function autoTitleKnowledgeNote(id,value){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const current=String(n.title||'');if(!/^Untitled Note\\s+\\d+$/i.test(current))return;const first=String(value||'').split(/\\r?\\n/).map(function(line){return line.replace(/^\\s*#+\\s*/,'').trim();}).find(Boolean);if(!first)return;const title=first.length>52?first.slice(0,49).trimEnd()+'…':first;if(title===current)return;n.title=title;n.updatedAt=Date.now();save();renderApp();}
 function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
 function updateKnowledgeLanguage(id,v){const n=noteStore('code').find(function(x){return String(x.id)===String(id);});if(n){n.language=v;n.updatedAt=Date.now();save();renderApp();}}
 function renderBranches(){
