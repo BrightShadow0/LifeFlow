@@ -18,3 +18,20 @@
 .manifesto{padding:80px 22px 40px;min-height:100svh}.manifesto-title{margin:95px 0 80px}.manifesto-title h2{font-size:clamp(48px,11vw,80px)}.manifesto-grid{grid-template-columns:1fr;gap:24px;margin-bottom:70px}.manifesto-statement p{max-width:450px;margin:12px 0 0}.manifesto-bottom{flex-direction:column;gap:9px}.manifesto-bottom b{text-align:left;line-height:1.7}.closing{height:90svh;min-height:620px}.closing h2{font-size:clamp(65px,14vw,100px)}.access{padding:45px 10px 20px}.access-topline{padding:0 12px;font-size:7px}.access-heading{margin:40px 12px 25px}.access-frame{height:790px;min-height:0;border-radius:8px}.access-footer{padding:0 8px;font-size:7px}}
 @media(max-width:420px){.header-nav a:nth-child(1){display:none}.wordmark{font-size:11px}.hero h1{font-size:58px}.chapter-facts{grid-template-columns:88px 1fr}.chapter-facts b{font-size:9px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.loader{display:none}}
+
+@media(max-width:760px){
+ .journey{height:auto}
+ .journey-pin{height:auto}
+ .journey-narrative{display:block;min-height:0;padding:15px 0 20px}
+ .chapter-copy{position:relative;top:auto;right:auto;display:block;opacity:1;visibility:visible;transform:none;margin:0 0 48px}
+ .chapter-copy.active{opacity:1;visibility:visible}
+ .journey-bottom{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .journey{height:auto}
+ .journey-pin{height:auto;min-height:0;overflow:visible}
+ .journey-narrative{display:block;min-height:0}
+ .chapter-copy{position:relative;top:auto;display:block;opacity:1;visibility:visible;transform:none;margin:25px 0}
+ .journey-bottom{display:none}
+}
+.hero-scene.webgl-fallback:after,.journey-visual.webgl-fallback:after,.closing-canvas-wrap.webgl-fallback:after{content:"";position:absolute;inset:14%;border:1px solid #c9ff5845;border-radius:50%;box-shadow:0 0 90px #c9ff581c,inset 0 0 60px #c9ff580c;background:radial-gradient(circle,#c9ff5819,transparent 65%);pointer-events:none}
