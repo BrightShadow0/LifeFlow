@@ -192,23 +192,27 @@ function animate(){
 }
 let lastChapter = -1;
 function setChapter(index){
- const count=Math.min(3,Math.max(0,index));if(count===lastChapter)return;lastChapter=count;
  const copies=[...document.querySelectorAll('.chapter-copy')];
+ const count=Math.max(0,Math.min(copies.length-1,index));
+ if(count===lastChapter)return;
+ lastChapter=count;
  copies.forEach((el,i)=>{
   const is=i===count;el.classList.toggle('active',is);
-  if(window.gsap){gsap.to(el,{autoAlpha:is?1:0,y:is?0:-22,duration:.36,ease:'power2.out',overwrite:true});}
+  if(window.gsap){gsap.to(el,{autoAlpha:is?1:0,y:is?0:-22,duration:.42,ease:'power2.out',overwrite:true});}
+  else{el.style.opacity=is?'1':'0';el.style.visibility=is?'visible':'hidden';}
  });
- const names=['01 — THE PURPOSE','02 — THE EVERYDAY','03 — THE CONNECTIONS','04 — THE LONG VIEW'];
- const hints=['SCATTERED → IN FOCUS','TIME → ATTENTION','IDEAS → CONNECTIONS','PROGRESS → MOMENTUM'];
- const tags=['SYSTEM / DISPERSED','SYSTEM / ALIGNING','SYSTEM / CONNECTED','SYSTEM / IN FLOW'];
- const counters=['01','02','03','04'];
+ const names=['01 — WHY IT EXISTS','02 — WHO IT IS FOR','03 — WHAT IT MANAGES','04 — YOUR FIRST 30 SECONDS','05 — HOW IT SHOULD FEEL','06 — WHY FLOW','07 — THE SIX-MONTH TEST','08 — LOCAL BY DESIGN','09 — MARKDOWN NOTES MANAGER'];
+ const hints=['SCATTERED → IN FOCUS','MANY ROLES → ONE SPACE','TASKS → PERSPECTIVE','UNCERTAINTY → CLARITY','FRICTION → FLOW','MOTION → MOMENTUM','PERFECTION → PROGRESS','CENTRAL SERVER → YOUR SPACE','IDEAS → CONNECTIONS'];
+ const tags=['DISPERSED','BALANCING','PRIORITISING','CLARITY','CALM','FLOW','MOMENTUM','LOCAL','CONNECTED'];
+ const total=String(copies.length).padStart(2,'0');
+ const counter=String(count+1).padStart(2,'0');
  document.getElementById('journeyKicker').textContent=names[count];
  document.getElementById('journeyHint').textContent=hints[count];
- document.getElementById('visualTag').lastChild.textContent=' SYSTEM / '+tags[count].split('/ ')[1];
- document.getElementById('journeyCounter').innerHTML=counters[count]+' <i>/</i> 04';
- document.getElementById('visualCoord').textContent='00'+(count+1);
- document.getElementById('flowIndex').innerHTML=String(Math.round((count+1)*25)).padStart(2,'0')+'<span>%</span>';
- document.getElementById('flowBar').style.width=((count+1)*25)+'%';
+ document.getElementById('visualTag').lastChild.textContent=' SYSTEM / '+tags[count];
+ document.getElementById('journeyCounter').innerHTML=counter+' <i>/</i> '+total;
+ document.getElementById('visualCoord').textContent=String(count+1).padStart(3,'0');
+ document.getElementById('flowIndex').innerHTML=String(Math.round((count+1)/copies.length*100)).padStart(2,'0')+'<span>%</span>';
+ document.getElementById('flowBar').style.width=((count+1)/copies.length*100)+'%';
 }
 function setupAnimations(){
  const gs=window.gsap,ST=window.ScrollTrigger;
@@ -238,7 +242,7 @@ function setupAnimations(){
     trigger:'#journey',start:'top top',end:'bottom bottom',pin:'.journey-pin',pinSpacing:false,scrub:1.05,anticipatePin:1,invalidateOnRefresh:true,
     onUpdate:self=>{
       targetProgress=state.p= self.progress;
-      const active=Math.min(3,Math.floor(self.progress*4.0001));setChapter(active);
+      const chapterCount=document.querySelectorAll('.chapter-copy').length;const active=Math.min(chapterCount-1,Math.floor(self.progress*chapterCount+0.0001));setChapter(active);
       document.getElementById('chapterProgress').style.width=(self.progress*100)+'%';
       document.getElementById('flowIndex').innerHTML=String(Math.round(self.progress*100)).padStart(2,'0')+'<span>%</span>';
       document.getElementById('flowBar').style.width=(self.progress*100)+'%';
