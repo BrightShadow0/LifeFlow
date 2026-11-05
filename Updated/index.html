@@ -10,17 +10,14 @@
 
 <div id="authScreen">
   <div class="card">
-    <div class="termbar">
-      <div class="termbar-left"><span class="termdot"></span><span class="termdot"></span><span class="termdot"></span><span>lifeflow-auth · secure terminal</span><button id="authAuto" class="auth-auto" type="button" onclick="setAuthTheme('auto')" title="Use your device's system theme">AUTO</button></div>
-      <div class="termbar-right"><div class="auth-theme"><span class="auth-theme-label">THEME</span><button id="authDark" class="auth-theme-btn" type="button" onclick="setAuthTheme('dark')">DARK</button><button id="authLight" class="auth-theme-btn" type="button" onclick="setAuthTheme('light')">LIGHT</button></div></div>
-    </div>
-    <div class="term-layout"><div class="termcontent"><div class="termeyebrow">LifeFlow OS / Authentication Service</div><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle">Sign in to access your personal planning workspace.</p>
+
+    <div class="term-layout"><aside class="auth-brand-panel" aria-label="LifeFlow"><div class="auth-brand-word">LifeFlow<span>.</span></div><div class="auth-brand-watermark">FLOW</div></aside><div class="termcontent"><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle" class="auth-subtitle-hidden">Sign in to access your personal planning workspace.</p>
     <div id="stepLogin" class="authstep active">
       <label for="loginEmail">EMAIL / USERNAME</label><input id="loginEmail" placeholder="Email">
       <label for="loginPass">PASSWORD</label>
       <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
       <div id="loginError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary" onclick="doLogin()" style="width:100%">Login</button>
+      <button class="primary auth-submit" onclick="doLogin()" style="width:100%">Sign in</button>
       <div class="oauth-row" id="oauthRow"></div>
       <div id="oauthNotice" class="notice" style="display:none"></div>
       <div style="margin-top:8px;display:flex;justify-content:space-between">
@@ -79,11 +76,7 @@
       <button class="primary" onclick="showStep('stepLogin')" style="width:100%">Login again</button>
     </div>
     </div>
-    <aside class="termtheme">
-      <h3>THEME CONTROL</h3>
-      <p>Pull the bulb to switch manually. AUTO follows your system setting only when selected.</p>
-      <button id="authBulb" class="auth-bulb" type="button" aria-label="Switch between dark and light mode" title="Pull to switch theme"><span class="theme-cord" aria-hidden="true"></span><span class="theme-bulb-group"><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></span></button>
-    </aside></div>
+</div>
   </div>
 </div>
 
