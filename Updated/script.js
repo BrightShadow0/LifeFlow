@@ -1280,7 +1280,7 @@ function nextKnowledgeNoteNumber(kind){
   if(!notes.length)return 1;
   return notes.reduce(function(max,n){
     const stored=Number(n.noteNumber)||0;
-    const match=String(n.title||'').match(/(\d+)\s*$/);
+    const match=String(n.title||'').match(/^Untitled Note\\s+(\\d+)$/i);
     return Math.max(max,stored,match?Number(match[1]):0);
   },0)+1;
 }
