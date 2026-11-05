@@ -120,7 +120,7 @@ async function loadModels(){
   if(data.size.x>data.size.z)data.root.rotation.y=Math.PI/2;
   else data.root.rotation.y=Math.PI;
   car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-  sceneState.car=car;sceneState.world.add(car);
+  if(sceneState.carFallback){sceneState.world.remove(sceneState.carFallback);sceneState.carFallback=null;}\n  sceneState.car=car;sceneState.world.add(car);
  } else createFallbackCar();
  const trees=[];
  if(models.treeA)trees.push(prepModel(models.treeA,5.1,'tree').root);
