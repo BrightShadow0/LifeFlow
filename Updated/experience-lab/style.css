@@ -175,3 +175,34 @@ main{position:relative;z-index:1}
  .feature-rail{height:auto}.feature-rail-sticky{position:relative;height:auto;overflow:visible}.feature-track{width:100%;transform:none!important}
  .feature-panel{width:100%;height:auto;min-height:600px;flex:auto}
 }
+
+/* Theme consistency pass: retain the charcoal / forest / lime palette throughout */
+.feature-intro{background:radial-gradient(ellipse at 80% 20%,#273b1d70,transparent 48%),#0c110c;color:#eff1e7}
+.feature-intro:before{background:linear-gradient(110deg,#0c110c,transparent 68%)}
+.eyebrow.dark{color:var(--lime)}.eyebrow.dark i{background:var(--lime)}
+.feature-intro h2{color:#eff1e7}
+.feature-intro h2 em{color:var(--lime)}
+.feature-intro p{color:#b8c2ad}
+.feature-index,.feature-index span{color:#9ba88c}
+.feature-panel-light{background:radial-gradient(ellipse at 78% 40%,#26391b88,transparent 53%),#111811;color:#eff1e7}
+.feature-panel-light .feature-copy>span{color:var(--lime)}
+.feature-panel-light .feature-copy h3{color:#eff1e7}
+.feature-panel-light .feature-copy h3 em{color:var(--lime)}
+.feature-panel-light .feature-copy p{color:#b7c1ae}
+.art-calendar{background:#141c12;border-color:#c7f45b55;color:#edf1e5;box-shadow:0 25px 85px #0007}
+.calendar-top{border-bottom-color:#ffffff28}
+.calendar-top span{color:#a7b298}
+.calendar-grid i{color:#a9b797}
+.calendar-grid b{color:#edf1e5}
+.calendar-grid span{background:#283723}
+.calendar-grid .cal-active{background:#c7f45b}
+.timeline{background:radial-gradient(ellipse at 88% 15%,#24371b66,transparent 48%),#0c110c;color:#eff1e7}
+.timeline:before{border-color:#c7f45b18;box-shadow:0 0 0 65px #c7f45b05}
+.timeline-heading h2{color:#eff1e7}
+.timeline-heading h2 em{color:var(--lime)}
+.timeline-line{background:#526047}
+.timeline-line i{background:var(--lime);box-shadow:0 0 0 5px #c7f45b20}
+.timeline-list article>span{background:#c7f45b;border-color:#c7f45b}
+.timeline-list article b{color:#c6e98c}
+.timeline-list article p{color:#b7c1ae}
+.timeline-note{border-top-color:#ffffff25;color:#a5b195}
