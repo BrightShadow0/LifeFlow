@@ -87,7 +87,7 @@ function prepModel(gltf,targetHeight,kind){
  root.position.sub(center);
  root.updateMatrixWorld(true);
  const maxHorizontal=Math.max(size.x,size.z);
- let s=kind==='car'?2.35/maxHorizontal:targetHeight/Math.max(size.y,.001);
+ let s=kind==='car'?2.35/maxHorizontal:kind==='road'?8.1/maxHorizontal:targetHeight/Math.max(size.y,.001);
  root.scale.setScalar(s);
  root.updateMatrixWorld(true);
  const scaledBox=new THREE.Box3().setFromObject(root);
@@ -149,11 +149,13 @@ async function loadModels(){
   for(let i=0;i<count;i++){
    const t=(i+.5)/count,{p,tangent}=frameAt(t);
    const tile=roadTemplate.clone(true);
-   const bb=new THREE.Box3().setFromObject(tile),ss=bb.getSize(new THREE.Vector3());
-   if(longAxis==='x')tile.rotation.y=Math.PI/2;
+   const baseAngle=longAxis==='x'?Math.PI/2:0;
+   tile.rotation.y=baseAngle;
    const actual=new THREE.Box3().setFromObject(tile),as=actual.getSize(new THREE.Vector3());
    tile.scale.set(tile.scale.x*(8.1/as.x),tile.scale.y,tile.scale.z*(curve.getLength()/count/as.z));
-   tile.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);
+   const pathRotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);
+   const localRotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),baseAngle);
+   tile.quaternion.copy(pathRotation).multiply(localRotation);
    tile.position.copy(p);tile.position.y=.035;
    tile.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
    sceneState.world.add(tile);sceneState.roadTiles.push(tile);
@@ -172,7 +174,7 @@ function createFallbackCar(){
   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.31,.31,.18,20),new THREE.MeshStandardMaterial({color:'#080a08',roughness:.9}));
   wheel.rotation.z=Math.PI/2;wheel.position.set(x,.3,z);car.add(wheel);
  }
- sceneState.car=car;sceneState.world.add(car);
+ sceneState.car=car;sceneState.carFallback=car;sceneState.world.add(car);
 }
 function buildCheckpointSigns(){
  for(let i=0;i<9;i++){
