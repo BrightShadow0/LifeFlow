@@ -61,7 +61,7 @@ function createCore(group,scale=1){
 }
 function initHero(){
  const canvas=document.getElementById('hero-canvas');if(!canvas)return;
- const renderer=makeRenderer(canvas);if(!renderer)return;
+ const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
  const scene=new THREE.Scene();scene.fog=new THREE.FogExp2('#07100d',.025);
  const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,.15,8.1);
  const ambient=new THREE.AmbientLight('#b7d9bd',1.1);scene.add(ambient);
@@ -212,7 +212,12 @@ function setChapter(index){
 }
 function setupAnimations(){
  const gs=window.gsap,ST=window.ScrollTrigger;
- if(!gs||!ST){fallbackScroll();return;}
+ if(!gs||!ST){
+  document.getElementById('journey').style.height='auto';
+  document.querySelector('.journey-pin').style.height='auto';
+  document.querySelectorAll('.chapter-copy').forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.display='block';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';});
+  return;
+ }
  gs.registerPlugin(ST);
  const isMobile=window.matchMedia('(max-width:760px)').matches;
  if(reduceMotion){document.getElementById('journey').style.height='auto';document.querySelector('.journey-pin').style.height='auto';document.querySelectorAll('.chapter-copy').forEach(el=>{el.style.position='relative';el.style.top='auto';el.style.opacity='1';el.style.visibility='visible';el.style.transform='none';});setChapter(0);return;}
