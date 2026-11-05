@@ -35,3 +35,24 @@
 }
 @media(max-width:420px){.topbar nav a:first-child{display:none}.home h1{font-size:54px}.beat h2{font-size:40px}.journey-pin{padding-inline:17px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.loading{display:none}}
+
+@media(max-width:760px){
+ .journey{height:auto!important}
+ .journey-pin{position:relative;top:auto;height:auto;min-height:0;display:flex;flex-direction:column;overflow:visible;padding:75px 20px 48px}
+ .journey-pin:before{background:linear-gradient(180deg,#090c09b5 0%,transparent 50%)}
+ #journeyCanvas{position:relative;inset:auto;order:0;width:100%;height:clamp(250px,65vw,390px);flex:none}
+ .road-label{top:81px;right:22px}
+ .beat-list{position:relative;top:auto;left:auto;transform:none;width:100%;min-height:0;order:1;margin-top:10px}
+ .beat,.beat.active{position:relative;display:block;opacity:1;visibility:visible;transform:none;padding:24px 0 30px}
+ .beat h2{font-size:clamp(40px,9vw,59px)}
+ .journey-bottom{position:relative;left:auto;bottom:auto;order:2;width:100%;margin-top:10px}
+ .journey-instruction{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .journey{height:auto!important}
+ .journey-pin{position:relative;top:auto;height:auto;min-height:0;overflow:visible;display:flex;flex-direction:column}
+ #journeyCanvas{position:relative;inset:auto;height:260px;order:0}
+ .beat-list{position:relative;top:auto;left:auto;transform:none;width:100%;min-height:0;order:1}
+ .beat,.beat.active{position:relative;display:block;opacity:1;visibility:visible;transform:none;padding:22px 0}
+ .journey-bottom{position:relative;left:auto;bottom:auto;order:2}
+}
