@@ -27,7 +27,7 @@ function resizeRenderer(renderer,camera,canvas){
   renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
 }
 function material(color,emissive=color,opacity=1){
- return new THREE.MeshPhysicalMaterial({color,emissive,emissiveIntensity:.28,metalness:.36,roughness:.25,clearcoat:.95,clearcoatRoughness:.15,transparent:opacity<1,opacity});
+ return new THREE.MeshPhysicalMaterial({color,emissive,emissiveIntensity:.12,metalness:.42,roughness:.3,clearcoat:.9,clearcoatRoughness:.2,transparent:opacity<1,opacity});
 }
 function addDust(scene,count=750,spread=9){
  const g=new THREE.BufferGeometry(),p=new Float32Array(count*3),c=new Float32Array(count*3),sizes=new Float32Array(count);
@@ -44,7 +44,7 @@ function addDust(scene,count=750,spread=9){
 function createCore(group,scale=1){
  const core=new THREE.Group();group.add(core);
  const geo=new THREE.IcosahedronGeometry(1,5);
- const shell=new THREE.Mesh(geo,material('#9dd45b','#7da83a'));
+ const shell=new THREE.Mesh(geo,material('#648c45','#345a27'));
  shell.scale.setScalar(scale);core.add(shell);
  const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(1.025,2),new THREE.MeshBasicMaterial({color:'#dcff9b',wireframe:true,transparent:true,opacity:.075}));
  wire.scale.setScalar(scale);core.add(wire);
@@ -64,11 +64,11 @@ function initHero(){
  const renderer=makeRenderer(canvas);if(!renderer){canvas.parentElement.classList.add('webgl-fallback');return;}
  const scene=new THREE.Scene();scene.fog=new THREE.FogExp2('#07100d',.025);
  const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,.15,8.1);
- const ambient=new THREE.AmbientLight('#b7d9bd',1.1);scene.add(ambient);
- const key=new THREE.PointLight('#c9ff58',90,18);key.position.set(3,4,4);scene.add(key);
+ const ambient=new THREE.AmbientLight('#b7d9bd',.72);scene.add(ambient);
+ const key=new THREE.PointLight('#c9ff58',48,18);key.position.set(3,4,4);scene.add(key);
  const rim=new THREE.PointLight('#407d91',55,18);rim.position.set(-4,-2,-3);scene.add(rim);
  const root=new THREE.Group();scene.add(root);
- const c=createCore(root,1.02);
+ root.position.x=.72;const c=createCore(root,.86);
  const dust=addDust(scene,1050,8);
  const nodes=[];
  for(let i=0;i<9;i++){
