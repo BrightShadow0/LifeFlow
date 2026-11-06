@@ -410,6 +410,9 @@ function resetAuthViewport(){
 }
 function doLogout(){
   destroySession();
+  // Restore the independent authentication palette so the previous account's
+  // workspace colour theme cannot leak onto the login screen.
+  applyAuthTheme(getAuthTheme());
   document.body.classList.add('auth-open');
   document.getElementById('app').style.display='none';
   document.getElementById('authScreen').style.display='block';
