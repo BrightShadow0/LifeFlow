@@ -51,7 +51,7 @@ main{position:relative;z-index:1}
 .world-hint{position:absolute;z-index:5;right:5vw;bottom:33px;display:flex;align-items:center;gap:8px;color:#a7b197;font:8px var(--mono);letter-spacing:.14em}
 .live-dot{width:6px;height:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:livePulse 2s infinite}
 @keyframes livePulse{50%{opacity:.35;box-shadow:0 0 2px var(--lime)}}
-/* Horizontal feature chapters, separated from the road story by a clean tonal change */
+/* Feature chapters share one continuous environment; no horizontal slide deck. */
 .feature-intro{min-height:82svh;position:relative;padding:120px clamp(24px,8vw,128px) 75px;display:flex;align-items:center;justify-content:space-between;gap:45px;overflow:hidden;background:#e9eadf;color:#151a11;isolation:isolate}
 .feature-intro:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 80% 20%,#bdce9c65,transparent 48%)}
 .eyebrow.dark{color:#4e682c}.eyebrow.dark i{background:#4e682c}
@@ -292,10 +292,10 @@ main{position:relative;z-index:1;min-width:0}
  align-items:center;gap:clamp(28px,5vw,84px);
  padding:clamp(82px,11vh,130px) clamp(24px,8vw,128px);
  overflow:visible;border:0;
- background:linear-gradient(115deg,#0b140fdd 0%,#111b14c9 57%,#142017b0 100%)!important;
+ background:transparent!important;
  color:#eff2e8!important;
 }
-.feature-panel:nth-child(even){background:linear-gradient(115deg,#0b140fdd 0%,#111b14c9 57%,#142017b0 100%)!important}
+.feature-panel:nth-child(even){background:transparent!important}
 .feature-panel .feature-copy{grid-column:1;grid-row:1;max-width:560px;min-width:0}
 .feature-panel .feature-art{grid-column:2;grid-row:1;justify-self:center}
 .feature-copy{z-index:4;text-shadow:0 2px 18px #000b}
@@ -354,7 +354,7 @@ main{position:relative;z-index:1;min-width:0}
  .feature-track{gap:42px}
  .feature-panel,.feature-panel-light{
   min-height:0;height:auto;width:100%;display:flex;flex-direction:column;align-items:stretch;justify-content:center;
-  padding:70px 22px 54px;gap:28px;background:linear-gradient(145deg,#101a13e8,#0b130fe8)!important;
+  padding:70px 22px 54px;gap:28px;background:transparent!important;
  }
  .feature-panel-number{top:27px;left:22px}
  .feature-panel .feature-art{width:100%;max-width:470px;height:300px;min-height:260px;align-self:center}
