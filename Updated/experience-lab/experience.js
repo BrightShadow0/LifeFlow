@@ -55,7 +55,8 @@
  }else targets.forEach(el=>el.classList.add('visible'));
 
 
- // Why LifeFlow: switch between the four core reasons.
+ // Why LifeFlow: delegated events keep every chapter reliably clickable.
+ const whySelector=document.querySelector('.why-selector');
  const whyTabs=[...document.querySelectorAll('.why-tab')];
  const whyPanel=document.getElementById('why-panel');
  const whyCopy=[
@@ -65,30 +66,47 @@
   {kicker:'04 / THE LONG VIEW',title:'Make space<br>for momentum.',copy:'Flow means moving through life with less friction: seeing what is next, giving attention to the right things and continuously making progress. Six months from now, success is fewer forgotten commitments, clearer days and meaningful progress, not a perfectly maintained planner.',label:'ONE PRINCIPLE',detail:'A task should help you take the next meaningful step.',foot:'LIFEFLOW SHOULD HELP YOU DECIDE, NOT JUST RECORD.'}
  ];
  function setWhy(index,focus){
-  const item=whyCopy[index];if(!item)return;
-  whyTabs.forEach((tab,i)=>{const active=i===index;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;});
+  const item=whyCopy[index];
+  if(!item||!whyPanel)return;
+  whyTabs.forEach((tab,i)=>{
+   const active=i===index;
+   tab.classList.toggle('active',active);
+   tab.setAttribute('aria-selected',String(active));
+   tab.tabIndex=active?0:-1;
+  });
   whyPanel.setAttribute('aria-labelledby','why-tab-'+index);
-  document.getElementById('why-kicker').textContent=item.kicker;
-  document.getElementById('why-title').innerHTML=item.title;
-  document.getElementById('why-copy').textContent=item.copy;
-  document.getElementById('why-detail-label').textContent=item.label;
-  document.getElementById('why-detail-copy').textContent=item.detail;
-  document.getElementById('why-foot').textContent=item.foot;
-  document.getElementById('why-count').textContent=String(index+1).padStart(2,'0')+' / 04';
+  const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  put('why-kicker',item.kicker);
+  const heading=document.getElementById('why-title');if(heading)heading.innerHTML=item.title;
+  put('why-copy',item.copy);
+  put('why-detail-label',item.label);
+  put('why-detail-copy',item.detail);
+  put('why-foot',item.foot);
+  put('why-count',String(index+1).padStart(2,'0')+' / 04');
   whyPanel.classList.remove('is-changing');void whyPanel.offsetWidth;whyPanel.classList.add('is-changing');
-  if(focus)whyTabs[index].focus();
+  if(focus)whyTabs[index]?.focus();
  }
- whyTabs.forEach((tab,index)=>{
-  tab.addEventListener('click',()=>setWhy(index,false));
-  tab.addEventListener('keydown',event=>{
-   if(!['ArrowDown','ArrowUp','ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;
+ if(whySelector){
+  whySelector.addEventListener('click',event=>{
+   const tab=event.target.closest('.why-tab');
+   if(!tab||!whySelector.contains(tab))return;
+   event.preventDefault();
+   const index=whyTabs.indexOf(tab);
+   if(index>=0)setWhy(index,false);
+  });
+  whySelector.addEventListener('keydown',event=>{
+   const tab=event.target.closest('.why-tab');
+   if(!tab)return;
+   const index=whyTabs.indexOf(tab);
+   if(index<0||!['ArrowDown','ArrowUp','ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;
    event.preventDefault();let next=index;
    if(event.key==='ArrowDown'||event.key==='ArrowRight')next=(index+1)%whyTabs.length;
    if(event.key==='ArrowUp'||event.key==='ArrowLeft')next=(index-1+whyTabs.length)%whyTabs.length;
-   if(event.key==='Home')next=0;if(event.key==='End')next=whyTabs.length-1;
+   if(event.key==='Home')next=0;
+   if(event.key==='End')next=whyTabs.length-1;
    setWhy(next,true);
   });
- });
+ }
  if(whyTabs.length)setWhy(0,false);
 
  // The appearance preview changes accent colour without changing the real app.
