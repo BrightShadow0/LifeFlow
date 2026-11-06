@@ -315,9 +315,9 @@ function placeCar(progress,dt){
  const bend=curve.getTangentAt(clamp(t+.01)).sub(curve.getTangentAt(clamp(t-.01))).x;
  car.rotation.z=damp(car.rotation.z,-bend*.16,4,dt);
  const camera=sceneState.camera;
- const behind=p.clone().addScaledVector(tangent,-11.8);
- const cameraPosition=behind.addScaledVector(right,-5.3).add(new THREE.Vector3(0,6.4,0));
- const look=p.clone().addScaledVector(tangent,13).add(new THREE.Vector3(0,1.1,0));
+ const behind=p.clone().addScaledVector(tangent,-9.2);
+ const cameraPosition=behind.addScaledVector(right,-3.9).add(new THREE.Vector3(0,5.1,0));
+ const look=p.clone().addScaledVector(tangent,9.5).add(new THREE.Vector3(0,1.05,0));
  const targetFov=mobile?58:43;
  camera.fov=damp(camera.fov,targetFov,2,dt);camera.updateProjectionMatrix();
  camera.position.lerp(cameraPosition,1-Math.exp(-dt*3.1));
@@ -401,8 +401,9 @@ function setupIframeScroll(){
  try{if(iframe.contentDocument?.readyState==='complete')attach();}catch(_){}
 }
 async function boot(){
- await initWorld();setupScroll();setupPointer();setupReveals();setupAnchors();setupIframeScroll();
- if(reduced){document.querySelectorAll('.story-beat').forEach(x=>x.classList.add('active'));document.querySelector('.story').style.height='auto';}
- animate();
+ try{await initWorld();animate();}
+ catch(error){console.warn('LifeFlow 3D scene unavailable; keeping the experience usable.',error);}
+ setupScroll();setupPointer();setupReveals();setupAnchors();setupIframeScroll();
+ if(reduced){document.querySelector('.story').style.height='auto';}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
