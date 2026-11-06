@@ -464,9 +464,10 @@ function applyTheme(theme){
       app.style.setProperty('--lf-depth-y','0px');
     }
   }
-  const entitledColors=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  const entitledColors=['sapphire','emerald','platinum','amethyst','ruby'];
   let color=u?.colorTheme||'platinum';
-  if(color==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
+  if(color==='gold') color='sapphire';
+  if(color==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
@@ -476,9 +477,6 @@ const WORKSPACE_BACKDROP_GROUPS={
   ],
   emerald:[
     ['green-hour','Green Hour','Sunlight filtering through a lush forest']
-  ],
-  gold:[
-    ['yellow-hour','Yellow Hour','Glowing sunset over layered mountains']
   ],
   platinum:[
     ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones']
@@ -491,9 +489,10 @@ const WORKSPACE_BACKDROP_GROUPS={
   ]
 };
 function normalizedBackdropTheme(u=currentUser()){
-  const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
   let theme=allowed.includes(u?.colorTheme)?u.colorTheme:'platinum';
-  if(theme==='gold' && u && !['Premium','Team Admin'].includes(u.tier)) theme='sapphire';
+  if(theme==='gold') theme='sapphire';
+  if(theme==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) theme='sapphire';
   return theme;
 }
 function workspaceBackdropOptions(u=currentUser()){
@@ -605,10 +604,10 @@ function initAppThemeSync(){
   mq.addListener?.(onChange);
 }
 function setColorTheme(theme){
-  const allowed=['sapphire','emerald','gold','platinum','amethyst','ruby'];
+  const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
   const u=currentUser();
-  if(theme==='gold' && u && !['Premium','Team Admin'].includes(u.tier)){
-    toast('Gold is available to Premium and Team Admin accounts.');
+  if(theme==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)){
+    toast('Amethyst is available to Premium and Team Admin accounts.');
     return;
   }
   const next=allowed.includes(theme)?theme:'sapphire';
@@ -2129,8 +2128,8 @@ function subCustomisation(themes,u,a){
       <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
       <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} onchange="setInteractiveAtmosphere(this.checked)"><span class="slider"></span></span></label>
     </div>
-    <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',gold:'Gold',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']}</b></span></div>
-      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['gold','Gold','Yellow & orange'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='gold'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
+    <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']||'Sapphire'}</b></span></div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='amethyst'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
 <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
@@ -2199,7 +2198,7 @@ function saveTier(){
   const tier=document.getElementById('prof_tier')?.value;
   updateUser(u=>{
     u.tier=tier||u.tier;
-    if(!['Premium','Team Admin'].includes(u.tier) && u.colorTheme==='gold') u.colorTheme='sapphire';
+    if(!['Premium','Team Admin'].includes(u.tier) && ['gold','amethyst'].includes(u.colorTheme)) u.colorTheme='sapphire';
     if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
   });
   const saved=currentUser();
