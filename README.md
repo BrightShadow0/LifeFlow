@@ -32,11 +32,38 @@ LifeFlow brings everyday planning into one customisable workspace. It combines t
 
 ---
 
+## ✨ Experience Lab
+
+The **Experience Lab** is a separate, immersive introduction to LifeFlow. It presents the product through a cinematic road journey and a scroll-driven story, while keeping the main productivity workspace separate.
+
+- **3D Open-Road Scene:** A custom Three.js environment with a vehicle, road, natural scenery, lighting, and a moving camera journey.
+- **Scroll-Driven Story:** Nine chapters introduce LifeFlow's purpose, intended audience, approach to time and attention, local-first data model, and connected notes.
+- **Five-Panel Feature Showcase:** A horizontal scrollytelling rail introduces the Task Manager, Calendar & Board, Markdown Notes, Your Branches, and workspace customisation.
+- **Product Timeline:** A four-step progression from noticing priorities to making meaningful progress.
+- **Integrated Access:** A sign-in and account-creation experience embedded at the end of the journey.
+- **Motion-Aware Experience:** Scroll choreography and animation are designed to support the story without making the workspace itself part of the showcase.
+
+The Experience Lab is a presentation layer, not a replacement for the core LifeFlow application.
+
+### 3D Asset Credits
+
+The preview uses Kenney CC0 assets for the vehicle, trees, shrubs, and modular road pieces:
+
+- [Car Kit](https://kenney.nl/assets/car-kit)
+- [Nature Kit](https://kenney.nl/assets/nature-kit)
+- [City Kit (Roads)](https://kenney.nl/assets/city-kit-roads)
+
+The road spline, terrain, lighting, roadside layout, camera path, and scroll choreography are custom LifeFlow preview code. See [Experience Lab asset credits](Updated/experience-lab/ASSET-CREDITS.md) for details.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Category | Technology |
 | :--- | :--- |
-| **Frontend** | HTML5, CSS3, JavaScript |
+| **Core Frontend** | HTML5, CSS3, JavaScript |
+| **3D Experience** | Three.js |
+| **Animation & Scroll** | GSAP, ScrollTrigger |
 | **Markdown** | Marked.js |
 | **Sanitisation** | DOMPurify |
 | **Diagrams** | Mermaid |
@@ -46,9 +73,10 @@ LifeFlow brings everyday planning into one customisable workspace. It combines t
 
 ---
 
-## 📸 Demo
+## 📸 Demos
 
-**[Open the LifeFlow Live Demo](https://brightshadow0.github.io/LifeFlow/Updated/index.html)**
+- **[Open the LifeFlow Workspace](https://brightshadow0.github.io/LifeFlow/Updated/index.html)**
+- **[Explore the Experience Lab](https://brightshadow0.github.io/LifeFlow/Updated/experience-lab/)**
 
 ---
 
@@ -60,17 +88,26 @@ LifeFlow is a browser-based application. There is no Node.js installation, packa
 
 - Git
 - A modern web browser
-- An internet connection to load the CDN-hosted Markdown and diagram libraries
+- An internet connection to load the CDN-hosted libraries and 3D assets
 
 ### Local Preview
 
-For personal evaluation, the application can be opened from `Updated/index.html` in a modern browser. A local web server can also be started from the repository root:
+For the core application, open `Updated/index.html` in a modern browser. For the full Experience Lab, use a local web server from the repository root:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit [http://localhost:8000/Updated/](http://localhost:8000/Updated/).
+Then visit:
+
+- Core workspace: [http://localhost:8000/Updated/](http://localhost:8000/Updated/)
+- Experience Lab: [http://localhost:8000/Updated/experience-lab/](http://localhost:8000/Updated/experience-lab/)
+
+---
+
+## 🔐 Data & Privacy
+
+LifeFlow currently uses browser-local storage for supported account, task, and preference data. This means data is associated with the browser and device being used; it does not automatically sync across browsers or devices. Clearing the browser's site data may remove locally stored LifeFlow data. Keep your own backups of information you cannot afford to lose.
 
 ---
 
