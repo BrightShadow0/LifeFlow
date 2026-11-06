@@ -334,7 +334,7 @@ function scrollProgress(){
  document.getElementById('siteProgress').style.width=(total>0?100*y/total:0)+'%';
  const rail=document.getElementById('featureTrack'),section=document.querySelector('.feature-rail');
  const railRect=section.getBoundingClientRect(),railRange=Math.max(1,section.offsetHeight-innerHeight);
- const rp=clamp((innerHeight-railRect.top)/(railRange+innerHeight));
+ const rp=clamp(-railRect.top/railRange);
  const f=Math.min(4,Math.floor(rp*5));setFeature(f);
 }
 function setBeat(index){
