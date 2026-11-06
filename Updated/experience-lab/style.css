@@ -407,3 +407,8 @@ main{position:relative;z-index:1;min-width:0}
  .story-beat p,.feature-copy p,.latest-card p{overflow-wrap:anywhere}
  .access-frame{max-width:100vw}
 }
+
+
+/* Keep all atmospheric shading on the fixed world overlay. Section-bound shadows create visible horizontal seams while scrolling. */
+.home:before,
+.story-stage:before{background:none!important;}
