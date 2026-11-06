@@ -125,3 +125,86 @@ main{position:relative;z-index:1}.hero{min-height:min(100svh,1040px);padding:150
 .theme-options button.theme-blue{background:#4e78cb}.theme-options button.theme-green{background:#4a9465}.theme-options button.theme-gold{background:#c59a42}.theme-options button.theme-purple{background:#8d6abd}.theme-options button.theme-red{background:#b95662}
 .focus-row{cursor:pointer;border-radius:4px;transition:background .18s,opacity .18s}.focus-row:hover,.focus-row:focus-visible{background:#c9f45b0d;outline:none}.focus-row:focus-visible{box-shadow:inset 0 0 0 1px #c9f45b88}.focus-row.done>div b{text-decoration:line-through;text-decoration-color:#8ca17a;color:#91a08c}
 @media(max-width:620px){.theme-options button{width:22px;height:22px}}
+
+
+/* Give the Why LifeFlow section the full desktop canvas. */
+.why-section{
+ padding:clamp(110px,11vw,165px) clamp(34px,8.2vw,132px) clamp(115px,10vw,155px);
+ scroll-margin-top:82px;
+}
+.why-heading{
+ grid-template-columns:minmax(210px,.52fr) minmax(0,1.48fr);
+ gap:clamp(45px,7vw,110px);
+ align-items:start;
+}
+.why-heading h2{font-size:clamp(64px,7.2vw,104px);max-width:1050px}
+.why-heading p{max-width:760px;font-size:14px;line-height:2;margin-top:28px}
+.why-explorer{
+ grid-template-columns:1fr;
+ gap:28px;
+ margin-top:clamp(58px,7vw,96px);
+}
+.why-selector{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:clamp(18px,3vw,46px);
+}
+.why-tab{
+ min-height:94px;
+ grid-template-columns:34px 1fr 20px;
+ gap:13px;
+ padding:20px 8px 23px;
+ border-top:1px solid var(--line);
+ border-bottom:1px solid var(--line);
+}
+.why-tab>b{font-size:clamp(12px,1.15vw,16px)}
+.why-tab>span{font-size:9px}
+.why-tab>i{font-size:18px}
+.why-panel{
+ min-height:390px;
+ padding:clamp(27px,3.2vw,48px) clamp(28px,4vw,62px) 25px;
+}
+.why-panel-top,.why-panel-bottom{font-size:8px}
+.why-panel-content{
+ grid-template-columns:minmax(0,1.35fr) minmax(250px,.65fr);
+ gap:clamp(40px,7vw,110px);
+ padding:clamp(40px,5vw,72px) 2%;
+}
+.why-panel-content h3{font-size:clamp(48px,5.2vw,76px);max-width:820px}
+.why-panel-content p{max-width:760px;font-size:14px;line-height:2}
+.why-detail{padding:clamp(24px,3vw,40px)}
+.why-detail small{font-size:8px;margin-bottom:18px}
+.why-detail b{font-size:15px;line-height:1.9}
+.why-panel-bottom{padding-top:18px;font-size:7px}
+.why-principles{margin-top:38px;gap:clamp(20px,4vw,58px)}
+.why-principles span{font-size:8px}
+.why-principles b{font-size:12px}
+.why-principles b:not(:last-child):after{padding-left:clamp(20px,4vw,58px)}
+@media(max-width:850px){
+ .why-section{padding:100px 6vw 110px}
+ .why-heading{grid-template-columns:1fr;gap:28px}
+ .why-heading h2{font-size:clamp(56px,9vw,82px)}
+ .why-explorer{gap:24px;margin-top:48px}
+ .why-selector{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+ .why-tab{min-height:76px;padding:15px 4px}
+ .why-panel-content{gap:30px}
+}
+@media(max-width:620px){
+ .why-section{padding:80px 22px 88px}
+ .why-heading h2{font-size:clamp(44px,10vw,64px)}
+ .why-heading p{font-size:11px;line-height:1.9;margin-top:16px}
+ .why-explorer{margin-top:34px;gap:20px}
+ .why-selector{column-gap:12px}
+ .why-tab{min-height:65px;grid-template-columns:22px 1fr 12px;gap:5px;padding:12px 0}
+ .why-tab>b{font-size:9px}.why-tab>span{font-size:7px}
+ .why-panel{padding:18px 15px 15px;min-height:390px}
+ .why-panel-top{font-size:6px}
+ .why-panel-content{grid-template-columns:1fr;gap:18px;padding:28px 1%}
+ .why-panel-content h3{font-size:36px}
+ .why-panel-content p{font-size:10px;line-height:1.9}
+ .why-detail{padding:13px}.why-detail b{font-size:10px}
+ .why-principles{gap:12px}
+ .why-principles span{width:100%;margin-bottom:2px}
+ .why-principles b{font-size:9px}
+ .why-principles b:not(:last-child):after{padding-left:12px}
+}
