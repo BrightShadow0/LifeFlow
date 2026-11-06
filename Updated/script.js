@@ -583,6 +583,8 @@ function setTheme(theme){
   }
   applyTheme(next);
   applyWorkspaceAppearance(currentUser());
+  const currentLabel=document.getElementById('currentThemeLabel');
+  if(currentLabel) currentLabel.innerHTML=`Currently using <b>${themeLabel(effectiveTheme(currentUser()))}</b>`;
   if(appVisible){
     requestAnimationFrame(()=>{
       window.scrollTo(scrollState.x,scrollState.y);
@@ -2114,7 +2116,7 @@ function renderCustomisationTab(u){
 }
 function subCustomisation(themes,u,a){
   return `<div class="customisation-shell">
-    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill">Currently using <b>${themeLabel(effectiveTheme(u))}</b></span></div>
+    <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill" id="currentThemeLabel">Currently using <b>${themeLabel(effectiveTheme(u))}</b></span></div>
     <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" onclick="resetCustomisation()">Reset to default</button></div>
       <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${!u.autoTheme&&u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${!u.autoTheme&&u.theme===id}">
         <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${!u.autoTheme&&u.theme===id?'✓':'○'}</span>
