@@ -289,7 +289,13 @@ function animate(){
  }
  requestAnimationFrame(animate);
 }
-function setupReveals(){\n const reveal=document.querySelectorAll('.latest-card,.timeline-list article,.feature-copy');\n if(!('IntersectionObserver' in window)||reduced){reveal.forEach(el=>el.classList.add('revealed'));return;}\n const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('revealed');io.unobserve(entry.target);}}),{threshold:.18});\n reveal.forEach(el=>{el.classList.add('reveal-ready');io.observe(el);});\n}\nfunction setupAnchors(){
+function setupReveals(){
+ const reveal=document.querySelectorAll('.latest-card,.timeline-list article,.feature-copy');
+ if(!('IntersectionObserver' in window)||reduced){reveal.forEach(el=>el.classList.add('revealed'));return;}
+ const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('revealed');io.unobserve(entry.target);}}),{threshold:.18});
+ reveal.forEach(el=>{el.classList.add('reveal-ready');io.observe(el);});
+}
+function setupAnchors(){
  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
   const target=document.querySelector(a.getAttribute('href'));if(!target)return;
   e.preventDefault();target.scrollIntoView({behavior:reduced?'auto':'smooth'});
