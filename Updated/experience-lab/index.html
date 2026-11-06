@@ -1,126 +1,148 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a100c">
-<meta name="description" content="LifeFlow. Your time, tasks, plans and ideas in one connected space.">
-<title>LifeFlow — Find Your Flow</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090e0b">
+<meta name="description" content="LifeFlow brings your tasks, plans, notes and ideas into one connected workspace.">
+<title>LifeFlow — Make room for what matters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261106-fordgt1">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"}}</script>
-
+<link rel="stylesheet" href="style.css?v=20261106-flowform1">
 </head>
 <body>
-<div id="world-stage" aria-hidden="true"><canvas id="worldCanvas"></canvas><div class="world-vignette"></div></div>
-<div class="site-progress"><i id="siteProgress"></i></div>
+<div class="ambient-field" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span><span class="ambient-grid"></span></div>
+<div class="reading-progress"><span id="readingProgress"></span></div>
 <header class="site-header">
- <a class="brand" href="#home"><span class="brand-mark">L</span><span>LIFEFLOW</span></a>
- <nav><a href="#story">THE JOURNEY</a><a href="#latest">LATEST</a><a href="#features">WHAT'S INSIDE</a><a href="#access">SIGN IN <b>↗</b></a></nav>
- <span class="header-note">YOUR TIME. YOUR SPACE. YOUR FLOW.</span>
+ <a class="brand" href="#top"><span class="brand-symbol">L</span><span>LIFEFLOW</span></a>
+ <nav aria-label="Main navigation"><a href="#approach">THE IDEA</a><a href="#workspace">THE WORKSPACE</a><a href="#your-space">YOUR DATA</a><a class="nav-access" href="#access">SIGN IN <b>↗</b></a></nav>
+ <span class="header-status"><i></i> A SPACE TO THINK CLEARLY</span>
 </header>
-
-<main>
-<section class="home" id="home">
- <div class="home-copy">
-  <div class="eyebrow"><i></i> A PERSONAL SPACE FOR THE MOVING PARTS</div>
+<main id="top">
+<section class="hero">
+ <div class="hero-copy">
+  <div class="eyebrow"><i></i> A PERSONAL WORKSPACE</div>
   <h1>MAKE ROOM<br>FOR WHAT<br><em>MATTERS.</em></h1>
-  <p>Your time, tasks, plans and ideas are connected. Your workspace should be too.</p>
-  <a class="start-link" href="#story"><span>FOLLOW THE ROAD</span><b>↓</b></a>
+  <p class="hero-lede">Your tasks, plans, notes and ideas belong together. LifeFlow gives all of them a place, without making your day feel like another thing to manage.</p>
+  <div class="hero-actions"><a class="primary-link" href="../index.html">EXPLORE THE WORKSPACE <b>↗</b></a><a class="secondary-link" href="#workspace">SEE HOW IT FITS TOGETHER <span>↓</span></a></div>
+  <div class="hero-footnote"><span>01 / A LITTLE MORE CLARITY</span><span>BUILT FOR REAL DAYS</span></div>
  </div>
- <div class="home-scene-label"><span>LF / OPEN ROAD</span><span>THE JOURNEY STARTS NOW</span></div>
- <div class="home-bottom"><span>ONE SPACE. MANY MOVING PARTS.</span><span>SCROLL TO MOVE FORWARD <b>↓</b></span></div>
-</section>
-
-<section class="story" id="story">
- <div class="story-stage">
-  <div class="story-top"><span>THE LIFEFLOW JOURNEY</span><span><b id="chapterNo">01</b> <i>/ 09</i></span></div>
-  <div class="story-copy">
-   <article class="story-beat active" data-beat="0"><div class="beat-kicker">01 / WHY IT EXISTS</div><h2>Life is bigger<br>than a <em>task list.</em></h2><p>Planning tools can make people manage lists instead of managing their lives. LifeFlow brings tasks, commitments, time and progress into one place.</p><div class="beat-detail"><span>THE PURPOSE</span><b>Tasks · Commitments · Time · Progress</b></div></article>
-   <article class="story-beat" data-beat="1"><div class="beat-kicker">02 / WHO IT IS FOR</div><h2>For every side<br>of <em>your life.</em></h2><p>For people balancing multiple parts of life: work or study, responsibilities, personal priorities and the things they want to make progress on.</p><div class="beat-detail"><span>ONE SPACE</span><b>Work · Study · Responsibilities · Personal goals</b></div></article>
-   <article class="story-beat" data-beat="2"><div class="beat-kicker">03 / WHAT IT MANAGES</div><h2>More than tasks.<br><em>Your whole day.</em></h2><p>Tasks are the starting point, but the centre is broader: your time, attention, commitments and progress.</p><div class="beat-detail"><span>THE BIGGER PICTURE</span><b>Time · Attention · Commitments · Progress</b></div></article>
-   <article class="story-beat" data-beat="3"><div class="beat-kicker">04 / YOUR FIRST 30 SECONDS</div><h2>Know what needs<br><em>your attention.</em></h2><p>Quickly understand what needs attention today, what is already handled, and where your time is going.</p><div class="beat-detail"><span>AT A GLANCE</span><b>Today's focus · What's handled · What's next</b></div></article>
-   <article class="story-beat" data-beat="4"><div class="beat-kicker">05 / HOW IT SHOULD FEEL</div><h2>Clear. Calm.<br><em>In control.</em></h2><p>Focused, human and calm. LifeFlow should never feel like another system demanding that you keep up with it.</p><div class="beat-detail"><span>THE FEELING</span><b>Clarity · Calm · Focus · Control</b></div></article>
-   <article class="story-beat" data-beat="5"><div class="beat-kicker">06 / WHY FLOW</div><h2>Give your energy<br>to what <em>matters.</em></h2><p>Flow means moving through life with less friction: seeing what is next, giving attention to the right things, and continuously making progress.</p><div class="beat-detail"><span>KEEP MOVING</span><b>See · Focus · Make progress</b></div></article>
-   <article class="story-beat" data-beat="6"><div class="beat-kicker">07 / THE SIX-MONTH TEST</div><h2>Progress you<br>can <em>feel.</em></h2><p>Success is fewer forgotten commitments, clearer days, better use of time and a stronger sense of progress, not a perfectly maintained planner.</p><div class="beat-detail"><span>THE LONG VIEW</span><b>Progress over perfection</b></div></article>
-   <article class="story-beat" data-beat="7"><div class="beat-kicker">08 / LOCAL BY DESIGN</div><h2>Your life stays<br><em>close to you.</em></h2><p>LifeFlow runs locally in your browser. Your tasks, notes, plans and settings are stored on your device instead of being synced to a central LifeFlow server.</p><div class="beat-detail"><span>YOUR SPACE</span><b>Your browser · Your device · Your data</b></div></article>
-   <article class="story-beat" data-beat="8"><div class="beat-kicker">09 / NOTES MANAGER</div><h2>Ideas connect.<br><em>Thoughts take shape.</em></h2><p>Write in Markdown, format ideas, link notes with [[Title]] and explore their relationships in Your Branches. From quick thoughts to connected knowledge.</p><div class="beat-detail"><span>WRITE & CONNECT</span><b>Markdown · Linked Notes · Your Branches</b></div></article>
+ <div class="hero-visual" aria-label="Preview of the LifeFlow workspace">
+  <div class="visual-halo"></div><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><i class="orbit-point point-a"></i><i class="orbit-point point-b"></i>
+  <div class="app-window hero-window">
+   <div class="window-top"><div class="window-brand"><i>L</i><b>LifeFlow</b></div><div class="window-controls"><i></i><i></i><i></i></div><span>TUESDAY / 09:41</span></div>
+   <div class="window-body">
+    <aside class="mock-sidebar"><small>WORKSPACE</small><b class="mock-active">◷　Today</b><b>▤　Tasks</b><b>▦　Calendar</b><b>▥　Board</b><small class="sidebar-lower">YOUR SPACE</small><b>⌘　Notes</b><b>⌁　Your Branches</b></aside>
+    <div class="mock-main">
+     <div class="mock-greeting"><small>YOUR TUESDAY</small><h3>Good morning.</h3><p>A clear view of what needs you.</p></div>
+     <div class="mock-summary"><div><small>ON YOUR LIST</small><b>08 <i>/ 12</i></b></div><div class="progress-track"><i></i></div><span>4 completed · steady pace</span></div>
+     <div class="task-head"><b>Today's focus</b><small>VIEW ALL ↗</small></div>
+     <div class="mock-task"><i class="checked">✓</i><div><b>Review project notes</b><small>Workspace · 09:00</small></div><em>DONE</em></div>
+     <div class="mock-task"><i></i><div><b>Prepare weekly plan</b><small>Planning · 10:30</small></div><em class="next">NEXT</em></div>
+     <div class="mock-task"><i></i><div><b>Send the follow-up</b><small>Personal · 13:00</small></div><em>13:00</em></div>
+     <div class="mock-bottom"><span>ONE THING AT A TIME</span><b>↗</b></div>
+    </div>
+   </div>
   </div>
-  <div class="story-footer"><span id="storyLabel">WHY IT EXISTS</span><div class="story-track"><i id="storyTrack"></i></div><span id="storyNumber">01 / 09</span></div>
-  <div class="world-hint"><span class="live-dot"></span> THE ROAD MOVES WITH YOU</div>
+  <div class="float-card float-note"><i>↗</i><div><b>Ideas, connected</b><small>Notes that find each other</small></div></div>
+  <div class="float-card float-focus"><strong>04</strong><div><b>Done today</b><small>Keep your momentum</small></div></div>
+  <div class="visual-caption"><span>YOUR DAY, IN CONTEXT</span><span>FIG. 01</span></div>
  </div>
 </section>
 
-<section class="feature-intro" id="features">
- <div class="feature-intro-copy">
-  <div class="eyebrow dark"><i></i> THE WORKSPACE, AT YOUR PACE</div>
-  <h2>Built around<br><em>real life.</em></h2>
-  <p>Everything has a place. Nothing needs to compete for your attention.</p>
+<section class="statement section-shell" id="approach">
+ <div class="section-index"><b>02</b><i></i><span>THE IDEA</span></div>
+ <div class="statement-content">
+  <small class="kicker">LIFE DOESN'T ARRIVE IN CATEGORIES.</small>
+  <h2>Why should your<br>workspace <em>feel divided?</em></h2>
+  <div class="statement-bottom"><p>Some days are full of deadlines. Others are full of ideas, errands, plans or unexpected things. LifeFlow brings the moving parts into one calm place, so you can spend less energy keeping track and more energy doing what matters.</p><span>LESS FRICTION<br><b>MORE FLOW.</b></span></div>
  </div>
- <div class="feature-index">02 <span>/ WHAT'S INSIDE</span></div>
 </section>
 
-<section class="feature-rail" aria-label="LifeFlow features">
- <div class="feature-rail-sticky">
-  <div class="feature-rail-heading"><span>THE LIFEFLOW TOOLKIT</span><span>SCROLL TO EXPLORE <b>↓</b></span></div>
-  <div class="feature-track" id="featureTrack">
-   <article class="feature-panel feature-panel-dark">
-    <div class="feature-panel-number">01 / FOCUS</div><div class="feature-art art-focus"><div class="art-date">TODAY <b>09:41</b></div><div class="art-task"><i></i><span>Plan the day</span><b>NOW</b></div><div class="art-task"><i></i><span>Review priorities</span><b>10:30</b></div><div class="art-task muted"><i></i><span>Follow up</span><b>13:00</b></div><div class="art-line"></div></div>
-    <div class="feature-copy"><span>TASK MANAGER</span><h3>Know what<br>comes <em>next.</em></h3><p>Bring the important things forward. See the day clearly and move through it one step at a time.</p></div>
-   </article>
-   <article class="feature-panel feature-panel-light">
-    <div class="feature-panel-number">02 / STRUCTURE</div><div class="art-calendar"><div class="calendar-top"><b>YOUR WEEK</b><span>MON — SUN</span></div><div class="calendar-grid"><i>MON</i><i>TUE</i><i>WED</i><i>THU</i><i>FRI</i><i>SAT</i><i>SUN</i><b>03</b><b>04</b><b>05</b><b>06</b><b>07</b><b>08</b><b>09</b><span></span><span class="cal-active"></span><span></span><span class="cal-active"></span><span></span><span></span><span></span></div></div>
-    <div class="feature-copy"><span>CALENDAR & BOARD</span><h3>Give your plans<br>a <em>place.</em></h3><p>Move between time and structure. A calendar for the bigger picture, a board for the work in motion.</p></div>
-   </article>
-   <article class="feature-panel feature-panel-dark">
-    <div class="feature-panel-number">03 / THINKING</div><div class="art-notes"><div class="note-paper"><small>NOTES / 03</small><b>Ideas worth<br>keeping.</b><i></i><i></i><i></i><div class="note-tag">MARKDOWN</div></div><div class="note-link"></div><div class="note-node">[[IDEAS]]</div></div>
-    <div class="feature-copy"><span>MARKDOWN NOTES</span><h3>Let ideas<br><em>take shape.</em></h3><p>Write freely with rich Markdown formatting. Keep projects, references and thoughts together.</p></div>
-   </article>
-   <article class="feature-panel feature-panel-light">
-    <div class="feature-panel-number">04 / CONNECTIONS</div><div class="art-branches"><div class="branch-lines"><i></i><i></i><i></i><i></i><i></i><i></i></div><b class="branch-center">FLOW</b><span class="branch-node one">IDEA</span><span class="branch-node two">PLAN</span><span class="branch-node three">WORK</span><span class="branch-node four">LIFE</span></div>
-    <div class="feature-copy"><span>YOUR BRANCHES</span><h3>See the links<br>between <em>things.</em></h3><p>Connect notes by title and explore how ideas relate through an interactive knowledge graph.</p></div>
-   </article>
-   <article class="feature-panel feature-panel-dark">
-    <div class="feature-panel-number">05 / PERSONALISE</div><div class="art-customise"><div class="customise-head">YOUR SPACE <span>APPEARANCE</span></div><div class="theme-swatches"><i class="swatch sapphire"></i><i class="swatch emerald"></i><i class="swatch gold"></i><i class="swatch amethyst"></i><i class="swatch ruby"></i></div><div class="customise-preview"><b>Focus mode</b><span>AMBIENT / ON</span><i></i><i></i></div></div>
-    <div class="feature-copy"><span>CUSTOMISE YOUR SPACE</span><h3>Make it feel<br><em>like yours.</em></h3><p>Choose a visual theme and ambient settings that make your workspace feel personal and comfortable throughout the day.</p></div>
-   </article>
+<section class="showcase section-shell" id="workspace">
+ <div class="section-heading">
+  <div><div class="section-index"><b>03</b><i></i><span>THE WORKSPACE</span></div><h2>One space.<br><em>Different ways forward.</em></h2></div>
+  <p>Move from the next task to the bigger picture, then follow an idea wherever it leads.</p>
+ </div>
+ <div class="showcase-layout">
+  <div class="showcase-menu" role="tablist" aria-label="Explore workspace features">
+   <button class="showcase-tab active" type="button" role="tab" aria-selected="true" aria-controls="preview-focus" id="tab-focus" data-view="focus"><span>01</span><b>Focus on today</b><i>↗</i></button>
+   <button class="showcase-tab" type="button" role="tab" aria-selected="false" aria-controls="preview-plan" id="tab-plan" data-view="plan"><span>02</span><b>Shape your plans</b><i>↗</i></button>
+   <button class="showcase-tab" type="button" role="tab" aria-selected="false" aria-controls="preview-connect" id="tab-connect" data-view="connect"><span>03</span><b>Connect your thinking</b><i>↗</i></button>
+   <button class="showcase-tab" type="button" role="tab" aria-selected="false" aria-controls="preview-personal" id="tab-personal" data-view="personal"><span>04</span><b>Make it yours</b><i>↗</i></button>
+   <div class="showcase-description" aria-live="polite"><small id="showcaseEyebrow">TASKS / FOCUS</small><h3 id="showcaseTitle">Know what deserves your attention.</h3><p id="showcaseText">Bring your priorities forward, organise the day and keep completed work in view. A clear next step is often enough.</p></div>
+  </div>
+  <div class="preview-stage">
+   <section class="preview-panel active" id="preview-focus" role="tabpanel" aria-labelledby="tab-focus">
+    <div class="preview-top"><span>LIFEFLOW / TODAY</span><span>09:41 AM</span></div>
+    <div class="focus-preview">
+     <div class="focus-heading"><small>TUESDAY / 06 NOVEMBER</small><h3>Make today<br><em>count.</em></h3><p>There is room to do this one thing well.</p></div>
+     <div class="focus-list">
+      <div class="focus-row done"><i>✓</i><div><b>Review project notes</b><small>Completed at 09:10</small></div><span>DONE</span></div>
+      <div class="focus-row"><i></i><div><b>Prepare weekly plan</b><small>Planning · 10:30</small></div><span class="focus-next">UP NEXT</span></div>
+      <div class="focus-row"><i></i><div><b>Send the follow-up</b><small>Personal · 13:00</small></div><span>13:00</span></div>
+      <div class="focus-row"><i></i><div><b>Read through ideas</b><small>Notes · Flexible</small></div><span>LATER</span></div>
+     </div>
+    </div>
+    <div class="preview-bottom"><span>KEEP YOUR ATTENTION WHERE IT COUNTS</span><span>01 / 04</span></div>
+   </section>
+
+   <section class="preview-panel" id="preview-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+    <div class="preview-top"><span>LIFEFLOW / PLAN</span><span>YOUR WEEK</span></div>
+    <div class="plan-preview">
+     <div class="mini-calendar"><div class="mini-cal-head"><b>November</b><span>‹　›</span></div><div class="mini-cal-grid">
+      <i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i><i>S</i>
+      <span class="faded">27</span><span class="faded">28</span><span class="faded">29</span><span class="faded">30</span><span>1</span><span>2</span><span>3</span>
+      <span>4</span><span class="today">5</span><span>6</span><span>7</span><span class="marked">8</span><span>9</span><span>10</span>
+      <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
+      <span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span>
+     </div><div class="cal-legend"><i></i> PLANNED TASK</div></div>
+     <div class="mini-board"><div class="board-title"><b>Board view</b><span>THIS WEEK</span></div><div class="board-column"><small>TO DO <i>02</i></small><b>Review brief</b><b>Book a slot</b></div><div class="board-column doing"><small>DOING <i>01</i></small><b>Weekly plan</b></div><div class="board-column finished"><small>DONE <i>03</i></small><b>Notes organised</b></div></div>
+    </div>
+    <div class="preview-bottom"><span>SEE THE DAY AND THE BIGGER PICTURE</span><span>02 / 04</span></div>
+   </section>
+
+   <section class="preview-panel" id="preview-connect" role="tabpanel" aria-labelledby="tab-connect" hidden>
+    <div class="preview-top"><span>LIFEFLOW / NOTES</span><span>CONNECTED THINKING</span></div>
+    <div class="connect-preview">
+     <div class="note-editor"><div class="note-toolbar"><span>EDITING NOTE</span><span>MARKDOWN</span></div><div class="note-content"><small>PROJECT / IDEAS</small><h3>Good ideas<br>build on <em>each other.</em></h3><p>Start with a thought. Add context. Link the notes that help it grow.</p><div class="markdown-line"><b>#</b> The first idea</div><div class="markdown-line"><b>[[</b> Related research <b>]]</b></div><div class="markdown-code"><i>MERMAID DIAGRAM</i><span>flowchart TD</span><span>A[Idea] → B[Plan]</span><i>END DIAGRAM</i></div></div></div>
+     <div class="branch-map" aria-hidden="true"><svg viewBox="0 0 330 300"><path d="M165 145 L80 72 M165 145 L254 58 M165 145 L78 224 M165 145 L263 230"/><path d="M80 72 L254 58 M78 224 L263 230" class="thin-path"/></svg><span class="node node-main">IDEA</span><span class="node node-one">RESEARCH</span><span class="node node-two">PLAN</span><span class="node node-three">NOTES</span><span class="node node-four">PROJECT</span></div>
+    </div>
+    <div class="preview-bottom"><span>MARKDOWN · NOTE LINKS · MERMAID</span><span>03 / 04</span></div>
+   </section>
+
+   <section class="preview-panel" id="preview-personal" role="tabpanel" aria-labelledby="tab-personal" hidden>
+    <div class="preview-top"><span>LIFEFLOW / APPEARANCE</span><span>YOUR SPACE</span></div>
+    <div class="personal-preview"><div class="personal-copy"><small>MAKE YOURSELF AT HOME</small><h3>A workspace<br>that feels <em>right.</em></h3><p>Choose a visual theme, adjust the atmosphere and keep your screen comfortable.</p></div>
+     <div class="settings-card"><div class="settings-title"><b>Appearance</b><span>PREVIEW</span></div><small class="setting-label">COLOUR THEME</small><div class="theme-options"><i class="theme-blue active"></i><i class="theme-green"></i><i class="theme-gold"></i><i class="theme-purple"></i><i class="theme-red"></i></div><div class="setting-divider"></div>
+      <div class="setting-row"><span><b>Ambient mode</b><small>Subtle changes through the day</small></span><i class="toggle-on"></i></div>
+      <div class="setting-row"><span><b>Visual intensity</b><small>Keep it calm or add some energy</small></span><span class="intensity-track"><i></i></span></div>
+     </div>
+    </div>
+    <div class="preview-bottom"><span>THEMES · AMBIENT · PERSONAL SETTINGS</span><span>04 / 04</span></div>
+   </section>
   </div>
  </div>
 </section>
 
-<section class="timeline">
- <div class="timeline-heading"><div class="eyebrow"><i></i> A LITTLE MORE ROOM, EVERY DAY</div><h2>From scattered<br>to <em>in flow.</em></h2></div>
- <div class="timeline-list">
-  <div class="timeline-line"><i></i></div>
-  <article><span>01</span><div><b>NOTICE</b><p>See what deserves your attention.</p></div></article>
-  <article><span>02</span><div><b>SHAPE</b><p>Give your time and plans a structure.</p></div></article>
-  <article><span>03</span><div><b>CONNECT</b><p>Bring notes, projects and ideas together.</p></div></article>
-  <article><span>04</span><div><b>MOVE</b><p>Make meaningful progress at your pace.</p></div></article>
+<section class="principles section-shell">
+ <div class="section-index"><b>04</b><i></i><span>THE DETAILS</span></div>
+ <div class="principle-grid">
+  <article><small>01 / CLARITY</small><div class="principle-icon ring-icon">◎</div><h3>Less to keep<br><em>in your head.</em></h3><p>Bring tasks, schedules and progress into view, so you can decide what deserves attention next.</p></article>
+  <article><small>02 / CONNECTION</small><div class="principle-icon node-icon"><i></i><i></i><i></i></div><h3>Ideas don't live<br><em>in isolation.</em></h3><p>Link notes, map relationships and use diagrams to give your thinking more shape.</p></article>
+  <article><small>03 / OWNERSHIP</small><div class="principle-icon spark-icon">✳</div><h3>Your space,<br><em>your rhythm.</em></h3><p>Make the workspace feel personal, then export your data whenever you need a copy.</p></article>
  </div>
- <div class="timeline-note">A WORKSPACE THAT HELPS YOU DECIDE, NOT JUST RECORD.</div>
 </section>
 
-<section class="latest" id="latest">
- <div class="latest-head"><div><div class="eyebrow"><i></i> THE WORKSPACE KEEPS EVOLVING</div><h2>New ways to<br><em>find your flow.</em></h2></div><p>Small, thoughtful additions that make the everyday workspace more capable without making it feel heavier.</p></div>
- <div class="latest-grid">
-  <article class="latest-card"><span>01 / THINKING</span><div class="latest-symbol symbol-links"><i></i><i></i><i></i><b>[[ ]]</b></div><h3>Notes that connect</h3><p>Link notes by title, follow ideas across your workspace and see the relationships take shape in Your Branches.</p><small>MARKDOWN · LINKED NOTES · GRAPH</small></article>
-  <article class="latest-card"><span>02 / CONTROL</span><div class="latest-symbol symbol-focus"><b>FOCUS</b><i></i><i></i><i></i></div><h3>A calmer way to plan</h3><p>Bring today's priorities forward, keep completed work in view and move between tasks, calendar and board.</p><small>TODAY · CALENDAR · BOARD</small></article>
-  <article class="latest-card"><span>03 / PERSONAL SPACE</span><div class="latest-symbol symbol-ambient"><b></b><i></i><i></i></div><h3>Make the space yours</h3><p>Personalise the workspace with visual themes and ambient settings, while keeping your data close to your device.</p><small>THEMES · AMBIENT · LOCAL-FIRST</small></article>
- </div>
- <div class="latest-foot"><span>BUILT TO BE USEFUL. DESIGNED TO STAY OUT OF YOUR WAY.</span><span>MORE ROOM, LESS FRICTION <b>↗</b></span></div>
-</section>
-<section class="closing" id="closing">
- <div class="closing-overline">THE POINT IS NOT TO DO MORE</div>
- <h2>FIND YOUR<br><em>OWN FLOW.</em></h2>
- <p>Bring the moving parts together. Give your energy to the parts that count.</p>
+<section class="your-space section-shell" id="your-space">
+ <div class="space-art" aria-hidden="true"><div class="data-ring ring-one"></div><div class="data-ring ring-two"></div><div class="data-core"><b>YOUR</b><strong>DATA</strong><span>STAYS LOCAL</span></div><span class="data-chip chip-a">BROWSER</span><span class="data-chip chip-b">YOUR DEVICE</span><span class="data-chip chip-c">EXPORT</span></div>
+ <div class="space-copy"><div class="section-index"><b>05</b><i></i><span>YOUR SPACE</span></div><h2>Personal by design.<br><em>Close to you.</em></h2><p>LifeFlow stores supported workspace data in your browser. It does not automatically sync between devices, and you can export your tasks when you need a separate copy.</p><a href="../index.html" class="text-link">TAKE A CLOSER LOOK AT LIFEFLOW <b>↗</b></a></div>
 </section>
 
-<section class="access" id="access">
- <div class="access-frame"><iframe title="LifeFlow sign in and account creation" src="../index.html?auth=login&amp;embed=1&amp;v=20261106-auth-clean" loading="eager" allow="clipboard-read; clipboard-write"></iframe></div>
+<section class="access-section" id="access">
+ <div class="access-heading"><div class="section-index"><b>06</b><i></i><span>GET STARTED</span></div><h2>A little more room<br>for <em>what matters.</em></h2><p>Your workspace is ready when you are.</p></div>
+ <div class="access-frame"><iframe title="LifeFlow sign in and account creation" src="../index.html?auth=login&amp;embed=1&amp;v=20261106-auth-clean" loading="lazy" allow="clipboard-read; clipboard-write"></iframe></div>
 </section>
 </main>
-<script type="module" src="experience.js?v=20261106-fordgt2"></script>
+<footer class="site-footer"><a class="brand" href="#top"><span class="brand-symbol">L</span><span>LIFEFLOW</span></a><span>YOUR TIME. YOUR SPACE.</span><a href="../index.html">OPEN THE WORKSPACE ↗</a></footer>
+<script src="experience.js?v=20261106-flowform1" defer></script>
 </body></html>
