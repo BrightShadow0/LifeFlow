@@ -37,8 +37,7 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 | Area | Technology |
 | :--- | :--- |
 | Frontend | HTML, CSS, JavaScript |
-| 3D | Three.js |
-| Motion | CSS transitions, scroll-driven JavaScript |
+| Motion | CSS transitions |
 | Markdown | Marked.js |
 | Sanitisation | DOMPurify |
 | Diagrams | Mermaid |
