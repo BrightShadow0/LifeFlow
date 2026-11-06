@@ -412,3 +412,22 @@ main{position:relative;z-index:1;min-width:0}
 /* Keep all atmospheric shading on the fixed world overlay. Section-bound shadows create visible horizontal seams while scrolling. */
 .home:before,
 .story-stage:before{background:none!important;}
+
+/* Keep the Your Branches hub and its four labels in distinct, non-overlapping positions. */
+.art-branches{position:relative;isolation:isolate;overflow:hidden}
+.branch-lines{position:absolute;inset:5%;z-index:0;pointer-events:none}
+.branch-center{position:absolute;left:50%;top:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);z-index:2}
+.branch-node{position:absolute;z-index:3;width:62px;height:62px}
+.branch-node.one{left:9%;top:13%;right:auto;bottom:auto}
+.branch-node.two{right:9%;top:13%;left:auto;bottom:auto}
+.branch-node.three{left:9%;bottom:13%;right:auto;top:auto}
+.branch-node.four{right:9%;bottom:13%;left:auto;top:auto}
+@media(max-width:760px){
+ .art-branches{width:min(84vw,440px);height:min(52vh,390px);min-height:280px}
+ .branch-center{width:76px;height:76px}
+ .branch-node{width:56px;height:56px}
+ .branch-node.one{left:7%;top:11%}
+ .branch-node.two{right:7%;top:11%}
+ .branch-node.three{left:7%;bottom:11%}
+ .branch-node.four{right:7%;bottom:11%}
+}
