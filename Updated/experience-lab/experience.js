@@ -41,7 +41,7 @@ function buildRoadRibbon(){
  }
  const asphaltTexture=new THREE.CanvasTexture(textureCanvas);
  asphaltTexture.wrapS=THREE.RepeatWrapping;asphaltTexture.wrapT=THREE.RepeatWrapping;
- asphaltTexture.repeat.set(2,18);asphaltTexture.colorSpace=THREE.SRGBColorSpace;
+ asphaltTexture.repeat.set(2,1);asphaltTexture.colorSpace=THREE.SRGBColorSpace;
  asphaltTexture.anisotropy=Math.min(8,sceneState.renderer.capabilities.getMaxAnisotropy());
  for(let i=0;i<=segments;i++){
   const t=i/segments,{p,right}=frameAt(t);
@@ -78,7 +78,7 @@ function buildRoadRibbon(){
   sceneState.world.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),1400,.045,8,false),edgeMat));
  }
  for(let i=0;i<116;i++){
-  const t=.012+i*.00845,{p,tangent}=frameAt(t);
+  const t=.012+i*.00985,{p,tangent}=frameAt(t);
   const dash=new THREE.Mesh(new THREE.BoxGeometry(.12,.022,2.15),lineMat);
   dash.position.copy(p);dash.position.y=.075;
   dash.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);
@@ -129,7 +129,7 @@ function addRoadside(){
    const {p,right}=frameAt(i/520);
    railPoints.push(p.clone().addScaledVector(right,side*4.55).add(new THREE.Vector3(0,.82,0)));
   }
-  const rail=new THREE.Mesh(new THREE.CatmullRomCurve3(railPoints).getPoints(1000).length?new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPoints),1000,.075,10,false):new THREE.BoxGeometry(1,1,1),railMat);
+  const rail=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(railPoints),1000,.075,10,false),railMat);
   rail.castShadow=true;sceneState.world.add(rail);
   for(let i=0;i<52;i++){
    const t=.025+i*.0182,{p,right,tangent}=frameAt(t);
@@ -153,7 +153,7 @@ function createForest(){
  ];
  const shrubMats=[leaves[0],leaves[1],leaves[3]];
  const rnd=(seed)=>{const v=Math.sin(seed*127.1+311.7)*43758.5453;return v-Math.floor(v);};
- for(let i=0;i<112;i++){
+ for(let i=0;i<96;i++){
   const t=.028+i*.00845,{p,right}=frameAt(t),side=i%2?1:-1;
   const height=4.2+rnd(i+3)*4.6,width=1.45+rnd(i+51)*1.05;
   const pos=p.clone().addScaledVector(right,side*(8.4+rnd(i+90)*7.2));
@@ -165,14 +165,14 @@ function createForest(){
    branch.position.set((rnd(i+b+11)-.5)*.8,height*(.42+b*.12),0);
    branch.rotation.z=(rnd(i+b+21)-.5)*.9;tree.add(branch);
   }
-  const clusterCount=5+Math.floor(rnd(i+7)*4);
+  const clusterCount=4+Math.floor(rnd(i+7)*3);
   for(let c=0;c<clusterCount;c++){
    const radius=width*(.43+rnd(i*4+c+6)*.34);
    const canopy=new THREE.Mesh(new THREE.IcosahedronGeometry(radius,2),leaves[(i+c)%leaves.length]);
    canopy.position.set((rnd(i+c+31)-.5)*width*.9,height*(.62+rnd(i+c+43)*.23),(rnd(i+c+63)-.5)*width*.8);
    canopy.scale.set(1,.78+rnd(i+c+77)*.5,.9+rnd(i+c+99)*.35);
    canopy.rotation.set(rnd(i+c+101)*.35,rnd(i+c+111)*Math.PI,rnd(i+c+121)*.35);
-   canopy.castShadow=true;tree.add(canopy);
+   canopy.castShadow=false;tree.add(canopy);
   }
   sceneState.world.add(tree);
   if(i%2===0){
@@ -285,7 +285,7 @@ async function initWorld(){
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;
  renderer.shadowMap.enabled=!mobile;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  const scene=new THREE.Scene();
- scene.background=new THREE.Color('#3c493e');scene.fog=new THREE.FogExp2('#26342a',.0054);
+ scene.background=null;scene.fog=new THREE.FogExp2('#26342a',.0054);
  const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,620);
  camera.position.set(0,5,12);
  scene.add(new THREE.HemisphereLight('#e4eddf','#27382d',1.75));
@@ -294,11 +294,23 @@ async function initWorld(){
  scene.add(sun);
  const fill=new THREE.DirectionalLight('#a6c7a8',.85);fill.position.set(28,20,-65);scene.add(fill);
  const rim=new THREE.DirectionalLight('#e6edcf',.4);rim.position.set(0,18,55);scene.add(rim);
+ const skyGeo=new THREE.SphereGeometry(540,40,28);
+ const skyPos=skyGeo.attributes.position,skyColors=[];
+ const skyTop=new THREE.Color('#52685d'),skyHorizon=new THREE.Color('#a9ad93'),skyLow=new THREE.Color('#24382c');
+ for(let i=0;i<skyPos.count;i++){
+  const h=skyPos.getY(i)/540,color=new THREE.Color();
+  if(h>=.04)color.lerpColors(skyHorizon,skyTop,clamp((h-.04)/.78));
+  else color.lerpColors(skyLow,skyHorizon,clamp((h+1)/1.04));
+  skyColors.push(color.r,color.g,color.b);
+ }
+ skyGeo.setAttribute('color',new THREE.Float32BufferAttribute(skyColors,3));
+ const sky=new THREE.Mesh(skyGeo,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,depthWrite:false,fog:false}));
+ sky.frustumCulled=false;scene.add(sky);
  const pmrem=new THREE.PMREMGenerator(renderer);
  const env=pmrem.fromScene(new RoomEnvironment(),.04).texture;scene.environment=env;pmrem.dispose();
  const world=new THREE.Group();scene.add(world);
  sceneState.renderer=renderer;sceneState.scene=scene;sceneState.camera=camera;sceneState.world=world;sceneState.curve=curve;
- buildTerrain();buildRoadRibbon();addRoadside();createForest();buildCheckpointSigns();createFallbackCar();
+ buildTerrain();buildRoadRibbon();addRoadside();createForest();createFallbackCar();
  addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();},{passive:true});
 }
 function placeCar(progress,dt){
