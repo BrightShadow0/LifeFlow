@@ -1,103 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LifeFlow Planner</title>
-<link rel="stylesheet" href="style.css?v=20261105-auth-split1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090e0b">
+  <meta name="description" content="LifeFlow — Make room for what matters.">
+  <title>LifeFlow — Make room for what matters</title>
+  <meta http-equiv="refresh" content="0;url=experience-lab/">
+  <link rel="canonical" href="https://brightshadow0.github.io/LifeFlow/Updated/experience-lab/">
 </head>
 <body>
-
-<div id="authScreen">
-  <div class="card">
-
-    <div class="term-layout"><aside class="auth-brand-panel" aria-label="LifeFlow"><div class="auth-brand-word">LifeFlow<span>.</span></div><div class="auth-brand-watermark">FLOW</div></aside><div class="termcontent"><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle" class="auth-subtitle-hidden">Sign in to access your personal planning workspace.</p>
-    <div id="stepLogin" class="authstep active">
-      <label for="loginEmail">EMAIL / USERNAME</label><input id="loginEmail" placeholder="Email">
-      <label for="loginPass">PASSWORD</label>
-      <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
-      <div id="loginError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary auth-submit" onclick="doLogin()" style="width:100%">Sign in</button>
-      <div class="oauth-row" id="oauthRow"></div>
-      <div id="oauthNotice" class="notice" style="display:none"></div>
-      <div style="margin-top:8px;display:flex;justify-content:space-between">
-        <button class="linklike" onclick="startSignup()">Create account</button>
-        <button class="linklike" onclick="showStep('stepForgot')">Forgot password?</button>
-      </div>
-    </div>
-    <div id="stepSignup1" class="authstep">
-      <div class="stepdots"><span class="on"></span><span></span><span></span></div>
-      <input id="signupEmail" placeholder="Email" oninput="validateSignup1()">
-      <div id="emailHint" class="notice" style="display:none"></div>
-      <div class="auth-password-wrap"><input id="signupPass" type="password" placeholder="Choose a password" oninput="validateSignup1()"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('signupPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
-      <div id="signupError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
-      <div id="passHint" class="notice" style="display:none"></div>
-      <button class="primary" id="s1Next" onclick="showStep('stepSignup2')" style="width:100%" disabled>Next</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" onclick="showStep('stepLogin')">Back to login</button></div>
-    </div>
-    <div id="stepSignup2" class="authstep">
-      <div class="stepdots"><span class="on"></span><span class="on"></span><span></span></div>
-      <input id="signupName" placeholder="Display name">
-      <input id="signupBio" placeholder="Short bio (optional)">
-      <button class="primary" onclick="showStep('stepSignup3')" style="width:100%">Next</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" onclick="showStep('stepSignup1')">Back</button></div>
-    </div>
-    <div id="stepSignup3" class="authstep">
-      <div class="stepdots"><span class="on"></span><span class="on"></span><span class="on"></span></div>
-      <input id="signupWorkspace" placeholder="Workspace name (e.g. My Life)">
-      <button class="primary" onclick="doSignup()" style="width:100%">Create account</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" onclick="showStep('stepSignup2')">Back</button></div>
-      <div class="notice">Stored in this browser only — passwords are salted and hashed, never saved in plaintext. Still not a real server database.</div>
-    </div>
-    <div id="stepVerify" class="authstep">
-      <div class="notice">Activation link sent to <span id="verifyEmailLabel"></span> (simulated — no real email is sent).</div>
-      <div class="notice" id="verifyTokenDisplay"></div>
-      <button class="primary" onclick="doVerify()" style="width:100%">Click activation link</button>
-    </div>
-    <div id="stepForgot" class="authstep">
-      <input id="forgotEmail" placeholder="Enter email address">
-      <div id="forgotError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary" onclick="sendReset()" style="width:100%">Send reset link</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" onclick="showStep('stepLogin')">Back to login</button></div>
-    </div>
-    <div id="stepSent" class="authstep">
-      <div class="notice">Backend verified account. One-time reset token generated and "emailed" (simulated below). It expires in 15 minutes.</div>
-      <div class="notice" id="tokenDisplay"></div>
-      <button class="primary" onclick="showStep('stepReset')" style="width:100%">Click reset link</button>
-    </div>
-    <div id="stepReset" class="authstep">
-      <input id="newPass" type="password" placeholder="Create new password">
-      <div id="resetError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary" onclick="doReset()" style="width:100%">Update password</button>
-    </div>
-    <div id="stepDone" class="authstep">
-      <div class="notice">Password updated.</div>
-      <button class="primary" onclick="showStep('stepLogin')" style="width:100%">Login again</button>
-    </div>
-    </div>
-</div>
-  </div>
-</div>
-
-<div id="app" style="display:none">
-  <aside class="app-sidebar" aria-label="Main navigation">
-    <div class="brand">LifeFlow<i class="brand-mark">.</i></div>
-    <div class="navlabel">Workspace</div><nav id="nav"></nav>
-    <div class="sidebottom"><div class="navlabel">Data & account</div>
-      <button class="sidebar-action" onclick="exportData('csv')" title="Export CSV"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button>
-      <button class="sidebar-action" onclick="exportData('json')" title="Export JSON"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button>
-      <button class="sidebar-action logout" onclick="doLogout()" title="Log out"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button>
-    </div>
-  </aside>
-  <div class="app-content"><div class="app-top"><div><h1 id="pageTitle">Today</h1><p id="pageSubtitle">Your planning workspace</p></div><div class="app-top-actions"><button id="themePull" class="theme-pull top-theme-pull" type="button" aria-label="Pull the lightbulb cord to change theme" title="Pull the cord to switch between dark and light mode"><span class="theme-cord"></span><span class="theme-bulb-assembly"><span class="theme-bulb-base" aria-hidden="true"></span><span class="theme-bulb" aria-hidden="true"></span></span></button></div></div><main id="main"></main></div>
-</div>
-<div id="toastHost" aria-live="polite"></div>
-
-<div id="timeEditorHost"></div><div id="clockHost"></div>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
-<script src="script.js?v=20261105-why-lifeflow-original-layout1" defer></script>
+  <script>window.location.replace('experience-lab/');</script>
+  <p>Opening <a href="experience-lab/">LifeFlow</a>...</p>
 </body>
 </html>
