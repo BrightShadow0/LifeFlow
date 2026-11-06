@@ -266,7 +266,6 @@ function createFallbackCar(){
  sceneState.car=car;sceneState.carFallback=car;sceneState.world.add(car);
 }
 function buildCheckpointSigns(){
-function buildCheckpointSigns(){
  for(let i=0;i<9;i++){
   const t=.09+i*.098,{p,right,tangent}=frameAt(t),side=i%2?1:-1;
   const group=new THREE.Group();
@@ -325,13 +324,9 @@ function placeCar(progress,dt){
  camera.lookAt(look);
 }
 function scrollProgress(){
-function scrollProgress(){
- const y=window.scrollY,home=document.getElementById('home'),story=document.getElementById('story');
- const homeH=home.offsetHeight,storyTop=story.offsetTop,storyRange=Math.max(1,story.offsetHeight-innerHeight);
- let drive;
- if(y<storyTop)drive=.02+.10*clamp(y/Math.max(1,homeH));
- else drive=.12+.86*clamp((y-storyTop)/storyRange);
- scrollTarget=clamp(drive,.02,.98);
+ const y=window.scrollY,story=document.getElementById('story');
+ const pageRange=Math.max(1,document.documentElement.scrollHeight-innerHeight);
+ scrollTarget=.02+.96*clamp(y/pageRange);
  const storyRect=story.getBoundingClientRect();
  const p=clamp(-storyRect.top/Math.max(1,story.offsetHeight-innerHeight));
  const beat=Math.min(8,Math.floor(p*9));setBeat(beat);
@@ -339,8 +334,7 @@ function scrollProgress(){
  document.getElementById('siteProgress').style.width=(total>0?100*y/total:0)+'%';
  const rail=document.getElementById('featureTrack'),section=document.querySelector('.feature-rail');
  const railRect=section.getBoundingClientRect(),railRange=Math.max(1,section.offsetHeight-innerHeight);
- const rp=clamp(-railRect.top/railRange);
- if(!mobile&&!reduced)rail.style.transform='translate3d('+(-rp*400)+'vw,0,0)';
+ const rp=clamp((innerHeight-railRect.top)/(railRange+innerHeight));
  const f=Math.min(4,Math.floor(rp*5));setFeature(f);
 }
 function setBeat(index){
@@ -359,7 +353,6 @@ function setupScroll(){
  const handler=()=>{if(rafQueued)return;rafQueued=true;requestAnimationFrame(()=>{rafQueued=false;scrollProgress();});};
  addEventListener('scroll',handler,{passive:true});scrollProgress();
 }
-function setupPointer(){
 function setupPointer(){
  if(reduced||mobile)return;
  addEventListener('pointermove',e=>{pointer.tx=(e.clientX/innerWidth-.5)*2;pointer.ty=(e.clientY/innerHeight-.5)*2;},{passive:true});
@@ -407,7 +400,6 @@ function setupIframeScroll(){
  iframe.addEventListener('load',attach);
  try{if(iframe.contentDocument?.readyState==='complete')attach();}catch(_){}
 }
-async function boot(){
 async function boot(){
  await initWorld();setupScroll();setupPointer();setupReveals();setupAnchors();setupIframeScroll();
  if(reduced){document.querySelectorAll('.story-beat').forEach(x=>x.classList.add('active'));document.querySelector('.story').style.height='auto';}
