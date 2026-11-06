@@ -45,6 +45,10 @@ A separate, scroll-driven introduction to LifeFlow.
 
 The Experience Lab is a product showcase. The main workspace remains a separate application. Its 3D car, road, forest and sky are generated in code. See [ASSET-CREDITS.md](Updated/experience-lab/ASSET-CREDITS.md).
 
+### Experience Lab Visual Direction
+
+Use the supplied reference set as creative direction: OFF+BRAND, Lusion, Igloo Inc, Family, Scale & Form, Active Theory, Dogstudio, Locomotive, Exo Ape, Obys Agency, Bruno Simon Portfolio, Resn, Immersive Garden, Phantoms Agency, Refokus, Media.Monks, Basement.studio, Watson Design Group, Monopo and Caspian Agency. Aim for immersive storytelling, confident editorial typography, tactile materials, purposeful motion and polished interactions. Treat these as inspiration, not layouts or assets to reproduce.
+
 ### Experience Lab Continuity Rules
 
 These standards apply to all future Experience Lab versions:
