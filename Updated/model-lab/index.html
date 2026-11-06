@@ -119,7 +119,7 @@ mtlLoader.load('Ford GT (2017).mtl',materials=>{
     camera.near=Math.max(.01,radius/1000);camera.far=radius*100;camera.updateProjectionMatrix();
     controls.minDistance=radius*.72;controls.maxDistance=radius*8;
     homeCamera=camera.position.clone();homeTarget=fitCenter.clone();
-    floor.scale.setScalar(Math.max(1,radius*.22));groundGlow.scale.setScalar(Math.max(1,radius*.22));
+    floor.position.y=-fitSize.y/2-.035;groundGlow.position.y=floor.position.y;floor.scale.setScalar(Math.max(1,radius*.22));groundGlow.scale.setScalar(Math.max(1,radius*.22));
     loading.classList.add('done');assetState.textContent='Original geometry and materials loaded';
   },xhr=>{if(xhr.total)loadNote.textContent='Reading geometry '+Math.round(xhr.loaded/xhr.total*100)+'%'},fail);
 },undefined,fail);
