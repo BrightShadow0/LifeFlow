@@ -115,3 +115,13 @@ main{position:relative;z-index:1}.hero{min-height:min(100svh,1040px);padding:150
 @keyframes why-change{from{opacity:.25;transform:translateY(7px)}to{opacity:1;transform:none}}
 @media(max-width:850px){.why-heading{grid-template-columns:1fr;gap:30px}.why-explorer{grid-template-columns:1fr;gap:26px}.why-selector{display:grid;grid-template-columns:repeat(2,1fr);column-gap:20px}.why-tab{padding:16px 3px}.why-panel{min-height:340px}}
 @media(max-width:620px){.why-section{padding-top:80px;padding-bottom:85px}.why-heading h2{font-size:clamp(43px,10vw,64px)}.why-heading p{font-size:11px;margin-top:16px}.why-explorer{margin-top:34px}.why-selector{column-gap:12px}.why-tab{grid-template-columns:22px 1fr 12px;gap:5px;padding:14px 0}.why-tab>b{font-size:9px}.why-tab>span{font-size:7px}.why-panel{padding:18px 15px 15px;min-height:390px}.why-panel-top{font-size:6px}.why-panel-content{grid-template-columns:1fr;gap:18px;padding:28px 1%}.why-panel-content h3{font-size:36px}.why-panel-content p{font-size:10px}.why-detail{padding:13px}.why-detail b{font-size:10px}.why-principles{gap:12px}.why-principles span{width:100%;margin-bottom:2px}.why-principles b{font-size:9px}.why-principles b:not(:last-child):after{padding-left:12px}}
+
+
+/* Interactive controls in the workspace preview */
+.theme-options button{display:block;width:27px;height:27px;padding:0;border-radius:50%;border:2px solid #ffffff20;cursor:pointer;transition:transform .18s,outline-color .18s}
+.theme-options button:hover{transform:translateY(-3px)}
+.theme-options button.active{outline:1px solid #ecf4e0;outline-offset:3px}
+.theme-options button:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+.theme-options button.theme-blue{background:#4e78cb}.theme-options button.theme-green{background:#4a9465}.theme-options button.theme-gold{background:#c59a42}.theme-options button.theme-purple{background:#8d6abd}.theme-options button.theme-red{background:#b95662}
+.focus-row{cursor:pointer;border-radius:4px;transition:background .18s,opacity .18s}.focus-row:hover,.focus-row:focus-visible{background:#c9f45b0d;outline:none}.focus-row:focus-visible{box-shadow:inset 0 0 0 1px #c9f45b88}.focus-row.done>div b{text-decoration:line-through;text-decoration-color:#8ca17a;color:#91a08c}
+@media(max-width:620px){.theme-options button{width:22px;height:22px}}
