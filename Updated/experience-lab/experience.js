@@ -429,12 +429,17 @@ function placeCar(progress,dt){
  const bend=curve.getTangentAt(clamp(t+.01)).sub(curve.getTangentAt(clamp(t-.01))).x;
  car.rotation.z=damp(car.rotation.z,-bend*.16,4,dt);
  const camera=sceneState.camera;
- const behind=p.clone().addScaledVector(tangent,-9.2);
- const cameraPosition=behind.addScaledVector(right,-3.9).add(new THREE.Vector3(0,5.1,0));
- const look=p.clone().addScaledVector(tangent,9.5).add(new THREE.Vector3(0,1.05,0));
- const targetFov=mobile?58:43;
+ // Opening camera tour: begin ahead of the nose, then arc around to the rear.
+ // Once the opening reveal completes, the camera follows behind the car.
+ const tour=clamp(clock.elapsedTime/6.2);
+ const easedTour=tour*tour*(3-2*tour);
+ const frontPosition=p.clone().addScaledVector(tangent,8.4).addScaledVector(right,3.2).add(new THREE.Vector3(0,3.35,0));
+ const rearPosition=p.clone().addScaledVector(tangent,-9.2).addScaledVector(right,-3.9).add(new THREE.Vector3(0,5.1,0));
+ const cameraPosition=frontPosition.lerp(rearPosition,easedTour);
+ const look=p.clone().add(new THREE.Vector3(0,1.0,0));
+ const targetFov=mobile?55:43;
  camera.fov=damp(camera.fov,targetFov,2,dt);camera.updateProjectionMatrix();
- camera.position.lerp(cameraPosition,1-Math.exp(-dt*3.1));
+ camera.position.lerp(cameraPosition,1-Math.exp(-dt*2.4));
  camera.lookAt(look);
 }
 function scrollProgress(){
@@ -474,7 +479,7 @@ function setupPointer(){
 function animate(){
  const dt=Math.min(clock.getDelta(),.04),time=clock.elapsedTime;
  scrollLive=damp(scrollLive,scrollTarget,2.8,dt);
- if(window.scrollY<20&&!reduced)scrollLive=clamp(scrollLive+dt*.0015,.015,.98);
+ // The opening scene stays parked until the visitor scrolls.
  if(sceneState.car){
   placeCar(scrollLive,dt);
   sceneState.world.rotation.y=damp(sceneState.world.rotation.y,pointer.tx*.009,1.5,dt);
@@ -515,6 +520,11 @@ function setupIframeScroll(){
  try{if(iframe.contentDocument?.readyState==='complete')attach();}catch(_){}
 }
 async function boot(){
+ // Do not let browser scroll restoration reopen the experience halfway down.
+ if('scrollRestoration' in history)history.scrollRestoration='manual';
+ document.documentElement.style.scrollBehavior='auto';
+ window.scrollTo(0,0);
+ requestAnimationFrame(()=>window.scrollTo(0,0));
  try{await initWorld();animate();}
  catch(error){console.warn('LifeFlow 3D scene unavailable; keeping the experience usable.',error);}
  setupScroll();setupPointer();setupReveals();setupAnchors();setupIframeScroll();
