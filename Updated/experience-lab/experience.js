@@ -218,6 +218,12 @@ function createFallbackCar(){
   for(let i=0;i<a.count;i++){const x=a.getX(i),z=a.getZ(i);a.setXYZ(i,z-depth/2+zOffset,a.getY(i),x);}
   g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
  };
+ const addTopPanel=(shape,mat,y)=>{
+  const g=new THREE.ShapeGeometry(shape,28),a=g.attributes.position;
+  for(let i=0;i<a.count;i++)a.setXYZ(i,a.getX(i),y,a.getY(i));
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat);m.material=mat;m.castShadow=true;m.receiveShadow=true;car.add(m);return m;
+ };
  // GT's long, low mid-engine body: nose at -Z, rear deck at +Z.
  const shell=new THREE.Shape();
  shell.moveTo(-2.20,.37);shell.lineTo(-2.20,.52);
@@ -237,6 +243,26 @@ function createFallbackCar(){
  shell.quadraticCurveTo(-1.16,.76,-1.43,.77);shell.quadraticCurveTo(-1.69,.76,-1.73,.35);
  shell.lineTo(-2.05,.35);shell.closePath();
  addPanel(car,shell,2.06,paint,0);
+ // Continuous painted upper bodywork: sculpted clamshell, doors and rear shoulders.
+ const hood=new THREE.Shape();
+ hood.moveTo(-.78,-2.12);hood.quadraticCurveTo(-.94,-1.88,-.82,-1.48);
+ hood.quadraticCurveTo(-.76,-1.10,-.62,-.78);hood.quadraticCurveTo(0,-.68,.62,-.78);
+ hood.quadraticCurveTo(.76,-1.10,.82,-1.48);hood.quadraticCurveTo(.94,-1.88,.78,-2.12);
+ hood.quadraticCurveTo(0,-2.20,-.78,-2.12);
+ addTopPanel(hood,paint,.755);
+ const rearDeck=new THREE.Shape();
+ rearDeck.moveTo(-.82,.72);rearDeck.quadraticCurveTo(-.91,1.02,-.92,1.58);
+ rearDeck.quadraticCurveTo(-.91,1.93,-.72,2.12);rearDeck.quadraticCurveTo(0,2.20,.72,2.12);
+ rearDeck.quadraticCurveTo(.91,1.93,.92,1.58);rearDeck.quadraticCurveTo(.91,1.02,.82,.72);
+ rearDeck.quadraticCurveTo(0,.82,-.82,.72);
+ addTopPanel(rearDeck,paint,.755);
+ // Broad door skins close the sides, leaving only the deep functional intake sculpting visible.
+ for(const side of [-1,1]){
+  const door=new THREE.Mesh(new THREE.BoxGeometry(.075,.22,1.05),paint);
+  door.position.set(side*.985,.635,-.02);door.rotation.x=-.035;car.add(door);
+  const rearHaunch=new THREE.Mesh(new THREE.BoxGeometry(.12,.16,.72),paint);
+  rearHaunch.position.set(side*.96,.68,1.60);car.add(rearHaunch);
+ }
  // Carbon-fibre floor and pronounced front splitter.
  addBox(car,new THREE.BoxGeometry(1.83,.13,3.88),carbon,[0,.34,0]);
  addBox(car,new THREE.BoxGeometry(2.12,.055,.52),carbon,[0,.315,-2.03]);
@@ -258,10 +284,10 @@ function createFallbackCar(){
   // Sculpted flying buttress runs from the roof shoulders to each rear haunch.
   addCurve(car,[[side*.47,1.02,.28],[side*.60,.99,.62],[side*.78,.88,1.02],[side*.91,.77,1.55],[side*.95,.67,2.04]],.105,paint);
   addCurve(car,[[side*.52,.98,.32],[side*.66,.94,.70],[side*.83,.82,1.12],[side*.96,.70,1.88]],.018,carbonWeave);
-  const tunnel=new THREE.Mesh(new THREE.BoxGeometry(.31,.20,1.52),carbon);
-  tunnel.position.set(side*.69,.62,1.27);tunnel.rotation.x=-.08;car.add(tunnel);
-  const tunnelLip=new THREE.Mesh(new THREE.BoxGeometry(.38,.035,1.58),carbonWeave);
-  tunnelLip.position.set(side*.69,.73,1.27);car.add(tunnelLip);
+  const tunnel=new THREE.Mesh(new THREE.BoxGeometry(.20,.045,1.30),carbon);
+  tunnel.position.set(side*.69,.765,1.27);tunnel.rotation.x=-.025;car.add(tunnel);
+  const tunnelLip=new THREE.Mesh(new THREE.BoxGeometry(.27,.022,1.36),carbonWeave);
+  tunnelLip.position.set(side*.69,.79,1.27);car.add(tunnelLip);
  }
  // Rear engine window, slatted cooling deck and central spine.
  const engineGlass=new THREE.Mesh(new THREE.BoxGeometry(.70,.025,1.15),glass);
@@ -336,9 +362,9 @@ function createFallbackCar(){
  }
  // Carbon rear wing on twin swan-neck supports, a recognisable GT silhouette.
  for(const x of [-.60,.60]){
-  addBox(car,new THREE.BoxGeometry(.075,.48,.075),carbon,[x,.91,1.82],[.12,0,0]);
+  addBox(car,new THREE.BoxGeometry(.055,.32,.055),carbon,[x,.91,1.82],[.12,0,0]);
  }
- const wing=addBox(car,new THREE.BoxGeometry(1.72,.075,.34),carbon,[0,1.14,1.83],[.04,0,0]);
+ const wing=addBox(car,new THREE.BoxGeometry(1.48,.045,.22),carbon,[0,1.12,1.83],[.04,0,0]);
  wing.scale.z=1;
  addCurve(car,[[-.90,1.13,1.80],[-.70,1.19,1.72],[0,1.21,1.68],[.70,1.19,1.72],[.90,1.13,1.80]],.018,carbonWeave);
  // Twin white over-the-top stripes reference the 2017 GT's race-bred livery.
@@ -349,7 +375,7 @@ function createFallbackCar(){
  // Subtle blue paint highlights, lower carbon splitter and GT-style central nose badge.
  addBox(car,new THREE.BoxGeometry(.11,.06,.025),alloy,[0,.69,-2.205]);
  car.userData.wheels=wheels;car.userData.previousPosition=new THREE.Vector3();
- car.scale.set(1.16,1,1.12);
+ car.scale.set(1.08,1,1.08);
  sceneState.car=car;sceneState.carFallback=car;sceneState.world.add(car);
 }
 async function initWorld(){
