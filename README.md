@@ -36,23 +36,29 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 
 A separate, scroll-driven introduction to LifeFlow.
 
-- Three-dimensional road environment built with Three.js.
-- Scroll-based story told across nine chapters.
-- Five feature panels covering tasks, calendar and board, notes, linked notes, and customisation.
-- Four-step product timeline.
-- Embedded sign-in and account creation.
+- Continuous Three.js road environment with textured asphalt, lane markings, road shoulders, guardrails, forest, terrain, atmospheric sky and fog.
+- Custom touring-car model with metallic paint, environment reflections, glass, lighting, alloy wheels, brake detail and stable road contact.
+- Nine-chapter scroll-driven story.
+- Five vertically unfolding feature chapters covering tasks, calendar and board, notes, linked notes, and customisation.
+- Four-step product timeline and current-feature showcase.
+- Embedded sign-in and account creation with wheel, touch and keyboard scrolling passed through to the parent page.
 
-The Experience Lab is a product showcase. The main workspace remains a separate application.
+The Experience Lab is a product showcase. The main workspace remains a separate application. Its 3D car, road, forest and sky are generated in code. See [ASSET-CREDITS.md](Updated/experience-lab/ASSET-CREDITS.md).
 
-### 3D Asset Credits
+### Experience Lab Continuity Rules
 
-The vehicle, nature, and road models use Kenney CC0 assets:
+These standards apply to all future Experience Lab versions:
 
-- [Car Kit](https://kenney.nl/assets/car-kit)
-- [Nature Kit](https://kenney.nl/assets/nature-kit)
-- [City Kit (Roads)](https://kenney.nl/assets/city-kit-roads)
+- Keep one continuous visual world behind the full page. Do not introduce hard section seams, sudden palette resets, blank animation states or slide-like loading transitions.
+- Let feature chapters unfold vertically in the shared scene. Avoid full-screen horizontal panels that behave like a presentation deck.
+- Keep the car grounded to the road surface. Wheel contact, road height, camera framing and model scale must remain consistent throughout the journey.
+- Keep all interface text above the 3D canvas. Shadows and scene effects must never obscure, overlap or reduce text legibility.
+- Prevent overlap at desktop, tablet and mobile widths. Recheck long headings, cards, navigation and embedded authentication.
+- Embedded controls must not trap page scrolling. Forward wheel, touch and suitable keyboard scroll input to the parent page while preserving normal form interaction.
+- Keep the scene usable when WebGL is unavailable and respect reduced-motion settings.
+- Prefer coherent physical materials, lighting, reflections, surface detail and believable proportions over placeholder or low-poly props.
 
-The road spline, terrain, lighting, layout, camera path, and scroll choreography are custom. See [ASSET-CREDITS.md](Updated/experience-lab/ASSET-CREDITS.md).
+The main LifeFlow workspace remains independent from the Experience Lab.
 
 ---
 
@@ -62,7 +68,7 @@ The road spline, terrain, lighting, layout, camera path, and scroll choreography
 | :--- | :--- |
 | Frontend | HTML, CSS, JavaScript |
 | 3D | Three.js |
-| Animation | GSAP, ScrollTrigger |
+| Motion | CSS transitions, scroll-driven JavaScript |
 | Markdown | Marked.js |
 | Sanitisation | DOMPurify |
 | Diagrams | Mermaid |
@@ -84,7 +90,7 @@ The road spline, terrain, lighting, layout, camera path, and scroll choreography
 
 - Git
 - A modern web browser
-- Internet connection for CDN-hosted libraries and 3D assets
+- Internet connection for CDN-hosted libraries and fonts
 
 ### Run Locally
 
