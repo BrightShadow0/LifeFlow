@@ -107,14 +107,11 @@
    <section class="preview-panel" id="preview-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
     <div class="preview-top"><span>LIFEFLOW / PLAN</span><span>YOUR WEEK</span></div>
     <div class="plan-preview">
-     <div class="mini-calendar"><div class="mini-cal-head"><b>November</b><span>‹　›</span></div><div class="mini-cal-grid">
-      <i>M</i><i>T</i><i>W</i><i>T</i><i>F</i><i>S</i><i>S</i>
-      <span class="faded">27</span><span class="faded">28</span><span class="faded">29</span><span class="faded">30</span><span>1</span><span>2</span><span>3</span>
-      <span>4</span><span class="today">5</span><span>6</span><span>7</span><span class="marked">8</span><span>9</span><span>10</span>
-      <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
-      <span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span>
-     </div><div class="cal-legend"><i></i> PLANNED TASK</div></div>
-     <div class="mini-board"><div class="board-title"><b>Board view</b><span>THIS WEEK</span></div><div class="board-column"><small>TO DO <i>02</i></small><b>Review brief</b><b>Book a slot</b></div><div class="board-column doing"><small>DOING <i>01</i></small><b>Weekly plan</b></div><div class="board-column finished"><small>DONE <i>03</i></small><b>Notes organised</b></div></div>
+     <div class="mini-calendar" aria-label="Interactive calendar preview"><div class="mini-cal-head"><button class="cal-prev" type="button" aria-label="Previous month">‹</button><b class="cal-month-label">November 2026</b><button class="cal-next" type="button" aria-label="Next month">›</button></div><div class="mini-cal-grid" role="grid" aria-label="Calendar dates"></div><div class="cal-legend"><i></i> PLANNED TASK <span class="cal-selected-label">Selected: today</span></div></div>
+     <div class="mini-board" aria-label="Interactive Kanban board preview"><div class="board-title"><b>Board view</b><span>DRAG TASKS BETWEEN COLUMNS</span></div>
+      <div class="board-column" data-status="todo"><small>TO DO <i>02</i></small><div class="board-cards"><button class="board-card" draggable="true" type="button">Review brief</button><button class="board-card" draggable="true" type="button">Book a slot</button></div></div>
+      <div class="board-column doing" data-status="doing"><small>DOING <i>01</i></small><div class="board-cards"><button class="board-card" draggable="true" type="button">Weekly plan</button></div></div>
+      <div class="board-column finished" data-status="done"><small>DONE <i>01</i></small><div class="board-cards"><button class="board-card" draggable="true" type="button">Notes organised</button></div></div><p class="board-feedback" aria-live="polite">Drag cards between columns or tap to advance a task.</p></div>
     </div>
     <div class="preview-bottom"><span>SEE THE DAY AND THE BIGGER PICTURE</span><span>02 / 04</span></div>
    </section>
