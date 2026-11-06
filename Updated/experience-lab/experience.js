@@ -341,6 +341,11 @@ function createFallbackCar(){
  const wing=addBox(car,new THREE.BoxGeometry(1.72,.075,.34),carbon,[0,1.14,1.83],[.04,0,0]);
  wing.scale.z=1;
  addCurve(car,[[-.90,1.13,1.80],[-.70,1.19,1.72],[0,1.21,1.68],[.70,1.19,1.72],[.90,1.13,1.80]],.018,carbonWeave);
+ // Twin white over-the-top stripes reference the 2017 GT's race-bred livery.
+ const stripe=new THREE.MeshStandardMaterial({color:'#e9ece4',metalness:.22,roughness:.34});
+ for(const side of [-1,1]){
+  addCurve(car,[[side*.13,.73,-2.13],[side*.13,.77,-1.82],[side*.13,.81,-1.40],[side*.13,.84,-.98],[side*.13,1.17,-.57],[side*.13,1.18,.18],[side*.13,.87,.82],[side*.13,.85,1.48]],.032,stripe);
+ }
  // Subtle blue paint highlights, lower carbon splitter and GT-style central nose badge.
  addBox(car,new THREE.BoxGeometry(.11,.06,.025),alloy,[0,.69,-2.205]);
  car.userData.wheels=wheels;car.userData.previousPosition=new THREE.Vector3();
