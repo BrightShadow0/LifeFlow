@@ -97,14 +97,17 @@ function buildRoadRibbon(){
 function buildTerrain(){
  const geo=new THREE.PlaneGeometry(620,720,110,130);geo.rotateX(-Math.PI/2);
  const pos=geo.attributes.position;
- for(let i=0;i<pos.count;i++){
-  const x=pos.getX(i),z=pos.getZ(i);
-  const falloff=clamp((Math.abs(x)-9)/20);
-  const hills=(Math.sin(x*.021+z*.008)*2.2+Math.cos(z*.017-x*.013)*1.35+Math.sin((x+z)*.035)*.55);
-  pos.setY(i,-.38+hills*falloff);
- }
+ for(let i=0;i<pos.count;i++)pos.setY(i,-.045);
  geo.computeVertexNormals();
- const grass=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:'#263628',roughness:1,metalness:0}));
+ const grassCanvas=document.createElement('canvas');grassCanvas.width=512;grassCanvas.height=512;
+ const grassCtx=grassCanvas.getContext('2d');grassCtx.fillStyle='#263628';grassCtx.fillRect(0,0,512,512);
+ for(let i=0;i<26000;i++){
+  const shade=35+Math.random()*45,alpha=.06+Math.random()*.16;
+  grassCtx.fillStyle='rgba('+Math.floor(shade-5)+','+Math.floor(shade+8)+','+Math.floor(shade-3)+','+alpha+')';
+  const x=Math.random()*512,y=Math.random()*512;grassCtx.fillRect(x,y,Math.random()*2+1,Math.random()*3+1);
+ }
+ const grassTexture=new THREE.CanvasTexture(grassCanvas);grassTexture.wrapS=THREE.RepeatWrapping;grassTexture.wrapT=THREE.RepeatWrapping;grassTexture.repeat.set(16,22);grassTexture.colorSpace=THREE.SRGBColorSpace;
+ const grass=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:grassTexture,color:'#f1f3ec',roughness:1,metalness:0}));
  grass.position.set(0,0,-125);grass.receiveShadow=true;sceneState.world.add(grass);
  const hillMats=[
   new THREE.MeshStandardMaterial({color:'#27372a',roughness:1}),
@@ -157,7 +160,7 @@ function createForest(){
   const t=.028+i*.00845,{p,right}=frameAt(t),side=i%2?1:-1;
   const height=4.2+rnd(i+3)*4.6,width=1.45+rnd(i+51)*1.05;
   const pos=p.clone().addScaledVector(right,side*(8.4+rnd(i+90)*7.2));
-  const tree=new THREE.Group();tree.position.set(pos.x,-.3,pos.z);tree.rotation.y=rnd(i+17)*Math.PI*2;
+  const tree=new THREE.Group();tree.position.set(pos.x,-.045,pos.z);tree.rotation.y=rnd(i+17)*Math.PI*2;
   const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.12,.29,height*.54,9),bark);
   trunk.position.y=height*.27;trunk.castShadow=true;tree.add(trunk);
   for(let b=0;b<3;b++){
@@ -176,7 +179,7 @@ function createForest(){
   }
   sceneState.world.add(tree);
   if(i%2===0){
-   const bush=new THREE.Group();bush.position.copy(pos).addScaledVector(right,side*.9);bush.position.y=-.28;
+   const bush=new THREE.Group();bush.position.copy(pos).addScaledVector(right,side*.9);bush.position.y=-.035;
    for(let j=0;j<3;j++){
     const leaf=new THREE.Mesh(new THREE.IcosahedronGeometry(.48+rnd(i+j+151)*.27,1),shrubMats[(i+j)%shrubMats.length]);
     leaf.position.set((rnd(i+j+171)-.5)*.8,.32+rnd(i+j+181)*.28,(rnd(i+j+191)-.5)*.7);bush.add(leaf);
@@ -264,17 +267,6 @@ function createFallbackCar(){
  for(const x of [-.48,.48]){const exhaust=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.11,16),chrome);exhaust.rotation.x=Math.PI/2;exhaust.position.set(x,.37,1.78);car.add(exhaust);}
  car.userData.wheels=wheels;car.userData.previousPosition=new THREE.Vector3();
  sceneState.car=car;sceneState.carFallback=car;sceneState.world.add(car);
-}
-function buildCheckpointSigns(){
- for(let i=0;i<9;i++){
-  const t=.09+i*.098,{p,right,tangent}=frameAt(t),side=i%2?1:-1;
-  const group=new THREE.Group();
-  const pole=new THREE.Mesh(new THREE.BoxGeometry(.09,2.1,.09),new THREE.MeshStandardMaterial({color:'#7d8b66',metalness:.25,roughness:.5}));pole.position.y=1.05;group.add(pole);
-  const plate=new THREE.Mesh(new THREE.BoxGeometry(1.35,.48,.08),new THREE.MeshStandardMaterial({color:'#151d13',roughness:.6,metalness:.2}));plate.position.y=2.15;group.add(plate);
-  const marker=new THREE.Mesh(new THREE.BoxGeometry(.52,.05,.11),new THREE.MeshStandardMaterial({color:'#c7f45b',emissive:'#86a842',emissiveIntensity:.45}));marker.position.set(0,2.16,.07);group.add(marker);
-  group.position.copy(p).addScaledVector(right,side*5.7);group.position.y=0;
-  group.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,-1),tangent);sceneState.world.add(group);
- }
 }
 async function initWorld(){
  const canvas=document.getElementById('worldCanvas');
