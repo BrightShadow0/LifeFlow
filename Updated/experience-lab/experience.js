@@ -395,7 +395,7 @@ function setupIframeScroll(){
    },{passive:false,capture:true});
    doc.addEventListener('keydown',event=>{
     const target=event.target,tag=(target&&target.tagName||'').toLowerCase();
-    if(['input','textarea','select'].includes(tag)||target?.isContentEditable)return;
+    if(['input','textarea','select','button','a'].includes(tag)||target?.isContentEditable||target?.closest?.('[role="button"]'))return;
     const keys={PageDown:innerHeight*.82,PageUp:-innerHeight*.82,ArrowDown:90,ArrowUp:-90,' ':innerHeight*.72};
     if(keys[event.key]!==undefined){event.preventDefault();window.scrollBy({top:keys[event.key],behavior:'smooth'});}
    },true);
