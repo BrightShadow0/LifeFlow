@@ -1107,7 +1107,6 @@ body{scrollbar-gutter:stable}
 /* Custom colour combinations */
 :root[data-color-theme="sapphire"]{--accent:#4d8dff;--accent-soft:#102b5e;--ok:#52d9bb}
 :root[data-color-theme="emerald"]{--accent:#45d98a;--accent-soft:#103b27;--ok:#63e6a5}
-:root[data-color-theme="gold"]{--accent:#f5b83d;--accent-soft:#4a3210;--ok:#72d99a}
 :root[data-color-theme="platinum"]{--accent:#c7ccd6;--accent-soft:#2a2d34;--ok:#82e0c0}
 :root[data-color-theme="amethyst"]{--accent:#a56cff;--accent-soft:#2c1852;--ok:#63d9bd}
 :root[data-color-theme="ruby"]{--accent:#f05261;--accent-soft:#4a1720;--ok:#67dba5}
@@ -1118,7 +1117,6 @@ body{scrollbar-gutter:stable}
 .color-swatch{width:30px;height:30px;border-radius:9px;display:block;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 0 14px color-mix(in srgb,var(--accent) 28%,transparent)}
 .color-sapphire .color-swatch{background:linear-gradient(145deg,#83b2ff,#2464d9)}
 .color-emerald .color-swatch{background:linear-gradient(145deg,#72efae,#198d56)}
-.color-gold .color-swatch{background:linear-gradient(145deg,#ffe18a,#e58b16)}
 .color-platinum .color-swatch{background:linear-gradient(145deg,#f4f6fa,#777d88 52%,#252830)}
 .color-amethyst .color-swatch{background:linear-gradient(145deg,#d0a4ff,#7335d2)}
 .color-ruby .color-swatch{background:linear-gradient(145deg,#ff8790,#b71f38)}
@@ -1133,7 +1131,6 @@ body{scrollbar-gutter:stable}
 :root[data-theme="dark"][data-color-theme="emerald"]{
   --bg:#06120c;--card:#0d1c14;--panel2:#10271b;--border:#214d36;--accent:#45d98a;--accent-soft:#103b27;
 }
-:root[data-theme="dark"][data-color-theme="gold"]{
   --bg:#120e05;--card:#1d1709;--panel2:#29200d;--border:#55421b;--accent:#f5b83d;--accent-soft:#4a3210;
 }
 :root[data-theme="dark"][data-color-theme="platinum"]{
@@ -1191,7 +1188,6 @@ body{scrollbar-gutter:stable}
 /* Light mode keeps the white environment and uses the selected colour as its accent atmosphere. */
 :root[data-theme="light"][data-color-theme="sapphire"]{--bg:#f7faff;--card:#fff;--panel2:#edf4ff;--border:#d7e3f5;--accent:#286be8;--accent-soft:#e8f0ff}
 :root[data-theme="light"][data-color-theme="emerald"]{--bg:#f7fcf9;--card:#fff;--panel2:#edf8f1;--border:#d4e8db;--accent:#238b56;--accent-soft:#e5f5eb}
-:root[data-theme="light"][data-color-theme="gold"]{--bg:#fffaf0;--card:#fff;--panel2:#fff4d9;--border:#eadbb7;--accent:#c88416;--accent-soft:#fff0c9}
 :root[data-theme="light"][data-color-theme="platinum"]{--bg:#f7f8fa;--card:#fff;--panel2:#eef0f4;--border:#d8dce3;--accent:#5d6470;--accent-soft:#e8ebf0}
 :root[data-theme="light"][data-color-theme="amethyst"]{--bg:#fbf8ff;--card:#fff;--panel2:#f2eaff;--border:#dfd0f3;--accent:#7a45c7;--accent-soft:#eee4ff}
 :root[data-theme="light"][data-color-theme="ruby"]{--bg:#fff8f8;--card:#fff;--panel2:#ffeded;--border:#efd2d5;--accent:#c73345;--accent-soft:#ffe5e8}
@@ -2176,25 +2172,21 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 /* Theme-dependent accent-soft values for every colour personality. */
 :root[data-theme="light"][data-color-theme="sapphire"]{--accent:#2868d7;--accent-soft:#e4edff;--ok:#187f68}
 :root[data-theme="light"][data-color-theme="emerald"]{--accent:#13834d;--accent-soft:#e0f7e9;--ok:#13834d}
-:root[data-theme="light"][data-color-theme="gold"]{--accent:#99610b;--accent-soft:#fff1cf;--ok:#247b4e}
 :root[data-theme="light"][data-color-theme="platinum"]{--accent:#454b56;--accent-soft:#e7e9ed;--ok:#247b69}
 :root[data-theme="light"][data-color-theme="amethyst"]{--accent:#7540c4;--accent-soft:#f0e7ff;--ok:#247b69}
 :root[data-theme="light"][data-color-theme="ruby"]{--accent:#c32f43;--accent-soft:#ffe7eb;--ok:#247b69}
 :root[data-theme="paper"][data-color-theme="sapphire"]{--accent:#285da8;--accent-soft:#e3ebf7}
 :root[data-theme="paper"][data-color-theme="emerald"]{--accent:#276b48;--accent-soft:#e0eee4}
-:root[data-theme="paper"][data-color-theme="gold"]{--accent:#8b6120;--accent-soft:#f5e9ce}
 :root[data-theme="paper"][data-color-theme="platinum"]{--accent:#575b62;--accent-soft:#e8e5df}
 :root[data-theme="paper"][data-color-theme="amethyst"]{--accent:#7042a8;--accent-soft:#eee4f7}
 :root[data-theme="paper"][data-color-theme="ruby"]{--accent:#a72f3d;--accent-soft:#f7e2e3}
 :root[data-theme="dark"][data-color-theme="sapphire"]{--accent:#6da3ff;--accent-soft:#142c50}
 :root[data-theme="dark"][data-color-theme="emerald"]{--accent:#57e39a;--accent-soft:#123b28}
-:root[data-theme="dark"][data-color-theme="gold"]{--accent:#ffc95b;--accent-soft:#493311}
 :root[data-theme="dark"][data-color-theme="platinum"]{--accent:#d0d5df;--accent-soft:#2a2d34}
 :root[data-theme="dark"][data-color-theme="amethyst"]{--accent:#bd91ff;--accent-soft:#32204e}
 :root[data-theme="dark"][data-color-theme="ruby"]{--accent:#ff7180;--accent-soft:#4a1720}
 :root[data-theme="forest"][data-color-theme="sapphire"]{--accent:#80b1ff;--accent-soft:#172e4e}
 :root[data-theme="forest"][data-color-theme="emerald"]{--accent:#9be27d;--accent-soft:#193424}
-:root[data-theme="forest"][data-color-theme="gold"]{--accent:#e9c46a;--accent-soft:#3c321a}
 :root[data-theme="forest"][data-color-theme="platinum"]{--accent:#c6d0c9;--accent-soft:#26322b}
 :root[data-theme="forest"][data-color-theme="amethyst"]{--accent:#c4a0ff;--accent-soft:#302243}
 :root[data-theme="forest"][data-color-theme="ruby"]{--accent:#ff8b94;--accent-soft:#452128}
@@ -2330,13 +2322,11 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 /* Colour selection controls the actual environment, not only buttons and small accents. */
 :root[data-theme="light"][data-color-theme="sapphire"]{--accent:#2868d7;--accent-soft:#e4edff}
 :root[data-theme="light"][data-color-theme="emerald"]{--accent:#16834f;--accent-soft:#e2f7ec}
-:root[data-theme="light"][data-color-theme="gold"]{--accent:#98600b;--accent-soft:#fff1d1}
 :root[data-theme="light"][data-color-theme="platinum"]{--accent:#505b6c;--accent-soft:#e8ecf2}
 :root[data-theme="light"][data-color-theme="amethyst"]{--accent:#7540c4;--accent-soft:#f0e7ff}
 :root[data-theme="light"][data-color-theme="ruby"]{--accent:#c32f43;--accent-soft:#ffe7eb}
 :root[data-theme="dark"][data-color-theme="sapphire"]{--accent:#79aaff;--accent-soft:#142d52}
 :root[data-theme="dark"][data-color-theme="emerald"]{--accent:#57e39a;--accent-soft:#123b28}
-:root[data-theme="dark"][data-color-theme="gold"]{--accent:#ffc95b;--accent-soft:#493311}
 :root[data-theme="dark"][data-color-theme="platinum"]{--accent:#d0d5df;--accent-soft:#2a2d34}
 :root[data-theme="dark"][data-color-theme="amethyst"]{--accent:#bd91ff;--accent-soft:#32204e}
 :root[data-theme="dark"][data-color-theme="ruby"]{--accent:#ff7180;--accent-soft:#4a1720}
@@ -2494,7 +2484,6 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 /* Theme-aware interactive and selection surfaces use the exact selected colour personality. */
 :root[data-color-theme="sapphire"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
 :root[data-color-theme="emerald"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
-:root[data-color-theme="gold"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
 :root[data-color-theme="platinum"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
 :root[data-color-theme="amethyst"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
 :root[data-color-theme="ruby"] #app .app-sidebar{border-right-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
@@ -2637,11 +2626,8 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 :root[data-theme="dark"][data-color-theme="emerald"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 22%,#f5f5d9 0 1.25%,#c6f3d7 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#4c9879 0%,transparent 14%),linear-gradient(180deg,#0c2c2a 0%,#17473f 48%,#071813 100%)!important
 }
-:root[data-theme="light"][data-color-theme="gold"] #app[data-workspace-backdrop],
-:root[data-theme="paper"][data-color-theme="gold"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 25%,#fff9c9 0 3%,#ffca75 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#8ec4e5 0%,#f3cb85 35%,#f49a68 57%,#d4a46f 100%)!important
 }
-:root[data-theme="dark"][data-color-theme="gold"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 22%,#fff4cf 0 1.25%,#ffe0a1 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#a86c45 0%,transparent 14%),linear-gradient(180deg,#261c35 0%,#49304a 48%,#100e20 100%)!important
 }
 :root[data-theme="light"][data-color-theme="platinum"] #app[data-workspace-backdrop],
@@ -2668,14 +2654,12 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 /* Matching layered mountain silhouettes for each palette in both modes. */
 :root[data-color-theme="sapphire"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#425b8b 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#2d416c 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#1d2d50 53.2% 76%,transparent 76.2%)!important}
 :root[data-color-theme="emerald"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#477d6a 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#285848 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#173d32 53.2% 76%,transparent 76.2%)!important}
-:root[data-color-theme="gold"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#a56b57 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#875044 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#56313d 53.2% 76%,transparent 76.2%)!important}
 :root[data-color-theme="platinum"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#7c879a 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#535d70 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#30394c 53.2% 76%,transparent 76.2%)!important}
 :root[data-color-theme="amethyst"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#9a70b7 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#694b94 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#392354 53.2% 76%,transparent 76.2%)!important}
 :root[data-color-theme="ruby"] #app[data-workspace-backdrop]::before{background:linear-gradient(148deg,transparent 0 43%,#a85d77 43.2% 64%,transparent 64.2%),linear-gradient(32deg,#7d3c5b 0 32%,transparent 32.2%),linear-gradient(155deg,transparent 0 53%,#451c38 53.2% 76%,transparent 76.2%)!important}
 /* Darken foreground mountains for nighttime, while retaining each palette identity. */
 :root[data-theme="dark"][data-color-theme="sapphire"] #app[data-workspace-backdrop]::before{filter:brightness(.65) saturate(1.1)}
 :root[data-theme="dark"][data-color-theme="emerald"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
-:root[data-theme="dark"][data-color-theme="gold"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.12)}
 :root[data-theme="dark"][data-color-theme="platinum"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(.8)}
 :root[data-theme="dark"][data-color-theme="amethyst"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
 :root[data-theme="dark"][data-color-theme="ruby"] #app[data-workspace-backdrop]::before{filter:brightness(.62) saturate(1.1)}
@@ -2733,13 +2717,11 @@ body.auth-open{height:100dvh!important;min-height:100dvh!important;max-height:10
 }
 :root[data-color-theme="sapphire"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#d9f0ff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),radial-gradient(circle at 40% 9%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#063b58,#08738a 54%,#061321)!important}
 :root[data-color-theme="emerald"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#e0ffe9 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#063b37,#08705e 54%,#061711)!important}
-:root[data-color-theme="gold"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#fff0bf 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#49301c,#8a5829 54%,#17100b)!important}
 :root[data-color-theme="platinum"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#fff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#343b4b,#596477 54%,#090b10)!important}
 :root[data-color-theme="amethyst"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#f5e6ff 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),radial-gradient(circle at 38% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#261a4d,#593b83 54%,#080719)!important}
 :root[data-color-theme="ruby"] #app[data-workspace-backdrop="moonlit"]{background-image:radial-gradient(circle at 70% 25%,#ffe5ed 0 2%,transparent 3%),radial-gradient(circle at 12% 15%,#fff 0 1px,transparent 2px),linear-gradient(180deg,#45162e,#87314c 54%,#100710)!important}
 :root[data-color-theme="sapphire"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#f4b7a0,#eaa06f 48%,#25506d 70%,#081b2b)!important}
 :root[data-color-theme="emerald"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#d9e3a1,#b7b85f 48%,#1c5949 70%,#061d19)!important}
-:root[data-color-theme="gold"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#ffe0a2,#f0a34e 48%,#72513d 70%,#1b1513)!important}
 :root[data-color-theme="platinum"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#e2d6c8,#a6a3a5 48%,#4e6170 70%,#10141b)!important}
 :root[data-color-theme="amethyst"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#d7b8e7,#e99a9c 48%,#53466e 70%,#151027)!important}
 :root[data-color-theme="ruby"] #app[data-workspace-backdrop="golden"]{background-image:radial-gradient(ellipse at 70% 32%,#fff1bd 0 3%,#ffc36d 4% 8%,transparent 25%),linear-gradient(180deg,#f0b3b6,#dd786d 48%,#5c3447 70%,#1a0b16)!important}
