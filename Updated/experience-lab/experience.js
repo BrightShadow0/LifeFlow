@@ -222,10 +222,10 @@ function placeCar(progress,dt){
  const bend=curve.getTangentAt(clamp(t+.01)).sub(curve.getTangentAt(clamp(t-.01))).x;
  car.rotation.z=damp(car.rotation.z,-bend*.35,4,dt);
  const camera=sceneState.camera;
- const behind=p.clone().addScaledVector(tangent,-8.8);
- const cameraPosition=behind.addScaledVector(right,-3.8).add(new THREE.Vector3(0,5.4,0));
- const look=p.clone().addScaledVector(tangent,10).add(new THREE.Vector3(0,1.0,0));
- const targetFov=mobile?56:48;
+ const behind=p.clone().addScaledVector(tangent,-10.5);
+ const cameraPosition=behind.addScaledVector(right,-4.6).add(new THREE.Vector3(0,6.1,0));
+ const look=p.clone().addScaledVector(tangent,13).add(new THREE.Vector3(0,1.0,0));
+ const targetFov=mobile?58:44;
  camera.fov=damp(camera.fov,targetFov,2,dt);camera.updateProjectionMatrix();
  camera.position.lerp(cameraPosition,1-Math.exp(-dt*3.1));
  camera.lookAt(look);
@@ -281,7 +281,7 @@ function setupPointer(){
 function animate(){
  const dt=Math.min(clock.getDelta(),.04),time=clock.elapsedTime;
  scrollLive=damp(scrollLive,scrollTarget,2.8,dt);
- if(window.scrollY<20&&!reduced)scrollLive=clamp(scrollLive+dt*.003,.02,.98);
+ if(window.scrollY<20&&!reduced)scrollLive=clamp(scrollLive+dt*.0015,.015,.98);
  if(sceneState.car){
   placeCar(scrollLive,dt);
   sceneState.world.rotation.y=damp(sceneState.world.rotation.y,pointer.tx*.009,1.5,dt);
@@ -289,14 +289,14 @@ function animate(){
  }
  requestAnimationFrame(animate);
 }
-function setupAnchors(){
+function setupReveals(){\n const reveal=document.querySelectorAll('.latest-card,.timeline-list article,.feature-copy');\n if(!('IntersectionObserver' in window)||reduced){reveal.forEach(el=>el.classList.add('revealed'));return;}\n const io=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('revealed');io.unobserve(entry.target);}}),{threshold:.18});\n reveal.forEach(el=>{el.classList.add('reveal-ready');io.observe(el);});\n}\nfunction setupAnchors(){
  document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{
   const target=document.querySelector(a.getAttribute('href'));if(!target)return;
   e.preventDefault();target.scrollIntoView({behavior:reduced?'auto':'smooth'});
  }));
 }
 async function boot(){
- await initWorld();setupScroll();setupPointer();setupAnchors();
+ await initWorld();setupScroll();setupPointer();setupReveals();setupAnchors();
  if(reduced){document.querySelectorAll('.story-beat').forEach(x=>x.classList.add('active'));document.querySelector('.story').style.height='auto';}
  animate();
 }
