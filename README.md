@@ -37,7 +37,7 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 A separate, scroll-driven introduction to LifeFlow.
 
 - Continuous Three.js road environment with textured asphalt, lane markings, road shoulders, guardrails, forest, terrain, atmospheric sky and fog.
-- Custom touring-car model with metallic paint, environment reflections, glass, lighting, alloy wheels, brake detail and stable road contact.
+- Custom procedural 2017 Ford GT-inspired model with Liquid Blue metallic paint, twin racing stripes, teardrop canopy, flying buttresses, rear air tunnels, side intakes, LED lighting, forged wheels, carbon-fibre aero details and stable road contact.
 - Nine-chapter scroll-driven story.
 - Five vertically unfolding feature chapters covering tasks, calendar and board, notes, linked notes, and customisation.
 - Four-step product timeline and current-feature showcase.
