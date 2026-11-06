@@ -23,7 +23,7 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 - **Notes Manager:** Markdown editor and preview with checklists, tables, links, images, and Mermaid diagrams.
 - **Code Highlighting:** Syntax-highlighted code blocks.
 - **Your Branches:** Visual graph of linked notes.
-- **Themes:** Sapphire, Emerald, Gold, Platinum, Amethyst, and Ruby.
+- **Themes:** Sapphire, Emerald, Platinum, Amethyst, and Ruby (Amethyst is restricted to Premium and Team Admin accounts).
 - **Appearance:** Light and dark modes, ambient settings, and visual intensity controls.
 - **Task Master:** Easter egg that generates sample tasks across three days.
 - **Profile & Settings:** Profile, localisation, account tier, and workspace preferences.
