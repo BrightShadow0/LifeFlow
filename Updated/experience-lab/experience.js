@@ -220,16 +220,23 @@ function createFallbackCar(){
  };
  // GT's long, low mid-engine body: nose at -Z, rear deck at +Z.
  const shell=new THREE.Shape();
- shell.moveTo(-1.00,.39);shell.lineTo(-1.00,.57);
- shell.quadraticCurveTo(-.96,.70,-.77,.73);
- shell.lineTo(-.54,.76);shell.quadraticCurveTo(-.33,.82,-.20,.83);
- shell.lineTo(.30,.83);shell.quadraticCurveTo(.55,.79,.77,.73);
- shell.lineTo(.96,.68);shell.quadraticCurveTo(1.02,.62,1.02,.43);
- shell.lineTo(.91,.35);shell.lineTo(.76,.35);
- shell.quadraticCurveTo(.73,.70,.48,.70);shell.quadraticCurveTo(.22,.70,.18,.35);
- shell.lineTo(-.18,.35);shell.quadraticCurveTo(-.22,.70,-.48,.70);
- shell.quadraticCurveTo(-.73,.70,-.76,.35);shell.lineTo(-.91,.35);shell.closePath();
- addPanel(car,shell,4.42,paint,0);
+ shell.moveTo(-2.20,.37);shell.lineTo(-2.20,.52);
+ shell.quadraticCurveTo(-2.12,.68,-1.86,.72);
+ shell.quadraticCurveTo(-1.76,.74,-1.67,.73);
+ shell.quadraticCurveTo(-1.43,.99,-1.18,.74);
+ shell.quadraticCurveTo(-.98,.75,-.79,.79);
+ shell.quadraticCurveTo(-.52,.84,-.30,.84);
+ shell.lineTo(.48,.82);shell.quadraticCurveTo(.83,.79,1.05,.74);
+ shell.quadraticCurveTo(1.19,.74,1.27,.74);
+ shell.quadraticCurveTo(1.43,1.00,1.68,.73);
+ shell.quadraticCurveTo(1.91,.70,2.12,.62);
+ shell.quadraticCurveTo(2.20,.58,2.20,.43);
+ shell.lineTo(2.05,.35);shell.lineTo(1.72,.35);
+ shell.quadraticCurveTo(1.68,.76,1.43,.77);shell.quadraticCurveTo(1.17,.76,1.12,.35);
+ shell.lineTo(-1.10,.35);
+ shell.quadraticCurveTo(-1.16,.76,-1.43,.77);shell.quadraticCurveTo(-1.69,.76,-1.73,.35);
+ shell.lineTo(-2.05,.35);shell.closePath();
+ addPanel(car,shell,2.06,paint,0);
  // Carbon-fibre floor and pronounced front splitter.
  addBox(car,new THREE.BoxGeometry(1.83,.13,3.88),carbon,[0,.34,0]);
  addBox(car,new THREE.BoxGeometry(2.12,.055,.52),carbon,[0,.315,-2.03]);
@@ -248,13 +255,9 @@ function createFallbackCar(){
  addCurve(car,[[-.73,.78,-1.0],[-.54,1.06,-.83],[-.35,1.16,-.52],[0,1.17,-.48],[.35,1.16,-.52],[.54,1.06,-.83],[.73,.78,-1.0]],.027,carbonWeave);
  // The signature flying buttresses frame two deep channels around the rear engine cover.
  for(const side of [-1,1]){
-  const buttress=new THREE.Shape();
-  buttress.moveTo(side*.48,.78);buttress.quadraticCurveTo(side*.72,.82,side*.91,.69);
-  buttress.lineTo(side*.98,.58);buttress.lineTo(side*.81,.58);
-  buttress.quadraticCurveTo(side*.70,.68,side*.53,.70);buttress.closePath();
-  addPanel(car,buttress,.90,paint,1.25);
-  // Rear buttress upper highlights and shadowed aerodynamic tunnels.
-  addCurve(car,[[side*.50,.83,.18],[side*.66,.86,.55],[side*.82,.77,1.02],[side*.94,.67,1.65],[side*.91,.58,1.95]],.035,paint);
+  // Sculpted flying buttress runs from the roof shoulders to each rear haunch.
+  addCurve(car,[[side*.47,1.02,.28],[side*.60,.99,.62],[side*.78,.88,1.02],[side*.91,.77,1.55],[side*.95,.67,2.04]],.105,paint);
+  addCurve(car,[[side*.52,.98,.32],[side*.66,.94,.70],[side*.83,.82,1.12],[side*.96,.70,1.88]],.018,carbonWeave);
   const tunnel=new THREE.Mesh(new THREE.BoxGeometry(.31,.20,1.52),carbon);
   tunnel.position.set(side*.69,.62,1.27);tunnel.rotation.x=-.08;car.add(tunnel);
   const tunnelLip=new THREE.Mesh(new THREE.BoxGeometry(.38,.035,1.58),carbonWeave);
