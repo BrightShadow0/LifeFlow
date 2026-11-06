@@ -32,40 +32,6 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 
 ---
 
-## Experience Lab
-
-A separate, scroll-driven introduction to LifeFlow.
-
-- Continuous Three.js road environment with textured asphalt, lane markings, road shoulders, guardrails, forest, terrain, atmospheric sky and fog.
-- Custom procedural 2017 Ford GT-inspired model with Liquid Blue metallic paint, twin racing stripes, teardrop canopy, flying buttresses, rear air tunnels, side intakes, LED lighting, forged wheels, carbon-fibre aero details and stable road contact.
-- Nine-chapter scroll-driven story.
-- Five vertically unfolding feature chapters covering tasks, calendar and board, notes, linked notes, and customisation.
-- Four-step product timeline and current-feature showcase.
-- Embedded sign-in and account creation with wheel, touch and keyboard scrolling passed through to the parent page.
-
-The Experience Lab is a product showcase. The main workspace remains a separate application. Its 3D car, road, forest and sky are generated in code. See [ASSET-CREDITS.md](Updated/experience-lab/ASSET-CREDITS.md).
-
-### Experience Lab Visual Direction
-
-Use the supplied reference set as creative direction: OFF+BRAND, Lusion, Igloo Inc, Family, Scale & Form, Active Theory, Dogstudio, Locomotive, Exo Ape, Obys Agency, Bruno Simon Portfolio, Resn, Immersive Garden, Phantoms Agency, Refokus, Media.Monks, Basement.studio, Watson Design Group, Monopo and Caspian Agency. Aim for immersive storytelling, confident editorial typography, tactile materials, purposeful motion and polished interactions. Treat these as inspiration, not layouts or assets to reproduce.
-
-### Experience Lab Continuity Rules
-
-These standards apply to all future Experience Lab versions:
-
-- Keep one continuous visual world behind the full page. Do not introduce hard section seams, sudden palette resets, blank animation states or slide-like loading transitions.
-- Let feature chapters unfold vertically in the shared scene. Avoid full-screen horizontal panels that behave like a presentation deck.
-- Keep the car grounded to the road surface. Wheel contact, road height, camera framing and model scale must remain consistent throughout the journey.
-- Keep all interface text above the 3D canvas. Shadows and scene effects must never obscure, overlap or reduce text legibility.
-- Prevent overlap at desktop, tablet and mobile widths. Recheck long headings, cards, navigation and embedded authentication.
-- Embedded controls must not trap page scrolling. Forward wheel, touch and suitable keyboard scroll input to the parent page while preserving normal form interaction.
-- Keep the scene usable when WebGL is unavailable and respect reduced-motion settings.
-- Prefer coherent physical materials, lighting, reflections, surface detail and believable proportions over placeholder or low-poly props.
-
-The main LifeFlow workspace remains independent from the Experience Lab.
-
----
-
 ## Tech Stack
 
 | Area | Technology |
@@ -84,7 +50,6 @@ The main LifeFlow workspace remains independent from the Experience Lab.
 ## Demos
 
 - [LifeFlow Workspace](https://brightshadow0.github.io/LifeFlow/Updated/index.html)
-- [Experience Lab](https://brightshadow0.github.io/LifeFlow/Updated/experience-lab/)
 
 ---
 
@@ -106,8 +71,7 @@ python -m http.server 8000
 
 Open:
 
-- Workspace: [http://localhost:8000/Updated/](http://localhost:8000/Updated/)
-- Experience Lab: [http://localhost:8000/Updated/experience-lab/](http://localhost:8000/Updated/experience-lab/)
+- [http://localhost:8000/Updated/](http://localhost:8000/Updated/)
 
 No Node.js setup, package manager, database, or environment file is required for the standard preview.
 
