@@ -140,4 +140,16 @@
   row.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggle();}});
  });
 
+ // Connected-thinking map: selecting a node reveals its role and highlights its links.
+ const branchMap=document.querySelector('.branch-map');
+ if(branchMap){
+  const details={idea:['IDEA','Start with a thought. Let it connect to the work around it.'],research:['RESEARCH','Gather useful information and context that strengthens the original idea.'],plan:['PLAN','Turn the idea into clear steps, priorities and a realistic next move.'],notes:['NOTES','Capture insights, references and decisions so nothing useful gets lost.'],project:['PROJECT','Bring the connected work together and move it towards completion.']};
+  branchMap.querySelectorAll('[data-branch]').forEach(node=>node.addEventListener('click',()=>{
+   const key=node.dataset.branch,detail=details[key];
+   branchMap.querySelectorAll('[data-branch]').forEach(item=>{const active=item===node;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active));});
+   const panel=branchMap.querySelector('.branch-detail');panel.querySelector('b').textContent=detail[0];panel.querySelector('span').textContent=detail[1];
+   branchMap.querySelectorAll('.branch-link').forEach(path=>path.classList.toggle('is-highlighted',path.classList.contains('link-'+key)||key==='idea'));
+  }));
+ }
+
 })();
