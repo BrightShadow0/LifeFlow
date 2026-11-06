@@ -278,11 +278,12 @@ function createFallbackCar(){
    tube(car,pts,.018,blue);
   }
   // Side air inlet, flying rear shoulder and long carbon sill.
-  box(car,[.035,.19,.61],[side*.978,.625,.57],carbon,[.06,0,side*.03]);
-  tube(car,[[side*.99,.76,.23],[side*1.01,.77,.45],[side*.99,.69,.78],[side*.96,.54,.96]],.034,blue);
-  tube(car,[[side*.995,.55,.30],[side*.99,.54,.60],[side*.97,.57,.86]],.012,carbonLite);
-  for(let n=0;n<3;n++)box(car,[.018,.016,.11],[side*.995,.62,.42+n*.15],darkMetal,[0,0,side*.08]);
-  box(car,[.12,.10,2.32],[side*.91,.365,.03],carbon);
+  const sideAt=z=>side*(sample(body,z)[0]+.018);
+  box(car,[.035,.19,.61],[sideAt(.57),.625,.57],carbon,[.06,0,side*.03]);
+  tube(car,[[sideAt(.23),.76,.23],[sideAt(.45),.77,.45],[sideAt(.78),.69,.78],[sideAt(.96),.54,.96]],.034,blue);
+  tube(car,[[sideAt(.30),.55,.30],[sideAt(.60),.54,.60],[sideAt(.86),.57,.86]],.012,carbonLite);
+  for(let n=0;n<3;n++)box(car,[.018,.016,.11],[sideAt(.42+n*.15),.62,.42+n*.15],darkMetal,[0,0,side*.08]);
+  tube(car,[[sideAt(-.80),.37,-.80],[sideAt(-.20),.37,-.20],[sideAt(.50),.37,.50],[sideAt(1.18),.37,1.18]],.052,carbon);
  }
 
  // Teardrop glass canopy and the characteristic GT flying buttresses.
@@ -367,9 +368,9 @@ function createFallbackCar(){
   mesh(car,new THREE.CylinderGeometry(.09,.09,.14,24),alloy,[x,.69,2.18],[Math.PI/2,0,0]);
   mesh(car,new THREE.CylinderGeometry(.059,.059,.145,20),carbon,[x,.69,2.19],[Math.PI/2,0,0]);
  }
- for(const x of [-.69,.69]){
-  mesh(car,new THREE.TorusGeometry(.145,.034,12,40),carbon,[x,.62,2.225]);
-  mesh(car,new THREE.TorusGeometry(.112,.021,10,40),lampRed,[x,.62,2.24]);
+ for(const x of [-.58,.58]){
+  mesh(car,new THREE.TorusGeometry(.145,.034,12,40),carbon,[x,.62,2.19]);
+  mesh(car,new THREE.TorusGeometry(.112,.021,10,40),lampRed,[x,.62,2.205]);
  }
  for(const x of [-.61,.61])box(car,[.055,.28,.055],[x,.92,1.82],carbon,[.08,0,0]);
  box(car,[1.58,.055,.24],[0,1.105,1.84],carbon,[.035,0,0]);
