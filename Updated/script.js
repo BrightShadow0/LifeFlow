@@ -162,7 +162,7 @@ function showStep(id){
   ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.style.display='none'; });
 }
 function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
-function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.style.display='block'; }
+function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.hidden=false; el.style.display='block'; }
 function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_users')||'{}'); }catch(e){ return {}; } }
 function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
 function newUserRecord(email, extra){
@@ -273,6 +273,7 @@ function startPasskeyLogin(){
 async function oauthLogin(provider){
   const cfg = OAUTH_CONFIG[provider.toLowerCase()];
   if(!cfg || !cfg.clientId){ demoOAuthLogin(provider); return; }
+  if(provider.toLowerCase()==='apple' && !cfg.authorizeUrl){showOAuthNotice('Apple Sign in is visible, but this project still needs an Apple Services ID, redirect URI and server-side token validation before real sign-in can be enabled.');return;}
   const stateParam = randomToken(16);
   const nonce = randomToken(16);
   const verifier = randomToken(48);
@@ -374,8 +375,8 @@ async function handleOAuthCallback(){
 
 let loginCaptchaAnswer = null;
 let loginAttemptsInProgress = false;
-function readLoginGuard(){try{return JSON.parse(sessionStorage.getItem('lifeflow_login_guard')||'{}');}catch(e){return {};}}
-function writeLoginGuard(guard){try{sessionStorage.setItem('lifeflow_login_guard',JSON.stringify(guard));}catch(e){}}
+function readLoginGuard(){try{return JSON.parse(localStorage.getItem('lifeflow_login_guard')||'{}');}catch(e){return {};}}
+function writeLoginGuard(guard){try{localStorage.setItem('lifeflow_login_guard',JSON.stringify(guard));}catch(e){}}
 function updateLoginCaptcha(){
   const guard=readLoginGuard(),box=document.getElementById('loginCaptcha');
   if(guard.failures>=4){
@@ -396,6 +397,7 @@ function recordLoginFailure(){
   writeLoginGuard(guard);updateLoginCaptcha();
 }
 function resetLoginGuard(){writeLoginGuard({failures:0,lockUntil:0});loginCaptchaAnswer=null;updateLoginCaptcha();}
+function failLogin(message,fieldId){recordLoginFailure();const guard=readLoginGuard();setLoginError(guard.lockUntil>Date.now()?'Too many failed attempts. Sign-in is temporarily locked for 60 seconds.':message,fieldId);}
 function setLoginLoading(loading){
   const button=document.getElementById('loginSubmit');if(!button)return;
   button.disabled=loading;button.classList.toggle('is-loading',loading);
@@ -405,6 +407,7 @@ function setLoginLoading(loading){
 function setLoginError(message,fieldId){
   const el=document.getElementById('loginError');el.textContent=message;el.hidden=!message;
   ['loginEmail','loginPass','captchaAnswer'].forEach(id=>{const input=document.getElementById(id);if(input)input.removeAttribute('aria-invalid');});
+  el.style.display=message?'block':'none';
   if(fieldId){const field=document.getElementById(fieldId);if(field)field.setAttribute('aria-invalid','true');}
 }
 function findLoginUser(users,identifier){
@@ -438,14 +441,14 @@ async function doLogin(){
   try{
     await new Promise(resolve=>setTimeout(resolve,250));
     const users=getUsers(),found=findLoginUser(users,identifier);
-    if(!found){recordLoginFailure();setLoginError('We could not find an account with those details. Check them or create an account.','loginEmail');return;}
+    if(!found){failLogin('We could not find an account with those details. Check them or create an account.','loginEmail');return;}
     const {email,user:u}=found;
     if(!u.passwordHash&&typeof u.password==='string'){
-      if(u.password!==pass){recordLoginFailure();setLoginError('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
+      if(u.password!==pass){failLogin('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
       u.passwordHash=await hashPassword(pass);delete u.password;saveUsers(users);
     }
     if(!u.passwordHash){setLoginError('This account uses '+(u.oauthProvider||'an identity provider')+'. Choose that provider to continue.');return;}
-    if(!(await verifyPassword(pass,u))){recordLoginFailure();setLoginError('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
+    if(!(await verifyPassword(pass,u))){failLogin('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
     if(u.deletedAt){setLoginError('This account is scheduled for deletion and can no longer be accessed.');return;}
     if(!u.verified){
       pendingVerify={email,token:randomToken(12),expiresAt:Date.now()+15*60*1000};
