@@ -49,9 +49,20 @@ function readLegacyState(){
   return null;
 }
 function storedSessionEmail(){
-  // Authentication is tab-scoped: sessionStorage survives refreshes but is
-  // discarded by the browser when this tab is closed.
-  try{ localStorage.removeItem('lifeflow2_session'); }catch(e){}
+  // Browsers can restore a recently closed tab, including its sessionStorage.
+  // A close marker invalidates that restored login, while a normal refresh
+  // and an in-progress OAuth round-trip keep the session intact.
+  try{
+    const closing=sessionStorage.getItem('lifeflow2_closed_tab')==='1';
+    const nav=performance.getEntriesByType('navigation')[0];
+    const isRefresh=nav && nav.type==='reload';
+    const oauthInProgress=!!sessionStorage.getItem('lifeflow2_oauth');
+    if(closing){
+      if(!isRefresh && !oauthInProgress) sessionStorage.removeItem('lifeflow2_session');
+      sessionStorage.removeItem('lifeflow2_closed_tab');
+    }
+    localStorage.removeItem('lifeflow2_session');
+  }catch(e){}
   try{
     const s=JSON.parse(sessionStorage.getItem('lifeflow2_session')||'null');
     if(s && s.token && s.email && s.expiresAt && Date.now()<s.expiresAt) return s.email;
@@ -156,6 +167,16 @@ function destroySession(){
   try{ localStorage.removeItem('lifeflow2_session'); }catch(e){}
   state=defaultProfileState(null);
 }
+
+// Mark a live session before the tab/window closes. On a browser "reopen
+// closed tab" restore, storedSessionEmail() sees this marker and requires login.
+window.addEventListener('beforeunload',()=>{
+  try{
+    if(sessionStorage.getItem('lifeflow2_session')){
+      sessionStorage.setItem('lifeflow2_closed_tab','1');
+    }
+  }catch(e){}
+});
 
 setInterval(()=>{ if(!getSession() && document.getElementById('app').style.display==='block') doLogout(); }, 60000);
 
