@@ -304,6 +304,7 @@ function initTaskEventDelegation(){
     else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
+    else if(action==='backup-master-archive') backupMasterArchive();
     else if(action==='save-tier') saveTier();
     else if(action==='toggle-change-password') toggleChangePasswordPanel();
     else if(action==='close-change-password') toggleChangePasswordPanel(false);
@@ -993,6 +994,17 @@ function validTime(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/
 function validInterval(a,b){ return validTime(a)&&validTime(b)&&a<b; }
 function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
 
+async function backupMasterArchive(){
+  try{
+    if(!state?.currentUser || !getSession()){showToast('Please sign in again before creating an archive.');return;}
+    save(); lifeFlowTaskStateManager?.flush?.(); lifeFlowProfileManager?.flush?.();
+    const { exportMasterArchive } = await import('./state.js?v=20261108-master-archive1');
+    const user=currentUser()||{};
+    const profile={name:user.name||'',bio:user.bio||'',avatar:user.avatar||null,timezone:user.timezone||'UTC',language:user.language||'en',weekStart:user.weekStart||'Sunday',workspace:user.workspace||'My Workspace',...(lifeFlowProfileManager?.getState?.().profile||{}),...readAppearancePreferences(user)};
+    exportMasterArchive(false,{workspaceState:lifeFlowTaskStateManager?.getState?.()||state,profile,appVersion:document.documentElement.dataset.appVersion||'1.0.0'});
+    showToast('Archive created successfully. Keep this file in a safe place.');
+  }catch(error){console.error('LifeFlow master archive export failed:',error);showToast(error?.message||'Archive could not be created. Please try again.');}
+}
 function exportData(fmt){
   let content, mime, ext;
   if(fmt==='json'){ content = JSON.stringify(state.tasks,null,2); mime='application/json'; ext='json'; }
@@ -1984,12 +1996,13 @@ function setAccountTab(t){ accountTab=t; renderApp(); }
 function renderAccount(){
   const u = currentUser();
   if(!u) return '<div class="empty">No profile data.</div>';
-  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" data-lf-action="account-tab" data-account-tab="${k}">${l}</button>`).join('')}</div>`;
+  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone'],['data','Data Management']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" data-lf-action="account-tab" data-account-tab="${k}">${l}</button>`).join('')}</div>`;
   if(accountTab==='profile') return sub + renderProfileTab(u);
   if(accountTab==='custom') return sub + renderCustomisationTab(u);
   if(accountTab==='connected') return sub + renderConnectedTab(u);
   if(accountTab==='sessions') return sub + renderSessionsTab(u);
   if(accountTab==='danger') return sub + renderDangerTab(u);
+  if(accountTab==='data') return sub + renderDataManagementTab();
 }
 
 function secretSequence(u){
@@ -2412,6 +2425,14 @@ function revokeAll(){
   renderApp();
 }
 
+function renderDataManagementTab(){
+  return `<section class="card master-archive-card">
+    <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
+    <button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button>
+    <p class="notice master-archive-warning"><strong>Protect your data:</strong> LifeFlow stores your workspace in this browser. Clearing browser storage or losing this device can erase it. Create and keep an archive somewhere safe, and repeat regularly.</p>
+    <small class="muted">The archive contains your data, not your login session or password credentials. You will need to sign in again after a future restore.</small>
+  </section>`;
+}
 function renderDangerTab(u){
   const email = esc(state.currentUser || '');
   return `<div class="card"><h2>Delete Account</h2>

@@ -4650,3 +4650,9 @@ body::-webkit-scrollbar-corner{
 #app .branch-edge-hit:focus{stroke:color-mix(in srgb,var(--accent) 25%,transparent);outline:none}
 #app .branch-focus-active .branch-dimmed{opacity:.1;transition:opacity .2s ease}
 #app .branch-focus-active .branch-node:not(.branch-dimmed) circle{filter:drop-shadow(0 0 8px var(--accent))}
+
+/* Release 3.1: Master Archive */
+#app .master-archive-card{display:grid;gap:14px;max-width:820px}
+#app .master-archive-button{width:100%;min-height:48px;font-size:14px;font-weight:800}
+#app .master-archive-warning{border-left:3px solid var(--warn);padding:12px 14px;margin:0}
+#app .master-archive-card>.muted{color:var(--muted);line-height:1.6}

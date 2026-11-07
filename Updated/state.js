@@ -257,4 +257,55 @@ export class StateManager {
   }
 }
 
+
+const ARCHIVE_PROFILE_FIELDS = ['name','bio','avatar','timezone','language','weekStart','workspace'];
+const ARCHIVE_PREFERENCE_FIELDS = ['theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'];
+function archivePick(source, fields) {
+  const result = {};
+  if (!source || typeof source !== 'object') return result;
+  for (const key of fields) if (Object.prototype.hasOwnProperty.call(source, key)) result[key] = clone(source[key]);
+  return result;
+}
+function archiveStripSecrets(value) {
+  if (Array.isArray(value)) return value.map(archiveStripSecrets);
+  if (!value || typeof value !== 'object') return value;
+  const clean = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (/^(sessionToken|accessToken|refreshToken|bearerToken|token|passwordHash|password|secret|authorization)$/i.test(key)) continue;
+    clean[key] = archiveStripSecrets(entry);
+  }
+  return clean;
+}
+export function exportMasterArchive(encrypted = false, options = {}) {
+  if (encrypted) throw new Error('Encrypted archives are not available yet. Export an unencrypted JSON archive.');
+  const { workspaceState = {}, profile = {}, appVersion = '1.0.0', now = new Date() } = options;
+  const safeState = archiveStripSecrets(workspaceState || {});
+  const archive = {
+    version: '1.0',
+    timestamp: now.toISOString(),
+    appVersion: String(appVersion || '1.0.0'),
+    profile: archivePick(profile, ARCHIVE_PROFILE_FIELDS),
+    preferences: archivePick(profile, ARCHIVE_PREFERENCE_FIELDS),
+    folders: clone(safeState.folders || []),
+    notes: { regular: clone(safeState.notes || []), code: clone(safeState.codeNotes || []) },
+    tasks: clone(safeState.tasks || []),
+    noteLinks: clone(safeState.noteLinks || [])
+  };
+  const json = JSON.stringify(archive, null, 2);
+  if (/"(?:sessionToken|accessToken|refreshToken|bearerToken|token|passwordHash|password|secret|authorization)"\\s*:/i.test(json)) {
+    throw new Error('Archive security validation failed.');
+  }
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  const date = now.toISOString().slice(0, 10);
+  anchor.href = url;
+  anchor.download = 'lifeflow_archive_' + date + '.json';
+  anchor.style.display = 'none';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return { archive, filename: anchor.download };
+}
 export default StateManager;
