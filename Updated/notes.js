@@ -423,7 +423,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,renameFolder,deleteFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,moveNoteToFolder:moveToFolder,renameFolder,deleteFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
