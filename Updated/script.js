@@ -1050,7 +1050,7 @@ async function restoreMasterArchiveNow(){
   state=lifeFlowTaskStateManager.getState();closeMasterRestorePreview();showToast('Backup restored successfully. Reloading LifeFlow…');setTimeout(()=>window.location.reload(),450);
  }catch(e){if(button){button.disabled=false;button.textContent='Restore Now';}showToast(e.message||'Restore failed.');}
 }
-function backupMasterArchive(){
+async function backupMasterArchive(){
   try{
     if(!state?.currentUser || !getSession()){showToast('Please sign in again before creating an archive.');return;}
     save(); lifeFlowTaskStateManager?.flush?.(); lifeFlowProfileManager?.flush?.();
