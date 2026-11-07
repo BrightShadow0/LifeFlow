@@ -17,7 +17,7 @@ function togglePasswordVisibility(inputId, button){
   }
 }
 
-function defaultProfileState(email){function defaultProfileState(email){
+function defaultProfileState(email){
   return {tasks:[], currentUser:email||null};
 }
 function profileStateKey(email){
