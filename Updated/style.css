@@ -103,8 +103,6 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 :root[data-theme="light"]{--bg:#f4f6f5;--card:#ffffff;--panel2:#eef2ef;--text:#182019;--muted:#657067;--border:#d8ded9;--accent:#3f9f38;--accent-soft:#e8f4e6;--danger:#c83f3f;--warn:#a87514;--ok:#3f9f38;color-scheme:light}
 body{font:14px Inter,system-ui,-apple-system,sans-serif;background:var(--bg)}
 button,input,select{font:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button:disabled{opacity:.45;cursor:not-allowed}
-#authScreen{max-width:none;min-height:100dvh;margin:0;display:grid;place-items:center;padding:24px;background:var(--bg)}
-#authScreen .card{width:min(780px,100%);padding:0;margin:0;overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--card);box-shadow:0 25px 80px #0008}
 .termbar{padding:12px 16px;background:var(--card);color:var(--muted);font:12px ui-monospace,SFMono-Regular,Consolas,monospace;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
 .termbar-left,.termbar-right{display:flex;align-items:center;gap:7px}.termdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4c5663;margin-right:1px}
 .auth-auto{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-auto.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
@@ -336,8 +334,6 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
   .app-content{margin-left:78px;padding:24px 20px 70px}
 }
 @media(max-width:600px){
-  #authScreen{padding:14px}
-  #authScreen .card{border-radius:10px}
   .app-content{margin-left:0;padding:18px 14px 65px}
   .app-sidebar{position:fixed;top:auto;left:10px;right:10px;bottom:10px;width:auto;height:62px;border:1px solid var(--border);border-radius:16px;padding:6px;flex-direction:row;background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(14px);box-shadow:0 12px 35px rgba(0,0,0,.18)}
   .app-sidebar .brand,.app-sidebar .sidebottom{display:none}
