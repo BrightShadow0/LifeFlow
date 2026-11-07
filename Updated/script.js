@@ -178,8 +178,14 @@ function renderOAuthButtons(){return lifeFlowAuthController.renderOAuthButtons()
 function startPasskeyLogin(){
   showOAuthNotice('Passkey sign-in needs a registered WebAuthn relying-party server and a server-generated challenge. This browser-only build cannot verify passkeys yet.');
 }
-async function oauthLogin(provider){return lifeFlowAuthController.oauthLogin(provider);}
-function demoOAuthLogin(provider){return lifeFlowAuthController.demoOAuthLogin(provider);}
+async function oauthLogin(provider){
+  if(!lifeFlowCoreReady){showOAuthNotice('LifeFlow is still initializing. Please try again in a moment.');return;}
+  return lifeFlowAuthController.oauthLogin(provider);
+}
+function demoOAuthLogin(provider){
+  if(!lifeFlowCoreReady){showOAuthNotice('LifeFlow is still initializing. Please try again in a moment.');return;}
+  return lifeFlowAuthController.demoOAuthLogin(provider);
+}
 async function handleOAuthCallback(){return lifeFlowAuthController.handleOAuthCallback();}
 
 
@@ -232,7 +238,10 @@ function setLoginError(message,fieldId){
   if(fieldId&&map[fieldId]){const field=document.getElementById(fieldId),err=document.getElementById(map[fieldId]);if(field)field.setAttribute('aria-invalid','true');if(err){err.textContent=message;err.hidden=!message;}if(general){general.textContent='';general.hidden=true;}return;}
   if(general){general.textContent=message;general.hidden=!message;}
 }
-async function doLogin(){return lifeFlowAuthController.doLogin();}
+async function doLogin(){
+  if(!lifeFlowCoreReady){setLoginError('LifeFlow is still initializing. Please try again in a moment.');return;}
+  return lifeFlowAuthController.doLogin();
+}
 function initTaskEventDelegation(){
   document.addEventListener('click',event=>{
     const control=event.target.closest('[data-lf-action],[data-lf-overlay]');
@@ -520,6 +529,7 @@ function normalizeDemoProfile(email){
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
 
+let lifeFlowCoreReady = false;
 let lifeFlowProfileManager = null;
 let lifeFlowThemeController = null;
 let lifeFlowTaskStateManager = null;
@@ -2249,9 +2259,10 @@ async function deleteAccount(){
     await initializeTaskArchitecture();
     initializeNotesArchitecture();
   } catch (error) {
-    console.error('LifeFlow appearance state could not be initialized:', error);
-    showToast('Appearance settings could not be loaded. Please refresh the workspace.');
+    console.error('LifeFlow core modules could not be fully initialized:', error);
+    showToast('Some workspace features could not be initialized. Please refresh the workspace.');
   }
+  lifeFlowCoreReady = true;
   initAuthTheme();
   initAppThemeSync();
   renderOAuthButtons();
