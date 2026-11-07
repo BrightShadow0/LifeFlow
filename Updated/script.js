@@ -2569,6 +2569,17 @@ async function deleteAccount(){
   }
 }
 
+// Explicitly publish authentication entry points for the HTML login form and OAuth controls.
+window.doLogin = doLogin;
+window.doSignup = doSignup;
+window.doVerify = doVerify;
+window.startSignup = startSignup;
+window.renderOAuthButtons = renderOAuthButtons;
+window.oauthLogin = oauthLogin;
+window.demoOAuthLogin = demoOAuthLogin;
+window.startPasskeyLogin = startPasskeyLogin;
+window.handleOAuthCallback = handleOAuthCallback;
+
 (async function boot(){
   initializeAuthArchitecture();
   try {
