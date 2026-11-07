@@ -32,6 +32,14 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 
 ---
 
+## Brand Identity
+
+LifeFlow uses the Compass mark: a four-point cyan-teal compass star inside a segmented circular ring. It represents direction, clarity, balance, and purposeful progress. The mark is shared across the public landing page, login terminal, workspace sidebar, and browser favicon. Its cyan-teal treatment remains consistent across workspace colour themes and light/dark appearance modes.
+
+The primary vector asset is `Updated/compass-mark.svg`.
+
+---
+
 ## Three-Stage Experience
 
 LifeFlow is organised into three distinct stages. Each stage owns its layout and visual identity, and theme preferences must not leak between stages.

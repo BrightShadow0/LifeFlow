@@ -262,3 +262,8 @@ body{background:#090c12;color:var(--paper)}
 .data-core span{color:#9aaac1}
 .data-chip{color:#c3d0e2}
 .cal-legend .cal-selected-label{color:#a8b5c9}
+
+/* LifeFlow Compass brand system */
+.brand-symbol{width:34px;height:34px;display:block;border:0;border-radius:9px;transform:none;object-fit:contain;filter:drop-shadow(0 0 9px #12d9e555)}
+.window-brand img{width:23px;height:23px;display:block;object-fit:contain}
+.site-footer .brand-symbol{width:34px;height:34px}

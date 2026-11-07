@@ -4385,3 +4385,13 @@ body.auth-embed #authScreen .auth-brand-panel{
   outline-offset:5px;
   border-radius:999px;
 }
+
+/* LifeFlow Compass identity: fixed cyan-teal mark across all workspace themes */
+.workspace-brand{display:flex;align-items:center;gap:10px;margin:0 10px 27px;min-height:38px;white-space:nowrap;color:var(--text);font-size:16px;font-weight:850;letter-spacing:.16em}
+.workspace-brand img{width:34px;height:34px;object-fit:contain;flex:none;filter:drop-shadow(0 0 8px #12d9e544)}
+@media(max-width:900px){.workspace-brand{justify-content:center;margin:0 0 26px;font-size:0;gap:0}.workspace-brand img{width:36px;height:36px}}
+#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
+#authScreen .auth-brand-lockup{position:relative;z-index:2;display:flex;align-items:center;gap:18px;color:#f4fbff;font-size:clamp(27px,3vw,42px);font-weight:800;letter-spacing:.2em}
+#authScreen .auth-brand-lockup img{width:clamp(54px,6vw,82px);height:clamp(54px,6vw,82px);object-fit:contain;filter:drop-shadow(0 0 15px #10d9e866)}
+#authScreen .auth-brand-watermark{color:#12d9e50b}
+@media(max-width:620px){#authScreen .auth-brand-lockup{font-size:28px;gap:12px}#authScreen .auth-brand-lockup img{width:48px;height:48px}}
