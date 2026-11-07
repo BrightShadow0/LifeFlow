@@ -282,6 +282,7 @@ function initTaskEventDelegation(){
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-panel-toggle'){const panel=control.dataset.notesPanel;window.lfNotesPanelOpen=!(window.lfNotesPanelOpen&&window.lfNotesPanel===panel);window.lfNotesPanel=panel;renderApp();}
     else if(action==='note-panel-close'){window.lfNotesPanelOpen=false;renderApp();}
+    else if(action==='notes-search-more'){window.lfNotesSearchVisible=(Number(window.lfNotesSearchVisible)||12)+12;renderNotesListOnly();}
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
     else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');
@@ -1622,12 +1623,13 @@ let notesSearchTimer=null;
 function scheduleNotesSearch(control){
   const query=control.value;
   lifeFlowNoteController?.setSearchQuery(query);
+  window.lfNotesSearchVisible=12;
   if(notesSearchTimer!==null)window.clearTimeout(notesSearchTimer);
   notesSearchTimer=window.setTimeout(()=>{
     notesSearchTimer=null;
     if(!control.isConnected)return;
     renderNotesListOnly();
-  },140);
+  },150);
 }
 function closeNoteContextMenu(){document.getElementById('lfNoteContextMenu')?.remove();}
 function openFolderContextMenu(event,name){
@@ -1684,7 +1686,12 @@ function renderNotesManager(){
   const mode=(lifeFlowNoteController?.noteView() || window.lfNoteView)==='preview'?'preview':'edit';
   const folders=lifeFlowNoteController?.getFolders()||[{id:'unfiled',name:'Unfiled',icon:'▤'}],collapsed=new Set(state.collapsedFolders||[]);
   const searchQuery=String(state.searchQuery||'');
-  const filteredItems=searchQuery?lifeFlowNoteController.searchNotes(searchQuery).map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
+  const searchResults=searchQuery?lifeFlowNoteController.searchNotes(searchQuery):[];
+  const searchResultById=new Map(searchResults.map(result=>[String(result.id),result]));
+  const filteredItems=searchQuery?searchResults.map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
+  const lazySearch=!!searchQuery&&filteredItems.length>=50;
+  const visibleLimit=Math.max(12,Number(window.lfNotesSearchVisible)||12);
+  const visibleItems=lazySearch?filteredItems.slice(0,visibleLimit):filteredItems;
   const activePanel=window.lfNotesPanel==='folders'?'folders':'notes';
   const panelOpen=window.lfNotesPanelOpen===true;
   let html='<div class="knowledge-shell notes-workspace"><div class="notes-searchbar"><label class="notes-global-search"><span aria-hidden="true">⌕</span><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search notes, folders and content..." aria-label="Search notes, folders and content" data-lf-input="notes-search"></label><span class="notes-search-count">'+filteredItems.length+' of '+items.length+' notes</span></div><div class="notes-editor-stage"><div class="card note-editor">';
@@ -1705,8 +1712,13 @@ function renderNotesManager(){
     html+='</div>';
   }else{
     html+='<div class="notes-drawer-heading"><div><strong>Notes</strong><small>'+filteredItems.length+' notes in your workspace</small></div><button type="button" class="notes-drawer-close" data-lf-action="note-panel-close" aria-label="Close panel">×</button></div><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New note</button><button type="button" data-lf-action="note-add-folder">+ Folder</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div><div class="notes-items notes-flat-items">';
-    filteredItems.forEach(note=>{html+='<button class="note-item'+(String(note.id)===String(selected?.id)?' active':'')+'" data-lf-action="note-select" data-lf-note-context aria-haspopup="menu" data-note-id="'+esc(note.id)+'"><strong>'+esc(note.title||'Untitled')+'</strong><small>'+esc(new Date(note.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
-    if(!filteredItems.length)html+='<p class="notes-empty">No matching notes.</p>';
+    visibleItems.forEach(note=>{
+      const result=searchResultById.get(String(note.id));
+      const snippet=result?window.LifeFlowUIModule.renderSearchSnippet({folder:result.folder,folderIcon:result.folderIcon,snippet:result.snippet,terms:result.terms}):'';
+      html+='<button class="note-item'+(String(note.id)===String(selected?.id)?' active':'')+'" data-lf-action="note-select" data-lf-note-context aria-haspopup="menu" data-note-id="'+esc(note.id)+'"><strong>'+esc(note.title||'Untitled')+'</strong><small>'+esc(new Date(note.updatedAt||Date.now()).toLocaleDateString())+'</small>'+(result?'<span class="note-search-result-snippet">'+snippet+'</span>':'')+'</button>';
+    });
+    if(!filteredItems.length)html+='<p class="notes-empty">'+(searchQuery?'No results found. Try another phrase.':'No notes yet. Create your first note.')+'</p>';
+    if(lazySearch&&visibleItems.length<filteredItems.length)html+='<button type="button" class="notes-search-more" data-lf-action="notes-search-more">Show more ('+Math.min(12,filteredItems.length-visibleItems.length)+' more)</button>';
     html+='</div>';
   }
   html+='</div></aside></div></div>';
