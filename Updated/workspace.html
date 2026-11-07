@@ -110,27 +110,50 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
 <script src="theme.js?v=20261107-theme-cleanup1" defer></script>
-<script src="auth.js?v=20261107-ui-decoupling-r1t3" defer></script>
+<script src="auth.js?v=20261108-login-load-race1" defer></script>
 <script src="tasks.js?v=20261107-ui-decoupling-r1t3" defer></script>
 <script src="notes.js?v=20261108-version-history1" defer></script>
 <script src="ui.js?v=20261107-branchgraph1" defer></script>
-<script src="script.js?v=20261108-version-history1" defer></script>
+<script src="script.js?v=20261108-login-load-race1" defer></script>
 <script>
   // Capture auth interactions before any other handler or native form navigation.
+  // Deferred scripts may still be downloading when the login form first becomes interactive.
+  var lifeFlowLoginPending = false;
+  function waitForLifeFlowLogin(timeoutMs) {
+    return new Promise(function(resolve, reject) {
+      var started = Date.now();
+      (function check() {
+        if (typeof window.doLogin === 'function') { resolve(window.doLogin); return; }
+        if (Date.now() - started >= timeoutMs) { reject(new Error('LifeFlow authentication did not become available.')); return; }
+        window.setTimeout(check, 50);
+      })();
+    });
+  }
   document.addEventListener('submit', function(event) {
     if (!event.target || event.target.id !== 'loginForm') return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    if (typeof window.doLogin === 'function') {
-      Promise.resolve(window.doLogin()).catch(function(error) {
-        console.error('LifeFlow sign-in failed:', error);
-        var notice = document.getElementById('loginError');
-        if (notice) { notice.textContent = 'Sign-in could not be completed. Please refresh and try again.'; notice.hidden = false; }
-      });
-    } else {
-      var notice = document.getElementById('loginError');
-      if (notice) { notice.textContent = 'LifeFlow authentication did not load. Refresh the page and try again.'; notice.hidden = false; }
-    }
+    if (lifeFlowLoginPending) return;
+    lifeFlowLoginPending = true;
+    var submit = document.getElementById('loginSubmit');
+    var notice = document.getElementById('loginError');
+    if (notice) { notice.textContent = 'Loading secure sign-in…'; notice.hidden = false; }
+    if (submit) submit.disabled = true;
+    waitForLifeFlowLogin(10000).then(function(login) {
+      if (notice) { notice.textContent = ''; notice.hidden = true; }
+      return login();
+    }).catch(function(error) {
+      console.error('LifeFlow sign-in failed:', error);
+      if (notice) {
+        notice.textContent = error && error.message === 'LifeFlow authentication did not become available.'
+          ? 'LifeFlow could not finish loading. Check your connection and refresh the page.'
+          : 'Sign-in could not be completed. Please try again.';
+        notice.hidden = false;
+      }
+    }).finally(function() {
+      lifeFlowLoginPending = false;
+      if (submit) submit.disabled = false;
+    });
   }, true);
   document.addEventListener('click', function(event) {
     var button = event.target && event.target.closest ? event.target.closest('[data-auth-action="toggle-login-password"], [data-auth-action="toggle-signup-password"]') : null;
