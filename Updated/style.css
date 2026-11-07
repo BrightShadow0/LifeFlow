@@ -4057,3 +4057,16 @@ body.auth-embed #authScreen .auth-brand-panel{
   background:var(--card);
   color:var(--text);
 }
+
+/* Calendar Today state: draw a complete four-sided outline inside the grid cell.
+   Scoped to the authenticated workspace so public and login stages stay independent. */
+#app #main .cal-day.today{
+  position:relative;
+  z-index:2;
+  border:0!important;
+  box-shadow:inset 0 0 0 2px var(--accent)!important;
+  background:var(--accent-soft)!important;
+}
+#app #main .cal-day.today .dnum{
+  color:var(--accent)!important;
+}
