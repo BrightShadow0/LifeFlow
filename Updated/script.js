@@ -344,6 +344,12 @@ function initTaskEventDelegation(){
     refreshMarkdownPreview();
   });
   document.addEventListener('input',event=>{
+    const control=event.target.closest('[data-lf-input="notes-search"]');
+    if(!control)return;
+    lifeFlowNoteController?.setSearchQuery(control.value);
+    renderNotesListOnly();
+  });
+  document.addEventListener('input',event=>{
     const control=event.target.closest('[data-lf-input="ambient-intensity"]');
     if(control) updateAmbientIntensity(control.value);
   });
