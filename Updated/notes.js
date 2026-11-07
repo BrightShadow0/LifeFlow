@@ -9,6 +9,10 @@ function createNotesController(options){
   const snapshot=()=>stateManager.getState();
   const noteKey=kind=>kind==='code'?'codeNotes':'notes';
   let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null;
+  function notifyKnowledgeChange(reason){
+    if(typeof global.dispatchEvent!=='function'||typeof global.CustomEvent!=='function')return;
+    global.dispatchEvent(new global.CustomEvent('lifeflow:knowledge-change',{detail:{reason,revision:regularNotesRevision}}));
+  }
   function commit(patch){
     if(Object.prototype.hasOwnProperty.call(patch||{},'notes')){
       regularNotesRevision++;
@@ -58,6 +62,7 @@ function createNotesController(options){
     ensure();const number=kind==='regular'?nextNumber(kind):null;
     const note={id:uid(),noteCode:makeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
     commit({[noteKey(kind)]:[note,...getNotes(kind)],selectedNoteId:note.id,selectedNoteKind:kind==='code'?'code':'regular',noteView:'edit'});
+    if(kind!=='code')notifyKnowledgeChange('note-created');
     return note;
   }
   function updateContent(kind,id,value){
@@ -66,7 +71,8 @@ function createNotesController(options){
       if(String(note.id)!==String(id))return note;
       found=true;return {...note,[kind==='code'?'code':'content']:value,updatedAt:Date.now()};
     });
-    if(found)commit({[key]:next});return found;
+    if(found){commit({[key]:next});if(kind!=='code')notifyKnowledgeChange('note-content-updated');}
+    return found;
   }
   function updateFields(kind,id,patch){
     const key=noteKey(kind);let found=false;
@@ -74,23 +80,24 @@ function createNotesController(options){
       if(String(note.id)!==String(id))return note;
       found=true;return {...note,...patch,updatedAt:Date.now()};
     });
-    if(found)commit({[key]:next});return found;
+    if(found){commit({[key]:next});if(kind!=='code'&&Object.prototype.hasOwnProperty.call(patch||{},'title'))notifyKnowledgeChange('note-renamed');}
+    return found;
   }
   function deleteNote(kind,id){
     const key=noteKey(kind),list=getNotes(kind),next=list.filter(note=>String(note.id)!==String(id));
     if(next.length===list.length)return false;
-    commit({[key]:next,selectedNoteId:null});return true;
+    commit({[key]:next,selectedNoteId:null});if(kind!=='code')notifyKnowledgeChange('note-deleted');return true;
   }
   function deleteAll(kind){
     const key=noteKey(kind),count=getNotes(kind).length;if(!count)return 0;
-    commit({[key]:[],selectedNoteId:null,noteView:'edit'});return count;
+    commit({[key]:[],selectedNoteId:null,noteView:'edit'});if(kind!=='code')notifyKnowledgeChange('notes-cleared');return count;
   }
   function openByTitle(title){
     const clean=String(title||'').trim();if(!clean)return null;
     let note=getNotes('regular').find(item=>String(item.title||'').trim().toLowerCase()===clean.toLowerCase());
     if(!note){
       note={id:uid(),noteCode:makeNoteCode(),title:clean,noteNumber:null,content:'',code:'',language:'javascript',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
-      commit({notes:[note,...getNotes('regular')]});
+      commit({notes:[note,...getNotes('regular')]});notifyKnowledgeChange('note-created-by-link');
     }
     select(note.id,'regular','edit');return note;
   }
