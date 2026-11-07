@@ -186,9 +186,18 @@ function createNotesController(options){
       if(!terms.every(term=>(tl+' '+cl+' '+tg+' '+fl).includes(term)))return;
       let score=0;
       terms.forEach(term=>{if(tl.includes(term))score+=100;if(cl.includes(term))score+=12;if(tg.includes(term))score+=8;if(fl.includes(term))score+=5;});
-      const match=terms.find(term=>cl.includes(term));
-      const index=match?flat.toLowerCase().indexOf(match):0,start=Math.max(0,index-65),end=Math.min(flat.length,index+145);
-      const snippet=flat?(start?'…':'')+flat.slice(start,end)+(end<flat.length?'…':''):'Folder: '+folder;
+      const contentMatch=terms.find(term=>cl.includes(term));
+      const titleMatch=terms.some(term=>tl.includes(term));
+      const tagMatch=terms.some(term=>tg.includes(term));
+      const folderMatch=terms.some(term=>fl.includes(term));
+      let snippet='';
+      if(contentMatch){
+        const index=flat.toLowerCase().indexOf(contentMatch),start=Math.max(0,index-65),end=Math.min(flat.length,index+145);
+        snippet=(start?'…':'')+flat.slice(start,end)+(end<flat.length?'…':'');
+      }else if(titleMatch)snippet='Title: '+title;
+      else if(tagMatch)snippet='Tags: '+tags;
+      else if(folderMatch)snippet='Folder: '+folder;
+      else snippet=flat.slice(0,145);
       results.push({id:note.id,title,folder,score,snippet,terms});
     });
     return results.sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
