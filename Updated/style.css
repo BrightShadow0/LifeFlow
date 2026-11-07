@@ -3853,3 +3853,71 @@ body.auth-embed #authScreen .termcontent input{height:56px}
 :root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .code-view{
   color:#dce7f5;
 }
+
+
+/* Sapphire login terminal: match the blue workspace palette instead of the legacy lime treatment. */
+#authScreen{
+  --auth-blue:#55ddeb;
+  --auth-blue-soft:#55ddeb20;
+  --auth-blue-border:#55ddeb42;
+}
+#authScreen>.card{
+  border-color:#55ddeb38;
+}
+#authScreen .auth-brand-panel{
+  background:
+    radial-gradient(ellipse at 15% 12%,#55ddeb20,transparent 49%),
+    radial-gradient(ellipse at 82% 86%,#315a8c24,transparent 48%),
+    linear-gradient(145deg,#12243b,#080d16 72%);
+  border-right-color:#55ddeb30;
+}
+#authScreen .auth-brand-word span{
+  color:var(--auth-blue);
+}
+#authScreen .auth-brand-watermark{
+  color:#55ddeb12;
+}
+#authScreen .termcontent label{
+  color:#aabbd0;
+}
+#authScreen .termcontent input{
+  border-color:#354a64;
+  background:#0b1421;
+}
+#authScreen .termcontent input:focus{
+  border-color:var(--auth-blue);
+  box-shadow:0 0 0 3px #55ddeb20;
+}
+#authScreen .termcontent input::placeholder{
+  color:#788ba5;
+}
+#authScreen .auth-submit,
+#authScreen .authstep .primary:not(.auth-submit){
+  background:var(--auth-blue);
+  color:#07131a;
+  box-shadow:0 8px 30px #55ddeb22;
+}
+#authScreen .auth-submit:hover{
+  box-shadow:0 12px 34px #55ddeb38;
+}
+#authScreen .linklike{
+  color:var(--auth-blue);
+}
+#authScreen .stepdots span.on{
+  background:var(--auth-blue);
+}
+#authScreen .stepdots span{
+  background:#2b3b50;
+}
+#authScreen .auth-password-wrap .password-eye{
+  color:#a9bdd3;
+}
+#authScreen .auth-brand-panel,
+#authScreen .termcontent,
+#authScreen>.card{
+  transition:border-color .2s ease,background .2s ease;
+}
+/* Keep the same Sapphire treatment in the embedded login preview. */
+body.auth-embed #authScreen .auth-brand-panel{
+  border-right-color:#55ddeb30;
+}
