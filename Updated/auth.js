@@ -226,7 +226,7 @@ function createAuthController(deps){
   }
   return {
     base64url,randomToken,sha256B64url,timingSafeEqual,hashPassword,verifyPassword,
-    getSession:getPublicSession,createSession,destroySession,doLogout,doSignup,doVerify,
+    getSession:getPublicSession,createSession:(email,remember)=>{const session=createSession(email,remember);return {email:session.email,createdAt:session.createdAt,expiresAt:session.expiresAt};},destroySession,doLogout,doSignup,doVerify,
     renderOAuthButtons,oauthLogin,demoOAuthLogin,handleOAuthCallback,doLogin
   };
 }
