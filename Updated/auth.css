@@ -1,3 +1,26 @@
+.termbar{padding:12px 16px;background:var(--card);color:var(--muted);font:12px ui-monospace,SFMono-Regular,Consolas,monospace;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.termbar-left,.termbar-right{display:flex;align-items:center;gap:7px}.termdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4c5663;margin-right:1px}
+.auth-auto{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-auto.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.auth-theme{display:flex;align-items:center;gap:6px}.auth-theme-label{font-size:10px;letter-spacing:.08em;color:var(--muted)}
+.auth-theme-btn{border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-theme-btn.active{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
+
+:root[data-theme="light"] .termbar{background:#f1f3f2}
+
+.termcontent{padding:24px}
+
+.auth-bulb:hover .theme-bulb{transform:translateX(-50%) scale(1.07)}
+
+.auth-bulb:active .theme-bulb{filter:brightness(1.08)}
+
+@media(prefers-reduced-motion:reduce){#authScreen .card,.authstep.active{animation:none!important;transition:none!important}}
+
+/* Authentication theme cord interaction styles. */
+.auth-bulb,.auth-bulb *{-webkit-user-select:none!important;user-select:none!important;-webkit-user-drag:none!important;-webkit-tap-highlight-color:transparent!important}
+.auth-bulb{touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;outline:none}
+.auth-bulb:focus-visible{outline:2px solid var(--accent)!important;outline-offset:3px}
+
+#authScreen.lifeflow-stage-hidden{display:none!important}
+
 #authScreen{max-width:none;min-height:100dvh;margin:0;display:grid;place-items:center;padding:24px;background:var(--bg)}
 #authScreen .card{width:min(780px,100%);padding:0;margin:0;overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--card);box-shadow:0 25px 80px #0008}
 

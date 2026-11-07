@@ -103,11 +103,6 @@ button.primary{padding:8px 14px;border:none;border-radius:8px;background:var(--a
 :root[data-theme="light"]{--bg:#f4f6f5;--card:#ffffff;--panel2:#eef2ef;--text:#182019;--muted:#657067;--border:#d8ded9;--accent:#3f9f38;--accent-soft:#e8f4e6;--danger:#c83f3f;--warn:#a87514;--ok:#3f9f38;color-scheme:light}
 body{font:14px Inter,system-ui,-apple-system,sans-serif;background:var(--bg)}
 button,input,select{font:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button:disabled{opacity:.45;cursor:not-allowed}
-.termbar{padding:12px 16px;background:var(--card);color:var(--muted);font:12px ui-monospace,SFMono-Regular,Consolas,monospace;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.termbar-left,.termbar-right{display:flex;align-items:center;gap:7px}.termdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#4c5663;margin-right:1px}
-.auth-auto{border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-auto.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.auth-theme{display:flex;align-items:center;gap:6px}.auth-theme-label{font-size:10px;letter-spacing:.08em;color:var(--muted)}
-.auth-theme-btn{border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:6px;padding:4px 8px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace;cursor:pointer}.auth-theme-btn.active{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}
 
 
 
@@ -142,7 +137,7 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 .clock-dialog{background:#11161d;color:var(--text);border:1px solid var(--border)}.clock-display button,.clock-dial,.clock-keyboard input{background:#202831;color:var(--text)}.clock-display button.active{background:var(--accent);color:#071007}.clock-hand,.clock-center{background:var(--accent)}.clock-number{color:var(--text)}.clock-number.selected{background:var(--accent);color:#071007}.clock-footer button{color:#b4f5aa}.clock-overlay,.time-edit{z-index:20}.time-edit-card{background:#11161d;border:1px solid var(--border)}.time-chip{color:var(--accent)}
 .toast{position:fixed;right:20px;bottom:20px;background:#eaffe6;color:#071007;padding:11px 15px;border-radius:8px;font-size:12px;font-weight:800;z-index:30;box-shadow:0 12px 30px #0008}
 @media(max-width:900px){.app-sidebar{width:68px;padding:22px 9px}.brand{font-size:0;margin:0 0 26px;text-align:center}.brand-mark{font-size:23px}.navlabel,.nav-text,.sidebottom .nav-text{display:none}#nav button,.sidebar-action{justify-content:center;padding:11px 6px}.app-content{margin-left:68px;padding:25px 20px 70px}.today-grid{grid-template-columns:minmax(0,1fr)}.today-grid>div,.card{min-width:0}.app-content{width:calc(100% - 68px)}.task>div{min-width:0}.task .sub input{max-width:100%}}
-@media(max-width:600px){.app-content{padding:20px 14px 70px}.app-top h1{font-size:24px}.hero{align-items:flex-start;flex-direction:column}.board{grid-template-columns:1fr}.calendar-wrap{overflow-x:auto}.cal-grid{min-width:650px}.statgrid{grid-template-columns:repeat(2,1fr)}.termcontent{padding:24px}.clock-dial{width:min(100%,310px)}}
+@media(max-width:600px){.app-content{padding:20px 14px 70px}.app-top h1{font-size:24px}.hero{align-items:flex-start;flex-direction:column}.board{grid-template-columns:1fr}.calendar-wrap{overflow-x:auto}.cal-grid{min-width:650px}.statgrid{grid-template-columns:repeat(2,1fr)}.clock-dial{width:min(100%,310px)}}
 
 :root[data-theme="light"] .app-sidebar{background:#ffffff}
 :root[data-theme="light"] #nav button:hover,:root[data-theme="light"] #nav button.active,:root[data-theme="light"] .sidebar-action:hover{background:#eef2ef;color:#182019}
@@ -155,7 +150,6 @@ input,select{background:#090d12;color:var(--text);border-radius:7px;padding:10px
 :root[data-theme="light"] .progress-track{background:#dfe6e0}
 :root[data-theme="light"] .cal-day.today{background:#f1f8f0}
 :root[data-theme="light"] .cal-day .citem{background:#e8f4e6;color:#347d2f}
-:root[data-theme="light"] .termbar{background:#f1f3f2}
 :root[data-theme="light"] .clock-dialog,:root[data-theme="light"] .time-edit-card{background:#ffffff;color:#182019}
 :root[data-theme="light"] .clock-display button,:root[data-theme="light"] .clock-dial,:root[data-theme="light"] .clock-keyboard input{background:#eef2ef;color:#182019}
 :root[data-theme="light"] .clock-number{color:#182019}
@@ -320,8 +314,8 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
 .top-theme-pull{filter:drop-shadow(0 5px 12px var(--lf-glow))}
 :root[data-theme="light"] .top-theme-pull{filter:drop-shadow(0 5px 16px rgba(255,220,90,.35))}
 .theme-bulb{transition:transform .16s ease,box-shadow .2s ease,background .2s ease}
-.theme-pull:hover .theme-bulb,.auth-bulb:hover .theme-bulb{transform:translateX(-50%) scale(1.07)}
-.theme-pull.pulling .theme-bulb,.auth-bulb:active .theme-bulb{filter:brightness(1.08)}
+.theme-pull:hover .theme-bulb{transform:translateX(-50%) scale(1.07)}
+.theme-pull.pulling .theme-bulb{filter:brightness(1.08)}
 .theme-pull.snap .theme-bulb{animation:bulbSnap .3s ease both}
 
 @keyframes bulbSnap{0%{transform:translateX(-50%) scale(1)}45%{transform:translateX(-50%) scale(.88)}100%{transform:translateX(-50%) scale(1)}}
@@ -348,7 +342,7 @@ nav button:active,#nav button:active,.subnav button:active,.hbtn:active,.primary
   .hero-welcome h2{font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){
-  #authScreen .card,.authstep.active,#nav button,.task,.kcard,.cal-day,.theme-bulb{animation:none!important;transition:none!important}
+  #nav button,.task,.kcard,.cal-day,.theme-bulb{animation:none!important;transition:none!important}
 }
 
 
@@ -2869,30 +2863,13 @@ select option:checked{
 }
 
 
-/* Prevent the browser's rectangular text/element selection while pulling the theme cord. */
-.theme-pull,
-.theme-pull *,
-.auth-bulb,
-.auth-bulb *,
-.top-theme-pull,
-.top-theme-pull *{
-  -webkit-user-select:none!important;
-  user-select:none!important;
-  -webkit-user-drag:none!important;
-  -webkit-tap-highlight-color:transparent!important;
+/* Prevent selection and dragging while pulling the workspace theme cord. */
+.theme-pull,.theme-pull *,
+.top-theme-pull,.top-theme-pull *{
+  -webkit-user-select:none!important;user-select:none!important;-webkit-user-drag:none!important;-webkit-tap-highlight-color:transparent!important;
 }
-.theme-pull,
-.auth-bulb{
-  touch-action:none!important;
-  -webkit-user-select:none!important;
-  user-select:none!important;
-  outline:none;
-}
-.theme-pull:focus-visible,
-.auth-bulb:focus-visible{
-  outline:2px solid var(--accent)!important;
-  outline-offset:3px;
-}
+.theme-pull{touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;outline:none}
+.theme-pull:focus-visible{outline:2px solid var(--accent)!important;outline-offset:3px}
 
 
 /* Task Master follows the active LifeFlow theme at rest; hover only animates the pixel flame. */
@@ -4013,5 +3990,4 @@ body::-webkit-scrollbar-corner{
 
 
 /* Auth and workspace stage visibility without inline display styles. */
-#authScreen.lifeflow-stage-hidden,
 #app.lifeflow-stage-hidden{display:none!important}
