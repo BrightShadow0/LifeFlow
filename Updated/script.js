@@ -1753,7 +1753,10 @@ function renderBranches(){
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
   const items=state.notes, count=items.length, positions={};
-  const width=1400,height=Math.max(900,Math.ceil(Math.sqrt(Math.max(1,count)))*260);
+  const edges=lifeFlowNoteController?.getGraphLinks()||[];
+  const ghostNodes=new Map();
+  edges.filter(edge=>edge.ghost).forEach(edge=>ghostNodes.set(edge.to,{id:edge.to,title:edge.toTitle}));
+  const width=1400,height=Math.max(900,Math.ceil(Math.sqrt(Math.max(1,count+ghostNodes.size)))*260);
   let changed=false;
   const hash=function(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
   const labelWidth=function(n){return Math.max(92,Math.min(250,String(n.title||'Untitled').slice(0,34).length*7.2));};
@@ -1767,7 +1770,7 @@ function renderBranches(){
     positions[String(n.id)]={x,y};
   });
   // Relax overlapping node labels while retaining the user's saved layout.
-  for(let pass=0;pass<220;pass++){
+  for(let pass=0;pass<Math.min(48,Math.max(12,items.length));pass++){
     let moved=false;
     for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
       const a=items[i],b=items[j],pa=positions[String(a.id)],pb=positions[String(b.id)];
@@ -1794,15 +1797,23 @@ function renderBranches(){
       return position?{...note,graphX:position.x,graphY:position.y}:note;
     }));
   }
-  const edges=lifeFlowNoteController?.getGraphLinks()||[];
+  ghostNodes.forEach(function(node){
+    const h=hash(node.id),x=120+(h%10000)/10000*(width-240),y=90+((h>>>10)%10000)/10000*(height-180);
+    positions[node.id]={x,y};
+  });
   let svg='';
   edges.forEach(function(edge){
     const a=positions[edge.from],b=positions[edge.to];
-    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" data-line="'+edge.line+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line><line class="branch-edge-hit" data-from="'+edge.from+'" data-to="'+edge.to+'" data-line="'+edge.line+'" data-target-title="'+esc(edge.toTitle)+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" tabindex="0" role="button" aria-label="Jump to '+esc(edge.toTitle)+' link in '+esc(edge.fromTitle)+'"></line>';
+    if(a&&b)svg+='<line class="branch-edge'+(edge.ghost?' branch-edge-ghost':'')+'" data-from="'+esc(edge.from)+'" data-to="'+esc(edge.to)+'" data-ghost="'+String(!!edge.ghost)+'" data-line="'+edge.line+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line><line class="branch-edge-hit" data-from="'+esc(edge.from)+'" data-to="'+esc(edge.to)+'" data-ghost="'+String(!!edge.ghost)+'" data-line="'+edge.line+'" data-target-title="'+esc(edge.toTitle)+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" tabindex="0" role="button" aria-label="Open '+esc(edge.toTitle)+' from '+esc(edge.fromTitle)+'"></line>';
   });
+  const activeId=String(state.selectedNoteId??'');
   items.forEach(function(n){
-    const p=positions[String(n.id)],label=esc(n.title||'Untitled').slice(0,34);
-    svg+='<g class="branch-node interactive-branch-node" data-note-id="'+esc(String(n.id))+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Open '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
+    const p=positions[String(n.id)],label=esc(n.title||'Untitled').slice(0,34),active=String(n.id)===activeId?' branch-node-active':'';
+    svg+='<g class="branch-node interactive-branch-node'+active+'" data-note-id="'+esc(String(n.id))+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Open '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
+  });
+  ghostNodes.forEach(function(node){
+    const p=positions[node.id],label=esc(node.title||'Future idea').slice(0,34);
+    svg+='<g class="branch-node branch-ghost-node interactive-branch-node" data-ghost-title="'+esc(node.title)+'" data-note-id="'+esc(node.id)+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Create note '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
   });
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
   return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-focus-toggle" aria-pressed="false">Focus Mode</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
@@ -1843,7 +1854,7 @@ function branchesResetView(){
 }
 function initBranchesGraph(root){
   const svg=root.querySelector('#branchesSvg'),viewport=root.querySelector('#branchesViewport');if(!svg||!viewport)return;
-  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;window.lfBranchesFocusMode=false;window.lfBranchesFocusedId=null;branchesApplyTransform();
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;branchesApplyTransform();
   let drag=null;
   const svgPoint=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());};
   const point=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(viewport.getScreenCTM().inverse());};
@@ -1865,9 +1876,23 @@ function initBranchesGraph(root){
     window.lfBranchesPanX=box.width/2-matrix.e*z;window.lfBranchesPanY=box.height/2-matrix.f*z;branchesApplyTransform();
   };
   window.lfBranchesFocusNode=focusNode;
+  if(window.lfBranchesFocusMode&&window.lfBranchesFocusedId)focusNode(String(window.lfBranchesFocusedId));
+  else if(window.lfSelectedNote!==null&&window.lfSelectedNote!==undefined){
+    const active=viewport.querySelector('.interactive-branch-node[data-note-id="'+CSS.escape(String(window.lfSelectedNote))+'"]');
+    if(active){const matrix=active.transform.baseVal.consolidate().matrix,box=svg.viewBox.baseVal,z=window.lfBranchesZoom||1;window.lfBranchesPanX=box.width/2-matrix.e*z;window.lfBranchesPanY=box.height/2-matrix.f*z;branchesApplyTransform();}
+  }
   viewport.querySelectorAll('.branch-edge-hit').forEach(line=>{
-    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const lines=editor.value.replace(/\\r\\n?/g,'\\n').split('\\n'),lineIndex=Math.max(0,Math.min(lines.length-1,Number(line.dataset.line)||0)),token='[['+target.title+']]';let localAt=lines[lineIndex].toLowerCase().indexOf(token.toLowerCase());if(localAt<0)localAt=lines[lineIndex].toLowerCase().indexOf(String(line.dataset.targetTitle||target.title).toLowerCase());if(localAt<0)return;const at=lines.slice(0,lineIndex).reduce((sum,value)=>sum+value.length+1,0)+localAt;editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const lineHeight=parseFloat(getComputedStyle(editor).lineHeight)||22;editor.scrollTop=Math.max(0,lineIndex*lineHeight-editor.clientHeight/2);editor.classList.remove('backlink-jump-active');void editor.offsetWidth;editor.classList.add('backlink-jump-active');window.setTimeout(()=>editor.classList.remove('backlink-jump-active'),1800);});};
-    line.addEventListener('click',activate);line.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
+    const activate=()=>{
+      if(line.dataset.ghost==='true'){
+        const created=lifeFlowNoteController?.openByTitle(line.dataset.targetTitle||'Future Idea');
+        if(created)selectKnowledgeNote(created.id,'regular','edit');
+        return;
+      }
+      const target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);
+      if(target)selectKnowledgeNote(target.id,'regular','edit');
+    };
+    line.addEventListener('click',activate);
+    line.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
   });
   viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
     node.addEventListener('pointerdown',function(e){
@@ -1878,11 +1903,15 @@ function initBranchesGraph(root){
     });
     node.addEventListener('click',function(e){
       if(node.dataset.moved==='1'){node.dataset.moved='0';return;}
+      if(node.dataset.noteId.startsWith('ghost:')){
+        const created=lifeFlowNoteController?.openByTitle(node.dataset.ghostTitle||'Future Idea');
+        if(created){window.lfBranchesFocusMode=true;window.lfBranchesFocusedId=String(created.id);selectKnowledgeNote(created.id,'regular','edit');}
+        return;
+      }
       const n=noteStore('regular').find(function(item){return String(item.id)===String(node.dataset.noteId);});
-      if(window.lfBranchesFocusMode){focusNode(node.dataset.noteId);return;}
-      if(n)selectKnowledgeNote(n.id,'regular','edit');
+      if(n){window.lfBranchesFocusMode=true;window.lfBranchesFocusedId=String(n.id);selectKnowledgeNote(n.id,'regular','edit');}
     });
-    node.addEventListener('dblclick',function(){const n=noteStore('regular').find(item=>String(item.id)===String(node.dataset.noteId));if(n)selectKnowledgeNote(n.id,'regular','edit');});
+    node.addEventListener('dblclick',function(){if(node.dataset.noteId.startsWith('ghost:')){const created=lifeFlowNoteController?.openByTitle(node.dataset.ghostTitle||'Future Idea');if(created)selectKnowledgeNote(created.id,'regular','edit');return;}const n=noteStore('regular').find(item=>String(item.id)===String(node.dataset.noteId));if(n)selectKnowledgeNote(n.id,'regular','edit');});
     node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}});
   });
   svg.addEventListener('pointerdown',function(e){

@@ -4639,3 +4639,14 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="paper"] #app .note-folder-move select{
   background:#fff;color:#202438;border-color:#d5d9e4;
 }
+
+/* Release 2 · Branch Graph integration */
+#app .interactive-branch-node.branch-node-active circle{stroke:var(--accent);stroke-width:4;filter:drop-shadow(0 0 10px var(--accent));r:21}
+#app .interactive-branch-node.branch-ghost-node{opacity:.42;cursor:pointer}
+#app .interactive-branch-node.branch-ghost-node circle{stroke-dasharray:4 4;stroke-width:2;fill:transparent}
+#app .interactive-branch-node.branch-ghost-node text{font-style:italic}
+#app .branch-edge-ghost{stroke-dasharray:6 7;opacity:.28}
+#app .branch-edge-hit{stroke:transparent;stroke-width:18;fill:none;pointer-events:stroke;cursor:pointer}
+#app .branch-edge-hit:focus{stroke:color-mix(in srgb,var(--accent) 25%,transparent);outline:none}
+#app .branch-focus-active .branch-dimmed{opacity:.1;transition:opacity .2s ease}
+#app .branch-focus-active .branch-node:not(.branch-dimmed) circle{filter:drop-shadow(0 0 8px var(--accent))}

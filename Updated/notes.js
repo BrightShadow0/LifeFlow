@@ -176,14 +176,17 @@ function createNotesController(options){
       const content=String(source.content||'').replace(/\r\n?/g,'\n');
       const pattern=/\[\[\s*([^\]\n]+?)\s*\]\]/g;let match;
       while((match=pattern.exec(content))){
-        const title=match[1].trim().toLowerCase(),target=byTitle.get(title);
-        if(!target||String(target.id)===String(source.id))continue;
-        const key=[String(source.id),String(target.id)].sort().join('|');
+        const cleanTitle=match[1].trim(),title=cleanTitle.toLowerCase();
+        if(!title)continue;
+        const target=byTitle.get(title);
+        if(target&&String(target.id)===String(source.id))continue;
+        const targetId=target?String(target.id):'ghost:'+title;
+        const key=[String(source.id),targetId].join('|');
         if(seen.has(key))continue;
         seen.add(key);
         const prefix=content.slice(0,match.index),line=prefix.split('\n').length-1;
         const context=content.split('\n')[line]?.trim()||'';
-        edges.push({from:String(source.id),to:String(target.id),fromTitle:source.title||'Untitled',toTitle:target.title||'Untitled',token:match[0],line,context:context.length>220?context.slice(0,217)+'…':context});
+        edges.push({from:String(source.id),to:targetId,fromTitle:source.title||'Untitled',toTitle:target?.title||cleanTitle,token:match[0],line,context:context.length>220?context.slice(0,217)+'…':context,ghost:!target});
       }
     });
     graphLinksCache={revision:regularNotesRevision,edges};return edges;
