@@ -35,12 +35,29 @@ function createNotesController(options){
   function ensure(){
     const current=snapshot(),patch={};let changed=false;
     ['notes','codeNotes','noteLinks'].forEach(key=>{if(!Array.isArray(current[key])){patch[key]=[];changed=true;}});
-    if(!Array.isArray(current.folders)||!current.folders.length){patch.folders=[{id:'unfiled',name:'Unfiled',icon:'▤'}];changed=true;}
+    const defaults=[
+      {id:'folder-work',name:'Work',icon:'💼',color:'#55ddeb',isDefault:true},
+      {id:'folder-personal',name:'Personal',icon:'◉',color:'#a78bfa',isDefault:true},
+      {id:'folder-projects',name:'Projects',icon:'▣',color:'#f5b942',isDefault:true},
+      {id:'folder-archive',name:'Archive',icon:'▤',color:'#94a3b8',isDefault:true},
+      {id:'unfiled',name:'Unfiled',icon:'▤',color:'#94a3b8',isDefault:true}
+    ];
+    const existing=Array.isArray(current.folders)?current.folders:[];
+    const folders=defaults.map(base=>existing.find(item=>item.id===base.id||String(item.name||'').toLowerCase()===base.name.toLowerCase())||base);
+    existing.forEach(item=>{if(!folders.some(folder=>folder.id===item.id||folder.name.toLowerCase()===String(item.name||'').toLowerCase()))folders.push(item);});
+    if(!Array.isArray(current.folders)||JSON.stringify(folders)!==JSON.stringify(current.folders)){patch.folders=folders;changed=true;}
     if(!Array.isArray(current.collapsedFolders)){patch.collapsedFolders=[];changed=true;}
     if(typeof current.searchQuery!=='string'){patch.searchQuery='';changed=true;}
     ['notes','codeNotes'].forEach(key=>{
       const list=Array.isArray(current[key])?current[key]:[];
-      const next=list.map(note=>{let updated=note;if(!note.noteCode){updated={...updated,noteCode:makeNoteCode()};changed=true;}if(!updated.folder){updated={...updated,folder:'Unfiled'};changed=true;}return updated;});
+      const next=list.map(note=>{
+        let updated=note;
+        if(!note.noteCode){updated={...updated,noteCode:makeNoteCode()};changed=true;}
+        const legacyName=String(updated.folder||'Unfiled');
+        const folder=folders.find(item=>item.id===updated.folderId||item.name===legacyName)||folders.find(item=>item.id==='unfiled');
+        if(!updated.folderId||updated.folderId!==folder.id||updated.folder!==folder.name){updated={...updated,folderId:folder.id,folder:folder.name};changed=true;}
+        return updated;
+      });
       if(next.some((note,index)=>note!==list[index]))patch[key]=next;
     });
     if(changed)commit(patch);
@@ -61,7 +78,7 @@ function createNotesController(options){
   }
   function newNote(kind='regular'){
     ensure();const number=kind==='regular'?nextNumber(kind):null;
-    const note={id:uid(),noteCode:makeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
+    const note={id:uid(),noteCode:makeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',folderId:'unfiled',folderId:'unfiled',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
     commit({[noteKey(kind)]:[note,...getNotes(kind)],selectedNoteId:note.id,selectedNoteKind:kind==='code'?'code':'regular',noteView:'edit'});
     if(kind!=='code')notifyKnowledgeChange('note-created');
     return note;
@@ -110,24 +127,33 @@ function createNotesController(options){
     const title=first.length>52?first.slice(0,49).trimEnd()+'…':first;
     return title!==current&&updateFields('regular',id,{title});
   }
-  function getFolders(){return snapshot().folders||[{id:'unfiled',name:'Unfiled',icon:'▤'}];}
+  function getFolders(){return snapshot().folders||[{id:'unfiled',name:'Unfiled',icon:'▤',isDefault:true}];}
+  function resolveFolder(reference){return getFolders().find(item=>item.id===reference||item.name===reference)||null;}
   function createFolder(name,icon='▣'){
     const clean=String(name||'').trim().slice(0,40);if(!clean)return null;
-    if(getFolders().some(folder=>folder.name.toLowerCase()===clean.toLowerCase()))return null;
-    const folder={id:'folder-'+uid(),name:clean,icon:String(icon||'▣').slice(0,4)};commit({folders:[...getFolders(),folder]});return folder;
+    if(getFolders().some(folder=>String(folder.name||'').toLowerCase()===clean.toLowerCase()))return null;
+    const folder={id:'folder-'+uid(),name:clean,icon:String(icon||'▣').slice(0,4),color:'#55ddeb',isDefault:false};
+    commit({folders:[...getFolders(),folder]});return folder;
   }
-  function moveToFolder(id,name){
-    const folder=getFolders().find(item=>item.name===name);if(!folder)return false;
-    return updateFields('regular',id,{folder:folder.name});
+  function moveToFolder(id,folderReference){
+    const folder=resolveFolder(folderReference);if(!folder)return false;
+    return updateFields('regular',id,{folderId:folder.id,folder:folder.name});
   }
-  function renameFolder(name,nextName){
-    const folder=getFolders().find(item=>item.name===name);const clean=String(nextName||'').trim().slice(0,40);
-    if(!folder||name==='Unfiled'||!clean||getFolders().some(item=>item!==folder&&item.name.toLowerCase()===clean.toLowerCase()))return false;
-    commit({folders:getFolders().map(item=>item.id===folder.id?{...item,name:clean}:item),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:clean,updatedAt:Date.now()}:note)});return true;
+  function renameFolder(reference,nextName){
+    const folder=resolveFolder(reference),clean=String(nextName||'').trim().slice(0,40);
+    if(!folder||folder.id==='unfiled'||!clean||getFolders().some(item=>item.id!==folder.id&&String(item.name||'').toLowerCase()===clean.toLowerCase()))return false;
+    commit({folders:getFolders().map(item=>item.id===folder.id?{...item,name:clean}:item),notes:getNotes('regular').map(note=>(note.folderId===folder.id||(!note.folderId&&note.folder===folder.name))?{...note,folder:clean,updatedAt:Date.now()}:note)});
+    return true;
   }
-  function deleteFolder(name){
-    if(!name||name==='Unfiled'||!getFolders().some(item=>item.name===name))return false;
-    commit({folders:getFolders().filter(item=>item.name!==name),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:'Unfiled',updatedAt:Date.now()}:note),collapsedFolders:(snapshot().collapsedFolders||[]).filter(item=>item!==name)});return true;
+  function deleteFolder(reference){
+    const folder=resolveFolder(reference);if(!folder||folder.id==='unfiled')return false;
+    const unfiled=resolveFolder('unfiled')||{id:'unfiled',name:'Unfiled'};
+    commit({
+      folders:getFolders().filter(item=>item.id!==folder.id),
+      notes:getNotes('regular').map(note=>(note.folderId===folder.id||(!note.folderId&&note.folder===folder.name))?{...note,folderId:unfiled.id,folder:unfiled.name,updatedAt:Date.now()}:note),
+      collapsedFolders:(snapshot().collapsedFolders||[]).filter(item=>item!==folder.name&&item!==folder.id)
+    });
+    return true;
   }
   function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}
   function setSearchQuery(query){commit({searchQuery:String(query||'')});}
