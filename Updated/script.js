@@ -531,13 +531,36 @@ function initTaskEventDelegation(){
     }
   });
   document.addEventListener('dragstart',event=>{
+    const card=event.target.closest('[data-lf-kanban-card]');
+    if(card && event.dataTransfer){
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('id',card.dataset.taskId);
+      card.classList.add('dragging');
+      return;
+    }
     const control=event.target.closest('[data-lf-dragstart="task"]');
     if(control && event.dataTransfer) event.dataTransfer.setData('id',control.dataset.taskId);
   });
+  document.addEventListener('dragend',event=>{
+    const card=event.target.closest('[data-lf-kanban-card]');
+    if(card) card.classList.remove('dragging');
+  });
   document.addEventListener('dragover',event=>{
+    const card=event.target.closest('[data-lf-kanban-card]');
+    if(card){kanbanCardDragOver(event,card);return;}
+    const column=event.target.closest('[data-lf-kanban-column]');
+    if(column){kanbanDragOver(event,column);return;}
     if(event.target.closest('[data-lf-dragover="calendar-day"]')) event.preventDefault();
   });
+  document.addEventListener('dragleave',event=>{
+    const column=event.target.closest('[data-lf-kanban-column]');
+    if(column) kanbanDragLeave(event,column);
+  });
   document.addEventListener('drop',event=>{
+    const card=event.target.closest('[data-lf-kanban-card]');
+    if(card){kanbanCardDrop(event,card,card.dataset.columnStatus);return;}
+    const column=event.target.closest('[data-lf-kanban-column]');
+    if(column){kanbanDrop(event,column,column.dataset.columnStatus);return;}
     const control=event.target.closest('[data-lf-drop-day]');
     if(!control) return;
     event.preventDefault();
@@ -1278,9 +1301,9 @@ function renderList(){
 function renderBoard(){
   const cols=[['todo','To Do'],['doing','Doing'],['done','Done']];
   return '<div class="card"><div class="board-heading"><div><h2>Kanban Board</h2><p>Move work through the flow. Drop cards anywhere inside a column to update status.</p></div></div><div class="board">'+cols.map(([k,l])=>
-    '<div class="col col-'+k+'" ondragover="kanbanDragOver(event,this)" ondragleave="kanbanDragLeave(event,this)" ondrop="kanbanDrop(event,this,\''+k+'\')">'+
+    '<div class="col col-'+k+'" data-lf-kanban-column="'+k+'">'+
       '<h3><span class="col-title">'+l+'</span></h3><div class="col-drop-hint">Drop anywhere in this column</div>'+
-      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')" ondragover="kanbanCardDragOver(event,this)" ondrop="kanbanCardDrop(event,this,\''+k+'\')">'+
+      state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" data-lf-kanban-card="true" data-task-id="'+t.id+'" data-column-status="'+k+'">'+
         '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
         '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
         '<button class="linklike" data-lf-action="edit-task-time" data-task-id="'+t.id+'">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
