@@ -1610,7 +1610,7 @@ function openNoteContextMenu(event,noteId){
   menu.id='lfNoteContextMenu';menu.className='note-context-menu';menu.setAttribute('role','menu');menu.setAttribute('aria-label','Note actions');
   menu.innerHTML='<button type="button" role="menuitem" data-lf-action="note-context-open" data-note-id="'+esc(note.id)+'">Open note</button><div class="note-context-label">MOVE TO FOLDER</div>'+folders.map(folder=>'<button type="button" role="menuitem" class="note-context-folder '+((note.folder||'Unfiled')===folder.name?'current':'')+'" data-lf-action="note-context-move" data-note-id="'+esc(note.id)+'" data-folder-name="'+esc(folder.name)+'" '+((note.folder||'Unfiled')===folder.name?'disabled':'')+'><span>'+esc(folder.icon||'▣')+'</span>'+esc(folder.name)+((note.folder||'Unfiled')===folder.name?'<small>Current</small>':'')+'</button>').join('')+'<div class="note-context-divider"></div><button type="button" role="menuitem" data-lf-action="note-context-rename" data-note-id="'+esc(note.id)+'">Rename note</button><button type="button" role="menuitem" class="danger" data-lf-action="note-context-delete" data-note-id="'+esc(note.id)+'">Delete note</button>';
   document.body.appendChild(menu);
-  const width=250,height=menu.offsetHeight||240,left=Math.max(8,Math.min(Number(event.clientX)||8,window.innerWidth-width-8)),top=Math.max(8,Math.min(Number(event.clientY)||8,window.innerHeight-height-8));
+  const width=Math.min(250,Math.max(180,window.innerWidth-16)),height=menu.offsetHeight||240,left=Math.max(8,Math.min(Number(event.clientX)||8,window.innerWidth-width-8)),top=Math.max(8,Math.min(Number(event.clientY)||8,window.innerHeight-height-8));
   menu.style.left=left+'px';menu.style.top=top+'px';
   menu.querySelector('button')?.focus({preventScroll:true});
 }
@@ -1750,7 +1750,17 @@ function renderBranches(){
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
   return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-focus-toggle" aria-pressed="false">Focus Mode</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
 }
-function toggleBranchesFocusMode(){window.lfBranchesFocusMode=!window.lfBranchesFocusMode;const button=document.querySelector('[data-lf-action="branches-focus-toggle"]');if(button){button.setAttribute('aria-pressed',String(window.lfBranchesFocusMode));button.classList.toggle('active',window.lfBranchesFocusMode);}showToast(window.lfBranchesFocusMode?'Focus Mode on · select a node to focus':'Focus Mode off');}
+function toggleBranchesFocusMode(){
+  window.lfBranchesFocusMode=!window.lfBranchesFocusMode;
+  const button=document.querySelector('[data-lf-action="branches-focus-toggle"]');
+  if(button){button.setAttribute('aria-pressed',String(window.lfBranchesFocusMode));button.classList.toggle('active',window.lfBranchesFocusMode);}
+  if(!window.lfBranchesFocusMode){
+    window.lfBranchesFocusedId=null;
+    document.querySelector('.interactive-branch-graph')?.classList.remove('branch-focus-active');
+    document.querySelectorAll('.interactive-branch-graph .branch-dimmed').forEach(node=>node.classList.remove('branch-dimmed'));
+  }
+  showToast(window.lfBranchesFocusMode?'Focus Mode on · select a node to focus':'Focus Mode off');
+}
 function branchesApplyTransform(){
   const g=document.getElementById('branchesViewport');if(!g)return;
   const z=window.lfBranchesZoom||1,x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;
