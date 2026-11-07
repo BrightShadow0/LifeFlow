@@ -220,8 +220,8 @@ export class StateManager {
       clearTimeout(this.#saveTimer);
       this.#saveTimer = null;
     }
-    this.#state = this.#loadForUser(email || null);
-    this.#replaceFromExternal(this.#state);
+    const next = this.#loadForUser(email || null);
+    this.#replaceFromExternal(next);
     return this.getState();
   }
 
