@@ -478,6 +478,16 @@ async function doLogin(){
   finally{loginAttemptsInProgress=false;setLoginLoading(false);}
 }
 function initLoginAccessibility(){
+  const appRoot=document.getElementById('app');
+  if(appRoot){
+    appRoot.addEventListener('click',event=>{
+      const control=event.target.closest('[data-app-action]');
+      if(!control || !appRoot.contains(control)) return;
+      if(control.dataset.appAction==='export-csv') exportData('csv');
+      else if(control.dataset.appAction==='export-json') exportData('json');
+      else if(control.dataset.appAction==='logout') doLogout();
+    });
+  }
   const authRoot=document.getElementById('authScreen');
   if(authRoot){
     authRoot.addEventListener('click',event=>{
