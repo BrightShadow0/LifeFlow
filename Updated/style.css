@@ -3791,3 +3791,65 @@ body.auth-embed #authScreen>.card{min-height:100%;display:flex;align-items:cente
 body.auth-embed #authScreen .termcontent h2{font-size:clamp(34px,4vw,48px);margin-bottom:26px}
 body.auth-embed #authScreen .termcontent input{height:56px}
 @media(max-width:620px){body.auth-embed #authScreen .termcontent{padding:28px 20px}}
+
+
+/* Sapphire / neutral cleanup: remove legacy green casts from the default workspace.
+   Emerald and Quiet Forest remain intentionally green when explicitly selected. */
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]){
+  --ok:#52d9bb;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .app-top .avatar{
+  background:#17283a;
+  border-color:#35506c;
+  color:#c8ddf5;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .notice{
+  background:#142235;
+  color:#c4d8ee;
+  border-color:#304a68;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .tag,
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .badge{
+  background:#202f45;
+  color:#b8d1f2;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .pri-low{
+  color:#91b9e8;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .task .meta .pri-low{
+  background:#1e2d42;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .hero,
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .hero-welcome{
+  background:radial-gradient(circle at 88% 15%,#203c5b 0,transparent 34%),linear-gradient(120deg,#142238,#101722 72%);
+  border-color:#30445e;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .hero-ring{
+  background:conic-gradient(var(--accent) var(--progress),#29364a var(--progress));
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .hero-ring:before{
+  background:#101722;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .hero-ring span{
+  color:#e0ebfa;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .event{
+  background:#111b2a;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .cal-day.today{
+  background:#121e30;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .cal-day .citem{
+  background:#1c3048;
+  color:#c2d8f3;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .clock-footer button{
+  color:#b8d1f2;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .toast{
+  background:#e7f0ff;
+  color:#101722;
+}
+:root:not([data-color-theme="emerald"]):not([data-theme="forest"]) .code-view{
+  color:#dce7f5;
+}
