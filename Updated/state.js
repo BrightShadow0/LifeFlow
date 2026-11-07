@@ -14,7 +14,7 @@ export const STATE_KEY_PREFIX = 'lifeflow2_state_';
 export const DEFAULT_SAVE_DELAY = 300;
 
 export function defaultProfileState(email) {
-  return { tasks: [], notes: [], codeNotes: [], noteLinks: [], folders: [{ id: 'unfiled', name: 'Unfiled', icon: '▤' }], searchQuery: '', collapsedFolders: [], currentUser: email || null };
+  return { tasks: [], notes: [], codeNotes: [], noteLinks: [], folders: [{ id: 'folder-work', name: 'Work', icon: '💼', color: '#55ddeb', isDefault: true }, { id: 'folder-personal', name: 'Personal', icon: '◉', color: '#a78bfa', isDefault: true }, { id: 'folder-projects', name: 'Projects', icon: '▣', color: '#f5b942', isDefault: true }, { id: 'folder-archive', name: 'Archive', icon: '▤', color: '#94a3b8', isDefault: true }, { id: 'unfiled', name: 'Unfiled', icon: '▤', color: '#94a3b8', isDefault: true }], searchQuery: '', collapsedFolders: [], currentUser: email || null };
 }
 
 export function profileStateKey(email) {
