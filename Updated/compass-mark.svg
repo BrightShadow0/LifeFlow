@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title"><title id="title">LifeFlow compass</title><defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#19f2e5"/><stop offset="1" stop-color="#08a9e8"/></linearGradient><filter id="g" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="128" height="128" rx="27" fill="#07111d"/><g fill="none" stroke="#e9fbff" stroke-width="7" opacity=".96"><path d="M25 39A43 43 0 0 1 58 14"/><path d="M70 14A43 43 0 0 1 103 39"/><path d="M103 89A43 43 0 0 1 70 114"/><path d="M58 114A43 43 0 0 1 25 89"/></g><path d="M64 10 76 56 118 64 76 72 64 118 52 72 10 64 52 56Z" fill="url(#a)" filter="url(#g)"/><path d="M64 10 64 64 52 56Z" fill="#75fff4" opacity=".75"/><path d="M118 64 64 64 76 72Z" fill="#007dbb" opacity=".65"/><circle cx="64" cy="64" r="5" fill="#eaffff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+<title id="title">LifeFlow</title><desc id="desc">Three ascending geometric bars representing progress and momentum.</desc>
+<defs>
+<linearGradient id="barOne" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#0879ed"/><stop offset="1" stop-color="#11d8ef"/></linearGradient>
+<linearGradient id="barTwo" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#1748d7"/><stop offset="1" stop-color="#68baff"/></linearGradient>
+<linearGradient id="barThree" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5923d8"/><stop offset="1" stop-color="#d07aff"/></linearGradient>
+</defs>
+<path d="M17 66 35 56q3-2 6-2h7q6 0 6 6v48q0 7-7 7H24q-7 0-7-7V72q0-4 0-6Z" fill="url(#barOne)"/>
+<path d="M52 46 70 36q3-2 6-2h7q6 0 6 6v68q0 7-7 7H59q-7 0-7-7V52q0-4 0-6Z" fill="url(#barTwo)"/>
+<path d="M87 24 105 14q3-2 6-2h5q6 0 6 6v90q0 7-7 7H94q-7 0-7-7V30q0-4 0-6Z" fill="url(#barThree)"/>
+</svg>
