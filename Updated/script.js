@@ -290,6 +290,7 @@ function initTaskEventDelegation(){
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
     else if(action==='branches-reset') branchesResetView();
+    else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
     else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
@@ -1685,7 +1686,7 @@ function renderBranches(){
   let svg='';
   edges.forEach(function(edge){
     const a=positions[edge.from],b=positions[edge.to];
-    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line>';
+    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line><line class="branch-edge-hit" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" tabindex="0" role="button" aria-label="Open link from '+esc(items.find(n=>String(n.id)===edge.from)?.title||'note')+' to '+esc(items.find(n=>String(n.id)===edge.to)?.title||'note')+'"></line>';
   });
   items.forEach(function(n){
     const p=positions[String(n.id)],label=esc(n.title||'Untitled').slice(0,34);
@@ -1694,6 +1695,7 @@ function renderBranches(){
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
   return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
 }
+function toggleBranchesFocusMode(){window.lfBranchesFocusMode=!window.lfBranchesFocusMode;const button=document.querySelector('[data-lf-action="branches-focus-toggle"]');if(button){button.setAttribute('aria-pressed',String(window.lfBranchesFocusMode));button.classList.toggle('active',window.lfBranchesFocusMode);}showToast(window.lfBranchesFocusMode?'Focus Mode on · select a node to focus':'Focus Mode off');}
 function branchesApplyTransform(){
   const g=document.getElementById('branchesViewport');if(!g)return;
   const z=window.lfBranchesZoom||1,x=window.lfBranchesPanX||0,y=window.lfBranchesPanY||0;
@@ -1717,7 +1719,7 @@ function branchesResetView(){
 }
 function initBranchesGraph(root){
   const svg=root.querySelector('#branchesSvg'),viewport=root.querySelector('#branchesViewport');if(!svg||!viewport)return;
-  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;branchesApplyTransform();
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;window.lfBranchesFocusMode=false;window.lfBranchesFocusedId=null;branchesApplyTransform();
   let drag=null;
   const svgPoint=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());};
   const point=function(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(viewport.getScreenCTM().inverse());};
@@ -1729,6 +1731,20 @@ function initBranchesGraph(root){
       if(line.dataset.to===id){line.setAttribute('x2',x);line.setAttribute('y2',y);}
     });
   };
+  const focusNode=function(id){
+    const node=viewport.querySelector('.interactive-branch-node[data-note-id="'+CSS.escape(id)+'"]');if(!node)return;
+    window.lfBranchesFocusedId=id;root.classList.add('branch-focus-active');
+    const connected=new Set([id]);viewport.querySelectorAll('.branch-edge').forEach(line=>{if(line.dataset.from===id)connected.add(line.dataset.to);if(line.dataset.to===id)connected.add(line.dataset.from);});
+    viewport.querySelectorAll('.interactive-branch-node').forEach(item=>item.classList.toggle('branch-dimmed',!connected.has(item.dataset.noteId)));
+    viewport.querySelectorAll('.branch-edge,.branch-edge-hit').forEach(line=>line.classList.toggle('branch-dimmed',line.dataset.from!==id&&line.dataset.to!==id));
+    const matrix=node.transform.baseVal.consolidate().matrix,box=svg.viewBox.baseVal,z=window.lfBranchesZoom||1;
+    window.lfBranchesPanX=box.width/2-matrix.e*z;window.lfBranchesPanY=box.height/2-matrix.f*z;branchesApplyTransform();
+  };
+  window.lfBranchesFocusNode=focusNode;
+  viewport.querySelectorAll('.branch-edge-hit').forEach(line=>{
+    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');renderApp();requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const token='[['+target.title+']]';const at=editor.value.toLowerCase().indexOf(token.toLowerCase());if(at>=0){editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const before=editor.value.slice(0,at).split('\\n').length-1;editor.scrollTop=Math.max(0,before*(parseFloat(getComputedStyle(editor).lineHeight)||22)-editor.clientHeight/2);}});};
+    line.addEventListener('click',activate);line.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
+  });
   viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
     node.addEventListener('pointerdown',function(e){
       e.preventDefault();e.stopPropagation();const p=point(e),id=node.dataset.noteId;
@@ -1739,8 +1755,10 @@ function initBranchesGraph(root){
     node.addEventListener('click',function(e){
       if(node.dataset.moved==='1'){node.dataset.moved='0';return;}
       const n=noteStore('regular').find(function(item){return String(item.id)===String(node.dataset.noteId);});
+      if(window.lfBranchesFocusMode){focusNode(node.dataset.noteId);return;}
       if(n)selectKnowledgeNote(n.id,'regular','edit');
     });
+    node.addEventListener('dblclick',function(){const n=noteStore('regular').find(item=>String(item.id)===String(node.dataset.noteId));if(n)selectKnowledgeNote(n.id,'regular','edit');});
     node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}});
   });
   svg.addEventListener('pointerdown',function(e){
