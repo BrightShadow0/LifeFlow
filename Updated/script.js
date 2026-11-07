@@ -419,11 +419,9 @@ function initLoginAccessibility(){
       else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
-  const authRoot=document.getElementById('authScreen');
-  if(authRoot){
-    authRoot.addEventListener('click',event=>{
+  document.addEventListener('click',event=>{
       const control=event.target.closest('[data-auth-action]');
-      if(!control || !authRoot.contains(control)) return;
+      if(!control || !control.closest('#authScreen')) return;
       const handlers={
         'forgot-password':()=>showStep('stepForgot'),
         'toggle-login-password':()=>togglePasswordVisibility('loginPass',control),
@@ -446,10 +444,9 @@ function initLoginAccessibility(){
       const action=handlers[control.dataset.authAction];
       if(action) action();
     });
-    authRoot.addEventListener('input',event=>{
-      if(event.target.matches('[data-auth-input="signup-validation"]')) validateSignup1();
-    });
-  }
+  document.addEventListener('input',event=>{
+    if(event.target.matches('#authScreen [data-auth-input="signup-validation"]')) validateSignup1();
+  });
   const form=document.getElementById('loginForm');
   if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin();});
   const password=document.getElementById('loginPass'),caps=document.getElementById('capsWarning');
