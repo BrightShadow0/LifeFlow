@@ -638,6 +638,7 @@ function effectiveTheme(u){
     (u?.autoTheme ? systemTheme() : (['dark','light','forest','paper'].includes(u?.theme)?u.theme:'dark'));
 }
 function applyTheme(theme){
+  if(lifeFlowThemeController) return lifeFlowThemeController.applyTheme(theme);
   const allowed=['dark','light','forest','paper'];
   const u=currentUser();
   const actual=u?.autoTheme ? systemTheme() : (allowed.includes(theme)?theme:'dark');
@@ -1458,10 +1459,6 @@ function highlightCodeBlock(source,language){
   out+=esc(code.slice(last));
   return out;
 }
-function safeMarkdownUrl(url){return lifeFlowNoteController?.safeMarkdownUrl?.(url)||'#';}
-function safeMarkdownImageUrl(url){return lifeFlowNoteController?.safeMarkdownImageUrl?.(url)||'#';}
-function markdownInline(input){return lifeFlowNoteController?.markdownInline?.(input)||esc(input);}
-function markdownToHtmlFallback(source){return lifeFlowNoteController?.markdownToHtml(source)||'';}
 function markdownToHtml(source){return lifeFlowNoteController?.markdownToHtml(source)||'';}
 function renderMarkdownPreview(element,source){
   if(lifeFlowNoteController)lifeFlowNoteController.renderMarkdownPreview(element,source);
