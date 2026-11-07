@@ -3957,3 +3957,12 @@ body.auth-embed #authScreen .auth-brand-panel{
     font-size:clamp(64px,20vw,104px);
   }
 }
+
+
+/* Login form spacing: keep browser password-manager/autofill prompts clear of the password label. */
+#authScreen #loginEmail{
+  margin-bottom:30px;
+}
+#authScreen #stepLogin label[for="loginPass"]{
+  margin-top:24px;
+}
