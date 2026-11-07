@@ -696,10 +696,29 @@ function initializeNotesArchitecture() {
   if(!window.lfKnowledgeChangeListenerInstalled){
     window.addEventListener('lifeflow:knowledge-change',event=>{
       if(view==='branches'){
-        const scroll=document.querySelector('.branch-graph');
-        const left=scroll?.scrollLeft||0,top=scroll?.scrollTop||0;
+        const previous={
+          zoom:window.lfBranchesZoom||1,
+          panX:window.lfBranchesPanX||0,
+          panY:window.lfBranchesPanY||0,
+          focusMode:!!window.lfBranchesFocusMode,
+          focusedId:window.lfBranchesFocusedId??null,
+          scrollLeft:document.querySelector('.branch-graph')?.scrollLeft||0,
+          scrollTop:document.querySelector('.branch-graph')?.scrollTop||0
+        };
         renderApp();
-        requestAnimationFrame(()=>{const next=document.querySelector('.branch-graph');if(next){next.scrollLeft=left;next.scrollTop=top;}});
+        requestAnimationFrame(()=>{
+          window.lfBranchesZoom=previous.zoom;
+          window.lfBranchesPanX=previous.panX;
+          window.lfBranchesPanY=previous.panY;
+          window.lfBranchesFocusMode=previous.focusMode;
+          window.lfBranchesFocusedId=previous.focusedId;
+          branchesApplyTransform();
+          const button=document.querySelector('[data-lf-action="branches-focus-toggle"]');
+          if(button){button.setAttribute('aria-pressed',String(previous.focusMode));button.classList.toggle('active',previous.focusMode);}
+          if(previous.focusMode&&previous.focusedId)window.lfBranchesFocusNode?.(String(previous.focusedId));
+          const next=document.querySelector('.branch-graph');
+          if(next){next.scrollLeft=previous.scrollLeft;next.scrollTop=previous.scrollTop;}
+        });
       }
     });
     window.lfKnowledgeChangeListenerInstalled=true;
