@@ -27,7 +27,7 @@
         <div id="loginCaptcha" class="login-captcha" hidden><label for="captchaAnswer">Quick verification: <span id="captchaQuestion"></span></label><input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="Answer" aria-describedby="captchaHelp captchaAnswerError">
           <small id="captchaAnswerError" class="auth-field-error" role="status" aria-live="polite" hidden></small><small id="captchaHelp">Complete this check after repeated sign-in attempts.</small></div>
         <div id="loginError" class="notice auth-error" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
-        <button class="primary auth-submit" id="loginSubmit" type="submit" style="width:100%"><span class="submit-label">Sign in</span><span class="submit-spinner" aria-hidden="true"></span></button>
+        <button class="primary auth-submit" id="loginSubmit" type="submit"><span class="submit-label">Sign in</span><span class="submit-spinner" aria-hidden="true"></span></button>
       </form>
       <div class="oauth-divider"><span>OR CONTINUE WITH</span></div>
       <div class="oauth-row" id="oauthRow" aria-label="Alternative sign-in options"></div>
@@ -38,52 +38,52 @@
     <div id="stepSignup1" class="authstep">
       <div class="stepdots"><span class="on"></span><span></span><span></span></div>
       <label class="auth-sr-only" for="signupEmail">Email address</label><input id="signupEmail" name="email" type="email" autocomplete="email" aria-describedby="emailHint" placeholder="Email address" data-auth-input="signup-validation" required>
-      <div id="emailHint" class="notice" style="display:none"></div>
+      <div id="emailHint" class="notice auth-inline-error" hidden></div>
       <div class="auth-password-wrap"><input id="signupPass" name="new-password" type="password" autocomplete="new-password" aria-describedby="passHint" placeholder="Choose a password" data-auth-input="signup-validation" required><button type="button" class="password-eye" aria-label="Show password" aria-pressed="false" title="Show password" data-auth-action="toggle-signup-password"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
-      <div id="signupError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <div class="strength-bar"><div class="strength-fill" id="strengthFill" style="width:0%"></div></div>
-      <div id="passHint" class="notice" style="display:none"></div>
-      <button class="primary" id="s1Next" data-auth-action="signup-next-step-2" style="width:100%" disabled>Next</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" data-auth-action="signup-back-to-login">Back to login</button></div>
+      <div id="signupError" class="notice auth-inline-error" hidden></div>
+      <div class="strength-bar"><div class="strength-fill" id="strengthFill" data-score="0"></div></div>
+      <div id="passHint" class="notice auth-inline-error" hidden></div>
+      <button class="primary" id="s1Next" data-auth-action="signup-next-step-2" disabled>Next</button>
+      <div class="auth-button-row"><button class="linklike" data-auth-action="signup-back-to-login">Back to login</button></div>
     </div>
     <div id="stepSignup2" class="authstep">
       <div class="stepdots"><span class="on"></span><span class="on"></span><span></span></div>
       <input id="signupName" placeholder="Display name">
       <input id="signupBio" placeholder="Short bio (optional)">
-      <button class="primary" data-auth-action="signup-next-step-3" style="width:100%">Next</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" data-auth-action="signup-back-step-1">Back</button></div>
+      <button class="primary" data-auth-action="signup-next-step-3">Next</button>
+      <div class="auth-button-row"><button class="linklike" data-auth-action="signup-back-step-1">Back</button></div>
     </div>
     <div id="stepSignup3" class="authstep">
       <div class="stepdots"><span class="on"></span><span class="on"></span><span class="on"></span></div>
       <input id="signupWorkspace" placeholder="Workspace name (e.g. My Life)">
-      <button class="primary" data-auth-action="signup-submit" style="width:100%">Create account</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" data-auth-action="signup-back-step-2">Back</button></div>
+      <button class="primary" data-auth-action="signup-submit">Create account</button>
+      <div class="auth-button-row"><button class="linklike" data-auth-action="signup-back-step-2">Back</button></div>
       <div class="notice">Stored in this browser only — passwords are salted and hashed, never saved in plaintext. Still not a real server database.</div>
     </div>
     <div id="stepVerify" class="authstep">
       <div class="notice">Activation link sent to <span id="verifyEmailLabel"></span> (simulated — no real email is sent).</div>
       <div class="notice" id="verifyTokenDisplay"></div>
-      <button class="primary" data-auth-action="verify-submit" style="width:100%">Click activation link</button>
+      <button class="primary" data-auth-action="verify-submit">Click activation link</button>
     </div>
     <div id="stepForgot" class="authstep">
       <input id="forgotEmail" placeholder="Enter email address">
-      <div id="forgotError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary" data-auth-action="reset-request" style="width:100%">Send reset link</button>
-      <div style="margin-top:8px;text-align:center"><button class="linklike" data-auth-action="forgot-back-to-login">Back to login</button></div>
+      <div id="forgotError" class="notice auth-inline-error" hidden></div>
+      <button class="primary" data-auth-action="reset-request">Send reset link</button>
+      <div class="auth-button-row"><button class="linklike" data-auth-action="forgot-back-to-login">Back to login</button></div>
     </div>
     <div id="stepSent" class="authstep">
       <div class="notice">Backend verified account. One-time reset token generated and "emailed" (simulated below). It expires in 15 minutes.</div>
       <div class="notice" id="tokenDisplay"></div>
-      <button class="primary" data-auth-action="reset-open" style="width:100%">Click reset link</button>
+      <button class="primary" data-auth-action="reset-open">Click reset link</button>
     </div>
     <div id="stepReset" class="authstep">
       <input id="newPass" type="password" placeholder="Create new password">
-      <div id="resetError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary" data-auth-action="reset-submit" style="width:100%">Update password</button>
+      <div id="resetError" class="notice auth-inline-error" hidden></div>
+      <button class="primary" data-auth-action="reset-submit">Update password</button>
     </div>
     <div id="stepDone" class="authstep">
       <div class="notice">Password updated.</div>
-      <button class="primary" data-auth-action="reset-back-to-login" style="width:100%">Login again</button>
+      <button class="primary" data-auth-action="reset-back-to-login">Login again</button>
     </div>
     </div>
 </div>

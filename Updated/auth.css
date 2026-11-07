@@ -183,3 +183,15 @@ body.auth-embed #authScreen .auth-brand-panel{
 #authScreen .oauth-mark svg{display:block;width:100%;height:100%}
 #authScreen .auth-brand-tagline{user-select:text}
 #authScreen input[aria-invalid="true"]{border-color:#ff8792!important;box-shadow:0 0 0 2px #ff879233!important}
+
+/* Form presentation uses classes and the hidden attribute rather than inline style attributes. */
+#authScreen [hidden]{display:none!important}
+#authScreen .authstep>.primary,
+#authScreen .auth-submit{width:100%}
+#authScreen .auth-button-row{margin-top:8px;text-align:center}
+#authScreen .auth-inline-error{color:var(--danger);background:transparent;border:1px solid var(--danger)}
+#authScreen .strength-fill[data-score="0"]{width:0%;background:var(--danger)}
+#authScreen .strength-fill[data-score="1"]{width:25%;background:var(--danger)}
+#authScreen .strength-fill[data-score="2"]{width:50%;background:var(--warn)}
+#authScreen .strength-fill[data-score="3"]{width:75%;background:var(--ok)}
+#authScreen .strength-fill[data-score="4"]{width:100%;background:var(--ok)}

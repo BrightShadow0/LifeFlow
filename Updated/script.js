@@ -185,11 +185,11 @@ function showStep(id){
   const step=document.getElementById(id);if(!step)return;step.classList.add('active');
   const captions={stepLogin:['Welcome back.','Sign in to access your personal planning workspace.'],stepSignup1:['Create an account.','First, choose your email and password.'],stepSignup2:['Make it yours.','Add a name to your workspace.'],stepSignup3:['Your workspace.','One last step before you start planning.'],stepVerify:['Verify your account.','This activation is simulated in the browser.'],stepForgot:['Reset your password.','Enter the email you used to sign up.'],stepSent:['Reset link ready.','This simulated link expires in 15 minutes.'],stepReset:['New password.','Use at least eight characters.'],stepDone:['Password updated.','Return to sign in.']};
   const caption=captions[id]||captions.stepLogin;const heading=document.getElementById('authTitle');heading.textContent=caption[0];heading.setAttribute('tabindex','-1');document.getElementById('authSubtitle').textContent=caption[1];requestAnimationFrame(()=>{const target=step.querySelector('input:not([type=hidden]),button:not([disabled])')||heading;target.focus({preventScroll:true});});
-  ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.style.display='none'; });
+  ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.hidden=true; });
   if(typeof setLoginError==='function')setLoginError('');
 }
-function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
-function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.hidden=false; el.style.display='block'; }
+function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.hidden=false; }
+function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.hidden=false; }
 function getUsers(){ try{ return JSON.parse(localStorage.getItem('lifeflow2_users')||'{}'); }catch(e){ return {}; } }
 function saveUsers(u){ localStorage.setItem('lifeflow2_users', JSON.stringify(u)); }
 function newUserRecord(email, extra){
@@ -209,16 +209,16 @@ function validateSignup1(){
   const passHint = document.getElementById('passHint');
   const users = getUsers();
   let emailOk = false;
-  if(!email){ emailHint.style.display='none'; }
-  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ emailHint.textContent='Invalid email format.'; emailHint.style.display='block'; }
+  if(!email){ emailHint.hidden=true; }
+  else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ emailHint.textContent='Invalid email format.'; emailHint.hidden=false; }
   else if(users[email]){
     const ex = users[email];
     emailHint.textContent = ex.deletedAt
       ? 'That email belongs to an account scheduled for deletion. Log in to keep it, or reset all app data from the Danger Zone.'
       : 'That email already has an account. Log in instead, or use Forgot password on the login screen.';
-    emailHint.style.display='block';
+    emailHint.hidden=false;
   }
-  else{ emailHint.style.display='none'; emailOk = true; }
+  else{ emailHint.hidden=true; emailOk = true; }
 
   let score = 0;
   if(pass.length>=8) score++;
@@ -226,12 +226,10 @@ function validateSignup1(){
   if(/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score++;
   if(/[^A-Za-z0-9]/.test(pass)) score++;
   const fill = document.getElementById('strengthFill');
-  const pct = (score/4)*100;
-  fill.style.width = pct+'%';
-  fill.style.background = score<=1?'var(--danger)':score<=2?'var(--warn)':'var(--ok)';
+  fill.dataset.score=String(score);
   const passOk = pass.length>=8;
-  if(pass && !passOk){ passHint.textContent='Password must be at least 8 characters.'; passHint.style.display='block'; }
-  else{ passHint.style.display='none'; }
+  if(pass && !passOk){ passHint.textContent='Password must be at least 8 characters.'; passHint.hidden=false; }
+  else{ passHint.hidden=true; }
 
   document.getElementById('s1Next').disabled = !(emailOk && passOk);
 }
@@ -269,7 +267,7 @@ async function doSignup(){
   }catch(err){
     if(error){
       error.textContent=err && err.message ? err.message : 'Could not create the account. Please try again.';
-      error.style.display='block';
+      error.hidden=false;
     }else{
       alert(err && err.message ? err.message : 'Could not create the account. Please try again.');
     }
@@ -435,8 +433,8 @@ function setLoginError(message,fieldId){
   const general=document.getElementById('loginError');
   const map={loginEmail:'loginEmailError',loginPass:'loginPassError',captchaAnswer:'captchaAnswerError'};
   Object.entries(map).forEach(([id,errorId])=>{const field=document.getElementById(id),err=document.getElementById(errorId);if(field)field.removeAttribute('aria-invalid');if(err){err.textContent='';err.hidden=true;}});
-  if(fieldId&&map[fieldId]){const field=document.getElementById(fieldId),err=document.getElementById(map[fieldId]);if(field)field.setAttribute('aria-invalid','true');if(err){err.textContent=message;err.hidden=!message;}if(general){general.textContent='';general.hidden=true;general.style.display='none';}return;}
-  if(general){general.textContent=message;general.hidden=!message;general.style.display=message?'block':'none';}
+  if(fieldId&&map[fieldId]){const field=document.getElementById(fieldId),err=document.getElementById(map[fieldId]);if(field)field.setAttribute('aria-invalid','true');if(err){err.textContent=message;err.hidden=!message;}if(general){general.textContent='';general.hidden=true;}return;}
+  if(general){general.textContent=message;general.hidden=!message;}
 }
 async function doLogin(){
   if(loginAttemptsInProgress)return;
@@ -560,7 +558,7 @@ function doLogout(){
   document.getElementById('app').style.display='none';
   document.getElementById('authScreen').style.display='block';
   resetAuthViewport();
-  document.getElementById('oauthNotice').style.display='none';
+  document.getElementById('oauthNotice').hidden=true;
   showStep('stepLogin');
   requestAnimationFrame(resetAuthViewport);
 }
