@@ -294,6 +294,8 @@ function initTaskEventDelegation(){
     else if(action==='note-context-rename'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');requestAnimationFrame(()=>beginKnowledgeNoteRename(id));}
     else if(action==='note-context-delete'){const id=control.dataset.noteId;closeNoteContextMenu();deleteKnowledgeNote('regular',id);}
     else if(action==='note-context-close') closeNoteContextMenu();
+    else if(action==='folder-context-rename'){const name=control.dataset.folderName;closeNoteContextMenu();const next=window.prompt('Rename folder',name);if(next&&lifeFlowNoteController?.renameFolder(name,next)){showToast('Folder renamed');renderApp();}else if(next)showToast('Folder name is invalid or already exists');}
+    else if(action==='folder-context-delete'){const name=control.dataset.folderName;closeNoteContextMenu();if(window.confirm('Delete “'+name+'”? Notes in this folder will be moved to Unfiled.')){lifeFlowNoteController?.deleteFolder(name);renderApp();}}
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
     else if(action==='branches-reset') branchesResetView();
     else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
@@ -409,6 +411,8 @@ function initTaskEventDelegation(){
   });
 }
 document.addEventListener('contextmenu',event=>{
+  const folder=event.target.closest?.('[data-lf-folder-context]');
+  if(folder){event.preventDefault();openFolderContextMenu(event,folder.dataset.folderName);return;}
   const item=event.target.closest?.('[data-lf-note-context]');
   if(!item){closeNoteContextMenu();return;}
   event.preventDefault();openNoteContextMenu(event,item.dataset.noteId);
@@ -1620,6 +1624,12 @@ function scheduleNotesSearch(control){
   },140);
 }
 function closeNoteContextMenu(){document.getElementById('lfNoteContextMenu')?.remove();}
+function openFolderContextMenu(event,name){
+  closeNoteContextMenu();if(!name)return;
+  const menu=document.createElement('div');menu.id='lfNoteContextMenu';menu.className='note-context-menu';menu.setAttribute('role','menu');menu.setAttribute('aria-label','Folder actions');
+  menu.innerHTML='<div class="note-context-label">FOLDER</div><button type="button" role="menuitem" data-lf-action="folder-context-rename" data-folder-name="'+esc(name)+'" '+(name==='Unfiled'?'disabled':'')+'>Rename folder</button><button type="button" role="menuitem" class="danger" data-lf-action="folder-context-delete" data-folder-name="'+esc(name)+'" '+(name==='Unfiled'?'disabled':'')+'>Delete folder</button>';
+  document.body.appendChild(menu);const width=Math.min(230,Math.max(180,window.innerWidth-16)),height=menu.offsetHeight||120,left=Math.max(8,Math.min(Number(event.clientX)||8,window.innerWidth-width-8)),top=Math.max(8,Math.min(Number(event.clientY)||8,window.innerHeight-height-8));menu.style.left=left+'px';menu.style.top=top+'px';
+}
 function openNoteContextMenu(event,noteId){
   closeNoteContextMenu();
   const note=noteStore('regular').find(item=>String(item.id)===String(noteId));if(!note)return;
