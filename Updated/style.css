@@ -4125,3 +4125,200 @@ body.auth-embed #authScreen .auth-brand-panel{
   color:var(--text)!important;
   background:var(--accent-soft)!important;
 }
+
+
+/* --------------------------------------------------------------------------
+   Workspace theme consistency pass (all LifeFlow palettes and appearances).
+   Keep every workspace component tied to the active CSS tokens. This block is
+   deliberately scoped to #app so Why LifeFlow and Login Terminal stay isolated.
+   -------------------------------------------------------------------------- */
+
+/* Shared text and surface tokens */
+#app,
+#app .app-content,
+#app .card,
+#app .card h2,
+#app .card h3,
+#app .card p,
+#app .card label,
+#app .card small,
+#app .app-top h1,
+#app .app-top p,
+#app .empty,
+#app .task .title,
+#app .cal-day,
+#app .dow,
+#app .col h3,
+#app .kcard,
+#app .stat,
+#app .event{
+  color:var(--text);
+}
+#app .app-sidebar{
+  background:var(--card)!important;
+  border-right-color:var(--border)!important;
+}
+#app .card,
+#app .task,
+#app .stat,
+#app .col,
+#app .kcard,
+#app .event,
+#app .empty-soft,
+#app .cal-day{
+  border-color:var(--border);
+}
+#app .task,
+#app .stat,
+#app .col,
+#app .kcard,
+#app .event,
+#app .empty-soft{
+  background:var(--panel2, var(--card))!important;
+}
+#app .progress-track{
+  background:color-mix(in srgb,var(--border) 72%,var(--card))!important;
+}
+#app .progress-track span{background:var(--accent)!important}
+#app .cal-grid{border-color:var(--border)!important}
+#app .cal-day{
+  background:var(--card)!important;
+  border-right:1px solid var(--border)!important;
+  border-bottom:1px solid var(--border)!important;
+}
+#app .cal-day.today{
+  background:var(--accent-soft)!important;
+  border:0!important;
+  box-shadow:inset 0 0 0 2px var(--accent)!important;
+}
+#app .cal-day.today .dnum{color:var(--accent)!important}
+#app .cal-day .citem{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+  border:1px solid color-mix(in srgb,var(--accent) 20%,var(--border));
+}
+
+/* Notices, including the calendar's drag-to-reschedule instruction */
+#app .notice,
+:root[data-theme="light"] #app .notice,
+:root[data-theme="paper"] #app .notice,
+:root[data-theme="dark"] #app .notice,
+:root[data-theme="forest"] #app .notice{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+  border:1px solid var(--border)!important;
+}
+#app .notice strong,
+#app .notice b{color:var(--text)!important}
+
+/* Account tier and task labels use palette-aware badges, not legacy green/blue. */
+#app .badge,
+#app .tag{
+  background:var(--accent-soft)!important;
+  color:var(--accent)!important;
+  border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));
+}
+#app .badge.Free{
+  background:var(--panel2)!important;
+  color:var(--muted)!important;
+  border-color:var(--border)!important;
+}
+#app .badge.Premium,
+#app .badge.TeamAdmin{
+  background:var(--accent-soft)!important;
+  color:var(--accent)!important;
+}
+
+/* Form controls, including native file-picker labels and dropdown text */
+#app input,
+#app select,
+#app textarea,
+#app .profile-file-input{
+  color:var(--text)!important;
+  background:var(--card)!important;
+  border-color:var(--border)!important;
+  color-scheme:inherit;
+}
+#app input::placeholder,
+#app textarea::placeholder{color:var(--muted)!important;opacity:1}
+#app select option{background:var(--card);color:var(--text)}
+#app .profile-file-input::file-selector-button{
+  background:var(--accent-soft)!important;
+  color:var(--accent)!important;
+  border:1px solid var(--border)!important;
+}
+#app .hbtn,
+#app .time-fields button,
+#app .time-edit button,
+#app .clock-footer button{
+  background:var(--panel2, var(--card))!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+#app button.primary,
+#app .subnav button.active,
+#app .knowledge-switch button.active{
+  background:var(--accent)!important;
+  border-color:var(--accent)!important;
+  color:#fff!important;
+}
+#app .subnav button:not(.active){color:var(--muted)!important}
+#app input:focus,
+#app select:focus,
+#app textarea:focus{
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)!important;
+}
+
+/* Clock, editor and utility panels follow the same appearance tokens. */
+#app .clock-dialog,
+#app .time-edit-card,
+#app .code-toolbar,
+#app .note-editor-head,
+#app .notes-list-head{
+  background:var(--card)!important;
+  color:var(--text)!important;
+  border-color:var(--border)!important;
+}
+#app .clock-display button,
+#app .clock-dial,
+#app .clock-keyboard input{
+  background:var(--panel2, var(--card))!important;
+  color:var(--text)!important;
+}
+#app .clock-number,
+#app .clock-footer button{color:var(--text)!important}
+#app .clock-display button.active,
+#app .clock-number.selected{
+  background:var(--accent)!important;
+  color:#fff!important;
+}
+#app .toast{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+  border:1px solid var(--border);
+}
+
+/* Light appearances must never inherit dark-only utility surfaces. */
+:root[data-theme="light"] #app .app-sidebar,
+:root[data-theme="paper"] #app .app-sidebar{
+  background:var(--card)!important;
+}
+:root[data-theme="light"] #app .task,
+:root[data-theme="paper"] #app .task,
+:root[data-theme="light"] #app .stat,
+:root[data-theme="paper"] #app .stat,
+:root[data-theme="light"] #app .col,
+:root[data-theme="paper"] #app .col,
+:root[data-theme="light"] #app .kcard,
+:root[data-theme="paper"] #app .kcard,
+:root[data-theme="light"] #app .event,
+:root[data-theme="paper"] #app .event{
+  background:var(--card)!important;
+  color:var(--text)!important;
+}
+:root[data-theme="light"] #app .notice,
+:root[data-theme="paper"] #app .notice{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+}
