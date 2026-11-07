@@ -4547,8 +4547,11 @@ body::-webkit-scrollbar-corner{
 #app .notes-ear span{font-size:17px}
 #app .notes-ear small{font-size:10px;font-weight:700}
 #app .notes-ear:hover,#app .notes-ear.active{background:var(--accent);color:#fff;transform:translateX(3px)}
-#app .notes-drawer{position:absolute;z-index:7;top:0;right:0;width:min(360px,calc(100vw - 64px));height:100%;max-height:calc(100vh - 230px);min-height:520px;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 24px 70px #0005;opacity:0;visibility:hidden;pointer-events:none;transform-origin:right center;transform:perspective(1000px) rotateY(-82deg) translateX(28px) scaleX(.72);backface-visibility:hidden;transition:transform .68s cubic-bezier(.2,.78,.18,1),opacity .25s ease,visibility .68s}
-#app .notes-drawer.is-open{opacity:1;visibility:visible;pointer-events:auto;transform:perspective(1000px) rotateY(0deg) translateX(0) scaleX(1)}
+#app .notes-drawer{position:absolute;z-index:7;top:0;right:0;width:min(360px,calc(100vw - 64px));height:100%;max-height:calc(100vh - 230px);min-height:520px;overflow:hidden;border:1px solid var(--border);border-radius:48% 14px 14px 48% / 18% 14px 14px 18%;background:var(--surface);box-shadow:0 24px 70px #0005;opacity:0;visibility:hidden;pointer-events:none;transform-origin:right center;transform:perspective(1050px) rotateY(-78deg) translateX(30px) scaleX(.7);transform-style:preserve-3d;backface-visibility:hidden;transition:transform .76s cubic-bezier(.2,.78,.18,1),border-radius .76s cubic-bezier(.2,.78,.18,1),opacity .28s ease,visibility .76s}
+#app .notes-drawer:before{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 13%,transparent),transparent 24%,transparent 78%,color-mix(in srgb,var(--surface) 55%,transparent));opacity:.75;transition:opacity .5s ease}
+#app .notes-drawer-content{position:relative;z-index:3}
+#app .notes-drawer.is-open{opacity:1;visibility:visible;pointer-events:auto;border-radius:16px;transform:perspective(1050px) rotateY(0deg) translateX(0) scaleX(1)}
+#app .notes-drawer.is-open:before{opacity:0}
 #app .notes-drawer-content{height:100%;overflow:auto;padding:18px;overscroll-behavior:contain}
 #app .notes-drawer-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
 #app .notes-drawer-heading strong{display:block;font-size:17px}
