@@ -123,7 +123,7 @@ function createNotesController(options){
   function renameFolder(name,nextName){
     const folder=getFolders().find(item=>item.name===name);const clean=String(nextName||'').trim().slice(0,40);
     if(!folder||name==='Unfiled'||!clean||getFolders().some(item=>item!==folder&&item.name.toLowerCase()===clean.toLowerCase()))return false;
-    commit({folders:getFolders().map(item=>item===folder?{...item,name:clean}:item),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:clean,updatedAt:Date.now()}:note)});return true;
+    commit({folders:getFolders().map(item=>item.id===folder.id?{...item,name:clean}:item),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:clean,updatedAt:Date.now()}:note)});return true;
   }
   function deleteFolder(name){
     if(!name||name==='Unfiled'||!getFolders().some(item=>item.name===name))return false;
