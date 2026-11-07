@@ -11,6 +11,7 @@ function togglePasswordVisibility(inputId, button){
   if(button){
     button.classList.toggle('is-visible',visible);
     button.setAttribute('aria-label',visible?'Hide password':'Show password');
+    button.setAttribute('aria-pressed',visible?'true':'false');
     button.title=visible?'Hide password':'Show password';
     button.innerHTML=passwordEyeIcon(!visible);
   }
@@ -136,9 +137,10 @@ function getSession(){
   }catch(e){}
   return null;
 }
-function createSession(email){
+function createSession(email, remember=true){
   normalizeDemoProfile(email);
-  const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS};
+  const sessionDuration = remember ? SESSION_TTL_MS : 8 * 3600 * 1000;
+  const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + sessionDuration};
   localStorage.setItem('lifeflow2_session', JSON.stringify(s));
   state=loadForUser(email);
   state.currentUser=email;
@@ -260,10 +262,13 @@ function doVerify(){
 
 function redirectUri(){ return location.href.split(/[?#]/)[0]; }
 function renderOAuthButtons(){
-  document.getElementById('oauthRow').innerHTML = ['Google','Apple','GitHub'].map(p=>{
+  document.getElementById('oauthRow').innerHTML = ['Google','Apple'].map(p=>{
     const configured = !!(OAUTH_CONFIG[p.toLowerCase()] && OAUTH_CONFIG[p.toLowerCase()].clientId);
-    return `<button onclick="oauthLogin('${p}')">${p}${configured?'':' (demo)'}</button>`;
+    return `<button type="button" class="oauth-provider oauth-${p.toLowerCase()}" onclick="oauthLogin('${p}')" aria-label="Continue with ${p}${configured?'':' (local demo mode)'}"><span class="oauth-mark" aria-hidden="true">${p==='Google'?'G':'●'}</span><span>${p}${configured?'':' · Demo'}</span></button>`;
   }).join('');
+}
+function startPasskeyLogin(){
+  showOAuthNotice('Passkey sign-in needs a registered WebAuthn relying-party server and a server-generated challenge. This browser-only build cannot verify passkeys yet.');
 }
 async function oauthLogin(provider){
   const cfg = OAUTH_CONFIG[provider.toLowerCase()];
@@ -367,30 +372,107 @@ async function handleOAuthCallback(){
   enterApp();
 }
 
-async function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const pass = document.getElementById('loginPass').value;
-  const users = getUsers();
-  const u = users[email];
-
-  if(!u){ showAuthError('loginError','No account exists for that email here. Accounts are stored per browser and per web address (localhost vs file:// vs a different port each have separate storage) - sign up here, or go back to the address where you created it.'); return; }
-
-  // Empty password is a validation error, not an incorrect-password error.
-  if(!pass){ showAuthError('loginError','Password cannot be empty.'); return; }
-
-  if(!u.passwordHash && typeof u.password === 'string'){
-    if(u.password !== pass){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
-    u.passwordHash = await hashPassword(pass);
-    delete u.password;
-    saveUsers(users);
+let loginCaptchaAnswer = null;
+let loginAttemptsInProgress = false;
+function readLoginGuard(){try{return JSON.parse(sessionStorage.getItem('lifeflow_login_guard')||'{}');}catch(e){return {};}}
+function writeLoginGuard(guard){try{sessionStorage.setItem('lifeflow_login_guard',JSON.stringify(guard));}catch(e){}}
+function updateLoginCaptcha(){
+  const guard=readLoginGuard(),box=document.getElementById('loginCaptcha');
+  if(guard.failures>=4){
+    if(loginCaptchaAnswer===null){
+      const a=2+Math.floor(Math.random()*8),b=1+Math.floor(Math.random()*8);
+      loginCaptchaAnswer=String(a+b);
+      document.getElementById('captchaQuestion').textContent=a+' + '+b+' = ?';
+    }
+    box.hidden=false;
+  }else{
+    box.hidden=true;loginCaptchaAnswer=null;
+    const answer=document.getElementById('captchaAnswer');if(answer)answer.value='';
   }
-  if(!u.passwordHash){ showAuthError('loginError','This account signs in with '+(u.oauthProvider||'an identity provider')+'. Use that button instead of a password.'); return; }
-  if(!(await verifyPassword(pass, u))){ showAuthError('loginError','Wrong password for this account. Try again or use Forgot password.'); return; }
-  if(u.deletedAt){ showAuthError('loginError','This account is scheduled for deletion and can no longer be accessed.'); return; }
-  if(!u.verified){ pendingVerify = {email, token: randomToken(12), expiresAt: Date.now() + 15*60*1000}; document.getElementById('verifyEmailLabel').textContent=email; document.getElementById('verifyTokenDisplay').textContent='Account not verified yet — click below to simulate verifying.'; showStep('stepVerify'); return; }
-  createSession(email);
-  enterApp();
 }
+function recordLoginFailure(){
+  const guard=readLoginGuard();guard.failures=(guard.failures||0)+1;
+  if(guard.failures>=8)guard.lockUntil=Date.now()+60000;
+  writeLoginGuard(guard);updateLoginCaptcha();
+}
+function resetLoginGuard(){writeLoginGuard({failures:0,lockUntil:0});loginCaptchaAnswer=null;updateLoginCaptcha();}
+function setLoginLoading(loading){
+  const button=document.getElementById('loginSubmit');if(!button)return;
+  button.disabled=loading;button.classList.toggle('is-loading',loading);
+  button.setAttribute('aria-busy',loading?'true':'false');
+  button.querySelector('.submit-label').textContent=loading?'Signing in…':'Sign in';
+}
+function setLoginError(message,fieldId){
+  const el=document.getElementById('loginError');el.textContent=message;el.hidden=!message;
+  ['loginEmail','loginPass','captchaAnswer'].forEach(id=>{const input=document.getElementById(id);if(input)input.removeAttribute('aria-invalid');});
+  if(fieldId){const field=document.getElementById(fieldId);if(field)field.setAttribute('aria-invalid','true');}
+}
+function findLoginUser(users,identifier){
+  if(users[identifier])return {email:identifier,user:users[identifier]};
+  const match=Object.entries(users).find(([,u])=>(u.name||'').trim().toLowerCase()===identifier);
+  return match?{email:match[0],user:match[1]}:null;
+}
+async function doLogin(){
+  if(loginAttemptsInProgress)return;
+  const emailInput=document.getElementById('loginEmail'),passInput=document.getElementById('loginPass');
+  const identifier=emailInput.value.trim().toLowerCase(),pass=passInput.value;
+  setLoginError('');
+  if(!identifier){setLoginError('Enter your email or username.','loginEmail');emailInput.focus();return;}
+  if(identifier.includes('@')&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)){
+    setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
+  }
+  if(!identifier.includes('@')&&!/^[a-z0-9._-]{3,32}$/.test(identifier)){
+    setLoginError('Enter a valid username (3–32 letters, numbers, dots, underscores or hyphens).','loginEmail');emailInput.focus();return;
+  }
+  if(!pass){setLoginError('Enter your password.','loginPass');passInput.focus();return;}
+  const guard=readLoginGuard();
+  if(guard.lockUntil&&Date.now()<guard.lockUntil){
+    setLoginError('Too many failed attempts. Please wait '+Math.ceil((guard.lockUntil-Date.now())/1000)+' seconds before trying again.');return;
+  }
+  if((guard.failures||0)>=4){
+    const answer=document.getElementById('captchaAnswer').value.trim();
+    if(!answer){setLoginError('Complete the quick verification before signing in.','captchaAnswer');return;}
+    if(answer!==loginCaptchaAnswer){loginCaptchaAnswer=null;updateLoginCaptcha();setLoginError('Verification answer was incorrect. Try the new check.','captchaAnswer');return;}
+  }
+  loginAttemptsInProgress=true;setLoginLoading(true);
+  try{
+    await new Promise(resolve=>setTimeout(resolve,250));
+    const users=getUsers(),found=findLoginUser(users,identifier);
+    if(!found){recordLoginFailure();setLoginError('We could not find an account with those details. Check them or create an account.','loginEmail');return;}
+    const {email,user:u}=found;
+    if(!u.passwordHash&&typeof u.password==='string'){
+      if(u.password!==pass){recordLoginFailure();setLoginError('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
+      u.passwordHash=await hashPassword(pass);delete u.password;saveUsers(users);
+    }
+    if(!u.passwordHash){setLoginError('This account uses '+(u.oauthProvider||'an identity provider')+'. Choose that provider to continue.');return;}
+    if(!(await verifyPassword(pass,u))){recordLoginFailure();setLoginError('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
+    if(u.deletedAt){setLoginError('This account is scheduled for deletion and can no longer be accessed.');return;}
+    if(!u.verified){
+      pendingVerify={email,token:randomToken(12),expiresAt:Date.now()+15*60*1000};
+      document.getElementById('verifyEmailLabel').textContent=email;
+      document.getElementById('verifyTokenDisplay').textContent='Account not verified yet — click below to simulate verifying.';
+      showStep('stepVerify');return;
+    }
+    resetLoginGuard();createSession(email,document.getElementById('rememberMe').checked);enterApp();
+  }catch(error){setLoginError('Sign-in could not be completed. Please try again.');}
+  finally{loginAttemptsInProgress=false;setLoginLoading(false);}
+}
+function initLoginAccessibility(){
+  const form=document.getElementById('loginForm');
+  if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin();});
+  const password=document.getElementById('loginPass'),caps=document.getElementById('capsWarning');
+  if(password&&caps){
+    const check=event=>{caps.hidden=!(event.getModifierState&&event.getModifierState('CapsLock'));};
+    password.addEventListener('keydown',check);password.addEventListener('keyup',check);password.addEventListener('blur',()=>{caps.hidden=true;});
+  }
+  ['loginEmail','loginPass','captchaAnswer'].forEach(id=>{
+    const input=document.getElementById(id);
+    if(input)input.addEventListener('input',()=>{if(input.getAttribute('aria-invalid')==='true')setLoginError('');});
+  });
+  updateLoginCaptcha();
+}
+document.addEventListener('DOMContentLoaded',initLoginAccessibility);
+
 function enterApp(){
   if(window.self!==window.top && new URLSearchParams(window.location.search).get('embed')==='1'){
     window.parent.postMessage({type:'lifeflow-authenticated'},window.location.origin);
