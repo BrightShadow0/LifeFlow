@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
-<title id="title">LifeFlow</title><desc id="desc">Three ascending geometric bars representing progress and momentum.</desc>
+<title id="title">LifeFlow mark</title><desc id="desc">Three ascending, softly rounded slanted bars in cyan, blue and violet.</desc>
 <defs>
-<linearGradient id="barOne" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#0879ed"/><stop offset="1" stop-color="#11d8ef"/></linearGradient>
-<linearGradient id="barTwo" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#1748d7"/><stop offset="1" stop-color="#68baff"/></linearGradient>
-<linearGradient id="barThree" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5923d8"/><stop offset="1" stop-color="#d07aff"/></linearGradient>
+ <linearGradient id="cyan" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#0879ef"/><stop offset=".55" stop-color="#00c9f5"/><stop offset="1" stop-color="#4df5ff"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#173bdc"/><stop offset=".55" stop-color="#315dff"/><stop offset="1" stop-color="#8cb5ff"/></linearGradient>
+ <linearGradient id="violet" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5114d4"/><stop offset=".55" stop-color="#a43ff2"/><stop offset="1" stop-color="#ef9bff"/></linearGradient>
 </defs>
-<path d="M17 66 35 56q3-2 6-2h7q6 0 6 6v48q0 7-7 7H24q-7 0-7-7V72q0-4 0-6Z" fill="url(#barOne)"/>
-<path d="M52 46 70 36q3-2 6-2h7q6 0 6 6v68q0 7-7 7H59q-7 0-7-7V52q0-4 0-6Z" fill="url(#barTwo)"/>
-<path d="M87 24 105 14q3-2 6-2h5q6 0 6 6v90q0 7-7 7H94q-7 0-7-7V30q0-4 0-6Z" fill="url(#barThree)"/>
+<path d="M13 104V79c0-4 2-8 6-10l26-14c7-4 14 1 14 8v41c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#cyan)"/>
+<path d="M62 104V57c0-4 2-8 6-10l26-14c7-4 14 1 14 8v65c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#blue)"/>
+<path d="M111 104V34c0-4 2-8 6-10l26-14c7-4 14 1 14 8v81c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#violet)" transform="translate(-49 0)"/>
 </svg>
