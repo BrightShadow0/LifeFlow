@@ -1842,12 +1842,13 @@ body::-webkit-scrollbar{
 /* New Task layout: fit the form to its card instead of forcing desktop minimum widths. */
 .new-task-card .new-task-fields{
   display:grid;
-  grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(100px,.7fr);
-  gap:14px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(110px,.72fr);
+  gap:16px;
   width:100%;
   align-items:end;
   box-sizing:border-box;
 }
+.new-task-card .new-task-fields>input:first-child{grid-column:1 / -1}
 .new-task-card .new-task-fields>input,
 .new-task-card .task-field-select,
 .new-task-card .task-field-select select{
@@ -1909,7 +1910,7 @@ body::-webkit-scrollbar{
 }
 @media(max-width:800px){
   .new-task-card .new-task-fields,
-  .new-task-card .repeat-interval{grid-template-columns:1fr 1fr;}
+  .new-task-card .repeat-interval{grid-template-columns:repeat(2,minmax(0,1fr));}
   .new-task-card .new-task-fields>input:first-child{grid-column:1 / -1;}
 }
 @media(max-width:560px){
