@@ -4578,3 +4578,12 @@ body::-webkit-scrollbar-corner{
  #app .notes-drawer.is-open{transform:none}
  #app .notes-ear{transition:none}
 }
+
+
+/* Global Finder: compact, readable snippets and progressive result loading. */
+#app .notes-flat-items .note-item{align-items:flex-start;gap:5px;}
+#app .notes-search-result-snippet{display:block;width:100%;color:var(--muted);font-size:11px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;}
+#app .notes-search-result-snippet .search-snippet-folder{display:inline-block;margin-right:3px;color:var(--text);font-weight:700;}
+#app .search-snippet-icon{display:inline-block;margin-right:3px;color:var(--accent);}
+#app .notes-search-more{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--accent);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+#app .notes-search-more:hover{border-color:var(--accent);background:var(--accent-soft);}
