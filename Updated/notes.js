@@ -8,7 +8,7 @@ function createNotesController(options){
   if(!stateManager||typeof stateManager.setState!=='function')throw new TypeError('Notes controller requires a StateManager.');
   const snapshot=()=>stateManager.getState();
   const noteKey=kind=>kind==='code'?'codeNotes':'notes';
-  let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null;
+  let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null,graphLinksCache=null;
   function notifyKnowledgeChange(reason){
     if(typeof global.dispatchEvent!=='function'||typeof global.CustomEvent!=='function')return;
     global.dispatchEvent(new global.CustomEvent('lifeflow:knowledge-change',{detail:{reason,revision:regularNotesRevision}}));
@@ -18,6 +18,7 @@ function createNotesController(options){
       regularNotesRevision++;
       searchIndexCache=null;
       backlinkIndexCache=null;
+      graphLinksCache=null;
     }
     stateManager.setState({...getCurrentState(),...patch});
   }
@@ -121,6 +122,29 @@ function createNotesController(options){
   }
   function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}
   function setSearchQuery(query){commit({searchQuery:String(query||'')});}
+  function getGraphLinks(){
+    if(graphLinksCache&&graphLinksCache.revision===regularNotesRevision)return graphLinksCache.edges;
+    const notes=getNotes('regular'),byTitle=new Map(),seen=new Set(),edges=[];
+    notes.forEach(note=>{
+      const title=String(note.title||'').trim().toLowerCase();
+      if(title&&!byTitle.has(title))byTitle.set(title,note);
+    });
+    notes.forEach(source=>{
+      const content=String(source.content||'').replace(/\r\n?/g,'\n');
+      const pattern=/\[\[\s*([^\]\n]+?)\s*\]\]/g;let match;
+      while((match=pattern.exec(content))){
+        const title=match[1].trim().toLowerCase(),target=byTitle.get(title);
+        if(!target||String(target.id)===String(source.id))continue;
+        const key=[String(source.id),String(target.id)].sort().join('|');
+        if(seen.has(key))continue;
+        seen.add(key);
+        const prefix=content.slice(0,match.index),line=prefix.split('\n').length-1;
+        const context=content.split('\n')[line]?.trim()||'';
+        edges.push({from:String(source.id),to:String(target.id),fromTitle:source.title||'Untitled',toTitle:target.title||'Untitled',token:match[0],line,context:context.length>220?context.slice(0,217)+'…':context});
+      }
+    });
+    graphLinksCache={revision:regularNotesRevision,edges};return edges;
+  }
   function getBacklinkIndex(){
     if(backlinkIndexCache&&backlinkIndexCache.revision===regularNotesRevision)return backlinkIndexCache.index;
     const index=new Map();
@@ -355,7 +379,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
