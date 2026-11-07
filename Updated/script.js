@@ -1690,8 +1690,14 @@ function renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
-  const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote);})||items[0];
-  const mode=window.lfNoteView==='preview'?'preview':'edit';
+  const kind='regular',items=noteStore(kind);
+  const selectedId=lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote;
+  const selected=items.find(function(n){return String(n.id)===String(selectedId);})||items[0];
+  if(selected&&String(selected.id)!==String(selectedId)){
+    lifeFlowNoteController?.select(selected.id,'regular',lifeFlowNoteController.noteView());
+    window.lfSelectedNote=selected.id;
+  }
+  const mode=(lifeFlowNoteController?.noteView() || window.lfNoteView)==='preview'?'preview':'edit';
   let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
   html+='<div class="notes-items">';
   items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
@@ -1731,12 +1737,13 @@ function renderBranches(){
   const hash=function(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
   const labelWidth=function(n){return Math.max(92,Math.min(250,String(n.title||'Untitled').slice(0,34).length*7.2));};
   items.forEach(function(n,i){
-    if(!Number.isFinite(n.graphX)||!Number.isFinite(n.graphY)){
+    let x=n.graphX,y=n.graphY;
+    if(!Number.isFinite(x)||!Number.isFinite(y)){
       const h=hash(String(n.id||n.noteCode||i));
-      n.graphX=90+(h%10000)/10000*(width-180);
-      n.graphY=80+((h>>>10)%10000)/10000*(height-160);changed=true;
+      x=90+(h%10000)/10000*(width-180);
+      y=80+((h>>>10)%10000)/10000*(height-160);changed=true;
     }
-    positions[String(n.id)]={x:n.graphX,y:n.graphY};
+    positions[String(n.id)]={x,y};
   });
   // Relax overlapping node labels while retaining the user's saved layout.
   for(let pass=0;pass<220;pass++){
@@ -1759,7 +1766,7 @@ function renderBranches(){
     });
     if(!moved)break;
   }
-  items.forEach(function(n){const p=positions[String(n.id)];if(Math.abs(n.graphX-p.x)>.5||Math.abs(n.graphY-p.y)>.5)changed=true;n.graphX=p.x;n.graphY=p.y;});
+  items.forEach(function(n){const p=positions[String(n.id)];if(!Number.isFinite(n.graphX)||!Number.isFinite(n.graphY)||Math.abs(n.graphX-p.x)>.5||Math.abs(n.graphY-p.y)>.5)changed=true;});
   if(changed&&lifeFlowNoteController){
     lifeFlowNoteController.updateAll('regular',current=>current.map(note=>{
       const position=positions[String(note.id)];
