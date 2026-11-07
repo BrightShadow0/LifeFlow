@@ -13,7 +13,7 @@ function renderFolderCategory(options){
     const active=String(note.id)===String(selectedId)?' active':'';
     return '<button class="note-item'+active+'" data-lf-action="note-select" data-lf-note-context aria-haspopup="menu" data-note-id="'+id+'"><strong>'+title+'</strong><small>'+date+'</small></button>';
   }).join('');
-  return '<section class="note-folder" data-folder-name="'+escapeKnowledgeHtml(folderName)+'"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+name+'"><span>'+icon+'</span><strong>'+name+'</strong><small>'+notes.length+'</small><span class="folder-chevron">'+(collapsed?'▸':'▾')+'</span></button>'+rows+'</section>';
+  return '<section class="note-folder" data-folder-name="'+escapeKnowledgeHtml(folderName)+'"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+name+'" data-lf-folder-context aria-haspopup="menu"><span>'+icon+'</span><strong>'+name+'</strong><small>'+notes.length+'</small><span class="folder-chevron">'+(collapsed?'▸':'▾')+'</span></button>'+rows+'</section>';
 }
 function renderSearchSnippet(options){
   const {folder='',snippet='',terms=[]}=options||{};
