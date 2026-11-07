@@ -4842,3 +4842,44 @@ body::-webkit-scrollbar-corner{
 #app #main .cal-legend .done-dot{background:var(--ok)}
 #app #main .cal-legend .clear-dot{background:var(--border)}
 @media(max-width:600px){#app #main .cal-live-summary{gap:6px}#app #main .cal-live-summary span{padding:6px 8px;font-size:10px}#app #main .cal-filter{padding:7px 8px;font-size:10px}#app #main .cal-legend{gap:9px}}
+
+/* Calendar's two-purpose navigation: month overview and chronological agenda. */
+#app #main .cal-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#app #main .cal-topbar .cal-head{margin:0;flex:1;min-width:190px}
+#app #main .cal-mode-switch{display:flex;gap:4px;padding:4px;border:1px solid var(--border);border-radius:10px;background:var(--panel2,var(--card))}
+#app #main .cal-mode{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:11px;font-weight:750;cursor:pointer}
+#app #main .cal-mode.active{background:var(--accent-soft);color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+#app #main .cal-context-strip{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 15px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);color:var(--muted);font-size:11px}
+#app #main .cal-context-strip strong{color:var(--text);font-size:13px;margin-right:3px}
+#app #main .cal-day{position:relative;padding-bottom:10px}
+#app #main .cal-day-load{position:absolute;left:7px;right:7px;bottom:5px;height:2px;border-radius:2px;background:var(--border);overflow:hidden}
+#app #main .cal-day-load span{display:block;height:100%;border-radius:2px;background:var(--accent)}
+#app #main .cal-more{display:block;padding:2px 5px;color:var(--muted);font-size:9px;font-weight:750}
+#app #main .cal-agenda{display:grid;gap:0}
+#app #main .cal-agenda-day{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;padding:15px 0;border-bottom:1px solid var(--border)}
+#app #main .cal-agenda-date{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+#app #main .cal-agenda-date strong{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+#app #main .cal-agenda-date span{color:var(--text);font-size:25px;font-weight:800;line-height:1.15}
+#app #main .cal-agenda-date small{color:var(--muted);font-size:10px}
+#app #main .cal-agenda-items{display:grid;gap:7px;min-width:0}
+#app #main .cal-agenda-item{display:grid;grid-template-columns:100px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--panel2,var(--card));min-width:0}
+#app #main .cal-agenda-time{color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+#app #main .cal-agenda-title{color:var(--text);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+#app #main .cal-agenda-status{color:var(--muted);font-size:9px;white-space:nowrap}
+#app #main .cal-agenda-item.is-done{opacity:.58}
+#app #main .cal-agenda-item.is-done .cal-agenda-title{text-decoration:line-through}
+#app #main .cal-agenda-empty{display:grid;gap:5px;justify-items:center;padding:48px 16px;color:var(--muted);text-align:center}
+#app #main .cal-agenda-empty strong{color:var(--text);font-size:14px}
+#app #main .cal-agenda-empty span{font-size:11px}
+@media(max-width:600px){
+ #app #main .cal-topbar{align-items:stretch}
+ #app #main .cal-topbar .cal-head{min-width:100%}
+ #app #main .cal-mode-switch{width:100%}
+ #app #main .cal-mode{flex:1;justify-content:center}
+ #app #main .cal-context-strip{gap:10px;font-size:10px}
+ #app #main .cal-agenda-day{grid-template-columns:48px minmax(0,1fr);gap:8px}
+ #app #main .cal-agenda-date span{font-size:21px}
+ #app #main .cal-agenda-item{grid-template-columns:1fr auto;gap:4px 8px;padding:9px}
+ #app #main .cal-agenda-time{grid-column:1/-1}
+ #app #main .cal-agenda-status{grid-column:2;grid-row:2}
+}
