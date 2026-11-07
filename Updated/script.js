@@ -281,7 +281,11 @@ function initTaskEventDelegation(){
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
-    else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');\n    else if(action==='note-add-folder') createKnowledgeFolder();\n    else if(action==='note-folder-toggle') {lifeFlowNoteController?.toggleFolder(control.dataset.folderName);renderApp();}\n    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
+    else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');
+    else if(action==='note-add-folder') createKnowledgeFolder();
+    else if(action==='note-folder-toggle') {lifeFlowNoteController?.toggleFolder(control.dataset.folderName);renderApp();}
+    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
+    else if(action==='note-backlink'){openKnowledgeBacklink(control.dataset.noteId,Number(control.dataset.lineIndex));}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
@@ -308,7 +312,8 @@ function initTaskEventDelegation(){
     if(action==='repeat-fields') updateRepeatIntervalFields();
     else if(action==='task-done') toggleDone(Number(control.dataset.taskId));
     else if(action==='subtask-done') toggleSub(Number(control.dataset.taskId),Number(control.dataset.subtaskId));
-    else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);\n    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
+    else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);
+    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='avatar-change') onAvatarChange(event);
     else if(action==='profile-timezone'){saveLocalizationField('timezone',control.value);lfSecretAction(control.value==='-'?'timezoneDash':'timezoneOther');}
     else if(action==='profile-language'){saveLocalizationField('language',control.value);lfSecretAction(control.value==='Cobalt'?'languageCobalt':'languageOther');}
@@ -1560,6 +1565,20 @@ function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!nam
   const current=main.querySelector('.notes-list'),next=temp.querySelector('.notes-list');
   if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
 }
+function openKnowledgeBacklink(id,lineIndex){
+  selectKnowledgeNote(id,'regular','edit');
+  renderApp();
+  requestAnimationFrame(()=>{
+    const editor=document.getElementById('kn_content');if(!editor)return;
+    const lines=editor.value.replace(/\r\n?/g,'\n').split('\n');
+    const safeLine=Math.max(0,Math.min(lines.length-1,lineIndex));
+    const start=lines.slice(0,safeLine).reduce((sum,line)=>sum+line.length+1,0);
+    const end=start+(lines[safeLine]||'').length;
+    editor.focus({preventScroll:true});editor.setSelectionRange(start,end);
+    const lineHeight=parseFloat(getComputedStyle(editor).lineHeight)||22;
+    editor.scrollTop=Math.max(0,safeLine*lineHeight-editor.clientHeight/2);
+  });
+}
 function renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
@@ -1587,6 +1606,8 @@ function renderNotesManager(){
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" data-note-id="'+selected.id+'" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
+    const backlinks=lifeFlowNoteController?.getBacklinks(selected.id)||[];
+    html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+(backlinks.length?backlinks.map(item=>'<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+item.id+'" data-line-index="'+item.line+'"><strong>'+esc(item.title)+'</strong><span>'+esc(item.context)+'</span></button>').join(''):'<p class="note-backlinks-empty">No notes link here yet.</p>')+'</section>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
   return html;
