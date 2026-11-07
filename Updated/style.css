@@ -4589,3 +4589,53 @@ body::-webkit-scrollbar-corner{
 #app .search-snippet-icon{display:inline-block;margin-right:3px;color:var(--accent);}
 #app .notes-search-more{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--accent);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
 #app .notes-search-more:hover{border-color:var(--accent);background:var(--accent-soft);}
+
+
+/* Notes workspace: persistent inline note identity and light-mode contrast */
+#app .note-identity{
+  display:flex;flex-direction:column;gap:7px;
+  margin:0 0 14px;padding:14px 16px;
+  border:1px solid var(--border);border-radius:12px;
+  background:var(--card);box-shadow:0 3px 12px rgba(24,32,51,.045);
+}
+#app .note-identity label{
+  color:var(--muted);font-size:10px;font-weight:800;
+  letter-spacing:.12em;text-transform:uppercase;
+}
+#app .note-title-edit{
+  display:block;width:100%;min-width:0;box-sizing:border-box;
+  padding:10px 12px;border:1px solid var(--border);border-radius:9px;
+  background:var(--panel2);color:var(--text);font:inherit;
+  font-size:18px;font-weight:750;line-height:1.35;
+  outline:none;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+#app .note-title-edit::placeholder{color:var(--muted);opacity:.85}
+#app .note-title-edit:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);
+}
+#app .markdown-toolbar{align-items:center}
+:root[data-theme="light"] #app .note-identity,
+:root[data-theme="paper"] #app .note-identity{
+  background:#fff;border-color:#d9dce5;color:#202438;
+}
+:root[data-theme="light"] #app .note-title-edit,
+:root[data-theme="paper"] #app .note-title-edit{
+  background:#f8f9fc;color:#202438;border-color:#d5d9e4;
+}
+:root[data-theme="light"] #app .note-identity label,
+:root[data-theme="paper"] #app .note-identity label{color:#626b7d}
+:root[data-theme="light"] #app .note-title-edit::placeholder,
+:root[data-theme="paper"] #app .note-title-edit::placeholder{color:#7b8495;opacity:1}
+:root[data-theme="light"] #app .markdown-toolbar button,
+:root[data-theme="paper"] #app .markdown-toolbar button{color:#34394a}
+:root[data-theme="light"] #app .markdown-toolbar button.active,
+:root[data-theme="paper"] #app .markdown-toolbar button.active{
+  background:#eee8ff;color:#5934a6;border-color:#cfc0f1;
+}
+:root[data-theme="light"] #app .note-folder-move,
+:root[data-theme="paper"] #app .note-folder-move{color:#626b7d}
+:root[data-theme="light"] #app .note-folder-move select,
+:root[data-theme="paper"] #app .note-folder-move select{
+  background:#fff;color:#202438;border-color:#d5d9e4;
+}
