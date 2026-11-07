@@ -114,6 +114,39 @@
 <script src="tasks.js?v=20261107-ui-decoupling-r1t3" defer></script>
 <script src="notes.js?v=20261107-backlinks1" defer></script>
 <script src="ui.js?v=20261107-ui-decoupling-r1t3" defer></script>
-<script src="script.js?v=20261107-password-toggle-fix1" defer></script>
+<script src="script.js?v=20261107-auth-bridge1" defer></script>
+<script>
+  // Capture auth interactions before any other handler or native form navigation.
+  document.addEventListener('submit', function(event) {
+    if (!event.target || event.target.id !== 'loginForm') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (typeof window.doLogin === 'function') {
+      Promise.resolve(window.doLogin()).catch(function(error) {
+        console.error('LifeFlow sign-in failed:', error);
+        var notice = document.getElementById('loginError');
+        if (notice) { notice.textContent = 'Sign-in could not be completed. Please refresh and try again.'; notice.hidden = false; }
+      });
+    } else {
+      var notice = document.getElementById('loginError');
+      if (notice) { notice.textContent = 'LifeFlow authentication did not load. Refresh the page and try again.'; notice.hidden = false; }
+    }
+  }, true);
+  document.addEventListener('click', function(event) {
+    var button = event.target && event.target.closest ? event.target.closest('[data-auth-action="toggle-login-password"], [data-auth-action="toggle-signup-password"]') : null;
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    var inputId = button.dataset.authAction === 'toggle-login-password' ? 'loginPass' : 'signupPass';
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var visible = input.type === 'password';
+    input.type = visible ? 'text' : 'password';
+    button.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+    button.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    button.title = visible ? 'Hide password' : 'Show password';
+    button.classList.toggle('is-visible', visible);
+  }, true);
+</script>
 </body>
 </html>
