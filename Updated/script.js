@@ -280,7 +280,7 @@ function initTaskEventDelegation(){
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
-    else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');
+    else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');\n    else if(action==='note-add-folder') createKnowledgeFolder();\n    else if(action==='note-folder-toggle') {lifeFlowNoteController?.toggleFolder(control.dataset.folderName);renderApp();}\n    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
@@ -1543,7 +1543,7 @@ function openKnowledgeNoteByTitle(title){
   if(noteStore('regular').length>before)showToast('Created note: '+note.title);
   renderApp();
 }
-function renderNotesManager(){
+function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}\nfunction renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
@@ -1555,9 +1555,10 @@ function renderNotesManager(){
     window.lfSelectedNote=selected.id;
   }
   const mode=(lifeFlowNoteController?.noteView() || window.lfNoteView)==='preview'?'preview':'edit';
-  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
+  const folders=lifeFlowNoteController?.getFolders()||[{id:'unfiled',name:'Unfiled',icon:'▤'}],collapsed=new Set(state.collapsedFolders||[]);
+  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button type="button" data-lf-action="note-add-folder">+ Folder</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
   html+='<div class="notes-items">';
-  items.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
+  folders.forEach(function(folder){const group=items.filter(n=>(n.folder||'Unfiled')===folder.name);html+='<section class="note-folder"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+esc(folder.name)+'"><span>'+esc(folder.icon||'▣')+'</span><strong>'+esc(folder.name)+'</strong><small>'+group.length+'</small><span class="folder-chevron">'+(collapsed.has(folder.name)?'▸':'▾')+'</span></button>';if(!collapsed.has(folder.name)){group.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});}html+='</section>';});
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
