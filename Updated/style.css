@@ -4543,14 +4543,14 @@ body::-webkit-scrollbar-corner{
 #app .notes-editor-stage>.note-editor .note-content-surface{min-height:clamp(420px,58vh,760px)}
 #app .notes-editor-stage>.note-editor .regular-note-source{min-height:clamp(400px,55vh,720px)}
 #app .notes-panel-tabs{position:absolute;z-index:8;right:-1px;top:34px;display:flex;flex-direction:column;gap:7px;transform:translateX(100%)}
-#app .notes-ear{display:flex;align-items:center;gap:7px;min-width:43px;max-width:110px;padding:10px 11px;border:1px solid var(--border);border-left:0;border-radius:0 10px 10px 0;background:var(--surface);color:var(--text);box-shadow:5px 4px 14px #0002;cursor:pointer;writing-mode:horizontal-tb;transition:background .22s ease,color .22s ease,transform .22s ease}
+#app .notes-ear{display:flex;align-items:center;gap:7px;min-width:43px;max-width:110px;padding:10px 11px;border:1px solid var(--border);border-left:0;border-radius:0 10px 10px 0;background:var(--card);color:var(--text);box-shadow:5px 4px 14px #0003;cursor:pointer;writing-mode:horizontal-tb;transition:background .22s ease,color .22s ease,transform .22s ease}
 #app .notes-ear span{font-size:17px}
 #app .notes-ear small{font-size:10px;font-weight:700}
 #app .notes-ear:hover,#app .notes-ear.active{background:var(--accent);color:#fff;transform:translateX(3px)}
-#app .notes-drawer{position:absolute;z-index:7;top:0;right:0;width:min(360px,calc(100vw - 64px));height:100%;max-height:calc(100vh - 230px);min-height:520px;overflow:hidden;border:1px solid var(--border);border-radius:48% 14px 14px 48% / 18% 14px 14px 18%;background:var(--surface);box-shadow:0 24px 70px #0005;opacity:0;visibility:hidden;pointer-events:none;transform-origin:right center;transform:perspective(1050px) rotateY(-78deg) translateX(30px) scaleX(.7);transform-style:preserve-3d;backface-visibility:hidden;transition:transform .76s cubic-bezier(.2,.78,.18,1),border-radius .76s cubic-bezier(.2,.78,.18,1),opacity .28s ease,visibility .76s}
-#app .notes-drawer:before{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 13%,transparent),transparent 24%,transparent 78%,color-mix(in srgb,var(--surface) 55%,transparent));opacity:.75;transition:opacity .5s ease}
+#app .notes-drawer{position:absolute;z-index:7;top:0;right:0;width:min(360px,calc(100vw - 64px));height:100%;max-height:calc(100vh - 230px);min-height:520px;overflow:hidden;border:1px solid var(--border);border-radius:48% 14px 14px 48% / 18% 14px 14px 18%;background:var(--card);color:var(--text);box-shadow:0 24px 70px #0005;opacity:0;visibility:hidden;pointer-events:none;transform-origin:right center;transform:perspective(1050px) rotateY(-78deg) translateX(30px) scaleX(.7);transform-style:preserve-3d;backface-visibility:hidden;transition:width .48s cubic-bezier(.2,.78,.18,1),transform .76s cubic-bezier(.2,.78,.18,1),border-radius .76s cubic-bezier(.2,.78,.18,1),opacity .28s ease,visibility .76s}
+#app .notes-drawer:before{content:none}
 #app .notes-drawer-content{position:relative;z-index:3}
-#app .notes-drawer.is-open{opacity:1;visibility:visible;pointer-events:auto;border-radius:16px;transform:perspective(1050px) rotateY(0deg) translateX(0) scaleX(1)}
+#app .notes-drawer.is-open{width:min(520px,calc(100vw - 64px));opacity:1;visibility:visible;pointer-events:auto;border-radius:16px;transform:perspective(1050px) rotateY(0deg) translateX(0) scaleX(1)}
 #app .notes-drawer.is-open:before{opacity:0}
 #app .notes-drawer-content{height:100%;overflow:auto;padding:18px;overscroll-behavior:contain}
 #app .notes-drawer-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
@@ -4569,7 +4569,8 @@ body::-webkit-scrollbar-corner{
  #app .notes-panel-tabs{right:0;top:18px;transform:translateX(0) translateX(100%)}
  #app .notes-ear{padding:9px 8px;min-width:38px}
  #app .notes-ear small{display:none}
- #app .notes-drawer{width:min(340px,calc(100vw - 58px));max-height:calc(100dvh - 220px);min-height:420px}
+ #app .notes-drawer{width:min(300px,calc(100vw - 58px));max-height:calc(100dvh - 220px);min-height:420px}
+ #app .notes-drawer.is-open{width:min(480px,calc(100vw - 58px))}
  #app .notes-editor-stage>.note-editor{min-height:calc(100dvh - 225px)}
 }
 @media(prefers-reduced-motion:reduce){
