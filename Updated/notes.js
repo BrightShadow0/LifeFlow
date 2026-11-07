@@ -120,6 +120,15 @@ function createNotesController(options){
     const folder=getFolders().find(item=>item.name===name);if(!folder)return false;
     return updateFields('regular',id,{folder:folder.name});
   }
+  function renameFolder(name,nextName){
+    const folder=getFolders().find(item=>item.name===name);const clean=String(nextName||'').trim().slice(0,40);
+    if(!folder||name==='Unfiled'||!clean||getFolders().some(item=>item!==folder&&item.name.toLowerCase()===clean.toLowerCase()))return false;
+    commit({folders:getFolders().map(item=>item===folder?{...item,name:clean}:item),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:clean,updatedAt:Date.now()}:note)});return true;
+  }
+  function deleteFolder(name){
+    if(!name||name==='Unfiled'||!getFolders().some(item=>item.name===name))return false;
+    commit({folders:getFolders().filter(item=>item.name!==name),notes:getNotes('regular').map(note=>note.folder===name?{...note,folder:'Unfiled',updatedAt:Date.now()}:note),collapsedFolders:(snapshot().collapsedFolders||[]).filter(item=>item!==name)});return true;
+  }
   function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}
   function setSearchQuery(query){commit({searchQuery:String(query||'')});}
   function getGraphLinks(){
@@ -388,7 +397,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,renameFolder,deleteFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
