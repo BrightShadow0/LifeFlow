@@ -738,6 +738,8 @@ function initializeNotesArchitecture() {
 function selectedKnowledgeNote(kind='regular') { return lifeFlowNoteController?.getSelectedNote(kind) || null; }
 function selectKnowledgeNote(id,kind='regular',mode='edit') {
   if(!lifeFlowNoteController)return;
+  if(view==='branches'&&window.lfBranchesFocusMode)window.lfBranchesFocusedId=id==null?null:String(id);
+  else if(view!=='branches'){window.lfBranchesFocusMode=false;window.lfBranchesFocusedId=null;}
   lifeFlowNoteController.select(id,kind,mode);
   window.lfSelectedNote=id??null;window.lfNoteMode=kind;window.lfNoteView=mode;
   renderApp();
