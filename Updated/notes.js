@@ -8,7 +8,15 @@ function createNotesController(options){
   if(!stateManager||typeof stateManager.setState!=='function')throw new TypeError('Notes controller requires a StateManager.');
   const snapshot=()=>stateManager.getState();
   const noteKey=kind=>kind==='code'?'codeNotes':'notes';
-  function commit(patch){stateManager.setState({...getCurrentState(),...patch});}
+  let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null;
+  function commit(patch){
+    if(Object.prototype.hasOwnProperty.call(patch||{},'notes')){
+      regularNotesRevision++;
+      searchIndexCache=null;
+      backlinkIndexCache=null;
+    }
+    stateManager.setState({...getCurrentState(),...patch});
+  }
   function getNotes(kind){const list=snapshot()[noteKey(kind)];return Array.isArray(list)?list:[];}
   function selectedId(){return snapshot().selectedNoteId??null;}
   function selectedKind(){return snapshot().selectedNoteKind||'regular';}
@@ -106,38 +114,48 @@ function createNotesController(options){
   }
   function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}
   function setSearchQuery(query){commit({searchQuery:String(query||'')});}
+  function getBacklinkIndex(){
+    if(backlinkIndexCache&&backlinkIndexCache.revision===regularNotesRevision)return backlinkIndexCache.index;
+    const index=new Map();
+    getNotes('regular').forEach(source=>{
+      const lines=String(source.content||'').replace(/\r\n?/g,'\n').split('\n');
+      lines.forEach((line,lineNumber)=>{
+        const pattern=/\[\[\s*([^\]]+?)\s*\]\]/g;let match;
+        while((match=pattern.exec(line))){
+          const key=match[1].trim().toLowerCase();if(!key)continue;
+          if(!index.has(key))index.set(key,[]);
+          const context=line.trim();
+          index.get(key).push({id:source.id,title:source.title||'Untitled',line:lineNumber,context:context.length>220?context.slice(0,217)+'…':context});
+        }
+      });
+    });
+    backlinkIndexCache={revision:regularNotesRevision,index};return index;
+  }
   function getBacklinks(targetId){
     const target=getNotes('regular').find(note=>String(note.id)===String(targetId));
     if(!target)return [];
     const title=String(target.title||'').trim().toLowerCase();
     if(!title)return [];
-    const found=[];
-    getNotes('regular').forEach(source=>{
-      if(String(source.id)===String(targetId))return;
-      const lines=String(source.content||'').replace(/\r\n?/g,'\n').split('\n');
-      lines.forEach((line,index)=>{
-        const pattern=/\[\[\s*([^\]]+?)\s*\]\]/g;let match;
-        while((match=pattern.exec(line))){
-          if(match[1].trim().toLowerCase()===title){
-            const context=line.trim();
-            found.push({id:source.id,title:source.title||'Untitled',line:index,context:context.length>220?context.slice(0,217)+'…':context});
-          }
-        }
-      });
+    return (getBacklinkIndex().get(title)||[]).filter(item=>String(item.id)!==String(targetId));
+  }
+  function getSearchIndex(){
+    if(searchIndexCache&&searchIndexCache.revision===regularNotesRevision)return searchIndexCache.docs;
+    const docs=getNotes('regular').map(note=>{
+      const title=String(note.title||''),content=String(note.content||''),tags=Array.isArray(note.tags)?note.tags.join(' '):String(note.tags||''),folder=String(note.folder||'Unfiled');
+      return {id:note.id,title,content,tags,folder,tl:title.toLowerCase(),cl:content.toLowerCase(),tg:tags.toLowerCase(),fl:folder.toLowerCase(),flat:content.replace(/\s+/g,' ').trim()};
     });
-    return found;
+    searchIndexCache={revision:regularNotesRevision,docs};return docs;
   }
   function searchNotes(query){
     const terms=String(query||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
     if(!terms.length)return [];
     const results=[];
-    getNotes('regular').forEach(note=>{
-      const title=String(note.title||''),content=String(note.content||''),tags=Array.isArray(note.tags)?note.tags.join(' '):String(note.tags||''),folder=String(note.folder||'Unfiled');
-      const tl=title.toLowerCase(),cl=content.toLowerCase(),tg=tags.toLowerCase(),fl=folder.toLowerCase();
+    getSearchIndex().forEach(note=>{
+      const {title,content,folder,tl,cl,tg,fl,flat}=note;
       if(!terms.every(term=>(tl+' '+cl+' '+tg+' '+fl).includes(term)))return;
       let score=0;
       terms.forEach(term=>{if(tl.includes(term))score+=100;if(cl.includes(term))score+=12;if(tg.includes(term))score+=8;if(fl.includes(term))score+=5;});
-      const match=terms.find(term=>cl.includes(term)),flat=content.replace(/\s+/g,' ').trim();
+      const match=terms.find(term=>cl.includes(term));
       const index=match?flat.toLowerCase().indexOf(match):0,start=Math.max(0,index-65),end=Math.min(flat.length,index+145);
       const snippet=flat?(start?'…':'')+flat.slice(start,end)+(end<flat.length?'…':''):'Folder: '+folder;
       results.push({id:note.id,title,folder,score,snippet,terms});
