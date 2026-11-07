@@ -146,8 +146,9 @@
       applyWorkspaceAppearance(currentUserWithPreferences());
       renderApp();
     }
+    let atmosphereCleanup = null;
     function initWorkspaceAtmosphereInteraction() {
-      if (document.documentElement.dataset.atmosphereInteractionReady === 'true') return;
+      if (atmosphereCleanup || document.documentElement.dataset.atmosphereInteractionReady === 'true') return;
       const app = document.getElementById('app');
       if (!app) return;
       document.documentElement.dataset.atmosphereInteractionReady = 'true';
@@ -173,9 +174,18 @@
         app.style.setProperty('--lf-depth-x', ((x - 0.5) * 10).toFixed(2) + 'px');
         app.style.setProperty('--lf-depth-y', ((y - 0.5) * 8).toFixed(2) + 'px');
       };
+      const onReducedChange = () => { if (reduced?.matches) resetPointer(); };
       window.addEventListener('pointermove', updatePointer, { passive: true });
       window.addEventListener('blur', resetPointer);
-      reduced?.addEventListener?.('change', () => { if (reduced.matches) resetPointer(); });
+      reduced?.addEventListener?.('change', onReducedChange);
+      atmosphereCleanup = () => {
+        window.removeEventListener('pointermove', updatePointer);
+        window.removeEventListener('blur', resetPointer);
+        reduced?.removeEventListener?.('change', onReducedChange);
+        atmosphereCleanup = null;
+        delete document.documentElement.dataset.atmosphereInteractionReady;
+        resetPointer();
+      };
     }
 
     const unsubscribeProfile = profileState.subscribe('profile', () => {
@@ -191,6 +201,7 @@
       if (destroyed) return;
       destroyed = true;
       unsubscribeProfile();
+      atmosphereCleanup?.();
     }
     return {
       profile, updatePreferences, effectiveTheme, applyTheme, themeLabel,
