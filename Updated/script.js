@@ -1449,7 +1449,7 @@ function renderCommandResults(){
   const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" data-lf-action="command-view" data-view="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
   const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,5).map(t=>'<button type="button" class="command-result" data-lf-action="command-task" data-task-id="'+t.id+'"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
   const noteResults=lifeFlowNoteController?.searchNotes(q)||[];
-  const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,snippet:note.snippet,terms:note.terms})+'</button>');
+  const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,folderIcon:note.folderIcon,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
   const otherResults=(matches.concat(tasks)).slice(0,5).join('');
   host.innerHTML=heading+noteHtml.join('')+otherResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
