@@ -401,29 +401,25 @@ async function handleOAuthCallback(){
 
 let loginCaptchaAnswer = null;
 let loginAttemptsInProgress = false;
+let loginLockTimer = null;
 function readLoginGuard(){try{return JSON.parse(localStorage.getItem('lifeflow_login_guard')||'{}');}catch(e){return {};}}
 function writeLoginGuard(guard){try{localStorage.setItem('lifeflow_login_guard',JSON.stringify(guard));}catch(e){}}
 function updateLoginCaptcha(){
-  const guard=readLoginGuard(),box=document.getElementById('loginCaptcha');
-  if(guard.failures>=4){
-    if(loginCaptchaAnswer===null){
-      const a=2+Math.floor(Math.random()*8),b=1+Math.floor(Math.random()*8);
-      loginCaptchaAnswer=String(a+b);
-      document.getElementById('captchaQuestion').textContent=a+' + '+b+' = ?';
-    }
-    box.hidden=false;
-  }else{
-    box.hidden=true;loginCaptchaAnswer=null;
-    const answer=document.getElementById('captchaAnswer');if(answer)answer.value='';
-  }
+  const guard=readLoginGuard(),box=document.getElementById('loginCaptcha');if(!box)return;
+  if(guard.failures>=4){if(loginCaptchaAnswer===null){const a=2+Math.floor(Math.random()*8),b=1+Math.floor(Math.random()*8);loginCaptchaAnswer=String(a+b);document.getElementById('captchaQuestion').textContent=a+' + '+b+' = ?';}box.hidden=false;}
+  else{box.hidden=true;loginCaptchaAnswer=null;const answer=document.getElementById('captchaAnswer');if(answer)answer.value='';}
 }
-function recordLoginFailure(){
-  const guard=readLoginGuard();guard.failures=(guard.failures||0)+1;
-  if(guard.failures>=8)guard.lockUntil=Date.now()+60000;
-  writeLoginGuard(guard);updateLoginCaptcha();
+function updateLoginLockUI(){
+  const guard=readLoginGuard(),remaining=Math.max(0,(guard.lockUntil||0)-Date.now()),button=document.getElementById('loginSubmit');
+  if(button){const locked=remaining>0;button.disabled=locked||loginAttemptsInProgress;button.setAttribute('aria-disabled',locked?'true':'false');const label=button.querySelector('.submit-label');if(label&&!loginAttemptsInProgress)label.textContent=locked?'Try again in '+Math.ceil(remaining/1000)+'s':'Sign in';}
+  const error=document.getElementById('loginError');if(remaining>0&&error&&!error.hidden)error.textContent='Too many attempts. Try again in '+Math.ceil(remaining/1000)+' seconds.';
+  if(remaining<=0&&guard.lockUntil){guard.lockUntil=0;guard.failures=0;writeLoginGuard(guard);if(error&&error.textContent.includes('Too many attempts'))setLoginError('');if(button&&!loginAttemptsInProgress){button.disabled=false;button.setAttribute('aria-disabled','false');const label=button.querySelector('.submit-label');if(label)label.textContent='Sign in';}}
+  return remaining;
 }
-function resetLoginGuard(){writeLoginGuard({failures:0,lockUntil:0});loginCaptchaAnswer=null;updateLoginCaptcha();}
-function failLogin(message,fieldId){recordLoginFailure();const guard=readLoginGuard();setLoginError(guard.lockUntil>Date.now()?'Too many failed attempts. Sign-in is temporarily locked for 60 seconds.':message,fieldId);}
+function startLoginLockCountdown(){if(loginLockTimer)clearInterval(loginLockTimer);updateLoginLockUI();loginLockTimer=setInterval(()=>{if(updateLoginLockUI()<=0){clearInterval(loginLockTimer);loginLockTimer=null;}},250);}
+function recordLoginFailure(){const guard=readLoginGuard();guard.failures=(guard.failures||0)+1;if(guard.failures>=8){guard.lockLevel=Math.min(guard.lockLevel||0,5)+1;const delay=Math.min(900000,30000*Math.pow(2,guard.lockLevel-1));guard.lockUntil=Date.now()+delay;guard.failures=0;}writeLoginGuard(guard);updateLoginCaptcha();startLoginLockCountdown();}
+function resetLoginGuard(){writeLoginGuard({failures:0,lockUntil:0,lockLevel:0});loginCaptchaAnswer=null;updateLoginCaptcha();startLoginLockCountdown();}
+function failLogin(){recordLoginFailure();const guard=readLoginGuard();setLoginError(guard.lockUntil>Date.now()?'Too many failed attempts. Sign-in is temporarily locked.':'Email or password is incorrect. Please try again.');}
 function setLoginLoading(loading){
   const button=document.getElementById('loginSubmit');if(!button)return;
   button.disabled=loading;button.classList.toggle('is-loading',loading);
@@ -436,27 +432,22 @@ function setLoginError(message,fieldId){
   el.style.display=message?'block':'none';
   if(fieldId){const field=document.getElementById(fieldId);if(field)field.setAttribute('aria-invalid','true');}
 }
-function findLoginUser(users,identifier){
-  if(users[identifier])return {email:identifier,user:users[identifier]};
-  const match=Object.entries(users).find(([,u])=>(u.name||'').trim().toLowerCase()===identifier);
-  return match?{email:match[0],user:match[1]}:null;
-}
 async function doLogin(){
   if(loginAttemptsInProgress)return;
   const emailInput=document.getElementById('loginEmail'),passInput=document.getElementById('loginPass');
   const identifier=emailInput.value.trim().toLowerCase(),pass=passInput.value;
   setLoginError('');
-  if(!identifier){setLoginError('Enter your email or username.','loginEmail');emailInput.focus();return;}
+  if(!identifier){setLoginError('Enter your email address.','loginEmail');emailInput.focus();return;}
   if(identifier.includes('@')&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)){
     setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
   }
-  if(!identifier.includes('@')&&!/^[a-z0-9._-]{3,32}$/.test(identifier)){
-    setLoginError('Enter a valid username (3–32 letters, numbers, dots, underscores or hyphens).','loginEmail');emailInput.focus();return;
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(identifier)){
+    setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
   }
   if(!pass){setLoginError('Enter your password.','loginPass');passInput.focus();return;}
   const guard=readLoginGuard();
   if(guard.lockUntil&&Date.now()<guard.lockUntil){
-    setLoginError('Too many failed attempts. Please wait '+Math.ceil((guard.lockUntil-Date.now())/1000)+' seconds before trying again.');return;
+    startLoginLockCountdown();setLoginError('Too many attempts. Try again in '+Math.ceil((guard.lockUntil-Date.now())/1000)+' seconds.');updateLoginLockUI();return;
   }
   if((guard.failures||0)>=4){
     const answer=document.getElementById('captchaAnswer').value.trim();
@@ -466,16 +457,15 @@ async function doLogin(){
   loginAttemptsInProgress=true;setLoginLoading(true);
   try{
     await new Promise(resolve=>setTimeout(resolve,250));
-    const users=getUsers(),found=findLoginUser(users,identifier);
-    if(!found){failLogin('We could not find an account with those details. Check them or create an account.','loginEmail');return;}
-    const {email,user:u}=found;
+    const users=getUsers(),u=users[identifier],email=identifier;
+    if(!u){failLogin();return;}
     if(!u.passwordHash&&typeof u.password==='string'){
-      if(u.password!==pass){failLogin('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
+      if(u.password!==pass){failLogin();return;}
       u.passwordHash=await hashPassword(pass);delete u.password;saveUsers(users);
     }
-    if(!u.passwordHash){setLoginError('This account uses '+(u.oauthProvider||'an identity provider')+'. Choose that provider to continue.');return;}
+    if(!u.passwordHash){failLogin();return;}
     if(!(await verifyPassword(pass,u))){failLogin('Incorrect email/username or password. Try again or reset your password.','loginPass');return;}
-    if(u.deletedAt){setLoginError('This account is scheduled for deletion and can no longer be accessed.');return;}
+    if(u.deletedAt){failLogin();return;}
     if(!u.verified){
       pendingVerify={email,token:randomToken(12),expiresAt:Date.now()+15*60*1000};
       document.getElementById('verifyEmailLabel').textContent=email;
@@ -499,6 +489,7 @@ function initLoginAccessibility(){
     if(input)input.addEventListener('input',()=>{if(input.getAttribute('aria-invalid')==='true')setLoginError('');});
   });
   updateLoginCaptcha();
+  startLoginLockCountdown();
 }
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
