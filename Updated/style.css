@@ -4422,6 +4422,8 @@ body::-webkit-scrollbar-corner{
 #app .backlink-item strong{font-size:11px;color:var(--accent)}
 #app .backlink-item span{font-size:11px;line-height:1.5;white-space:normal}
 #app .note-backlinks-empty{margin:0;color:var(--muted);font-size:11px}
+#app .backlink-highlight{background:var(--lime);color:#17210c;border-radius:3px;padding:0 2px;font-weight:800}
+#app .regular-note-source.backlink-jump-active{outline:2px solid var(--lime);outline-offset:3px;box-shadow:0 0 0 5px color-mix(in srgb,var(--lime) 18%,transparent);transition:box-shadow .25s ease}
 
 /* Release 2.4: interactive knowledge graph */
 #app .branch-edge-hit{stroke:transparent;stroke-width:18;fill:none;pointer-events:stroke;cursor:pointer}
