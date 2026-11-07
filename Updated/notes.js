@@ -206,34 +206,50 @@ function createNotesController(options){
   }
   function getSearchIndex(){
     if(searchIndexCache&&searchIndexCache.revision===regularNotesRevision)return searchIndexCache.docs;
+    const folders=new Map(getFolders().map(folder=>[folder.id,folder]));
     const docs=getNotes('regular').map(note=>{
-      const title=String(note.title||''),content=String(note.content||''),tags=Array.isArray(note.tags)?note.tags.join(' '):String(note.tags||''),folder=String(note.folder||'Unfiled');
-      return {id:note.id,title,content,tags,folder,tl:title.toLowerCase(),cl:content.toLowerCase(),tg:tags.toLowerCase(),fl:folder.toLowerCase(),flat:content.replace(/\s+/g,' ').trim()};
+      const title=String(note.title||'').trim(),content=String(note.content||''),tags=Array.isArray(note.tags)?note.tags.join(' '):String(note.tags||'');
+      const folder=folders.get(note.folderId)||getFolders().find(item=>item.name===note.folder)||folders.get('unfiled')||{name:'Unfiled',icon:'▤'};
+      const folderName=String(folder.name||'Unfiled'),flat=content.replace(/\\s+/g,' ').trim();
+      return {id:note.id,title,content,tags,folder:folderName,folderIcon:String(folder.icon||'▤'),tl:title.toLowerCase(),cl:content.toLowerCase(),tg:tags.toLowerCase(),fl:folderName.toLowerCase(),flat};
     });
     searchIndexCache={revision:regularNotesRevision,docs};return docs;
   }
+  function countOccurrences(source,term){
+    if(!term)return 0;
+    let count=0,index=0;
+    while((index=source.indexOf(term,index))!==-1){count++;index+=term.length;}
+    return count;
+  }
   function searchNotes(query){
-    const terms=String(query||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
-    if(!terms.length)return [];
+    const normalized=String(query||'').toLowerCase().trim().replace(/\\s+/g,' ');
+    if(!normalized)return [];
+    const terms=Array.from(new Set(normalized.split(' ').filter(Boolean)));
     const results=[];
     getSearchIndex().forEach(note=>{
-      const {title,content,tags,folder,tl,cl,tg,fl,flat}=note;
-      if(!terms.every(term=>(tl+' '+cl+' '+tg+' '+fl).includes(term)))return;
+      const {title,content,tags,folder,folderIcon,tl,cl,tg,fl,flat}=note;
+      const searchable=tl+' '+cl+' '+tg+' '+fl;
+      if(!terms.every(term=>searchable.includes(term)))return;
       let score=0;
-      terms.forEach(term=>{if(tl.includes(term))score+=100;if(cl.includes(term))score+=12;if(tg.includes(term))score+=8;if(fl.includes(term))score+=5;});
-      const contentMatch=terms.find(term=>cl.includes(term));
-      const titleMatch=terms.some(term=>tl.includes(term));
-      const tagMatch=terms.some(term=>tg.includes(term));
-      const folderMatch=terms.some(term=>fl.includes(term));
+      if(tl===normalized)score+=100;
+      else if(tl.includes(normalized))score+=50;
+      if(fl.includes(normalized))score+=20;
+      terms.forEach(term=>{score+=countOccurrences(cl,term);});
+      let matchIndex=flat.toLowerCase().indexOf(normalized);
+      let matchedTerm=normalized;
+      if(matchIndex<0){
+        const firstContentTerm=terms.find(term=>cl.includes(term));
+        if(firstContentTerm){matchedTerm=firstContentTerm;matchIndex=flat.toLowerCase().indexOf(firstContentTerm);}
+      }
       let snippet='';
-      if(contentMatch){
-        const index=flat.toLowerCase().indexOf(contentMatch),start=Math.max(0,index-65),end=Math.min(flat.length,index+145);
-        snippet=(start?'…':'')+flat.slice(start,end)+(end<flat.length?'…':'');
-      }else if(titleMatch)snippet='Title: '+title;
-      else if(tagMatch)snippet='Tags: '+tags;
-      else if(folderMatch)snippet='Folder: '+folder;
-      else snippet=flat.slice(0,145);
-      results.push({id:note.id,title,folder,score,snippet,terms});
+      if(matchIndex>=0){
+        const from=Math.max(0,matchIndex-30),to=Math.min(flat.length,matchIndex+matchedTerm.length+30);
+        snippet=(from>0?'…':'')+flat.slice(from,to)+(to<flat.length?'…':'');
+      }else if(tl.includes(normalized))snippet='Title: '+title;
+      else if(fl.includes(normalized))snippet='Folder: '+folder;
+      else if(tg.includes(normalized))snippet='Tags: '+tags;
+      else snippet=flat.slice(0,80);
+      results.push({id:note.id,title,folder,folderIcon,score,snippet,terms});
     });
     return results.sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
   }
