@@ -1556,7 +1556,8 @@ function openKnowledgeNoteByTitle(title){
   if(noteStore('regular').length>before)showToast('Created note: '+note.title);
   renderApp();
 }
-function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}\nfunction renderNotesListOnly(){
+function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}
+function renderNotesListOnly(){
   const main=document.getElementById('main');if(!main||view!=='notes')return;
   const active=document.activeElement,start=active?.selectionStart,end=active?.selectionEnd;
   const temp=document.createElement('div');temp.innerHTML=renderNotesManager();
