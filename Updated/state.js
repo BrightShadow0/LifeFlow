@@ -317,13 +317,14 @@ function archiveObject(value){return !!value&&typeof value==='object'&&!Array.is
 export function validateMasterArchive(archive){
  const errors=[],warnings=[];
  if(!archiveObject(archive))return {valid:false,errors:['The file must contain a JSON object.'],warnings,migrationRequired:false};
- if(!archiveObject(archive.metadata))errors.push('Missing metadata block.');
- if(!archiveObject(archive.data))errors.push('Missing data block.');
+ const legacyTopLevel=typeof archive.version==='string'&&Array.isArray(archive.tasks)&&archiveObject(archive.notes);
+ if(!archiveObject(archive.metadata)&&!legacyTopLevel)errors.push('Missing metadata block.');
+ if(!archiveObject(archive.data)&&!legacyTopLevel)errors.push('Missing data block.');
  if(errors.length)return {valid:false,errors,warnings,migrationRequired:false};
- const m=archive.metadata,d=archive.data;
+ const m=archive.metadata||{version:archive.version,timestamp:archive.timestamp,appVersion:archive.appVersion},d=archive.data;
  if(typeof m.version!=='string'||!m.version.trim())errors.push('Missing archive version.');
  if(!m.timestamp||Number.isNaN(Date.parse(m.timestamp)))errors.push('Invalid archive timestamp.');
- const legacy=m.version==='1.0'&&Array.isArray(archive.tasks)&&archiveObject(archive.notes);
+ const legacy=legacyTopLevel||m.version==='1.0'&&Array.isArray(archive.tasks)&&archiveObject(archive.notes);
  const migrationRequired=m.version!=='1.1'&&!legacy;
  if(migrationRequired)errors.push('This archive version is not supported by this LifeFlow version.');
  const p=legacy?archive:d,n=p.notes;
@@ -337,6 +338,7 @@ export function validateMasterArchive(archive){
 }
 export function normalizeMasterArchive(a){
  const v=validateMasterArchive(a);if(!v.valid)throw new Error(v.errors.join(' '));
+ if(!a.metadata&&typeof a.version==='string')return {metadata:{version:'1.1',timestamp:a.timestamp,appVersion:a.appVersion||'1.0.0'},data:{profile:a.profile||{},preferences:a.preferences||{},folders:a.folders||[],notes:a.notes,tasks:a.tasks,noteLinks:a.noteLinks||[],state:{tasks:a.tasks,notes:a.notes.regular,codeNotes:a.notes.code,folders:a.folders||[],noteLinks:a.noteLinks||[]}}};
  if(a.metadata.version==='1.0')return {metadata:{...a.metadata,version:'1.1'},data:{profile:a.profile||{},preferences:a.preferences||{},folders:a.folders||[],notes:a.notes,tasks:a.tasks,noteLinks:a.noteLinks||[],state:{...(a.state||{}),tasks:a.tasks,notes:a.notes.regular,codeNotes:a.notes.code,folders:a.folders||[],noteLinks:a.noteLinks||[]}}};
  return a;
 }
