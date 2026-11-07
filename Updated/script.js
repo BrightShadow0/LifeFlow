@@ -280,6 +280,8 @@ function initTaskEventDelegation(){
     else if(action==='command-task'){view='list';closeCommandPalette();renderApp();requestAnimationFrame(()=>document.querySelector('[data-task-id="'+control.dataset.taskId+'"]')?.focus());}
     else if(action==='command-note'){closeCommandPalette();view='notes';selectKnowledgeNote(control.dataset.noteId,'regular','edit');}
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
+    else if(action==='note-panel-toggle'){const panel=control.dataset.notesPanel;window.lfNotesPanelOpen=!(window.lfNotesPanelOpen&&window.lfNotesPanel===panel);window.lfNotesPanel=panel;renderApp();}
+    else if(action==='note-panel-close'){window.lfNotesPanelOpen=false;renderApp();}
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
     else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');
@@ -1651,7 +1653,7 @@ function renderNotesListOnly(){
   const main=document.getElementById('main');if(!main||view!=='notes')return;
   const active=document.activeElement,start=active?.selectionStart,end=active?.selectionEnd;
   const temp=document.createElement('div');temp.innerHTML=renderNotesManager();
-  const current=main.querySelector('.notes-list'),next=temp.querySelector('.notes-list');
+  const current=main.querySelector('.notes-workspace'),next=temp.querySelector('.notes-workspace');
   if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
 }
 function openKnowledgeBacklink(id,lineIndex){
@@ -1681,24 +1683,33 @@ function renderNotesManager(){
   }
   const mode=(lifeFlowNoteController?.noteView() || window.lfNoteView)==='preview'?'preview':'edit';
   const folders=lifeFlowNoteController?.getFolders()||[{id:'unfiled',name:'Unfiled',icon:'▤'}],collapsed=new Set(state.collapsedFolders||[]);
-  let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button type="button" data-lf-action="note-add-folder">+ Folder</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
-  const searchQuery=String(state.searchQuery||''),filteredItems=searchQuery?lifeFlowNoteController.searchNotes(searchQuery).map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
-  html+='<div class="notes-search-wrap"><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search titles, content, tags or folders..." aria-label="Search notes" data-lf-input="notes-search"><span>'+filteredItems.length+' results</span></div>';
-  html+='<div class="notes-items">';
-  folders.forEach(function(folder){const group=filteredItems.filter(n=>(n.folderId||folders.find(item=>item.name===(n.folder||'Unfiled'))?.id||'unfiled')===folder.id);if(folder.id!=='unfiled'&&folder.isDefault&&group.length===0)return;html+=window.LifeFlowUIModule.renderFolderCategory({folder,notes:group,collapsed:collapsed.has(folder.name),selectedId:selected?.id??null});});
-  html+='</div></div><div class="card note-editor">';
+  const searchQuery=String(state.searchQuery||'');
+  const filteredItems=searchQuery?lifeFlowNoteController.searchNotes(searchQuery).map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
+  const activePanel=window.lfNotesPanel==='folders'?'folders':'notes';
+  const panelOpen=window.lfNotesPanelOpen===true;
+  let html='<div class="knowledge-shell notes-workspace"><div class="notes-searchbar"><label class="notes-global-search"><span aria-hidden="true">⌕</span><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search notes, folders and content..." aria-label="Search notes, folders and content" data-lf-input="notes-search"><kbd>⌘ K</kbd></label><span class="notes-search-count">'+filteredItems.length+' of '+items.length+' notes</span></div><div class="notes-editor-stage"><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div><div class="note-title-actions"><button type="button" class="note-rename-btn" data-lf-action="note-rename" data-note-id="'+selected.id+'">Rename</button><input id="kn_title_edit" class="note-title-edit" value="'+esc(selected.title||'Untitled')+'" maxlength="80" aria-label="Note title" hidden data-lf-keydown="note-title-edit" data-lf-blur="note-title-edit" data-note-id="'+selected.id+'"></div></div>';
-    html+='<label class="note-folder-move">Move to Folder <select data-lf-change="note-move-folder" data-note-id="'+selected.id+'">'+folders.map(folder=>'<option value="'+esc(folder.id)+'" '+((selected.folderId||'unfiled')===folder.id?'selected':'')+'>'+esc(folder.name)+'</option>').join('')+'</select></label>';html+='<div class="note-content-surface">';
-    if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
-    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" data-note-id="'+selected.id+'" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
+    html+='<label class="note-folder-move">Move to Folder <select data-lf-change="note-move-folder" data-note-id="'+selected.id+'">'+folders.map(folder=>'<option value="'+esc(folder.id)+'" '+((selected.folderId||'unfiled')===folder.id?'selected':'')+'>'+esc(folder.name)+'</option>').join('')+'</select></label><div class="note-content-surface">';
+    if(mode==='preview')html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
+    else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
     const backlinks=lifeFlowNoteController?.getBacklinks(selected.id)||[];
     html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+(backlinks.length?backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join(''):'<p class="note-backlinks-empty">No notes link here yet.</p>')+'</section>';
-  }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
-  html+='</div></div></div>';
+  }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use New note to create one.</p></div>';
+  html+='</div><div class="notes-panel-tabs" aria-label="Notes panels"><button type="button" class="notes-ear '+(panelOpen&&activePanel==='folders'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="folders" aria-expanded="'+(panelOpen&&activePanel==='folders')+'" title="Folders"><span>▣</span><small>Folders</small></button><button type="button" class="notes-ear '+(panelOpen&&activePanel==='notes'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="notes" aria-expanded="'+(panelOpen&&activePanel==='notes')+'" title="Notes"><span>▤</span><small>Notes</small></button></div><aside class="notes-drawer '+(panelOpen?'is-open':'')+'" data-active-panel="'+activePanel+'" aria-label="'+(activePanel==='folders'?'Folders':'Notes')+'"><div class="notes-drawer-content">';
+  if(activePanel==='folders'){
+    html+='<div class="notes-drawer-heading"><div><strong>Folders</strong><small>Organise your thinking</small></div><button type="button" class="notes-drawer-close" data-lf-action="note-panel-close" aria-label="Close panel">×</button></div><div class="notes-list-actions"><button class="primary" data-lf-action="note-add-folder">+ New folder</button></div><div class="notes-folder-groups">';
+    folders.forEach(function(folder){const group=filteredItems.filter(n=>(n.folderId||folders.find(item=>item.name===(n.folder||'Unfiled'))?.id||'unfiled')===folder.id);if(folder.id!=='unfiled'&&folder.isDefault&&group.length===0)return;html+=window.LifeFlowUIModule.renderFolderCategory({folder,notes:group,collapsed:collapsed.has(folder.name),selectedId:selected?.id??null});});
+    html+='</div>';
+  }else{
+    html+='<div class="notes-drawer-heading"><div><strong>Notes</strong><small>'+filteredItems.length+' notes in your workspace</small></div><button type="button" class="notes-drawer-close" data-lf-action="note-panel-close" aria-label="Close panel">×</button></div><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New note</button><button type="button" data-lf-action="note-add-folder">+ Folder</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div><div class="notes-items notes-flat-items">';
+    filteredItems.forEach(note=>{html+='<button class="note-item'+(String(note.id)===String(selected?.id)?' active':'')+'" data-lf-action="note-select" data-lf-note-context aria-haspopup="menu" data-note-id="'+esc(note.id)+'"><strong>'+esc(note.title||'Untitled')+'</strong><small>'+esc(new Date(note.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});
+    if(!filteredItems.length)html+='<p class="notes-empty">No matching notes.</p>';
+    html+='</div>';
+  }
+  html+='</div></aside></div></div>';
   return html;
 }
 function copyKnowledgeNoteCode(id){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const value=n.noteCode||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){showToast('Note code copied');}).catch(function(){showToast(value);});}else showToast(value);}
