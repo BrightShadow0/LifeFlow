@@ -70,6 +70,7 @@ function loadForUser(email){
 let state = loadForUser(storedSessionEmail());
 let view = 'today';
 let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
+let calendarFilter = 'all';
 let taskMasterActivationActive = false;
 
 function load(){ return loadForUser(state?.currentUser || storedSessionEmail()); }
@@ -265,6 +266,7 @@ function initTaskEventDelegation(){
     else if(action==='complete-all') completeAllTasks();
     else if(action==='clear-completed') clearCompletedTasks();
     else if(action==='shift-month') shiftMonth(Number(control.dataset.monthDelta));
+    else if(action==='calendar-filter'){calendarFilter=['all','open','done'].includes(control.dataset.calendarFilter)?control.dataset.calendarFilter:'all';renderApp();}
     else if(action==='open-edit-start') openClock('edit','start');
     else if(action==='open-edit-end') openClock('edit','end');
     else if(action==='clear-task-times') clearTaskTimes();
@@ -1329,26 +1331,43 @@ function renderCalendar(){
   const startDow = weekStartsMonday ? (first.getDay()+6)%7 : first.getDay();
   const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
   const monthName = first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const monthTasks=state.tasks.filter(t=>{
+    if(!t.due)return false;
+    const date=new Date(t.due);
+    return !Number.isNaN(date.getTime())&&date.getFullYear()===calYear&&date.getMonth()===calMonth;
+  });
+  const isDone=t=>!!(t.done||t.status==='done');
+  const openCount=monthTasks.filter(t=>!isDone(t)).length;
+  const doneCount=monthTasks.length-openCount;
+  const visibleTasks=tasks=>tasks.filter(t=>calendarFilter==='open'?!isDone(t):calendarFilter==='done'?isDone(t):true);
   let cells = '';
-  for(let i=0;i<startDow;i++) cells += `<div class="cal-empty" aria-hidden="true"></div>`;
+  for(let i=0;i<startDow;i++) cells += '<div class="cal-empty" aria-hidden="true"></div>';
   for(let d=1; d<=daysInMonth; d++){
     const cellDate = new Date(calYear,calMonth,d);
     const isToday = cellDate.toDateString()===new Date().toDateString();
-    const dayTasks = state.tasks.filter(t=>t.due && new Date(t.due).toDateString()===cellDate.toDateString());
-    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''}" data-lf-dragover="calendar-day" data-lf-drop-day="${calYear},${calMonth},${d}">
-      <div class="dnum">${d}</div>
-      <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" data-lf-action="edit-task-time" data-task-id="${t.id}" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
+    const dayTasks = monthTasks.filter(t=>new Date(t.due).toDateString()===cellDate.toDateString());
+    const shownTasks=visibleTasks(dayTasks);
+    const dayDone=dayTasks.filter(isDone).length;
+    const dayOpen=dayTasks.length-dayDone;
+    const workload=dayTasks.length===0?'is-clear':dayOpen===0?'is-complete':dayOpen>=4?'is-busy':'has-open';
+    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''} ${workload}" data-lf-dragover="calendar-day" data-lf-drop-day="${calYear},${calMonth},${d}" aria-label="${cellDate.toLocaleDateString(undefined,{dateStyle:'full'})}: ${dayTasks.length} tasks, ${dayOpen} open, ${dayDone} completed">
+      <div class="cal-date-row"><div class="dnum">${d}</div>${dayTasks.length?'<span class="cal-day-count">'+dayTasks.length+'</span>':''}</div>
+      <div class="cal-tasks">${shownTasks.map(t=>`<div class="citem ${isDone(t)?'is-done':''}" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}"><span class="cal-task-title">${esc(t.title)}</span>${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" data-lf-action="edit-task-time" data-task-id="${t.id}" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}${dayTasks.length&&!shownTasks.length?'<span class="cal-filter-empty">No '+(calendarFilter==='done'?'completed':'open')+' tasks</span>':''}</div>
     </div>`;
   }
   const trailingCells=(7-((startDow+daysInMonth)%7))%7;
-  for(let i=0;i<trailingCells;i++) cells += `<div class="cal-empty" aria-hidden="true"></div>`;
-  return `<div class="card"><div class="cal-head">
-      <button class="hbtn" data-lf-action="shift-month" data-month-delta="-1">‹</button>
+  for(let i=0;i<trailingCells;i++) cells += '<div class="cal-empty" aria-hidden="true"></div>';
+  const filters=[['all','All tasks',monthTasks.length],['open','Open',openCount],['done','Completed',doneCount]];
+  return `<div class="card calendar-card"><div class="cal-head">
+      <button class="hbtn" data-lf-action="shift-month" data-month-delta="-1" aria-label="Previous month">‹</button>
       <strong>${monthName}</strong>
-      <button class="hbtn" data-lf-action="shift-month" data-month-delta="1">›</button>
+      <button class="hbtn" data-lf-action="shift-month" data-month-delta="1" aria-label="Next month">›</button>
     </div>
+    <div class="cal-live-summary"><span><strong>${openCount}</strong> open</span><span><strong>${doneCount}</strong> completed</span><span><strong>${daysInMonth}</strong> days</span></div>
+    <div class="cal-filter-row" role="group" aria-label="Filter calendar tasks">${filters.map(([key,label,count])=>`<button type="button" class="cal-filter ${calendarFilter===key?'active':''}" data-lf-action="calendar-filter" data-calendar-filter="${key}" aria-pressed="${calendarFilter===key}">${label}<span>${count}</span></button>`).join('')}</div>
     <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['MON','TUE','WED','THU','FRI','SAT','SUN']:['SUN','MON','TUE','WED','THU','FRI','SAT']).map((d,i)=>`<div class="dow" role="columnheader" aria-label="${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(i+(weekStartsMonday?1:0))%7]}">${d}</div>`).join('')}${cells}</div></div>
-    <div class="notice">Drag a task onto another day to reschedule it.</div>
+    <div class="cal-legend"><span><i class="open-dot"></i> Open tasks</span><span><i class="done-dot"></i> Completed</span><span><i class="clear-dot"></i> No tasks</span></div>
+    <div class="notice">Drag a task onto another day to reschedule it. Filters update instantly as tasks are completed.</div>
   </div>`;
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
