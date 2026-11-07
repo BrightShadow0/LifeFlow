@@ -702,6 +702,7 @@ function initializeNotesArchitecture() {
   window.lfNoteView = lifeFlowNoteController.noteView();
   if(!window.lfKnowledgeChangeListenerInstalled){
     window.addEventListener('lifeflow:knowledge-change',event=>{
+      if(view==='notes'){refreshKnowledgeBacklinks();return;}
       if(view==='branches'){
         const previous={
           zoom:window.lfBranchesZoom||1,
@@ -1659,18 +1660,33 @@ function renderNotesListOnly(){
   const current=main.querySelector('.notes-workspace'),next=temp.querySelector('.notes-workspace');
   if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
 }
+function refreshKnowledgeBacklinks(){
+  const selected=selectedKnowledgeNote('regular'),card=document.querySelector('.note-editor');
+  if(!card)return;
+  const existing=card.querySelector('.note-backlinks');
+  const backlinks=selected?lifeFlowNoteController?.getBacklinks(selected.id)||[]:[];
+  if(!backlinks.length){existing?.remove();return;}
+  const section=document.createElement('section');
+  section.className='note-backlinks';
+  section.innerHTML='<div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join('');
+  if(existing)existing.replaceWith(section);
+  else card.appendChild(section);
+}
 function openKnowledgeBacklink(id,lineIndex){
   selectKnowledgeNote(id,'regular','edit');
-  renderApp();
   requestAnimationFrame(()=>{
     const editor=document.getElementById('kn_content');if(!editor)return;
     const lines=editor.value.replace(/\r\n?/g,'\n').split('\n');
-    const safeLine=Math.max(0,Math.min(lines.length-1,lineIndex));
+    const safeLine=Math.max(0,Math.min(lines.length-1,Number.isFinite(lineIndex)?lineIndex:0));
     const start=lines.slice(0,safeLine).reduce((sum,line)=>sum+line.length+1,0);
     const end=start+(lines[safeLine]||'').length;
     editor.focus({preventScroll:true});editor.setSelectionRange(start,end);
     const lineHeight=parseFloat(getComputedStyle(editor).lineHeight)||22;
     editor.scrollTop=Math.max(0,safeLine*lineHeight-editor.clientHeight/2);
+    editor.classList.remove('backlink-jump-active');
+    void editor.offsetWidth;
+    editor.classList.add('backlink-jump-active');
+    window.setTimeout(()=>editor.classList.remove('backlink-jump-active'),1800);
   });
 }
 function renderNotesManager(){
@@ -1704,7 +1720,7 @@ function renderNotesManager(){
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
     const backlinks=lifeFlowNoteController?.getBacklinks(selected.id)||[];
-    html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+(backlinks.length?backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join(''):'<p class="note-backlinks-empty">No notes link here yet.</p>')+'</section>';
+    if(backlinks.length)html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join('')+'</section>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use New note to create one.</p></div>';
   html+='</div><div class="notes-panel-tabs" aria-label="Notes panels"><button type="button" class="notes-ear '+(panelOpen&&activePanel==='folders'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="folders" aria-expanded="'+(panelOpen&&activePanel==='folders')+'" title="Folders"><span>▣</span><small>Folders</small></button><button type="button" class="notes-ear '+(panelOpen&&activePanel==='notes'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="notes" aria-expanded="'+(panelOpen&&activePanel==='notes')+'" title="Notes"><span>▤</span><small>Notes</small></button></div><aside class="notes-drawer '+(panelOpen?'is-open':'')+'" data-active-panel="'+activePanel+'" aria-label="'+(activePanel==='folders'?'Folders':'Notes')+'"><div class="notes-drawer-content">';
   if(activePanel==='folders'){
