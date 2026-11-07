@@ -4383,3 +4383,14 @@ body::-webkit-scrollbar-corner{
   #app #main .cal-grid{min-width:0}
   #app #main .cal-day{min-height:70px;padding:5px}
 }
+
+/* Release 2.1: virtual folders */
+#app .note-folder{margin:5px 0 10px}
+#app .note-folder-heading{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);text-align:left;cursor:pointer}
+#app .note-folder-heading strong{flex:1;font-size:12px}
+#app .note-folder-heading small{color:var(--muted)}
+#app .folder-chevron{color:var(--accent)}
+#app .note-folder .note-item{margin-left:9px;width:calc(100% - 9px)}
+#app .note-folder-move{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--muted);font-size:12px}
+#app .note-folder-move select{max-width:220px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text)}
+#app .notes-list-actions{flex-wrap:wrap}
