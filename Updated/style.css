@@ -4395,3 +4395,11 @@ body.auth-embed #authScreen .auth-brand-panel{
 #authScreen .auth-brand-lockup img{width:clamp(54px,6vw,82px);height:clamp(54px,6vw,82px);object-fit:contain;filter:drop-shadow(0 0 15px #10d9e866)}
 #authScreen .auth-brand-watermark{color:#12d9e50b}
 @media(max-width:620px){#authScreen .auth-brand-lockup{font-size:28px;gap:12px}#authScreen .auth-brand-lockup img{width:48px;height:48px}}
+
+/* Wordmark-only branding: retain LifeFlow name, omit the compass icon in these panels */
+.workspace-wordmark{margin:0 10px 27px;padding:5px 0;color:var(--text);font-size:16px;font-weight:850;letter-spacing:.19em;line-height:1.4;white-space:nowrap}
+@media(max-width:900px){.workspace-wordmark{text-align:center;margin:0 0 26px;font-size:13px;letter-spacing:.15em}}
+#authScreen .auth-brand-word{font-size:clamp(30px,3.5vw,48px);letter-spacing:.18em;font-weight:850;color:#f4fbff;line-height:1.1}
+#authScreen .auth-brand-word span{color:inherit}
+#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
+#authScreen .auth-brand-watermark{color:#12d9e50b}
