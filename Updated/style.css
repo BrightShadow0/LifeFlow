@@ -4338,3 +4338,25 @@ body::-webkit-scrollbar-corner{
 .clock-hand[data-clock-hand="minute-57"]{width:39%;transform:rotate(252deg)}
 .clock-hand[data-clock-hand="minute-58"]{width:39%;transform:rotate(258deg)}
 .clock-hand[data-clock-hand="minute-59"]{width:39%;transform:rotate(264deg)}
+
+
+/* Workspace viewport fit: keep the full content area available and let long
+   calendar/task sections scroll instead of clipping their labels. */
+#app{width:100%;min-width:0}
+#app .app-content{width:calc(100% - 238px);max-width:none;min-width:0;padding-right:clamp(18px,3vw,46px)}
+#app #main{min-width:0;overflow:visible}
+#app .calendar-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain}
+#app .cal-grid{min-width:0}
+#app .app-top-actions{flex-shrink:0}
+
+/* Transparent click target: retain the hanging cord and socket, not a backplate. */
+#app .top-theme-pull{appearance:none!important;-webkit-appearance:none!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline-offset:4px;cursor:pointer!important;touch-action:manipulation!important}
+#app .top-theme-pull::before,#app .top-theme-pull::after{content:none!important;display:none!important}
+#app .top-theme-pull .theme-bulb-assembly,#app .top-theme-pull .theme-cord{pointer-events:none}
+#app .top-theme-pull:hover{background:transparent!important;box-shadow:none!important}
+#app .top-theme-pull:active{transform:none!important}
+#app .top-theme-pull.snap .theme-bulb-assembly{animation:bulbSnap .3s ease both}
+#app .top-theme-pull .theme-bulb{box-shadow:0 0 0 1px color-mix(in srgb,var(--border) 75%,transparent)}
+:root[data-theme="light"] #app .top-theme-pull .theme-bulb{background:#fff3a8;box-shadow:0 0 18px 6px #ffe87a,0 0 0 1px #e6d47a}
+@media(max-width:900px){#app .app-content{width:calc(100% - 68px);padding-right:20px}}
+@media(max-width:600px){#app .app-content{width:calc(100% - 68px);padding-right:14px}}
