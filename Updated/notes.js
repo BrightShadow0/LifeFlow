@@ -1,5 +1,8 @@
 (function(global){
 'use strict';
+let viewRenderers={};
+function configureRenderers(renderers){viewRenderers={...(renderers||{})};}
+function render(state,view){const renderer=viewRenderers[view];return typeof renderer==='function'?renderer(state||{}):'';}
 function createNotesController(options){
   const {stateManager,getCurrentState,uid}=options||{};
   if(!stateManager||typeof stateManager.setState!=='function')throw new TypeError('Notes controller requires a StateManager.');
@@ -260,5 +263,5 @@ function renderMarkdownPreview(element,source){
   }
   return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
-global.LifeFlowNotesModule={createNotesController};
+global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
