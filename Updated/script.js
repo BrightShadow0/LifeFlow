@@ -596,13 +596,17 @@ async function initializeTaskArchitecture() {
     uid
   });
   lifeFlowTaskStateManager.subscribe('tasks', tasks => {
+    const previousCount=Array.isArray(state.tasks)?state.tasks.length:0;
     state = { ...lifeFlowTaskStateManager.getState(), tasks: tasks || [] };
     if (getSession() && !document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) {
       const pending=window.lifeFlowTargetedTaskId;
-      if(pending!==undefined&&pending!==null){
+      if(pending!==undefined&&pending!==null&&tasks.length===previousCount){
         window.LifeFlowTasksModule.updateTaskCompletion(pending,!!tasks.find(task=>String(task.id)===String(pending))?.done,document.getElementById('main'));
         window.lifeFlowTargetedTaskId=null;
-      }else renderApp();
+      }else{
+        window.lifeFlowTargetedTaskId=null;
+        renderApp();
+      }
     }
   });
   const session = getSession();
