@@ -886,7 +886,11 @@ function applyWorkspaceAppearance(u=currentUser()){
     backdrop=defaultBackdropForTheme(theme);
     if(u && u.workspaceBackdrop!==backdrop){
       const users=getUsers();
-      if(users[state.currentUser]){users[state.currentUser].workspaceBackdrop=backdrop;saveUsers(users);}
+      if(users[state.currentUser]){
+        users[state.currentUser].workspaceBackdrop=backdrop;
+        saveUsers(users);
+        syncAppearanceStateFromUser(users[state.currentUser]);
+      }
     }
   }
   if(app) app.setAttribute('data-workspace-backdrop',backdrop);
