@@ -271,7 +271,7 @@ function initTaskEventDelegation(){
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
-    else if(action==='note-select'){window.lfSelectedNote=control.dataset.noteId;window.lfNoteView='edit';renderApp();}
+    else if(action==='note-select') selectKnowledgeNote(control.dataset.noteId,'regular','edit');
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
@@ -604,6 +604,33 @@ function saveTaskStateFromLegacy() {
   }
   lifeFlowTaskStateManager.setState(state);
   lifeFlowTaskStateManager.flush();
+}
+
+let lifeFlowNoteController = null;
+function initializeNotesArchitecture() {
+  if (!lifeFlowTaskStateManager) throw new Error('Workspace StateManager is unavailable.');
+  lifeFlowNoteController = window.LifeFlowNotesModule.createNotesController({
+    stateManager: lifeFlowTaskStateManager, getCurrentState: () => state, uid
+  });
+  ['notes','codeNotes','noteLinks','selectedNoteId','selectedNoteKind','noteView'].forEach(key => {
+    lifeFlowTaskStateManager.subscribe(key, () => {
+      state = lifeFlowTaskStateManager.getState();
+      window.lfSelectedNote = state.selectedNoteId ?? null;
+      window.lfNoteMode = state.selectedNoteKind || 'regular';
+      window.lfNoteView = state.noteView || 'edit';
+    });
+  });
+  lifeFlowNoteController.ensure();
+  window.lfSelectedNote = lifeFlowNoteController.selectedId();
+  window.lfNoteMode = lifeFlowNoteController.selectedKind();
+  window.lfNoteView = lifeFlowNoteController.noteView();
+}
+function selectedKnowledgeNote(kind='regular') { return lifeFlowNoteController?.getSelectedNote(kind) || null; }
+function selectKnowledgeNote(id,kind='regular',mode='edit') {
+  if(!lifeFlowNoteController)return;
+  lifeFlowNoteController.select(id,kind,mode);
+  window.lfSelectedNote=id??null;window.lfNoteMode=kind;window.lfNoteView=mode;
+  renderApp();
 }
 
 function effectiveTheme(u){
@@ -1307,7 +1334,7 @@ function renderApp(){
   else if(view==='board') el.innerHTML = renderBoard();
   else if(view==='calendar') el.innerHTML = renderCalendar();
   else if(view==='branches'){ el.innerHTML = renderBranches(); initBranchesGraph(el); }
-  else if(view==='notes'){ el.innerHTML = renderNotesManager(); const preview=el.querySelector('#kn_preview'); if(preview)renderMarkdownPreview(preview,noteStore('regular').find(function(n){return String(n.id)===String(window.lfSelectedNote);})?.content||''); }
+  else if(view==='notes'){ el.innerHTML = renderNotesManager(); const preview=el.querySelector('#kn_preview'); if(preview)renderMarkdownPreview(preview,noteStore('regular').find(function(n){return String(n.id)===String(lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote);})?.content||''); }
   else if(view==='about') el.innerHTML = renderAbout();
   else if(view==='account') el.innerHTML = renderAccount();
   if(window.lifeFlowLoginEntry){
@@ -1357,49 +1384,25 @@ function renderCommandResults(){
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeCommandPalette();
 });
-function makeKnowledgeNoteCode(){
-  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code='';
-  do{code='LF-';for(let i=0;i<6;i++)code+=alphabet[Math.floor(Math.random()*alphabet.length)];}
-  while([...(state.notes||[]),...(state.codeNotes||[])].some(function(n){return n.noteCode===code;}));
-  return code;
-}
-function ensureKnowledgeState(){
-  if(!Array.isArray(state.notes))state.notes=[];
-  if(!Array.isArray(state.codeNotes))state.codeNotes=[];
-  if(!Array.isArray(state.noteLinks))state.noteLinks=[];
-  let changed=false;
-  [...state.notes,...state.codeNotes].forEach(function(n){if(!n.noteCode){n.noteCode=makeKnowledgeNoteCode();changed=true;}});
-  if(changed)save();
-}
-function noteStore(kind){ensureKnowledgeState();return kind==='code'?state.codeNotes:state.notes;}
-function nextKnowledgeNoteNumber(kind){
-  const notes=noteStore(kind);
-  if(!notes.length)return 1;
-  const highest=notes.reduce(function(max,n){
-    const stored=Number(n.noteNumber)||0;
-    const match=String(n.title||'').match(/^Untitled Note\s+(\d+)$/i);
-    return Math.max(max,stored,match?Number(match[1]):0);
-  },0);
-  return Math.max(notes.length,highest)+1;
-}
+function makeKnowledgeNoteCode(){return lifeFlowNoteController?.makeNoteCode()||'';}
+function ensureKnowledgeState(){if(lifeFlowNoteController)lifeFlowNoteController.ensure();}
+function noteStore(kind){return lifeFlowNoteController?.getNotes(kind)||[];}
+function nextKnowledgeNoteNumber(kind){return lifeFlowNoteController?.nextNumber(kind)||1;}
 function newKnowledgeNote(kind){
-  ensureKnowledgeState();
-  const number=kind==='regular'?nextKnowledgeNoteNumber(kind):null;
-  const n={id:uid(),noteCode:makeKnowledgeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
-  noteStore(kind).unshift(n);window.lfNoteMode=kind;window.lfSelectedNote=n.id;save();renderApp();
+  if(!lifeFlowNoteController)return;
+  const note=lifeFlowNoteController.newNote(kind);
+  window.lfSelectedNote=note.id;window.lfNoteMode=kind;window.lfNoteView='edit';renderApp();
 }
-function updateKnowledgeNote(kind,id,value){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(!n)return;if(kind==='code')n.code=value;else n.content=value;n.updatedAt=Date.now();save();}function refreshCodeEditor(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(!t||!h)return;h.innerHTML=highlightCode(t.value);syncCodeScroll();}function syncCodeScroll(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(t&&h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft;}}
-function deleteKnowledgeNote(kind,id){if(!confirm('Delete this note?'))return;const s=noteStore(kind),i=s.findIndex(function(x){return String(x.id)===String(id);});if(i>=0)s.splice(i,1);window.lfSelectedNote=null;save();renderApp();}
+function updateKnowledgeNote(kind,id,value){lifeFlowNoteController?.updateContent(kind,id,value);}
+function refreshCodeEditor(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(!t||!h)return;h.innerHTML=highlightCode(t.value);syncCodeScroll();}function syncCodeScroll(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(t&&h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft;}}
+function deleteKnowledgeNote(kind,id){
+  if(!confirm('Delete this note?'))return;
+  if(lifeFlowNoteController?.deleteNote(kind,id)){window.lfSelectedNote=null;renderApp();}
+}
 function deleteAllKnowledgeNotes(kind){
-  const notes=noteStore(kind);
-  if(!notes.length)return;
-  if(!confirm('Delete all '+notes.length+' notes? This cannot be undone.'))return;
-  notes.splice(0,notes.length);
-  window.lfSelectedNote=null;
-  window.lfNoteView='edit';
-  save();
-  renderApp();
+  const count=noteStore(kind).length;if(!count)return;
+  if(!confirm('Delete all '+count+' notes? This cannot be undone.'))return;
+  lifeFlowNoteController?.deleteAll(kind);window.lfSelectedNote=null;window.lfNoteView='edit';renderApp();
 }
 function downloadKnowledgeNote(kind,id){
   const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});
@@ -1573,21 +1576,9 @@ function markdownToHtml(source){
   return clean||'<p class="md-empty">Nothing to preview yet.</p>';
 }
 function toggleMarkdownTaskByIndex(index,checked){
-  const n=noteStore('regular').find(function(x){return String(x.id)===String(window.lfSelectedNote);});
-  if(!n)return;
-  const lines=String(n.content||'').replace(/\r\n?/g,'\n').split('\n');
-  let current=0,matched=-1;
-  for(let i=0;i<lines.length;i++){
-    if(/^\s*[-*+]\s+\[[ xX]\]\s+/.test(lines[i])){
-      if(current===index){matched=i;break;}
-      current++;
-    }
-  }
-  if(matched<0)return;
-  lines[matched]=lines[matched].replace(/^(\s*[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
-  n.content=lines.join('\n');n.updatedAt=Date.now();save();
+  const content=lifeFlowNoteController?.toggleMarkdownTaskByIndex(index,checked);
   const preview=document.getElementById('kn_preview');
-  if(preview)renderMarkdownPreview(preview,n.content);
+  if(content!==null&&content!==undefined&&preview)renderMarkdownPreview(preview,content);
 }
 function renderMarkdownPreview(element,source){
   element.innerHTML=markdownToHtml(source);
@@ -1616,14 +1607,9 @@ function renderMarkdownPreview(element,source){
   }
 }
 function toggleMarkdownTask(lineIndex,checked){
-  const n=noteStore('regular').find(function(x){return String(x.id)===String(window.lfSelectedNote);});
-  if(!n)return;
-  const lines=String(n.content||'').replace(/\r\n?/g,'\n').split('\n');
-  if(!Number.isInteger(lineIndex)||lineIndex<0||lineIndex>=lines.length)return;
-  lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,function(_,prefix,space){return prefix+'['+(checked?'x':' ')+']'+space;});
-  n.content=lines.join('\n');n.updatedAt=Date.now();save();
+  const content=lifeFlowNoteController?.toggleMarkdownTask(lineIndex,checked);
   const preview=document.getElementById('kn_preview');
-  if(preview)preview.innerHTML=markdownToHtml(n.content);
+  if(content!==null&&content!==undefined&&preview)preview.innerHTML=markdownToHtml(content);
 }
 function handleMarkdownKeydown(e){
   const menu=document.getElementById('noteLinkSuggestions');
@@ -1656,7 +1642,10 @@ function handleMarkdownKeydown(e){
   ta.setRangeText('\n'+prefix,start,end,'end');
   ta.dispatchEvent(new Event('input',{bubbles:true}));
 }
-function setKnowledgeNoteView(mode){window.lfNoteView=mode==='preview'?'preview':'edit';renderApp();}
+function setKnowledgeNoteView(mode){
+  if(lifeFlowNoteController)lifeFlowNoteController.select(lifeFlowNoteController.selectedId(),'regular',mode);
+  window.lfNoteView=mode==='preview'?'preview':'edit';renderApp();
+}
 function refreshMarkdownPreview(){
   const source=document.getElementById('kn_content'),preview=document.getElementById('kn_preview');
   if(source&&preview)renderMarkdownPreview(preview,source.value);
@@ -1691,19 +1680,17 @@ function chooseNoteLink(index){
   ta.dispatchEvent(new Event('input',{bubbles:true}));menu.hidden=true;ta.focus();
 }
 function openKnowledgeNoteByTitle(title){
-  const clean=String(title||'').trim();if(!clean)return;
-  let n=noteStore('regular').find(function(item){return String(item.title||'').trim().toLowerCase()===clean.toLowerCase();});
-  if(!n){
-    n={id:uid(),noteCode:makeKnowledgeNoteCode(),title:clean,noteNumber:null,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
-    noteStore('regular').unshift(n);showToast('Created note: '+clean);
-  }
-  window.lfNoteMode='regular';window.lfSelectedNote=n.id;window.lfNoteView='edit';save();renderApp();
+  const before=noteStore('regular').length,note=lifeFlowNoteController?.openByTitle(title);
+  if(!note)return;
+  window.lfNoteMode='regular';window.lfSelectedNote=note.id;window.lfNoteView='edit';
+  if(noteStore('regular').length>before)showToast('Created note: '+note.title);
+  renderApp();
 }
 function renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
-  const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(window.lfSelectedNote);})||items[0];
+  const kind='regular',items=noteStore(kind),selected=items.find(function(n){return String(n.id)===String(lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote);})||items[0];
   const mode=window.lfNoteView==='preview'?'preview':'edit';
   let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
   html+='<div class="notes-items">';
@@ -1723,10 +1710,17 @@ function renderNotesManager(){
 }
 function copyKnowledgeNoteCode(id){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const value=n.noteCode||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){showToast('Note code copied');}).catch(function(){showToast(value);});}else showToast(value);}
 function beginKnowledgeNoteRename(id){const input=document.getElementById('kn_title_edit');if(!input)return;input.hidden=false;input.focus();input.select();}
-function finishKnowledgeNoteRename(id,input){if(!input)return;if(input.dataset.cancel==='1'){delete input.dataset.cancel;input.hidden=true;return;}const title=String(input.value||'').trim();if(!title){input.hidden=true;return;}const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n||n.title===title)return;n.title=title;n.updatedAt=Date.now();save();renderApp();}
-function autoTitleKnowledgeNote(id,value){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const current=String(n.title||'');if(!/^Untitled Note\\s+\\d+$/i.test(current))return;const first=String(value||'').split(/\\r?\\n/).map(function(line){return line.replace(/^\\s*#+\\s*/,'').trim();}).find(Boolean);if(!first)return;const title=first.length>52?first.slice(0,49).trimEnd()+'…':first;if(title===current)return;n.title=title;n.updatedAt=Date.now();save();renderApp();}
-function updateKnowledgeTitle(kind,id,v){const n=noteStore(kind).find(function(x){return String(x.id)===String(id);});if(n){n.title=v;n.updatedAt=Date.now();save();}}
-function updateKnowledgeLanguage(id,v){const n=noteStore('code').find(function(x){return String(x.id)===String(id);});if(n){n.language=v;n.updatedAt=Date.now();save();renderApp();}}
+function finishKnowledgeNoteRename(id,input){
+  if(!input)return;
+  if(input.dataset.cancel==='1'){delete input.dataset.cancel;input.hidden=true;return;}
+  const title=String(input.value||'').trim();if(!title){input.hidden=true;return;}
+  const current=noteStore('regular').find(note=>String(note.id)===String(id));
+  if(!current||current.title===title)return;
+  lifeFlowNoteController?.updateFields('regular',id,{title});renderApp();
+}
+function autoTitleKnowledgeNote(id,value){if(lifeFlowNoteController?.autoTitle(id,value))renderApp();}
+function updateKnowledgeTitle(kind,id,value){lifeFlowNoteController?.updateFields(kind,id,{title:value});}
+function updateKnowledgeLanguage(id,value){if(lifeFlowNoteController?.updateFields('code',id,{language:value}))renderApp();}
 function renderBranches(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
@@ -1766,7 +1760,12 @@ function renderBranches(){
     if(!moved)break;
   }
   items.forEach(function(n){const p=positions[String(n.id)];if(Math.abs(n.graphX-p.x)>.5||Math.abs(n.graphY-p.y)>.5)changed=true;n.graphX=p.x;n.graphY=p.y;});
-  if(changed)save();
+  if(changed&&lifeFlowNoteController){
+    lifeFlowNoteController.updateAll('regular',current=>current.map(note=>{
+      const position=positions[String(note.id)];
+      return position?{...note,graphX:position.x,graphY:position.y}:note;
+    }));
+  }
   const edges=[],seen={};
   items.forEach(function(n){
     const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
@@ -1835,7 +1834,7 @@ function initBranchesGraph(root){
     node.addEventListener('click',function(e){
       if(node.dataset.moved==='1'){node.dataset.moved='0';return;}
       const n=noteStore('regular').find(function(item){return String(item.id)===String(node.dataset.noteId);});
-      if(n){window.lfNoteMode='regular';window.lfSelectedNote=n.id;window.lfNoteView='edit';renderApp();}
+      if(n)selectKnowledgeNote(n.id,'regular','edit');
     });
     node.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();node.click();}});
   });
@@ -1867,7 +1866,7 @@ function initBranchesGraph(root){
         node.classList.remove('dragging');
         const matrix=node.transform.baseVal.consolidate().matrix;
         const n=noteStore('regular').find(function(item){return String(item.id)===String(drag.id);});
-        if(n){n.graphX=matrix.e;n.graphY=matrix.f;save();}
+        if(n)lifeFlowNoteController?.updateFields('regular',n.id,{graphX:matrix.e,graphY:matrix.f});
       }
     }
     drag=null;
@@ -2373,6 +2372,7 @@ async function deleteAccount(){
   try {
     await initializeThemeArchitecture();
     await initializeTaskArchitecture();
+    initializeNotesArchitecture();
   } catch (error) {
     console.error('LifeFlow appearance state could not be initialized:', error);
     showToast('Appearance settings could not be loaded. Please refresh the workspace.');
