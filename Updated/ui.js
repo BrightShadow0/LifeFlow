@@ -31,14 +31,10 @@ function renderSearchSnippet(options){
 function renderBacklinkItem(item){
   const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
   const context=String(item?.context||''),target=String(item?.targetTitle||'');
-  const escapedTarget=target.replace(/[.*+?^${}()|[\]\\]/g,'\\function renderBacklinkItem(item){
-  const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
-  return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+escapeKnowledgeHtml(item?.context||'')+'</span></button>';
-}');
-  const highlighted=escapedTarget?escapeKnowledgeHtml(context).replace(new RegExp(escapeKnowledgeHtml(target).replace(/[.*+?^${}()|[\]\\]/g,'\\function renderBacklinkItem(item){
-  const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
-  return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+escapeKnowledgeHtml(item?.context||'')+'</span></button>';
-}'),'ig'),match=>'<mark class="backlink-highlight">'+match+'</mark>'):escapeKnowledgeHtml(context);
+  const at=target?context.toLowerCase().indexOf(target.toLowerCase()):-1;
+  const highlighted=at>=0
+    ?escapeKnowledgeHtml(context.slice(0,at))+'<mark class="backlink-highlight">'+escapeKnowledgeHtml(context.slice(at,at+target.length))+'</mark>'+escapeKnowledgeHtml(context.slice(at+target.length))
+    :escapeKnowledgeHtml(context);
   return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+highlighted+'</span></button>';
 }
 function createViewOrchestrator(){
