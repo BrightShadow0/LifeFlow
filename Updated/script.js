@@ -1798,7 +1798,7 @@ function renderBranches(){
   let svg='';
   edges.forEach(function(edge){
     const a=positions[edge.from],b=positions[edge.to];
-    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line><line class="branch-edge-hit" data-from="'+edge.from+'" data-to="'+edge.to+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" tabindex="0" role="button" aria-label="Open link from '+esc(items.find(n=>String(n.id)===edge.from)?.title||'note')+' to '+esc(items.find(n=>String(n.id)===edge.to)?.title||'note')+'"></line>';
+    if(a&&b)svg+='<line class="branch-edge" data-from="'+edge.from+'" data-to="'+edge.to+'" data-line="'+edge.line+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line><line class="branch-edge-hit" data-from="'+edge.from+'" data-to="'+edge.to+'" data-line="'+edge.line+'" data-target-title="'+esc(edge.toTitle)+'" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" tabindex="0" role="button" aria-label="Jump to '+esc(edge.toTitle)+' link in '+esc(edge.fromTitle)+'"></line>';
   });
   items.forEach(function(n){
     const p=positions[String(n.id)],label=esc(n.title||'Untitled').slice(0,34);
@@ -1866,7 +1866,7 @@ function initBranchesGraph(root){
   };
   window.lfBranchesFocusNode=focusNode;
   viewport.querySelectorAll('.branch-edge-hit').forEach(line=>{
-    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');renderApp();requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const token='[['+target.title+']]';const at=editor.value.toLowerCase().indexOf(token.toLowerCase());if(at>=0){editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const before=editor.value.slice(0,at).split(/\\r?\\n/).length-1;editor.scrollTop=Math.max(0,before*(parseFloat(getComputedStyle(editor).lineHeight)||22)-editor.clientHeight/2);}});};
+    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const lines=editor.value.replace(/\\r\\n?/g,'\\n').split('\\n'),lineIndex=Math.max(0,Math.min(lines.length-1,Number(line.dataset.line)||0)),token='[['+target.title+']]';let localAt=lines[lineIndex].toLowerCase().indexOf(token.toLowerCase());if(localAt<0)localAt=lines[lineIndex].toLowerCase().indexOf(String(line.dataset.targetTitle||target.title).toLowerCase());if(localAt<0)return;const at=lines.slice(0,lineIndex).reduce((sum,value)=>sum+value.length+1,0)+localAt;editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const lineHeight=parseFloat(getComputedStyle(editor).lineHeight)||22;editor.scrollTop=Math.max(0,lineIndex*lineHeight-editor.clientHeight/2);editor.classList.remove('backlink-jump-active');void editor.offsetWidth;editor.classList.add('backlink-jump-active');window.setTimeout(()=>editor.classList.remove('backlink-jump-active'),1800);});};
     line.addEventListener('click',activate);line.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
   });
   viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
