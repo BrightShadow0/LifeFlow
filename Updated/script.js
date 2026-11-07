@@ -1693,7 +1693,7 @@ function renderBranches(){
     svg+='<g class="branch-node interactive-branch-node" data-note-id="'+esc(String(n.id))+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Open '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
   });
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-focus-toggle" aria-pressed="false">Focus Mode</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
 }
 function toggleBranchesFocusMode(){window.lfBranchesFocusMode=!window.lfBranchesFocusMode;const button=document.querySelector('[data-lf-action="branches-focus-toggle"]');if(button){button.setAttribute('aria-pressed',String(window.lfBranchesFocusMode));button.classList.toggle('active',window.lfBranchesFocusMode);}showToast(window.lfBranchesFocusMode?'Focus Mode on · select a node to focus':'Focus Mode off');}
 function branchesApplyTransform(){
@@ -1715,7 +1715,9 @@ function branchesZoomAt(factor,pivotX,pivotY){
 }
 function branchesZoom(factor){branchesZoomAt(factor);}
 function branchesResetView(){
-  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;branchesApplyTransform();
+  window.lfBranchesZoom=1;window.lfBranchesPanX=0;window.lfBranchesPanY=0;window.lfBranchesFocusMode=false;window.lfBranchesFocusedId=null;
+  document.querySelector(".interactive-branch-graph")?.classList.remove("branch-focus-active");document.querySelectorAll(".interactive-branch-graph .branch-dimmed").forEach(node=>node.classList.remove("branch-dimmed"));
+  const button=document.querySelector("[data-lf-action=branches-focus-toggle]");if(button){button.classList.remove("active");button.setAttribute("aria-pressed","false");}branchesApplyTransform();
 }
 function initBranchesGraph(root){
   const svg=root.querySelector('#branchesSvg'),viewport=root.querySelector('#branchesViewport');if(!svg||!viewport)return;
