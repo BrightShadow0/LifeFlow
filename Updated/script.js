@@ -291,7 +291,6 @@ function initTaskEventDelegation(){
     else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='note-backlink'){openKnowledgeBacklink(control.dataset.noteId,Number(control.dataset.lineIndex));}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
-    else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
     else if(action==='note-context-open'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');}
     else if(action==='note-context-move'){const id=control.dataset.noteId,name=control.dataset.folderName;closeNoteContextMenu();if(lifeFlowNoteController?.moveToFolder(id,name)){showToast('Moved to '+name);renderApp();}}
     else if(action==='note-context-rename'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');requestAnimationFrame(()=>beginKnowledgeNoteRename(id));}
@@ -354,6 +353,10 @@ function initTaskEventDelegation(){
     }
   });
   document.addEventListener('input',event=>{
+    const title=event.target.closest('[data-lf-input="note-title-live"]');
+    if(title){updateKnowledgeTitle('regular',title.dataset.noteId,title.value);return;}
+  });
+  document.addEventListener('input',event=>{
     const control=event.target.closest('[data-lf-input="markdown-content"]');
     if(!control) return;
     updateKnowledgeNote('regular',control.dataset.noteId,control.value);
@@ -372,7 +375,7 @@ function initTaskEventDelegation(){
   document.addEventListener('focusout',event=>{
     const control=event.target.closest('[data-lf-blur]');
     if(!control) return;
-    if(control.dataset.lfBlur==='note-title-edit') finishKnowledgeNoteRename(control.dataset.noteId,control);
+    if(control.dataset.lfBlur==='note-title-live') renderApp();
     else if(control.dataset.lfBlur==='markdown-content') autoTitleKnowledgeNote(control.dataset.noteId,control.value);
   });
   document.addEventListener('dragstart',event=>{
@@ -1714,7 +1717,7 @@ function renderNotesManager(){
   let html='<div class="knowledge-shell notes-workspace"><div class="notes-searchbar"><label class="notes-global-search"><span aria-hidden="true">⌕</span><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search notes, folders and content..." aria-label="Search notes, folders and content" data-lf-input="notes-search"></label><span class="notes-search-count">'+filteredItems.length+' of '+items.length+' notes</span></div><div class="notes-editor-stage"><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-    html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div><div class="note-title-actions"><button type="button" class="note-rename-btn" data-lf-action="note-rename" data-note-id="'+selected.id+'">Rename</button><input id="kn_title_edit" class="note-title-edit" value="'+esc(selected.title||'Untitled')+'" maxlength="80" aria-label="Note title" hidden data-lf-keydown="note-title-edit" data-lf-blur="note-title-edit" data-note-id="'+selected.id+'"></div></div>';
+    html+='<div class="note-identity"><label for="kn_title_edit">CURRENT NOTE</label><input id="kn_title_edit" class="note-title-edit" type="text" value="'+esc(selected.title||'')+'" maxlength="80" placeholder="Untitled note" aria-label="Current note name" data-lf-input="note-title-live" data-lf-blur="note-title-live" data-note-id="'+selected.id+'"></div><div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div></div>';
     html+='<label class="note-folder-move">Move to Folder <select data-lf-change="note-move-folder" data-note-id="'+selected.id+'">'+folders.map(folder=>'<option value="'+esc(folder.id)+'" '+((selected.folderId||'unfiled')===folder.id?'selected':'')+'>'+esc(folder.name)+'</option>').join('')+'</select></label><div class="note-content-surface">';
     if(mode==='preview')html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
@@ -1742,15 +1745,6 @@ function renderNotesManager(){
   return html;
 }
 function copyKnowledgeNoteCode(id){const n=noteStore('regular').find(function(x){return String(x.id)===String(id);});if(!n)return;const value=n.noteCode||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).then(function(){showToast('Note code copied');}).catch(function(){showToast(value);});}else showToast(value);}
-function beginKnowledgeNoteRename(id){const input=document.getElementById('kn_title_edit');if(!input)return;input.hidden=false;input.focus();input.select();}
-function finishKnowledgeNoteRename(id,input){
-  if(!input)return;
-  if(input.dataset.cancel==='1'){delete input.dataset.cancel;input.hidden=true;return;}
-  const title=String(input.value||'').trim();if(!title){input.hidden=true;return;}
-  const current=noteStore('regular').find(note=>String(note.id)===String(id));
-  if(!current||current.title===title)return;
-  lifeFlowNoteController?.updateFields('regular',id,{title});renderApp();
-}
 function autoTitleKnowledgeNote(id,value){if(lifeFlowNoteController?.autoTitle(id,value))renderApp();}
 function updateKnowledgeTitle(kind,id,value){lifeFlowNoteController?.updateFields(kind,id,{title:value});}
 function updateKnowledgeLanguage(id,value){if(lifeFlowNoteController?.updateFields('code',id,{language:value}))renderApp();}
