@@ -477,6 +477,76 @@ async function doLogin(){
   }catch(error){setLoginError('Sign-in could not be completed. Please try again.');}
   finally{loginAttemptsInProgress=false;setLoginLoading(false);}
 }
+function initTaskEventDelegation(){
+  document.addEventListener('click',event=>{
+    const control=event.target.closest('[data-lf-action],[data-lf-overlay]');
+    if(!control) return;
+    if(control.dataset.lfOverlay){
+      if(event.target===control){
+        if(control.dataset.lfOverlay==='close-time-editor') closeTimeEditor();
+        else if(control.dataset.lfOverlay==='close-clock') closeClock();
+      }
+      return;
+    }
+    const action=control.dataset.lfAction;
+    if(action==='open-new-start') openClock('new','start');
+    else if(action==='open-new-end') openClock('new','end');
+    else if(action==='clear-new-times') clearNewTimes();
+    else if(action==='submit-task') submitTask();
+    else if(action==='edit-task-time') editTaskTime(Number(control.dataset.taskId));
+    else if(action==='delete-task') deleteTask(Number(control.dataset.taskId));
+    else if(action==='complete-all') completeAllTasks();
+    else if(action==='clear-completed') clearCompletedTasks();
+    else if(action==='shift-month') shiftMonth(Number(control.dataset.monthDelta));
+    else if(action==='open-edit-start') openClock('edit','start');
+    else if(action==='open-edit-end') openClock('edit','end');
+    else if(action==='clear-task-times') clearTaskTimes();
+    else if(action==='close-time-editor') closeTimeEditor();
+    else if(action==='save-task-times') saveTaskTimes();
+    else if(action==='select-clock-value') selectClockValue(Number(control.dataset.clockValue));
+    else if(action==='clock-hour') setClockActive('hour');
+    else if(action==='clock-minute') setClockActive('minute');
+    else if(action==='toggle-clock-input') toggleClockInput();
+    else if(action==='close-clock') closeClock();
+    else if(action==='clock-ok') clockOK();
+  });
+  document.addEventListener('change',event=>{
+    const control=event.target.closest('[data-lf-change]');
+    if(!control) return;
+    const action=control.dataset.lfChange;
+    if(action==='repeat-fields') updateRepeatIntervalFields();
+    else if(action==='task-done') toggleDone(Number(control.dataset.taskId));
+    else if(action==='subtask-done') toggleSub(Number(control.dataset.taskId),Number(control.dataset.subtaskId));
+  });
+  document.addEventListener('keydown',event=>{
+    const control=event.target.closest('[data-lf-keydown]');
+    if(!control || event.key!=='Enter') return;
+    if(control.dataset.lfKeydown==='add-subtask'){
+      event.preventDefault();
+      const value=control.value.trim();
+      if(value) addSubtask(Number(control.dataset.taskId),value);
+      control.value='';
+    }else if(control.dataset.lfKeydown==='clock-ok'){
+      event.preventDefault();clockOK();
+    }
+  });
+  document.addEventListener('dragstart',event=>{
+    const control=event.target.closest('[data-lf-dragstart="task"]');
+    if(control && event.dataTransfer) event.dataTransfer.setData('id',control.dataset.taskId);
+  });
+  document.addEventListener('dragover',event=>{
+    if(event.target.closest('[data-lf-dragover="calendar-day"]')) event.preventDefault();
+  });
+  document.addEventListener('drop',event=>{
+    const control=event.target.closest('[data-lf-drop-day]');
+    if(!control) return;
+    event.preventDefault();
+    const [year,month,day]=control.dataset.lfDropDay.split(',').map(Number);
+    dropDay(event,year,month,day);
+  });
+}
+document.addEventListener('DOMContentLoaded',initTaskEventDelegation);
+
 function initLoginAccessibility(){
   const appRoot=document.getElementById('app');
   if(appRoot){
@@ -1009,13 +1079,13 @@ function taskFormHtml(){
   return `<div class="card new-task-card"><h2>New Task</h2>
     <div class="new-task-fields">
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
-      <input id="nt_due" type="date" aria-label="Due date" onchange="updateRepeatIntervalFields()">
+      <input id="nt_due" type="date" aria-label="Due date" data-lf-change="repeat-fields">
       <label class="task-field-select" aria-label="Priority"><span>Priority</span><select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
     </div>
     <div id="nt_repeatInterval" class="repeat-interval">
       <div class="repeat-field">
         <label for="nt_interval">Interval</label>
-        <select id="nt_interval" aria-label="Repeat interval" onchange="updateRepeatIntervalFields()">
+        <select id="nt_interval" aria-label="Repeat interval" data-lf-change="repeat-fields">
           <option value="week">One week (starting today)</option>
           <option value="month">One month (starting today)</option>
           <option value="other">Other</option>
@@ -1027,13 +1097,13 @@ function taskFormHtml(){
       </div>
     </div>
     <div class="time-fields new-task-time"><span class="time-label">Time</span>
-      <button type="button" id="nt_start" onclick="openClock('new','start')">Start</button><span>to</span>
-      <button type="button" id="nt_end" onclick="openClock('new','end')">End</button>
+      <button type="button" id="nt_start" data-lf-action="open-new-start">Start</button><span>to</span>
+      <button type="button" id="nt_end" data-lf-action="open-new-end">End</button>
       <input id="nt_tags" class="new-task-tags" aria-label="Tags" placeholder="Tags">
-      <button class="clear-timing" type="button" onclick="clearNewTimes()" aria-label="Clear timing">Clear timing</button>
+      <button class="clear-timing" type="button" data-lf-action="clear-new-times" aria-label="Clear timing">Clear timing</button>
     </div>
     <div id="nt_timeError" class="time-error" role="alert"></div>
-    <div class="new-task-actions"><button class="primary" onclick="submitTask()" aria-label="Add task">Add</button></div></div>`;
+    <div class="new-task-actions"><button class="primary" data-lf-action="submit-task" aria-label="Add task">Add</button></div></div>`;
 }
 let newTaskTimes={start:'',end:''};
 function clearNewTimes(){ newTaskTimes={start:'',end:''}; updateNewTimeButtons(); }
@@ -1126,12 +1196,12 @@ function taskRow(t){
   const subTotal=t.subtasks.length;
   return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" tabindex="0">'+
     '<span class="task-priority-dot" aria-hidden="true" title="'+priorityLabel+' priority"></span>'+
-    '<input type="checkbox" '+(t.done?'checked':'')+' onchange="toggleDone('+t.id+')" aria-label="Toggle task completion">'+
+    '<input type="checkbox" '+(t.done?'checked':'')+' data-lf-change="task-done" data-task-id="'+t.id+'" aria-label="Toggle task completion">'+
     '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
     '<div class="meta"><span class="priority-label">'+priorityLabel+'</span>'+(t.due?'<span class="'+(overdue?'due-overdue':'')+'">'+(overdue?'Overdue · ':'')+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-text">↻ '+esc(t.repeatPattern||t.recur)+'</span>':'')+t.tags.map(g=>'<span>#'+esc(g)+'</span>').join('')+'</div>'+
-    (subTotal?'<div class="subtask-list">'+t.subtasks.map(s=>'<label class="sub"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSub('+t.id+','+s.id+')"> <span>'+esc(s.text)+'</span></label>').join('')+'</div>':'')+
-    '<div class="subtask-add"><input placeholder="+ add subtask" aria-label="Add subtask" onkeydown="if(event.key===\'Enter\'){addSubtask('+t.id+',this.value);this.value=\'\';}"></div></div>'+
-    '<button class="del task-action" onclick="editTaskTime('+t.id+')" aria-label="Edit time">◷</button><button class="del task-action" onclick="deleteTask('+t.id+')" aria-label="Delete task">✕</button></div>';
+    (subTotal?'<div class="subtask-list">'+t.subtasks.map(s=>'<label class="sub"><input type="checkbox" '+(s.done?'checked':'')+' data-lf-change="subtask-done" data-task-id="'+t.id+'" data-subtask-id="'+s.id+'"> <span>'+esc(s.text)+'</span></label>').join('')+'</div>':'')+
+    '<div class="subtask-add"><input placeholder="+ add subtask" aria-label="Add subtask" data-lf-keydown="add-subtask" data-task-id="'+t.id+'"></div></div>'+
+    '<button class="del task-action" data-lf-action="edit-task-time" data-task-id="'+t.id+'" aria-label="Edit time">◷</button><button class="del task-action" data-lf-action="delete-task" data-task-id="'+t.id+'" aria-label="Delete task">✕</button></div>';
 }
 
 function todayKey(d){return new Date(d).toDateString();}
@@ -1199,7 +1269,7 @@ function renderList(){
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
   const completedCount=state.tasks.filter(t=>t.done).length;
-  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><div class="task-toolbar-actions"><button type="button" class="complete-all-button" onclick="completeAllTasks()" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" onclick="clearCompletedTasks()" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
+  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><div class="task-toolbar-actions"><button type="button" class="complete-all-button" data-lf-action="complete-all" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" data-lf-action="clear-completed" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
 }
 
 function renderBoard(){
@@ -1210,7 +1280,7 @@ function renderBoard(){
       state.tasks.filter(t=>t.status===k).map(t=>'<div class="kcard priority-'+t.priority+' '+(t.done?'done':'')+'" draggable="true" ondragstart="event.dataTransfer.effectAllowed=\'move\';event.dataTransfer.setData(\'id\','+t.id+');this.classList.add(\'dragging\')" ondragend="this.classList.remove(\'dragging\')" ondragover="kanbanCardDragOver(event,this)" ondrop="kanbanCardDrop(event,this,\''+k+'\')">'+
         '<div class="kcard-title"><span class="task-priority-dot" aria-hidden="true"></span>'+esc(t.title)+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge">↻</span>':'')+'</div>'+
         '<div class="meta"><span class="priority-label">'+t.priority+'</span>'+(t.due?'<span>'+fmtDate(t.due)+'</span>':'')+intervalHtml(t)+'</div>'+(t.subtasks.length?'<div class="k-subprogress">'+t.subtasks.filter(s=>s.done).length+'/'+t.subtasks.length+' subtasks</div>':'')+
-        '<button class="linklike" onclick="editTaskTime('+t.id+')">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
+        '<button class="linklike" data-lf-action="edit-task-time" data-task-id="'+t.id+'">Edit time</button></div>').join('')+'</div>').join('')+'</div></div>';
 }
 function kanbanDragOver(e,col){
   e.preventDefault();
@@ -1256,15 +1326,15 @@ function renderCalendar(){
     const cellDate = new Date(calYear,calMonth,d);
     const isToday = cellDate.toDateString()===new Date().toDateString();
     const dayTasks = state.tasks.filter(t=>t.due && new Date(t.due).toDateString()===cellDate.toDateString());
-    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''}" ondragover="event.preventDefault()" ondrop="dropDay(event,${calYear},${calMonth},${d})">
+    cells += `<div class="cal-day ${isToday?'today':''} ${dayTasks.length>=2?'has-scroll':''}" data-lf-dragover="calendar-day" data-lf-drop-day="${calYear},${calMonth},${d}">
       <div class="dnum">${d}</div>
-      <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" onclick="editTaskTime(${t.id})" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
+      <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" data-lf-action="edit-task-time" data-task-id="${t.id}" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
     </div>`;
   }
   return `<div class="card"><div class="cal-head">
-      <button class="hbtn" onclick="shiftMonth(-1)">‹</button>
+      <button class="hbtn" data-lf-action="shift-month" data-month-delta="-1">‹</button>
       <strong>${monthName}</strong>
-      <button class="hbtn" onclick="shiftMonth(1)">›</button>
+      <button class="hbtn" data-lf-action="shift-month" data-month-delta="1">›</button>
     </div>
     <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['M','T','W','T','F','S','S']:['S','M','T','W','T','F','S']).map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
     <div class="notice">Drag a task onto another day to reschedule it.</div>
@@ -1292,9 +1362,9 @@ function renderTimeEditor(){
   const host=document.getElementById('timeEditorHost');
   if(!timeEdit){host.innerHTML='';return;}
   const t=state.tasks.find(x=>x.id===timeEdit.id);if(!t){timeEdit=null;host.innerHTML='';return;}
-  host.innerHTML=`<div class="time-edit" role="presentation" onclick="if(event.target===this)closeTimeEditor()"><div class="time-edit-card" role="dialog" aria-modal="true" aria-label="Edit task time interval">
-    <h2>Edit time: ${esc(t.title)}</h2><div class="time-fields"><button onclick="openClock('edit','start')">${timeEdit.start||'Start time'}</button><span>to</span><button onclick="openClock('edit','end')">${timeEdit.end||'End time'}</button></div>
-    <div class="time-error" id="editTimeError" role="alert"></div><div class="time-edit-actions"><button onclick="clearTaskTimes()">Clear interval</button><button onclick="closeTimeEditor()">Cancel</button><button class="primary" onclick="saveTaskTimes()">Save</button></div>
+  host.innerHTML=`<div class="time-edit" role="presentation" data-lf-overlay="close-time-editor"><div class="time-edit-card" role="dialog" aria-modal="true" aria-label="Edit task time interval">
+    <h2>Edit time: ${esc(t.title)}</h2><div class="time-fields"><button data-lf-action="open-edit-start">${timeEdit.start||'Start time'}</button><span>to</span><button data-lf-action="open-edit-end">${timeEdit.end||'End time'}</button></div>
+    <div class="time-error" id="editTimeError" role="alert"></div><div class="time-edit-actions"><button data-lf-action="clear-task-times">Clear interval</button><button data-lf-action="close-time-editor">Cancel</button><button class="primary" data-lf-action="save-task-times">Save</button></div>
   </div></div>`;
 }
 function closeTimeEditor(){timeEdit=null;renderTimeEditor();}
@@ -1351,7 +1421,7 @@ function renderClock(){
   const numbers=[];
   const add=(n,angle,radius,label)=>{
     const x=50+radius*Math.sin(angle),y=50-radius*Math.cos(angle);
-    numbers.push(`<button type="button" class="clock-number ${selected===n?'selected':''}" style="left:${x}%;top:${y}%" aria-label="${active==='hour'?'Hour':'Minute'} ${String(n).padStart(2,'0')}" onclick="selectClockValue(${n})">${label}</button>`);
+    numbers.push(`<button type="button" class="clock-number ${selected===n?'selected':''}" style="left:${x}%;top:${y}%" aria-label="${active==='hour'?'Hour':'Minute'} ${String(n).padStart(2,'0')}" data-lf-action="select-clock-value" data-clock-value="${n}">${label}</button>`);
   };
   if(active==='hour'){
     for(let i=0;i<12;i++){let angle=i*Math.PI/6; add(i,angle,39,String(i));add(i+12,angle,26,String(i+12));}
@@ -1359,11 +1429,11 @@ function renderClock(){
   const angle=(active==='hour'?(hour%12):minute/5)*Math.PI/6;
   const radius=active==='hour'?(hour>=12?26:39):39;
   const hand=`<div class="clock-hand" style="width:${radius}%;transform:rotate(${angle*180/Math.PI-90}deg)"></div><div class="clock-center"></div>`;
-  document.getElementById('clockHost').innerHTML=`<div class="clock-overlay" role="presentation" onclick="if(event.target===this)closeClock()"><div class="clock-dialog" role="dialog" aria-modal="true" aria-label="Select ${field} time">
+  document.getElementById('clockHost').innerHTML=`<div class="clock-overlay" role="presentation" data-lf-overlay="close-clock"><div class="clock-dialog" role="dialog" aria-modal="true" aria-label="Select ${field} time">
     <h2>Select ${field} time</h2><div class="clock-subtitle">24-hour clock · ${field==='start'?'Choose when this task starts':'Choose when this task ends'}</div>
-    <div class="clock-display"><button type="button" class="${active==='hour'?'active':''}" onclick="setClockActive('hour')" aria-label="Select hour">${String(hour).padStart(2,'0')}</button><span>:</span><button type="button" class="${active==='minute'?'active':''}" onclick="setClockActive('minute')" aria-label="Select minute">${String(minute).padStart(2,'0')}</button></div>
-    ${keyboard?`<div class="clock-keyboard"><input id="clockInput" type="time" aria-label="Time in 24-hour format" value="${clockValue()}" onkeydown="if(event.key==='Enter')clockOK()"></div>`:`<div class="clock-dial" id="clockDial" role="group" aria-label="${active} dial">${hand}${numbers.join('')}</div>`}
-    <div id="clockError" class="time-error" role="alert"></div><div class="clock-footer"><button type="button" class="clock-mode" onclick="toggleClockInput()" aria-label="${keyboard?'Use clock dial':'Use keyboard input'}" title="${keyboard?'Use clock dial':'Use keyboard input'}">${keyboard?'◷':'⌨'}</button><button type="button" onclick="closeClock()">Cancel</button><button type="button" onclick="clockOK()">OK</button></div>
+    <div class="clock-display"><button type="button" class="${active==='hour'?'active':''}" data-lf-action="clock-hour" aria-label="Select hour">${String(hour).padStart(2,'0')}</button><span>:</span><button type="button" class="${active==='minute'?'active':''}" data-lf-action="clock-minute" aria-label="Select minute">${String(minute).padStart(2,'0')}</button></div>
+    ${keyboard?`<div class="clock-keyboard"><input id="clockInput" type="time" aria-label="Time in 24-hour format" value="${clockValue()}" data-lf-keydown="clock-ok"></div>`:`<div class="clock-dial" id="clockDial" role="group" aria-label="${active} dial">${hand}${numbers.join('')}</div>`}
+    <div id="clockError" class="time-error" role="alert"></div><div class="clock-footer"><button type="button" class="clock-mode" data-lf-action="toggle-clock-input" aria-label="${keyboard?'Use clock dial':'Use keyboard input'}" title="${keyboard?'Use clock dial':'Use keyboard input'}">${keyboard?'◷':'⌨'}</button><button type="button" data-lf-action="close-clock">Cancel</button><button type="button" data-lf-action="clock-ok">OK</button></div>
   </div></div>`;
   const dial=document.getElementById('clockDial');
   if(dial){
