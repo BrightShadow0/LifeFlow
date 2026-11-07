@@ -147,7 +147,6 @@
   branchMap.querySelectorAll('[data-branch]').forEach(node=>node.addEventListener('click',()=>{
    const key=node.dataset.branch,detail=details[key];
    branchMap.querySelectorAll('[data-branch]').forEach(item=>{const active=item===node;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active));});
-   const panel=branchMap.querySelector('.branch-detail');panel.querySelector('b').textContent=detail[0];panel.querySelector('span').textContent=detail[1];
    branchMap.querySelectorAll('.branch-link').forEach(path=>path.classList.toggle('is-highlighted',path.classList.contains('link-'+key)||key==='idea'));
   }));
  }
