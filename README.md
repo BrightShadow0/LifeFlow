@@ -32,6 +32,18 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 
 ---
 
+## Three-Stage Experience
+
+LifeFlow is organised into three distinct stages. Each stage owns its layout and visual identity, and theme preferences must not leak between stages.
+
+1. **Why LifeFlow** — the public-facing product website, with its own page and stylesheet.
+2. **Login Terminal** — the authentication experience, with its own saved appearance preference.
+3. **LifeFlow Workspace** — the signed-in application. Workspace appearance is stored with the user's profile and applies only to the workspace.
+
+The Login Terminal and authenticated workspace are separate application stages. Successful sign-in switches the page title to **LifeFlow**; logging out restores **LifeFlow Login Terminal**. Workspace ambient settings are cleared when returning to the login stage.
+
+Keep future design and theme changes scoped to their owning stage. Do not use a workspace theme change to restyle the public website or Login Terminal.
+
 ## Tech Stack
 
 | Area | Technology |
