@@ -2467,7 +2467,7 @@ async function deleteAccount(){
   if(authEntry === 'signup') startSignup();
   else if(authEntry === 'login') showStep('stepLogin');
   const session = getSession();
-  if(session && !document.getElementById('app').style.display.includes('block')){
+  if(session && document.getElementById('app').classList.contains('lifeflow-stage-hidden')){
     normalizeDemoProfile(session.email);
     state.currentUser = session.email;
     enterApp();
