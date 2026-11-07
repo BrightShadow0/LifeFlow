@@ -534,6 +534,14 @@ let lifeFlowProfileManager = null;
 let lifeFlowThemeController = null;
 let lifeFlowTaskStateManager = null;
 let lifeFlowTaskController = null;
+const lifeFlowWorkspaceUnsubscribers = [];
+function disposeWorkspaceSubscriptions(){
+  while(lifeFlowWorkspaceUnsubscribers.length){
+    const unsubscribe=lifeFlowWorkspaceUnsubscribers.pop();
+    try{unsubscribe();}catch(error){console.warn('LifeFlow subscription cleanup failed:',error);}
+  }
+  lifeFlowThemeController?.destroy?.();
+}
 const LIFE_FLOW_APPEARANCE_KEYS = [
   'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop',
   'translucentSidebar', 'interactiveAtmosphere'
@@ -595,7 +603,7 @@ async function initializeTaskArchitecture() {
     getCurrentState: () => state,
     uid
   });
-  lifeFlowTaskStateManager.subscribe('tasks', tasks => {
+  lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe('tasks', tasks => {
     const previousCount=Array.isArray(state.tasks)?state.tasks.length:0;
     state = { ...lifeFlowTaskStateManager.getState(), tasks: tasks || [] };
     if (getSession() && !document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) {
@@ -608,7 +616,7 @@ async function initializeTaskArchitecture() {
         renderApp();
       }
     }
-  });
+  }));
   const session = getSession();
   if (session?.email) {
     lifeFlowTaskStateManager.switchUser(session.email);
@@ -654,12 +662,12 @@ function initializeNotesArchitecture() {
     stateManager: lifeFlowTaskStateManager, getCurrentState: () => state, uid
   });
   ['notes','codeNotes','noteLinks','selectedNoteId','selectedNoteKind','noteView'].forEach(key => {
-    lifeFlowTaskStateManager.subscribe(key, () => {
+    lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key, () => {
       state = lifeFlowTaskStateManager.getState();
       window.lfSelectedNote = state.selectedNoteId ?? null;
       window.lfNoteMode = state.selectedNoteKind || 'regular';
       window.lfNoteView = state.noteView || 'edit';
-    });
+    }));
   });
   lifeFlowNoteController.ensure();
   window.lfSelectedNote = lifeFlowNoteController.selectedId();
