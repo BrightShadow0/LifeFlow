@@ -968,7 +968,8 @@ function taskFormHtml(){
   return `<div class="card new-task-card"><h2>New Task</h2>
     <div class="new-task-fields">
       <input id="nt_title" aria-label="Task title" placeholder="Task title" autocomplete="off">
-      <input id="nt_due" type="date" aria-label="Due date" data-lf-change="repeat-fields">
+      <label class="task-field-select"><span>Start date</span><input id="nt_startDate" type="date" aria-label="Start date"></label>
+      <label class="task-field-select"><span>Due date</span><input id="nt_due" type="date" aria-label="Due date" data-lf-change="repeat-fields"></label>
       <label class="task-field-select" aria-label="Priority"><span>Priority</span><select id="nt_pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></label>
     </div>
     <div id="nt_repeatInterval" class="repeat-interval">
@@ -1052,15 +1053,18 @@ function updateRepeatIntervalFields(){
 function submitTask(){
   const title = document.getElementById('nt_title').value.trim();
   if(!title) return;
+  const startValue = document.getElementById('nt_startDate')?.value||'';
   const dueValue = document.getElementById('nt_due').value;
   const tags = document.getElementById('nt_tags')?.value.split(',').map(s=>s.trim()).filter(Boolean)||[];
   const recur='daily';
   const interval=document.getElementById('nt_interval')?.value||'week';
-  const startDate=dateInputToLocalDate(dueValue)||new Date();
+  const startDate=dateInputToLocalDate(startValue)||new Date();
   startDate.setHours(0,0,0,0);
+  const dueDate=dateInputToLocalDate(dueValue);
+  if(dueDate){dueDate.setHours(0,0,0,0);if(dueDate<startDate){toast('Due date must be on or after the start date.');return;}}
   if((newTaskTimes.start||newTaskTimes.end) && !validInterval(newTaskTimes.start,newTaskTimes.end)){document.getElementById('nt_timeError').textContent='Choose both times, with the end after the start (same day).';return;}
   if(recur==='none'){
-    addTask({title, due: dueValue?dateToIsoDay(startDate):null, startTime:newTaskTimes.start||null, endTime:newTaskTimes.end||null, priority:document.getElementById('nt_pri').value, recur:'none', tags});
+    addTask({title, startDate:dateToIsoDay(startDate), due:dueDate?dateToIsoDay(dueDate):null, startTime:newTaskTimes.start||null, endTime:newTaskTimes.end||null, priority:document.getElementById('nt_pri').value, recur:'none', tags});
     clearNewTimes();
     return;
   }
@@ -1073,7 +1077,7 @@ function submitTask(){
   if(endDate<startDate){ toast('The repeat end date must be on or after the start date.'); return; }
   const dates=recurringDates(startDate,endDate,recur);
   const base={title,tags,priority:document.getElementById('nt_pri').value,startTime:newTaskTimes.start||null,endTime:newTaskTimes.end||null,status:'todo',done:false,subtasks:[],repeatPattern:recur,repeatEnd:dateToIsoDay(endDate)};
-  const recurringTasks=dates.map(d=>Object.assign({id:uid(),due:dateToIsoDay(d),recur:'none'},base));
+  const recurringTasks=dates.map(d=>Object.assign({id:uid(),startDate:dateToIsoDay(d),due:dueDate?dateToIsoDay(dueDate):dateToIsoDay(d),recur:'none'},base));
   if(lifeFlowTaskController) lifeFlowTaskController.addMany(recurringTasks);
   else { state.tasks.push(...recurringTasks); save(); }
   clearNewTimes();
