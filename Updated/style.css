@@ -4475,3 +4475,56 @@ body::-webkit-scrollbar-corner{
 #app[data-theme="light"] .sidebottom{border-top-color:#dce2e8}
 #app[data-theme="light"] .sidebar-action.logout{color:#b83242}
 #app[data-theme="light"] .sidebar-action.logout .nav-icon{color:#b83242}
+
+
+/* Knowledge Architecture context menu and reusable search snippets. */
+#lfNoteContextMenu{
+  position:fixed;
+  z-index:10050;
+  width:250px;
+  max-width:calc(100vw - 16px);
+  max-height:min(70vh,520px);
+  overflow:auto;
+  padding:7px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--card);
+  color:var(--text);
+  box-shadow:0 18px 55px rgba(0,0,0,.34);
+  backdrop-filter:blur(16px);
+}
+#lfNoteContextMenu button{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  width:100%;
+  min-height:36px;
+  padding:8px 10px;
+  border:0;
+  border-radius:7px;
+  background:transparent;
+  color:var(--text);
+  text-align:left;
+  font:inherit;
+  font-size:12px;
+  cursor:pointer;
+}
+#lfNoteContextMenu button:hover,
+#lfNoteContextMenu button:focus-visible{background:var(--accent-soft);outline:none}
+#lfNoteContextMenu button:disabled{opacity:.6;cursor:default}
+#lfNoteContextMenu button.current{color:var(--muted)}
+#lfNoteContextMenu button small{margin-left:auto;color:var(--muted);font-size:10px}
+#lfNoteContextMenu button.danger{color:var(--danger)}
+#lfNoteContextMenu button.danger:hover{background:color-mix(in srgb,var(--danger) 12%,transparent)}
+#lfNoteContextMenu .note-context-label{
+  padding:9px 10px 4px;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+#lfNoteContextMenu .note-context-divider{height:1px;margin:6px 4px;background:var(--border)}
+#lfNoteContextMenu .note-context-folder span{color:var(--accent)}
+#app .search-snippet-folder{color:var(--muted);font-size:10px}
+#app .search-snippet-text{font-size:11px;line-height:1.5}
+.note-item[data-lf-note-context]{cursor:context-menu}
