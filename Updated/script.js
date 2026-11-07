@@ -598,7 +598,11 @@ async function initializeTaskArchitecture() {
   lifeFlowTaskStateManager.subscribe('tasks', tasks => {
     state = { ...lifeFlowTaskStateManager.getState(), tasks: tasks || [] };
     if (getSession() && !document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) {
-      renderApp();
+      const pending=window.lifeFlowTargetedTaskId;
+      if(pending!==undefined&&pending!==null){
+        window.LifeFlowTasksModule.updateTaskCompletion(pending,!!tasks.find(task=>String(task.id)===String(pending))?.done,document.getElementById('main'));
+        window.lifeFlowTargetedTaskId=null;
+      }else renderApp();
     }
   });
   const session = getSession();
@@ -617,6 +621,26 @@ function updateWorkspaceState(patch) {
   state = { ...state, ...patch };
   save();
   return state;
+}
+
+
+let lifeFlowViewOrchestrator = null;
+function initializeUIArchitecture() {
+  if(!window.LifeFlowUIModule)throw new Error('UI orchestrator module is unavailable.');
+  lifeFlowViewOrchestrator=window.LifeFlowUIModule.createViewOrchestrator();
+  window.LifeFlowTasksModule.configureRenderers({today:()=>renderToday(),list:()=>renderList(),board:()=>renderBoard(),calendar:()=>renderCalendar()});
+  window.LifeFlowNotesModule.configureRenderers({notes:()=>renderNotesManager(),branches:()=>renderBranches()});
+  window.LifeFlowAuthModule.configureRenderers({account:()=>renderAccount(),about:()=>renderAbout()});
+  lifeFlowViewOrchestrator.configure({
+    today:()=>window.LifeFlowTasksModule.render(state,'today'),
+    list:()=>window.LifeFlowTasksModule.render(state,'list'),
+    board:()=>window.LifeFlowTasksModule.render(state,'board'),
+    calendar:()=>window.LifeFlowTasksModule.render(state,'calendar'),
+    notes:()=>window.LifeFlowNotesModule.render(state,'notes'),
+    branches:()=>window.LifeFlowNotesModule.render(state,'branches'),
+    account:()=>window.LifeFlowAuthModule.render(state,'account'),
+    about:()=>window.LifeFlowAuthModule.render(state,'about')
+  });
 }
 
 let lifeFlowNoteController = null;
@@ -892,7 +916,10 @@ function updateUser(fn){
 
 function uid(){ return Date.now()+Math.floor(Math.random()*1000); }
 function addTask(task){ if(lifeFlowTaskController) lifeFlowTaskController.add(task); else { state.tasks.push(Object.assign({id:uid(),title:'',tags:[],priority:'medium',due:null,startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]},task)); save(); renderApp(); } }
-function toggleDone(id){ if(lifeFlowTaskController) lifeFlowTaskController.toggleDone(id); else { const task=state.tasks.find(item=>item.id===id); if(task){task.done=!task.done;save();renderApp();} } }
+function toggleDone(id){
+  if(lifeFlowTaskController){window.lifeFlowTargetedTaskId=id;lifeFlowTaskController.toggleDone(id);}
+  else{const task=state.tasks.find(item=>item.id===id);if(task){task.done=!task.done;save();renderApp();}}
+}
 let lastDeletedTask=null;
 let lastDeletedTimer=null;
 function deleteTask(id){
@@ -1069,7 +1096,7 @@ function taskRow(t){
   const priorityLabel=t.priority==='high'?'High':t.priority==='medium'?'Medium':'Low';
   const subDone=t.subtasks.filter(s=>s.done).length;
   const subTotal=t.subtasks.length;
-  return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" tabindex="0">'+
+  return '<div class="task '+(t.done?'done ':'')+(overdue?'overdue ':'')+'priority-'+t.priority+'" data-task-id="'+t.id+'" tabindex="0">'+
     '<span class="task-priority-dot" aria-hidden="true" title="'+priorityLabel+' priority"></span>'+
     '<input type="checkbox" '+(t.done?'checked':'')+' data-lf-change="task-done" data-task-id="'+t.id+'" aria-label="Toggle task completion">'+
     '<div class="task-body"><div class="task-title-line"><div class="title">'+esc(t.title)+'</div>'+((t.recur!=='none'||t.repeatPattern)?'<span class="recurrence-badge" title="Recurring task">↻</span>':'')+(subTotal?'<span class="subtask-count" title="'+subDone+' of '+subTotal+' subtasks complete">'+subDone+'/'+subTotal+'</span>':'')+'</div>'+
@@ -1333,33 +1360,20 @@ let temporaryTheme=null;
 let temporaryThemeTimer=null;
 function renderApp(){
   newTaskTimes={start:'',end:''};
-  if(!getSession()) return; // no valid session: stay on the auth screen
-  // Clear a stale entry animation before any theme or page rendering can fail.
-  document.getElementById('main')?.classList.remove('page-enter');
-  applyDensity();
-  renderNav();
-  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings'};
+  if(!getSession())return;
+  applyDensity();renderNav();
+  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings',about:'Why LifeFlow'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
-  const u=currentUser(); applyTheme(temporaryTheme||u?.theme||'dark'); applyWorkspaceAppearance(u); initWorkspaceAtmosphereInteraction(); applyAmbientEnvironment();
-  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'';
-  const el = document.getElementById('main');
-  if(view==='today') el.innerHTML = renderToday();
-  else if(view==='list') el.innerHTML = renderList();
-  else if(view==='board') el.innerHTML = renderBoard();
-  else if(view==='calendar') el.innerHTML = renderCalendar();
-  else if(view==='branches'){ el.innerHTML = renderBranches(); initBranchesGraph(el); }
-  else if(view==='notes'){ el.innerHTML = renderNotesManager(); const preview=el.querySelector('#kn_preview'); if(preview)renderMarkdownPreview(preview,noteStore('regular').find(function(n){return String(n.id)===String(lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote);})?.content||''); }
-  else if(view==='about') el.innerHTML = renderAbout();
-  else if(view==='account') el.innerHTML = renderAccount();
-  if(window.lifeFlowLoginEntry){
-    el.classList.remove('page-enter');
-    void el.offsetWidth;
-    el.classList.add('page-enter');
-    window.lifeFlowLoginEntry=false;
-    setTimeout(()=>el.classList.remove('page-enter'),900);
-  }
-  initThemePull();
-  lfAccessibilityPass();
+  const u=currentUser();applyTheme(temporaryTheme||u?.theme||'dark');applyWorkspaceAppearance(u);initWorkspaceAtmosphereInteraction();applyAmbientEnvironment();
+  document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}):'';
+  const el=document.getElementById('main');
+  if(!lifeFlowViewOrchestrator)initializeUIArchitecture();
+  lifeFlowViewOrchestrator.render({view,state,container:el,onAfterRender:activeView=>{
+    if(activeView==='branches')initBranchesGraph(el);
+    if(activeView==='notes'){const preview=el.querySelector('#kn_preview');if(preview)renderMarkdownPreview(preview,noteStore('regular').find(n=>String(n.id)===String(lifeFlowNoteController?.selectedId()??window.lfSelectedNote))?.content||'');}
+    if(window.lifeFlowLoginEntry)window.lifeFlowLoginEntry=false;
+  }});
+  initThemePull();lfAccessibilityPass();
 }
 function lfAccessibilityPass(){
   const root=document.documentElement;
@@ -2279,6 +2293,7 @@ async function deleteAccount(){
     await initializeThemeArchitecture();
     await initializeTaskArchitecture();
     initializeNotesArchitecture();
+    initializeUIArchitecture();
   } catch (error) {
     console.error('LifeFlow core modules could not be fully initialized:', error);
     showToast('Some workspace features could not be initialized. Please refresh the workspace.');
