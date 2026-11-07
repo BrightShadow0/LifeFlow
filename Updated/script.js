@@ -2224,32 +2224,53 @@ function renderDangerTab(u){
 }
 function resetAllData(){
   if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting? There is no undo.')) return;
-  doLogout(); // destroys the session and returns to the login screen
-  ['lifeflow2_users','lifeflow2_state'].forEach(k=>localStorage.removeItem(k));
+  // Let the active managers flush first, then remove every LifeFlow-owned key.
+  doLogout();
+  const keysToRemove=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key && (
+      key==='lifeflow2_users' ||
+      key==='lifeflow2_state' ||
+      key.startsWith('lifeflow2_state_') ||
+      key==='lifeflow2_auth_theme' ||
+      key==='lifeflow2_density' ||
+      key==='lifeflow_login_guard' ||
+      key==='lifeflow2_session'
+    )) keysToRemove.push(key);
+  }
+  keysToRemove.forEach(key=>localStorage.removeItem(key));
   sessionStorage.removeItem('lifeflow2_oauth');
+  sessionStorage.removeItem('lifeflow2_session');
   state = {tasks:[]}; // fresh in-memory state; nothing is written back to storage
   alert('All app data erased. You can sign up fresh.');
 }
 async function deleteAccount(){
   const passEl = document.getElementById('danger_pass');
   const mode = document.getElementById('danger_mode').value;
+  const deletingEmail = state.currentUser;
   const users = getUsers();
-  const u = users[state.currentUser];
-  if(u.passwordHash && !(await verifyPassword(passEl ? passEl.value : '', u))){ alert('Incorrect password for '+state.currentUser+'.'); return; }
+  const u = users[deletingEmail];
+  if(u.passwordHash && !(await verifyPassword(passEl ? passEl.value : '', u))){ alert('Incorrect password for '+deletingEmail+'.'); return; }
+  let permanentlyDeleted = false;
   if(mode==='soft'){
     u.deletedAt = new Date(Date.now()+30*86400000).toISOString();
     saveUsers(users);
-    alert(state.currentUser+' scheduled for deletion. Data is recoverable until '+new Date(u.deletedAt).toDateString()+'.');
+    alert(deletingEmail+' scheduled for deletion. Data is recoverable until '+new Date(u.deletedAt).toDateString()+'.');
   }else{
-    if(!confirm('Permanently delete '+state.currentUser+' right now? The email becomes reusable immediately. There is no undo.')) return;
-    delete users[state.currentUser];
+    if(!confirm('Permanently delete '+deletingEmail+' right now? The email becomes reusable immediately. There is no undo.')) return;
+    delete users[deletingEmail];
     saveUsers(users);
-    const gone = !getUsers()[state.currentUser];
-    alert(gone
-      ? state.currentUser+' permanently deleted. That email is free to sign up again.'
+    permanentlyDeleted = !getUsers()[deletingEmail];
+    alert(permanentlyDeleted
+      ? deletingEmail+' permanently deleted. That email is free to sign up again.'
       : 'Delete failed - storage did not update. Try Reset All App Data instead.');
   }
+  // Sign-out flushes the active StateManager before we remove its account key.
   doLogout();
+  if(permanentlyDeleted){
+    try{localStorage.removeItem(profileStateKey(deletingEmail));}catch(_){}
+  }
 }
 
 (async function boot(){
