@@ -438,7 +438,7 @@ async function doLogin(){
   const identifier=emailInput.value.trim().toLowerCase(),pass=passInput.value;
   setLoginError('');
   if(!identifier){setLoginError('Enter your email address.','loginEmail');emailInput.focus();return;}
-  if(identifier.includes('@')&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)){
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)){
     setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
   }
     if(!pass){setLoginError('Enter your password.','loginPass');passInput.focus();return;}
