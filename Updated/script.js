@@ -1511,7 +1511,8 @@ function renderClock(){
   }else for(let i=0;i<12;i++) add(i*5,i*Math.PI/6,39,String(i*5).padStart(2,'0'));
   const angle=(active==='hour'?(hour%12):minute/5)*Math.PI/6;
   const radius=active==='hour'?(hour>=12?26:39):39;
-  const hand=`<div class="clock-hand" data-clock-hand="${active==='hour'?'hour-'+hour:'minute-'+minute}"></div><div class="clock-center"></div>`;
+  const handKey=active==='hour'?'hour-'+hour:'minute-'+minute;
+  const hand=`<div class="clock-hand" data-clock-hand="${handKey}"></div><div class="clock-center"></div>`;
   document.getElementById('clockHost').innerHTML=`<div class="clock-overlay" role="presentation" data-lf-overlay="close-clock"><div class="clock-dialog" role="dialog" aria-modal="true" aria-label="Select ${field} time">
     <h2>Select ${field} time</h2><div class="clock-subtitle">24-hour clock · ${field==='start'?'Choose when this task starts':'Choose when this task ends'}</div>
     <div class="clock-display"><button type="button" class="${active==='hour'?'active':''}" data-lf-action="clock-hour" aria-label="Select hour">${String(hour).padStart(2,'0')}</button><span>:</span><button type="button" class="${active==='minute'?'active':''}" data-lf-action="clock-minute" aria-label="Select minute">${String(minute).padStart(2,'0')}</button></div>
