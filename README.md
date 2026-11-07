@@ -34,9 +34,15 @@ LifeFlow brings tasks, schedules, notes, and personal preferences into one brows
 
 ## Brand Identity
 
-LifeFlow uses the Compass mark: a four-point cyan-teal compass star inside a segmented circular ring. It represents direction, clarity, balance, and purposeful progress. The mark is shared across the public landing page, login terminal, workspace sidebar, and browser favicon. Its cyan-teal treatment remains consistent across workspace colour themes and light/dark appearance modes.
+LifeFlow's identity is built around a distinctive geometric symbol and a clean wordmark.
 
-The primary vector asset is `Updated/compass-mark.svg`.
+- **Symbol:** Three ascending, softly rounded, slanted bars. Their rising heights suggest momentum, progress, and ideas taking shape.
+- **Colour:** A coordinated cyan, electric-blue, and violet gradient gives the mark its recognisable energy. The colours transition from cool cyan through blue to violet.
+- **Wordmark:** The name **LifeFlow** uses a bold, tightly tracked sans-serif treatment. The wordmark pairs with the symbol as one unified lockup.
+- **Tagline:** The primary logo lockup is intentionally kept clean, without secondary side text or a tagline.
+- **Use:** Keep the symbol and wordmark proportions, spacing, and gradient consistent across the public website, Login Terminal, workspace, and browser identity. The logo should remain legible against both dark and light surfaces.
+
+The primary vector symbol is `Updated/compass-mark.svg`. The filename is retained for compatibility; the artwork is the three-bar LifeFlow mark, not a compass icon. Shared wordmark styling is defined in `Updated/brand.css`.
 
 ---
 
