@@ -4413,3 +4413,11 @@ body::-webkit-scrollbar-corner{
 #app .backlink-item strong{font-size:11px;color:var(--accent)}
 #app .backlink-item span{font-size:11px;line-height:1.5;white-space:normal}
 #app .note-backlinks-empty{margin:0;color:var(--muted);font-size:11px}
+
+/* Release 2.4: interactive knowledge graph */
+#app .branch-edge-hit{stroke:transparent;stroke-width:18;fill:none;pointer-events:stroke;cursor:pointer}
+#app .branch-edge-hit:focus{stroke:color-mix(in srgb,var(--accent) 25%,transparent);outline:none}
+#app .branch-focus-active .branch-dimmed{opacity:.12;transition:opacity .2s ease}
+#app .branch-focus-active .branch-node:not(.branch-dimmed) circle{filter:drop-shadow(0 0 8px var(--accent))}
+#app .branch-graph-controls button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+#app .branch-graph-controls{z-index:2;flex-wrap:wrap}
