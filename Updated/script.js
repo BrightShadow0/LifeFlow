@@ -178,7 +178,7 @@ window.addEventListener('beforeunload',()=>{
   }catch(e){}
 });
 
-setInterval(()=>{ if(!getSession() && document.getElementById('app').style.display==='block') doLogout(); }, 60000);
+setInterval(()=>{ if(!getSession() && !document.getElementById('app').classList.contains('lifeflow-stage-hidden')) doLogout(); }, 60000);
 
 function showStep(id){
   document.querySelectorAll('.authstep').forEach(s=>s.classList.remove('active'));
@@ -533,8 +533,8 @@ function enterApp(){
     return;
   }
   document.body.classList.remove('auth-open');
-  document.getElementById('authScreen').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('authScreen').classList.add('lifeflow-stage-hidden');
+  document.getElementById('app').classList.remove('lifeflow-stage-hidden');
   window.lifeFlowLoginEntry=true;
   renderApp();
 }
@@ -555,8 +555,8 @@ function doLogout(){
   // workspace colour theme cannot leak onto the login screen.
   applyAuthTheme(getAuthTheme());
   document.body.classList.add('auth-open');
-  document.getElementById('app').style.display='none';
-  document.getElementById('authScreen').style.display='block';
+  document.getElementById('app').classList.add('lifeflow-stage-hidden');
+  document.getElementById('authScreen').classList.remove('lifeflow-stage-hidden');
   resetAuthViewport();
   document.getElementById('oauthNotice').hidden=true;
   showStep('stepLogin');
@@ -716,7 +716,7 @@ function setTranslucentSidebar(enabled){
 function setTheme(theme){
   const u=currentUser();
   const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
-  const appVisible=document.getElementById('app')?.style.display==='block';
+  const appVisible=!document.getElementById('app')?.classList.contains('lifeflow-stage-hidden');
   const main=document.getElementById('main');
   const scrollState={
     x:window.scrollX||window.pageXOffset||0,
@@ -762,7 +762,7 @@ function setAutoThemeSync(enabled){
 function initAppThemeSync(){
   if(!window.matchMedia)return;
   const mq=window.matchMedia('(prefers-color-scheme: light)');
-  const onChange=()=>{ const u=currentUser(); if(u?.autoTheme && document.getElementById('app')?.style.display==='block') renderApp(); };
+  const onChange=()=>{ const u=currentUser(); if(u?.autoTheme && !document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) renderApp(); };
   mq.addEventListener?.('change',onChange);
   mq.addListener?.(onChange);
 }
@@ -2078,7 +2078,7 @@ function showTaskMasterActivation(){
     overlay.classList.add('is-fading');
     setTimeout(()=>{
       if(overlay.isConnected) overlay.remove();
-      if(document.getElementById('app')?.style.display==='block') renderApp();
+      if(!document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) renderApp();
     },560);
   };
 

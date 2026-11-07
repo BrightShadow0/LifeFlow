@@ -4223,3 +4223,8 @@ body.auth-embed #authScreen .termcontent input{height:56px}
 #authScreen .auth-brand-word span{color:inherit}
 #authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
 #authScreen .auth-brand-watermark{color:#12d9e50b}
+
+
+/* Auth and workspace stage visibility without inline display styles. */
+#authScreen.lifeflow-stage-hidden,
+#app.lifeflow-stage-hidden{display:none!important}
