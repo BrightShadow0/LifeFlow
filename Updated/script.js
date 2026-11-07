@@ -427,10 +427,11 @@ function setLoginLoading(loading){
   button.querySelector('.submit-label').textContent=loading?'Signing in…':'Sign in';
 }
 function setLoginError(message,fieldId){
-  const el=document.getElementById('loginError');el.textContent=message;el.hidden=!message;
-  ['loginEmail','loginPass','captchaAnswer'].forEach(id=>{const input=document.getElementById(id);if(input)input.removeAttribute('aria-invalid');});
-  el.style.display=message?'block':'none';
-  if(fieldId){const field=document.getElementById(fieldId);if(field)field.setAttribute('aria-invalid','true');}
+  const general=document.getElementById('loginError');
+  const map={loginEmail:'loginEmailError',loginPass:'loginPassError',captchaAnswer:'captchaAnswerError'};
+  Object.entries(map).forEach(([id,errorId])=>{const field=document.getElementById(id),err=document.getElementById(errorId);if(field)field.removeAttribute('aria-invalid');if(err){err.textContent='';err.hidden=true;}});
+  if(fieldId&&map[fieldId]){const field=document.getElementById(fieldId),err=document.getElementById(map[fieldId]);if(field)field.setAttribute('aria-invalid','true');if(err){err.textContent=message;err.hidden=!message;}if(general){general.textContent='';general.hidden=true;general.style.display='none';}return;}
+  if(general){general.textContent=message;general.hidden=!message;general.style.display=message?'block':'none';}
 }
 async function doLogin(){
   if(loginAttemptsInProgress)return;

@@ -16,12 +16,15 @@
     <div id="stepLogin" class="authstep active">
       <form id="loginForm" novalidate>
         <div class="auth-label-row"><label for="loginEmail">EMAIL / USERNAME</label></div>
-        <input id="loginEmail" name="username" type="email" placeholder="Email address" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="loginError" required>
+        <input id="loginEmail" name="username" type="email" placeholder="Email address" autocomplete="email" autocapitalize="none" spellcheck="false" aria-describedby="loginEmailError" required>
+        <small id="loginEmailError" class="auth-field-error" hidden></small>
         <div class="auth-label-row"><label for="loginPass">PASSWORD</label><button class="linklike forgot-inline" type="button" onclick="showStep('stepForgot')">Forgot password?</button></div>
-        <div class="auth-password-wrap"><input id="loginPass" name="password" type="password" placeholder="Password" autocomplete="current-password" aria-describedby="capsWarning loginError" required><button type="button" class="password-eye" aria-label="Show password" aria-pressed="false" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
+        <div class="auth-password-wrap"><input id="loginPass" name="password" type="password" placeholder="Password" autocomplete="current-password" aria-describedby="capsWarning loginPassError" required><button type="button" class="password-eye" aria-label="Show password" aria-pressed="false" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
+        <small id="loginPassError" class="auth-field-error" hidden></small>
         <p id="capsWarning" class="auth-inline-hint" role="status" aria-live="polite" hidden>Caps Lock is on.</p>
         <div class="auth-remember"><label><input id="rememberMe" type="checkbox"> <span>Remember me</span></label></div>
-        <div id="loginCaptcha" class="login-captcha" hidden><label for="captchaAnswer">Quick verification: <span id="captchaQuestion"></span></label><input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="Answer" aria-describedby="captchaHelp"><small id="captchaHelp">Complete this check after repeated sign-in attempts.</small></div>
+        <div id="loginCaptcha" class="login-captcha" hidden><label for="captchaAnswer">Quick verification: <span id="captchaQuestion"></span></label><input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="Answer" aria-describedby="captchaHelp captchaAnswerError">
+          <small id="captchaAnswerError" class="auth-field-error" hidden></small><small id="captchaHelp">Complete this check after repeated sign-in attempts.</small></div>
         <div id="loginError" class="notice auth-error" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
         <button class="primary auth-submit" id="loginSubmit" type="submit" style="width:100%"><span class="submit-label">Sign in</span><span class="submit-spinner" aria-hidden="true"></span></button>
       </form>
