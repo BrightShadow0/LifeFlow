@@ -277,6 +277,7 @@ function initTaskEventDelegation(){
     else if(action==='command-close') closeCommandPalette();
     else if(action==='command-view'){view=control.dataset.view;closeCommandPalette();renderApp();}
     else if(action==='command-task'){view='list';closeCommandPalette();renderApp();requestAnimationFrame(()=>document.querySelector('[data-task-id="'+control.dataset.taskId+'"]')?.focus());}
+    else if(action==='command-note'){closeCommandPalette();view='notes';selectKnowledgeNote(control.dataset.noteId,'regular','edit');}
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-new') newKnowledgeNote('regular');
     else if(action==='note-delete-all') deleteAllKnowledgeNotes('regular');
@@ -1369,7 +1370,7 @@ function openCommandPalette(){
   const overlay=document.createElement('div');
   overlay.id='lfCommandPalette';
   overlay.className='command-overlay';
-  overlay.innerHTML='<div class="command-panel" role="dialog" aria-modal="true" aria-label="LifeFlow search"><div class="command-head"><div><strong>Search LifeFlow</strong><span>Tasks, pages and actions</span></div><button class="command-close" type="button" data-lf-action="command-close" aria-label="Close">×</button></div><input id="lfCommandInput" class="command-input" autocomplete="off" placeholder="Search tasks or jump to a page..." aria-label="Search tasks or pages"><div id="lfCommandResults" class="command-results"></div><div class="command-hint">Esc to close · Enter to open</div></div>';
+  overlay.innerHTML='<div class="command-panel" role="dialog" aria-modal="true" aria-label="LifeFlow search"><div class="command-head"><div><strong>Search LifeFlow</strong><span>Notes, tasks, pages and actions</span></div><button class="command-close" type="button" data-lf-action="command-close" aria-label="Close">×</button></div><input id="lfCommandInput" class="command-input" autocomplete="off" placeholder="Search notes, tasks or pages..." aria-label="Search LifeFlow"><div id="lfCommandResults" class="command-results"></div><div class="command-hint">Esc to close · Enter to open</div></div>';
   document.body.appendChild(overlay);
   overlay.addEventListener('click',e=>{if(e.target===overlay)closeCommandPalette();});
   const input=document.getElementById('lfCommandInput');
@@ -1384,8 +1385,11 @@ function renderCommandResults(){
   const q=input.value.trim().toLowerCase();
   const pages=[['today','Today','See what needs attention now'],['list','Tasks','Browse and manage tasks'],['calendar','Calendar','View deadlines and scheduled time'],['board','Board','Move work through the flow'],['account','Profile & settings','Personalize LifeFlow']];
   const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" data-lf-action="command-view" data-view="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
-  const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,8).map(t=>'<button type="button" class="command-result" data-lf-action="command-task" data-task-id="'+t.id+'"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
-  host.innerHTML=(matches.concat(tasks)).slice(0,10).join('')||'<div class="command-empty">No matching pages or tasks.</div>';
+  const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,5).map(t=>'<button type="button" class="command-result" data-lf-action="command-task" data-task-id="'+t.id+'"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
+  const noteResults=lifeFlowNoteController?.searchNotes(q)||[];
+  const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+note.id+'"><b>'+esc(note.title||'Untitled note')+'</b><span>'+esc(note.folder)+' · '+lifeFlowNoteController.highlightText(note.snippet,note.terms)+'</span></button>');
+  const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
+  host.innerHTML=(matches.concat(tasks)).slice(0,5).join('')+heading+noteHtml.join('')||'<div class="command-empty">No matching pages, tasks or notes.</div>';
 }
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape')closeCommandPalette();
@@ -1543,7 +1547,14 @@ function openKnowledgeNoteByTitle(title){
   if(noteStore('regular').length>before)showToast('Created note: '+note.title);
   renderApp();
 }
-function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}\nfunction renderNotesManager(){
+function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}\nfunction renderNotesListOnly(){
+  const main=document.getElementById('main');if(!main||view!=='notes')return;
+  const active=document.activeElement,start=active?.selectionStart,end=active?.selectionEnd;
+  const temp=document.createElement('div');temp.innerHTML=renderNotesManager();
+  const current=main.querySelector('.notes-list'),next=temp.querySelector('.notes-list');
+  if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
+}
+function renderNotesManager(){
   const u=currentUser();
   if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
@@ -1557,8 +1568,10 @@ function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!nam
   const mode=(lifeFlowNoteController?.noteView() || window.lfNoteView)==='preview'?'preview':'edit';
   const folders=lifeFlowNoteController?.getFolders()||[{id:'unfiled',name:'Unfiled',icon:'▤'}],collapsed=new Set(state.collapsedFolders||[]);
   let html='<div class="knowledge-shell"><div class="notes-layout"><div class="card notes-list"><div class="notes-list-head"><strong>'+items.length+' note'+(items.length===1?'':'s')+'</strong><div class="notes-list-actions"><button class="primary" data-lf-action="note-new">+ New</button><button type="button" data-lf-action="note-add-folder">+ Folder</button><button class="del notes-delete-all" data-lf-action="note-delete-all" '+(items.length?'':'disabled')+'>Delete all</button></div></div>';
+  const searchQuery=String(state.searchQuery||''),filteredItems=searchQuery?lifeFlowNoteController.searchNotes(searchQuery).map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
+  html+='<div class="notes-search-wrap"><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search titles, content, tags or folders..." aria-label="Search notes" data-lf-input="notes-search"><span>'+filteredItems.length+' results</span></div>';
   html+='<div class="notes-items">';
-  folders.forEach(function(folder){const group=items.filter(n=>(n.folder||'Unfiled')===folder.name);html+='<section class="note-folder"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+esc(folder.name)+'"><span>'+esc(folder.icon||'▣')+'</span><strong>'+esc(folder.name)+'</strong><small>'+group.length+'</small><span class="folder-chevron">'+(collapsed.has(folder.name)?'▸':'▾')+'</span></button>';if(!collapsed.has(folder.name)){group.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});}html+='</section>';});
+  folders.forEach(function(folder){const group=filteredItems.filter(n=>(n.folder||'Unfiled')===folder.name);html+='<section class="note-folder"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+esc(folder.name)+'"><span>'+esc(folder.icon||'▣')+'</span><strong>'+esc(folder.name)+'</strong><small>'+group.length+'</small><span class="folder-chevron">'+(collapsed.has(folder.name)?'▸':'▾')+'</span></button>';if(!collapsed.has(folder.name)){group.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});}html+='</section>';});
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
