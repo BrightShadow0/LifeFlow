@@ -556,6 +556,9 @@ function initLoginAccessibility(){
       if(control.dataset.appAction==='export-csv') exportData('csv');
       else if(control.dataset.appAction==='export-json') exportData('json');
       else if(control.dataset.appAction==='logout') doLogout();
+      else if(control.dataset.appAction==='set-view') setView(control.dataset.view);
+      else if(control.dataset.appAction==='set-backdrop') setWorkspaceBackdrop(control.dataset.backdropId);
+      else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
   const authRoot=document.getElementById('authScreen');
@@ -730,7 +733,7 @@ function workspaceBackdropOptions(u=currentUser()){
   const theme=normalizedBackdropTheme(u);
   const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
   const selected=options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0];
-  return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" onclick="setWorkspaceBackdrop('${id}')" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
+  return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" data-app-action="set-backdrop" data-backdrop-id="${id}" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
 }
 function defaultBackdropForTheme(theme){
   return (WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire)[0][0];
@@ -1033,7 +1036,7 @@ function undoDelete(){
 function showUndoToast(message){
   const host=document.getElementById('toastHost'); if(!host)return;
   clearTimeout(lastDeletedTimer);
-  host.innerHTML='<div class="toast" role="status"><span>'+esc(message)+'</span><button class="undo-action" type="button" onclick="undoDelete()">Undo</button></div>';
+  host.innerHTML='<div class="toast" role="status"><span>'+esc(message)+'</span><button class="undo-action" type="button" data-app-action="undo-delete">Undo</button></div>';
   lastDeletedTimer=setTimeout(()=>{lastDeletedTask=null;host.innerHTML='';},5000);
 }
 function addSubtask(id, text){
@@ -1068,11 +1071,11 @@ function exportData(fmt){
 function hasPremiumAccess(u){ return !!u && (u.tier==='Premium' || u.tier==='Team Admin'); }
 function renderNav(){
   const sidebar=document.querySelector('.app-sidebar'); if(!sidebar)return;
-  sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" onclick="exportData(\'csv\')"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" onclick="exportData(\'json\')"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" onclick="doLogout()"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
+  sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
   if(hasPremiumAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
   tabs.push(['account','Profile & settings','◎']);
-  document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" title="'+x[1]+'" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" onclick="setView(\''+x[0]+'\')"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
+  document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" title="'+x[1]+'" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
 function setView(v){const u=currentUser();if((v==='branches'||v==='notes')&&!hasPremiumAccess(u)){toast('This feature is available to Premium and Team Admin accounts.');return;}view=v;clearNewTimes();renderApp();}
 function taskFormHtml(){
