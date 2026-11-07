@@ -4430,3 +4430,19 @@ body::-webkit-scrollbar-corner{
 #app .branch-focus-active .branch-node:not(.branch-dimmed) circle{filter:drop-shadow(0 0 8px var(--accent))}
 #app .branch-graph-controls button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 #app .branch-graph-controls{z-index:2;flex-wrap:wrap}
+
+
+/* Calendar cells: identical dimensions for dates and empty leading/trailing slots. */
+#app #main .cal-grid{grid-auto-rows:108px;align-items:stretch}
+#app #main .cal-grid .cal-day,
+#app #main .cal-grid .cal-empty{
+  height:108px;
+  min-height:108px;
+  max-height:108px;
+  box-sizing:border-box;
+}
+#app #main .cal-grid .cal-empty{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:color-mix(in srgb,var(--card) 82%,var(--bg));
+}
