@@ -689,6 +689,7 @@ function initLoginAccessibility(){
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
 function enterApp(){
+  if(lifeFlowProfileManager) lifeFlowProfileManager.switchUser(state.currentUser || null);
   document.body.dataset.stage='workspace';
   document.title='LifeFlow';
   if(window.self!==window.top && new URLSearchParams(window.location.search).get('embed')==='1'){
@@ -709,6 +710,7 @@ function resetAuthViewport(){
 }
 function doLogout(){
   destroySession();
+  if(lifeFlowProfileManager) lifeFlowProfileManager.switchUser(null);
   document.body.dataset.stage='login-terminal';
   document.title='LifeFlow Login Terminal';
   // Clear workspace-only ambient state before showing the independent login terminal.
@@ -755,7 +757,61 @@ function normalizeDemoProfile(email){
   saveUsers(users);
 }
 function currentUser(){ const users=getUsers(); return users[state.currentUser]; }
-function effectiveTheme(u){ if(u?.autoTheme) return systemTheme(); return ['dark','light','forest','paper'].includes(u?.theme)?u.theme:'dark'; }
+
+let lifeFlowProfileManager = null;
+let lifeFlowThemeController = null;
+const LIFE_FLOW_APPEARANCE_KEYS = [
+  'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop',
+  'translucentSidebar', 'interactiveAtmosphere'
+];
+function readAppearancePreferences(user) {
+  const preferences = {};
+  if (!user || typeof user !== 'object') return preferences;
+  LIFE_FLOW_APPEARANCE_KEYS.forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(user, key)) {
+      const value = user[key];
+      preferences[key] = value && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : value;
+    }
+  });
+  return preferences;
+}
+async function initializeThemeArchitecture() {
+  const { StateManager } = await import('./state.js');
+  lifeFlowProfileManager = new StateManager({
+    currentUser: null,
+    defaults: email => ({ currentUser: email || null, profile: {} }),
+    storage: localStorage,
+    saveDelay: 300,
+    keyForUser: () => 'lifeflow2_users',
+    loadState: email => ({ profile: readAppearancePreferences(getUsers()[email]) }),
+    saveState: (snapshot, email) => {
+      if (!email) return false;
+      const users = getUsers();
+      if (!users[email]) return false;
+      Object.assign(users[email], readAppearancePreferences(snapshot.profile));
+      saveUsers(users);
+      return true;
+    }
+  });
+  lifeFlowThemeController = window.LifeFlowThemeModule.createThemeController({
+    profileState: lifeFlowProfileManager,
+    getCurrentUser: currentUser,
+    getTasks: () => state.tasks || [],
+    systemTheme, renderApp, showToast, applyWorkspaceAppearance,
+    backdropGroups: WORKSPACE_BACKDROP_GROUPS,
+    defaultBackdropForTheme, getSession
+  });
+}
+function syncAppearanceStateFromUser(user) {
+  if (!lifeFlowProfileManager || !user) return;
+  lifeFlowProfileManager.setState({ profile: readAppearancePreferences(user) });
+  lifeFlowProfileManager.flush();
+}
+
+function effectiveTheme(u){
+  return lifeFlowThemeController?.effectiveTheme(u) ||
+    (u?.autoTheme ? systemTheme() : (['dark','light','forest','paper'].includes(u?.theme)?u.theme:'dark'));
+}
 function applyTheme(theme){
   const allowed=['dark','light','forest','paper'];
   const u=currentUser();
@@ -841,30 +897,7 @@ function setInteractiveAtmosphere(enabled){
   updateUser(u=>{u.interactiveAtmosphere=!!enabled;});
 }
 function initWorkspaceAtmosphereInteraction(){
-  if(document.documentElement.dataset.atmosphereInteractionReady==='true')return;
-  document.documentElement.dataset.atmosphereInteractionReady='true';
-  const app=document.getElementById('app');
-  if(!app)return;
-  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  const finePointer=window.matchMedia?.('(pointer: fine)');
-  const updatePointer=e=>{
-    if(!getSession()||reduced?.matches||!finePointer?.matches||document.documentElement.dataset.interactiveAtmosphere==='off'||document.documentElement.dataset.theme==='light'){resetPointer();return;}
-    const x=Math.max(0,Math.min(1,e.clientX/window.innerWidth));
-    const y=Math.max(0,Math.min(1,e.clientY/window.innerHeight));
-    app.style.setProperty('--lf-pointer-x',(x*100).toFixed(1)+'%');
-    app.style.setProperty('--lf-pointer-y',(y*100).toFixed(1)+'%');
-    app.style.setProperty('--lf-depth-x',((x-.5)*10).toFixed(2)+'px');
-    app.style.setProperty('--lf-depth-y',((y-.5)*8).toFixed(2)+'px');
-  };
-  const resetPointer=()=>{
-    app.style.setProperty('--lf-pointer-x','50%');
-    app.style.setProperty('--lf-pointer-y','35%');
-    app.style.setProperty('--lf-depth-x','0px');
-    app.style.setProperty('--lf-depth-y','0px');
-  };
-  window.addEventListener('pointermove',updatePointer,{passive:true});
-  window.addEventListener('blur',resetPointer);
-  reduced?.addEventListener?.('change',()=>{if(reduced.matches)resetPointer();});
+  if(lifeFlowThemeController) return lifeFlowThemeController.initWorkspaceAtmosphereInteraction();
 }
 function setWorkspaceBackdrop(backdrop){
   const u=currentUser();
@@ -877,50 +910,10 @@ function setTranslucentSidebar(enabled){
   updateUser(u=>{u.translucentSidebar=!!enabled;});
 }
 function setTheme(theme){
-  const u=currentUser();
-  const next=['dark','light','forest','paper'].includes(theme)?theme:'dark';
-  const appVisible=!document.getElementById('app')?.classList.contains('lifeflow-stage-hidden');
-  const main=document.getElementById('main');
-  const scrollState={
-    x:window.scrollX||window.pageXOffset||0,
-    y:window.scrollY||window.pageYOffset||document.scrollingElement?.scrollTop||0,
-    mainTop:main?.scrollTop||0,
-    mainLeft:main?.scrollLeft||0
-  };
-  if(u){
-    const users=getUsers();
-    if(users[state.currentUser]){
-      users[state.currentUser].theme=next;
-      users[state.currentUser].autoTheme=false;
-      saveUsers(users);
-    }
-  }
-  applyTheme(next);
-  applyWorkspaceAppearance(currentUser());
-  const currentLabel=document.getElementById('currentThemeLabel');
-  if(currentLabel) currentLabel.innerHTML=`Currently using <b>${themeLabel(effectiveTheme(currentUser()))}</b>`;
-  // Update the visible theme picker immediately without re-rendering the whole workspace.
-  document.querySelectorAll('.theme-preview').forEach(button=>{
-    const selected=button.classList.contains('theme-preview-'+next);
-    button.classList.toggle('active',selected);
-    button.setAttribute('aria-pressed',String(selected));
-    const check=button.querySelector('.theme-check');
-    if(check)check.textContent=selected?'✓':'○';
-  });
-  const autoToggle=document.querySelector('.theme-sync-row input[type="checkbox"]');
-  if(autoToggle)autoToggle.checked=false;
-  if(appVisible){
-    requestAnimationFrame(()=>{
-      window.scrollTo(scrollState.x,scrollState.y);
-      const currentMain=document.getElementById('main');
-      if(currentMain){currentMain.scrollTop=scrollState.mainTop;currentMain.scrollLeft=scrollState.mainLeft;}
-    });
-  }
+  if(lifeFlowThemeController) return lifeFlowThemeController.setTheme(theme);
 }
 function setAutoThemeSync(enabled){
-  const u=currentUser();
-  if(!u)return;
-  updateUser(user=>{ user.autoTheme=!!enabled; if(user.autoTheme) user.theme=systemTheme(); });
+  if(lifeFlowThemeController) return lifeFlowThemeController.setAutoThemeSync(enabled);
 }
 function initAppThemeSync(){
   if(!window.matchMedia)return;
@@ -930,51 +923,19 @@ function initAppThemeSync(){
   mq.addListener?.(onChange);
 }
 function setColorTheme(theme){
-  const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
-  const u=currentUser();
-  if(theme==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)){
-    toast('Amethyst is available to Premium and Team Admin accounts.');
-    return;
-  }
-  const next=allowed.includes(theme)?theme:'sapphire';
-  document.documentElement.setAttribute('data-color-theme',next);
-  document.getElementById('app')?.setAttribute('data-color-theme',next);
-  if(u){
-    updateUser(user=>{
-      user.colorTheme=next;
-      const darkMode=(user.autoTheme?systemTheme():user.theme||'dark')==='dark';
-      if(darkMode){
-        const valid=(WORKSPACE_BACKDROP_GROUPS[next]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
-        if(!valid.includes(user.workspaceBackdrop)) user.workspaceBackdrop=defaultBackdropForTheme(next);
-      }
-    });
-  }else{
-    renderApp();
-  }
+  if(lifeFlowThemeController) return lifeFlowThemeController.setColorTheme(theme);
 }
 function ambientSettings(u){
-  return Object.assign({ambientMode:true,ambientIntensity:'medium'},u?.ambient||{});
+  return lifeFlowThemeController?.ambientSettings(u) ||
+    Object.assign({ambientMode:true,ambientIntensity:'medium'},u?.ambient||{});
 }
 function applyAmbientEnvironment(){
-  const u=currentUser(); if(!u)return;
-  const settings=ambientSettings(u);
-  const tasks=state.tasks||[];
-  const active=tasks.filter(t=>!t.done).length;
-  const overdue=tasks.filter(t=>t.due && new Date(t.due)<new Date() && !t.done).length;
-  const today=new Date();
-  const hour=today.getHours()+today.getMinutes()/60;
-  const timeState=hour<7?'dawn':hour<12?'morning':hour<17?'afternoon':hour<21?'evening':'night';
-  const load=Math.min(1,(active/12)+(overdue/8));
-  const level=overdue>=3||active>=8?'high':overdue>=1||active>=4?'medium':'calm';
-  const intensity=settings.ambientMode?({low:.45,medium:.75,high:1}[settings.ambientIntensity==='low'?'low':settings.ambientIntensity==='high'?'high':'medium']):0;
-  const root=document.documentElement;
-  root.setAttribute('data-ambient',settings.ambientMode?'on':'off');
-  root.setAttribute('data-load',level);
-  root.setAttribute('data-time',timeState);
-  root.style.setProperty('--lf-load',String(load));
-  root.style.setProperty('--lf-ambient-intensity',String(intensity));
+  if(lifeFlowThemeController) return lifeFlowThemeController.applyAmbientEnvironment();
 }
-function themeLabel(theme){ return ({dark:'Nighttime',light:'Daytime',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Nighttime'; }
+function themeLabel(theme){
+  return lifeFlowThemeController?.themeLabel(theme) ||
+    ({dark:'Nighttime',light:'Daytime',forest:'Quiet Forest',paper:'Warm Paper'})[theme]||'Nighttime';
+}
 function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 'dark'; }
 function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
 function applyAuthTheme(mode){
@@ -1077,7 +1038,14 @@ function initThemePull(){
   window.addEventListener('blur',()=>finish(null,false));
   document.addEventListener('visibilitychange',()=>{if(document.hidden)finish(null,false);});
 }
-function updateUser(fn){ const users=getUsers(); if(!users[state.currentUser]) return; fn(users[state.currentUser]); saveUsers(users); renderApp(); }
+function updateUser(fn){
+  const users=getUsers();
+  if(!users[state.currentUser]) return;
+  fn(users[state.currentUser]);
+  saveUsers(users);
+  syncAppearanceStateFromUser(users[state.currentUser]);
+  renderApp();
+}
 
 function uid(){ return Date.now()+Math.floor(Math.random()*1000); }
 function addTask(t){ state.tasks.push(Object.assign({id:uid(), title:'', tags:[], priority:'medium', due:null, startTime:null, endTime:null, recur:'none', status:'todo', done:false, subtasks:[]}, t)); save(); renderApp(); }
@@ -2618,6 +2586,12 @@ async function deleteAccount(){
 }
 
 (async function boot(){
+  try {
+    await initializeThemeArchitecture();
+  } catch (error) {
+    console.error('LifeFlow appearance state could not be initialized:', error);
+    showToast('Appearance settings could not be loaded. Please refresh the workspace.');
+  }
   initAuthTheme();
   initAppThemeSync();
   renderOAuthButtons();
