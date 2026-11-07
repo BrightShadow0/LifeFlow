@@ -518,6 +518,22 @@ function initTaskEventDelegation(){
     else if(action==='note-select'){window.lfSelectedNote=control.dataset.noteId;window.lfNoteView='edit';renderApp();}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
+    else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
+    else if(action==='branches-reset') branchesResetView();
+    else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
+    else if(action==='task-master-activate') activateCobaltSequence();
+    else if(action==='save-profile') saveProfile();
+    else if(action==='save-tier') saveTier();
+    else if(action==='toggle-change-password') toggleChangePasswordPanel();
+    else if(action==='close-change-password') toggleChangePasswordPanel(false);
+    else if(action==='change-password') changePassword();
+    else if(action==='reset-customisation') resetCustomisation();
+    else if(action==='set-theme') setTheme(control.dataset.themeId);
+    else if(action==='set-color-theme') setColorTheme(control.dataset.colorTheme);
+    else if(action==='revoke-session') revokeSession(Number(control.dataset.sessionIndex));
+    else if(action==='revoke-all') revokeAll();
+    else if(action==='delete-account') deleteAccount();
+    else if(action==='reset-all-data') resetAllData();
   });
   document.addEventListener('change',event=>{
     const control=event.target.closest('[data-lf-change]');
@@ -527,6 +543,15 @@ function initTaskEventDelegation(){
     else if(action==='task-done') toggleDone(Number(control.dataset.taskId));
     else if(action==='subtask-done') toggleSub(Number(control.dataset.taskId),Number(control.dataset.subtaskId));
     else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);
+    else if(action==='avatar-change') onAvatarChange(event);
+    else if(action==='profile-timezone'){saveLocalizationField('timezone',control.value);lfSecretAction(control.value==='-'?'timezoneDash':'timezoneOther');}
+    else if(action==='profile-language'){saveLocalizationField('language',control.value);lfSecretAction(control.value==='Cobalt'?'languageCobalt':'languageOther');}
+    else if(action==='profile-week'){saveLocalizationField('weekStart',control.value);lfSecretAction(control.value==='Monday'?'weekMonday':'weekOther');}
+    else if(action==='auto-theme-sync') setAutoThemeSync(control.checked);
+    else if(action==='translucent-sidebar') setTranslucentSidebar(control.checked);
+    else if(action==='interactive-atmosphere') setInteractiveAtmosphere(control.checked);
+    else if(action==='ambient-mode') updateAmbientMode(control.checked);
+    else if(action==='toggle-connected') toggleConnected(control.dataset.provider);
   });
   document.addEventListener('keydown',event=>{
     const control=event.target.closest('[data-lf-keydown]');
@@ -551,6 +576,10 @@ function initTaskEventDelegation(){
     updateKnowledgeNote('regular',control.dataset.noteId,control.value);
     handleNoteLinkAutocomplete(event);
     refreshMarkdownPreview();
+  });
+  document.addEventListener('input',event=>{
+    const control=event.target.closest('[data-lf-input="ambient-intensity"]');
+    if(control) updateAmbientIntensity(control.value);
   });
   document.addEventListener('focusout',event=>{
     const control=event.target.closest('[data-lf-blur]');
@@ -2013,7 +2042,7 @@ function renderBranches(){
     svg+='<g class="branch-node interactive-branch-node" data-note-id="'+esc(String(n.id))+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Open '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
   });
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" onclick="branchesZoom(1.2)" aria-label="Zoom in">+</button><button type="button" onclick="branchesZoom(.8333)" aria-label="Zoom out">−</button><button type="button" onclick="branchesResetView()">Reset view</button></div></div></div>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
 }
 function branchesApplyTransform(){
   const g=document.getElementById('branchesViewport');if(!g)return;
@@ -2132,7 +2161,7 @@ function setAccountTab(t){ accountTab=t; renderApp(); }
 function renderAccount(){
   const u = currentUser();
   if(!u) return '<div class="empty">No profile data.</div>';
-  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" onclick="setAccountTab('${k}')">${l}</button>`).join('')}</div>`;
+  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" data-lf-action="account-tab" data-account-tab="${k}">${l}</button>`).join('')}</div>`;
   if(accountTab==='profile') return sub + renderProfileTab(u);
   if(accountTab==='custom') return sub + renderCustomisationTab(u);
   if(accountTab==='connected') return sub + renderConnectedTab(u);
@@ -2342,7 +2371,7 @@ function activateCobaltSequence(){
 }
 function showTaskMaster(){
   const host=document.getElementById('taskMasterHost');
-  if(host)host.innerHTML='<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>';
+  if(host)host.innerHTML='<button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>';
 }
 function lfSecretAction(action){
   const u=currentUser(); if(!u)return;
@@ -2376,41 +2405,41 @@ function renderProfileTab(u){
     <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
       <div class="avatar" id="avatarBox">${u.avatar?`<img src="${esc(u.avatar)}">`:'👤'}</div>
       <div>
-        <div class="profile-upload"><input type="file" class="profile-file-input" accept="image/*" onchange="onAvatarChange(event)"></div>
+        <div class="profile-upload"><input type="file" class="profile-file-input" accept="image/*" data-lf-change="avatar-change"></div>
         <div class="notice" style="margin:6px 0 0">Upload only — cropping isn't included in this build.</div>
       </div>
     </div>
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
-    <button class="primary" style="margin-top:8px" onclick="saveProfile()">Save</button>
+    <button class="primary" style="margin-top:8px" data-lf-action="save-profile">Save</button>
   </div>
   <div class="card">
     <h2>Localization</h2>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_tz" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('timezone',this.value);lfSecretAction(this.value==='-'?'timezoneDash':'timezoneOther')">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+      <select id="prof_tz" style="width:100%;margin-bottom:8px" data-lf-change="profile-timezone">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
     </div>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_lang" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('language',this.value);lfSecretAction(this.value==='Cobalt'?'languageCobalt':'languageOther')">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="prof_lang" style="width:100%;margin-bottom:8px" data-lf-change="profile-language">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" onchange="saveLocalizationField('weekStart',this.value);lfSecretAction(this.value==='Monday'?'weekMonday':'weekOther')">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
+    <select id="prof_week" style="width:100%;margin-bottom:8px" data-lf-change="profile-week">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
     <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary" style="margin-top:8px" onclick="saveTier()">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" onclick="activateCobaltSequence()"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+    <button class="primary" style="margin-top:8px" data-lf-action="save-tier">Update settings</button>
+    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>
   <div class="card change-password-launcher">
-    <button type="button" class="primary" id="toggleChangePassword" aria-expanded="false" aria-controls="changePasswordPanel" onclick="toggleChangePasswordPanel()">Change password</button>
+    <button type="button" class="primary" id="toggleChangePassword" aria-expanded="false" aria-controls="changePasswordPanel" data-lf-action="toggle-change-password">Change password</button>
   </div>
   <div class="card change-password-panel" id="changePasswordPanel" hidden>
-    <div class="custom-section-head"><div><h2>Change Password</h2><p>Update your account password securely.</p></div><button type="button" class="hbtn" onclick="toggleChangePasswordPanel(false)">Close</button></div>
+    <div class="custom-section-head"><div><h2>Change Password</h2><p>Update your account password securely.</p></div><button type="button" class="hbtn" data-lf-action="close-change-password">Close</button></div>
     <input id="changeCurrentPassword" type="password" autocomplete="current-password" placeholder="Current password">
     <input id="changeNewPassword" type="password" autocomplete="new-password" placeholder="New password" style="margin-top:8px">
     <input id="changeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password" style="margin-top:8px">
     <div class="notice" style="margin-top:8px">Use at least 8 characters.</div>
-    <button class="primary" style="margin-top:8px" onclick="changePassword()">Change password</button>
+    <button class="primary" style="margin-top:8px" data-lf-action="change-password">Change password</button>
   </div>`;
 }
 function renderCustomisationTab(u){
@@ -2421,25 +2450,25 @@ function renderCustomisationTab(u){
 function subCustomisation(themes,u,a){
   return `<div class="customisation-shell">
     <div class="card customisation-intro"><div><span class="custom-kicker">YOUR LIFEFLOW</span><h2>Customisation</h2><p>Shape the atmosphere around your planning without changing how LifeFlow works.</p></div><span class="theme-current-pill" id="currentThemeLabel">Currently using <b>${themeLabel(effectiveTheme(u))}</b></span></div>
-    <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" onclick="resetCustomisation()">Reset to default</button></div>
-      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${!u.autoTheme&&u.theme===id?'active':''}" onclick="setTheme('${id}')" aria-pressed="${!u.autoTheme&&u.theme===id}">
+    <div class="card"><div class="custom-section-head"><div><h2>Theme</h2><p>Choose the visual environment for your LifeFlow.</p></div><button class="hbtn" data-lf-action="reset-customisation">Reset to default</button></div>
+      <div class="theme-gallery">${themes.map(([id,name,desc])=>`<button type="button" class="theme-preview theme-preview-${id} ${!u.autoTheme&&u.theme===id?'active':''}" data-lf-action="set-theme" data-theme-id="${id}" aria-pressed="${!u.autoTheme&&u.theme===id}">
         <span class="theme-preview-window"><i></i><b></b><em></em><small></small></span><span class="theme-preview-copy"><strong>${name}</strong><span>${desc}</span></span><span class="theme-check">${!u.autoTheme&&u.theme===id?'✓':'○'}</span>
       </button>`).join('')}</div>
-      <label class="theme-sync-row"><span><strong>Auto theme sync</strong><small>Automatically match LifeFlow to your device's light or dark mode.</small></span><span class="switch"><input type="checkbox" ${u.autoTheme?"checked":""} onchange="setAutoThemeSync(this.checked)"><span class="slider"></span></span></label>
+      <label class="theme-sync-row"><span><strong>Auto theme sync</strong><small>Automatically match LifeFlow to your device's light or dark mode.</small></span><span class="switch"><input type="checkbox" ${u.autoTheme?"checked":""} data-lf-change="auto-theme-sync"><span class="slider"></span></span></label>
     </div>
 
     <div class="card workspace-atmosphere-card">
       <div class="custom-section-head"><div><h2>Workspace atmosphere</h2><p>Choose a scenic background for your workspace. The sidebar can be translucent so the scene carries through the layout.</p></div></div>
       <div class="backdrop-gallery">${workspaceBackdropOptions(u)}</div>
-      <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} onchange="setTranslucentSidebar(this.checked)"><span class="slider"></span></span></label>
-      <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} onchange="setInteractiveAtmosphere(this.checked)"><span class="slider"></span></span></label>
+      <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected background show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} data-lf-change="translucent-sidebar"><span class="slider"></span></span></label>
+      <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light and the scenery respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} data-lf-change="interactive-atmosphere"><span class="slider"></span></span></label>
     </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']||'Sapphire'}</b></span></div>
-      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='amethyst'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" onclick="setColorTheme('${id}')" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='amethyst'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" data-lf-action="set-color-theme" data-color-theme="${id}" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
-<div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} onchange="updateAmbientMode(this.checked)"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
+<div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} data-lf-change="ambient-mode"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
-      <div class="intensity-control"><div class="intensity-copy"><strong>Visual intensity</strong><span>Control how noticeable the ambient effect feels.</span></div><div class="intensity-slider"><input type="range" aria-label="Visual intensity" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" oninput="updateAmbientIntensity(this.value)"><div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div></div><b class="intensity-value">${a.ambientIntensity}</b></div>
+      <div class="intensity-control"><div class="intensity-copy"><strong>Visual intensity</strong><span>Control how noticeable the ambient effect feels.</span></div><div class="intensity-slider"><input type="range" aria-label="Visual intensity" min="0" max="2" step="1" value="${a.ambientIntensity==='low'?0:a.ambientIntensity==='high'?2:1}" data-lf-input="ambient-intensity"><div class="range-labels"><span>Subtle</span><span>Balanced</span><span>Expressive</span></div></div><b class="intensity-value">${a.ambientIntensity}</b></div>
     </div>
     <div class="card customisation-note"><strong>Your choices persist automatically.</strong><span>Theme and atmosphere settings stay with this account and never change your tasks, navigation or information hierarchy.</span></div>
   </div>`;
@@ -2515,7 +2544,7 @@ function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
     ${['Google','Apple','GitHub'].map(p=>`<div class="row-between">
       <div>${p}${u.connected[p]?' <span class="notice" style="display:inline;padding:2px 6px">Linked</span>':''}</div>
-      <label class="switch"><input type="checkbox" ${u.connected[p]?'checked':''} onchange="toggleConnected('${p}')"><span class="slider"></span></label>
+      <label class="switch"><input type="checkbox" ${u.connected[p]?'checked':''} data-lf-change="toggle-connected" data-provider="${p}"><span class="slider"></span></label>
     </div>`).join('')}
   </div>
   <div class="card"><h2>Data Permissions</h2>
@@ -2534,8 +2563,8 @@ function renderSessionsTab(u){
   ]);
   return `<div class="card"><h2>Active Sessions</h2>
     <div class="row-between"><div><strong>${browser} · This device</strong><div class="notice" style="display:inline">Current session — expires ${new Date(s.expiresAt).toLocaleString()}</div></div><span></span></div>
-    ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div style="font-size:11px;color:var(--muted)">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" onclick="revokeSession(${i})">Revoke</button></div>`).join('')}
-    <button class="primary" style="margin-top:10px" onclick="revokeAll()">Log out all other devices</button>
+    ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div style="font-size:11px;color:var(--muted)">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" data-lf-action="revoke-session" data-session-index="${i}">Revoke</button></div>`).join('')}
+    <button class="primary" style="margin-top:10px" data-lf-action="revoke-all">Log out all other devices</button>
   </div>`;
 }
 function revokeSession(i){ state.mockSessions.splice(i,1); save(); renderApp(); }
@@ -2550,11 +2579,11 @@ function renderDangerTab(u){
       <option value="soft">Soft delete — 30-day recovery window</option>
       <option value="hard">Hard delete — immediate, permanent, email freed for reuse</option>
     </select>
-    <button class="primary" style="background:var(--danger)" onclick="deleteAccount()">Delete ${email}</button>
+    <button class="primary" style="background:var(--danger)" data-lf-action="delete-account">Delete ${email}</button>
   </div>
   <div class="card"><h2>Reset All App Data</h2>
     <div class="notice">Stuck at login, or an email says "already taken" and you can't get in? This wipes every account, task, and setting LifeFlow stored in this browser - a clean slate. There is no undo.</div>
-    <button class="primary" style="background:var(--danger)" onclick="resetAllData()">Erase everything in this browser</button>
+    <button class="primary" style="background:var(--danger)" data-lf-action="reset-all-data">Erase everything in this browser</button>
   </div>`;
 }
 function resetAllData(){
