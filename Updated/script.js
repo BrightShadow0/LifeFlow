@@ -550,7 +550,7 @@ function readAppearancePreferences(user) {
   return preferences;
 }
 async function initializeThemeArchitecture() {
-  const { StateManager } = await import('./state.js');
+  const { StateManager } = await import('./state.js?v=20261107-modular-core-final1');
   lifeFlowProfileManager = new StateManager({
     currentUser: null,
     defaults: email => ({ currentUser: email || null, profile: {} }),
@@ -583,7 +583,7 @@ function syncAppearanceStateFromUser(user) {
 }
 
 async function initializeTaskArchitecture() {
-  const { StateManager } = await import('./state.js');
+  const { StateManager } = await import('./state.js?v=20261107-modular-core-final1');
   lifeFlowTaskStateManager = new StateManager({
     currentUser: null,
     defaults: defaultProfileState,
