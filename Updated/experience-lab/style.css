@@ -267,3 +267,25 @@ body{background:#090c12;color:var(--paper)}
 .brand-symbol{width:34px;height:34px;display:block;border:0;border-radius:9px;transform:none;object-fit:contain;filter:drop-shadow(0 0 9px #12d9e555)}
 .window-brand img{width:23px;height:23px;display:block;object-fit:contain}
 .site-footer .brand-symbol{width:34px;height:34px}
+
+
+/* Showcase hierarchy and responsive content sizing */
+.showcase-layout{grid-template-columns:minmax(310px,.88fr) minmax(0,1.12fr);gap:clamp(34px,4vw,64px)}
+.showcase-menu{justify-content:flex-start}
+.showcase-tab{padding:19px 4px}.showcase-tab>b{font-size:14px}
+.showcase-description{margin-top:auto;padding-top:clamp(38px,4vw,60px);max-width:470px}
+.showcase-description h3{max-width:430px;font-size:clamp(30px,3vw,43px);line-height:1.08;letter-spacing:-.055em}
+.showcase-description p{max-width:430px;font-size:clamp(13px,1vw,15px);line-height:1.85;color:#b2bfd2}
+.preview-stage{min-height:510px}
+@media(max-width:1120px){.showcase-layout{grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr);gap:32px}.showcase-description h3{font-size:clamp(29px,3.4vw,38px)}}
+@media(max-width:850px){.showcase-layout{grid-template-columns:1fr;gap:28px}.showcase-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px}.showcase-description{grid-column:1/-1;max-width:680px;padding-top:30px}.showcase-description h3{max-width:560px;font-size:clamp(32px,5vw,42px)}.showcase-description p{max-width:600px;font-size:14px}.preview-stage{min-height:520px}}
+@media(max-width:620px){
+.showcase-menu{column-gap:14px}.showcase-description{padding-top:26px}.showcase-description h3{font-size:30px}.showcase-description p{font-size:13px;line-height:1.8}
+.preview-stage{height:auto;min-height:0;overflow:visible}
+.preview-panel{position:relative;inset:auto;min-height:555px;height:auto}
+.preview-panel[hidden]{display:none}
+#preview-plan.preview-panel{min-height:0}
+#preview-plan .plan-preview{flex:none}
+#preview-plan .mini-calendar{min-height:300px}
+#preview-plan .mini-board{min-height:0}
+}
