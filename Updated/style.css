@@ -3991,3 +3991,284 @@ body::-webkit-scrollbar-corner{
 
 /* Auth and workspace stage visibility without inline display styles. */
 #app.lifeflow-stage-hidden{display:none!important}
+
+/* CSP-friendly state classes for dashboard and profile UI. */
+.profile-identity-row{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.profile-upload-note{margin:6px 0 0}
+.account-action-spaced{margin-top:8px}
+.profile-select{display:block;width:100%;margin-bottom:8px}
+.profile-tier-select{display:block;width:100%;margin-top:8px}
+.task-master-host{margin-top:12px}
+.password-change-input{margin-top:8px}
+.password-guidance{margin-top:8px}
+.linked-provider-badge{display:inline;padding:2px 6px}
+.current-session-notice{display:inline}
+.session-detail{font-size:11px;color:var(--muted)}
+.session-logout-button{margin-top:10px}
+.danger-notice{border-color:var(--danger);color:var(--danger);background:transparent}
+.danger-password-input{margin-top:8px}
+.danger-mode-select{display:block;width:100%;margin:8px 0}
+.danger-action{background:var(--danger)!important}
+.clock-hand{transform-origin:left center}
+.hero-ring.progress-pct-0{--progress:0.0deg}
+.progress-track .progress-fill.progress-pct-0{width:0%}
+.hero-ring.progress-pct-1{--progress:3.6deg}
+.progress-track .progress-fill.progress-pct-1{width:1%}
+.hero-ring.progress-pct-2{--progress:7.2deg}
+.progress-track .progress-fill.progress-pct-2{width:2%}
+.hero-ring.progress-pct-3{--progress:10.8deg}
+.progress-track .progress-fill.progress-pct-3{width:3%}
+.hero-ring.progress-pct-4{--progress:14.4deg}
+.progress-track .progress-fill.progress-pct-4{width:4%}
+.hero-ring.progress-pct-5{--progress:18.0deg}
+.progress-track .progress-fill.progress-pct-5{width:5%}
+.hero-ring.progress-pct-6{--progress:21.6deg}
+.progress-track .progress-fill.progress-pct-6{width:6%}
+.hero-ring.progress-pct-7{--progress:25.2deg}
+.progress-track .progress-fill.progress-pct-7{width:7%}
+.hero-ring.progress-pct-8{--progress:28.8deg}
+.progress-track .progress-fill.progress-pct-8{width:8%}
+.hero-ring.progress-pct-9{--progress:32.4deg}
+.progress-track .progress-fill.progress-pct-9{width:9%}
+.hero-ring.progress-pct-10{--progress:36.0deg}
+.progress-track .progress-fill.progress-pct-10{width:10%}
+.hero-ring.progress-pct-11{--progress:39.6deg}
+.progress-track .progress-fill.progress-pct-11{width:11%}
+.hero-ring.progress-pct-12{--progress:43.2deg}
+.progress-track .progress-fill.progress-pct-12{width:12%}
+.hero-ring.progress-pct-13{--progress:46.8deg}
+.progress-track .progress-fill.progress-pct-13{width:13%}
+.hero-ring.progress-pct-14{--progress:50.4deg}
+.progress-track .progress-fill.progress-pct-14{width:14%}
+.hero-ring.progress-pct-15{--progress:54.0deg}
+.progress-track .progress-fill.progress-pct-15{width:15%}
+.hero-ring.progress-pct-16{--progress:57.6deg}
+.progress-track .progress-fill.progress-pct-16{width:16%}
+.hero-ring.progress-pct-17{--progress:61.2deg}
+.progress-track .progress-fill.progress-pct-17{width:17%}
+.hero-ring.progress-pct-18{--progress:64.8deg}
+.progress-track .progress-fill.progress-pct-18{width:18%}
+.hero-ring.progress-pct-19{--progress:68.4deg}
+.progress-track .progress-fill.progress-pct-19{width:19%}
+.hero-ring.progress-pct-20{--progress:72.0deg}
+.progress-track .progress-fill.progress-pct-20{width:20%}
+.hero-ring.progress-pct-21{--progress:75.6deg}
+.progress-track .progress-fill.progress-pct-21{width:21%}
+.hero-ring.progress-pct-22{--progress:79.2deg}
+.progress-track .progress-fill.progress-pct-22{width:22%}
+.hero-ring.progress-pct-23{--progress:82.8deg}
+.progress-track .progress-fill.progress-pct-23{width:23%}
+.hero-ring.progress-pct-24{--progress:86.4deg}
+.progress-track .progress-fill.progress-pct-24{width:24%}
+.hero-ring.progress-pct-25{--progress:90.0deg}
+.progress-track .progress-fill.progress-pct-25{width:25%}
+.hero-ring.progress-pct-26{--progress:93.6deg}
+.progress-track .progress-fill.progress-pct-26{width:26%}
+.hero-ring.progress-pct-27{--progress:97.2deg}
+.progress-track .progress-fill.progress-pct-27{width:27%}
+.hero-ring.progress-pct-28{--progress:100.8deg}
+.progress-track .progress-fill.progress-pct-28{width:28%}
+.hero-ring.progress-pct-29{--progress:104.4deg}
+.progress-track .progress-fill.progress-pct-29{width:29%}
+.hero-ring.progress-pct-30{--progress:108.0deg}
+.progress-track .progress-fill.progress-pct-30{width:30%}
+.hero-ring.progress-pct-31{--progress:111.6deg}
+.progress-track .progress-fill.progress-pct-31{width:31%}
+.hero-ring.progress-pct-32{--progress:115.2deg}
+.progress-track .progress-fill.progress-pct-32{width:32%}
+.hero-ring.progress-pct-33{--progress:118.8deg}
+.progress-track .progress-fill.progress-pct-33{width:33%}
+.hero-ring.progress-pct-34{--progress:122.4deg}
+.progress-track .progress-fill.progress-pct-34{width:34%}
+.hero-ring.progress-pct-35{--progress:126.0deg}
+.progress-track .progress-fill.progress-pct-35{width:35%}
+.hero-ring.progress-pct-36{--progress:129.6deg}
+.progress-track .progress-fill.progress-pct-36{width:36%}
+.hero-ring.progress-pct-37{--progress:133.2deg}
+.progress-track .progress-fill.progress-pct-37{width:37%}
+.hero-ring.progress-pct-38{--progress:136.8deg}
+.progress-track .progress-fill.progress-pct-38{width:38%}
+.hero-ring.progress-pct-39{--progress:140.4deg}
+.progress-track .progress-fill.progress-pct-39{width:39%}
+.hero-ring.progress-pct-40{--progress:144.0deg}
+.progress-track .progress-fill.progress-pct-40{width:40%}
+.hero-ring.progress-pct-41{--progress:147.6deg}
+.progress-track .progress-fill.progress-pct-41{width:41%}
+.hero-ring.progress-pct-42{--progress:151.2deg}
+.progress-track .progress-fill.progress-pct-42{width:42%}
+.hero-ring.progress-pct-43{--progress:154.8deg}
+.progress-track .progress-fill.progress-pct-43{width:43%}
+.hero-ring.progress-pct-44{--progress:158.4deg}
+.progress-track .progress-fill.progress-pct-44{width:44%}
+.hero-ring.progress-pct-45{--progress:162.0deg}
+.progress-track .progress-fill.progress-pct-45{width:45%}
+.hero-ring.progress-pct-46{--progress:165.6deg}
+.progress-track .progress-fill.progress-pct-46{width:46%}
+.hero-ring.progress-pct-47{--progress:169.2deg}
+.progress-track .progress-fill.progress-pct-47{width:47%}
+.hero-ring.progress-pct-48{--progress:172.8deg}
+.progress-track .progress-fill.progress-pct-48{width:48%}
+.hero-ring.progress-pct-49{--progress:176.4deg}
+.progress-track .progress-fill.progress-pct-49{width:49%}
+.hero-ring.progress-pct-50{--progress:180.0deg}
+.progress-track .progress-fill.progress-pct-50{width:50%}
+.hero-ring.progress-pct-51{--progress:183.6deg}
+.progress-track .progress-fill.progress-pct-51{width:51%}
+.hero-ring.progress-pct-52{--progress:187.2deg}
+.progress-track .progress-fill.progress-pct-52{width:52%}
+.hero-ring.progress-pct-53{--progress:190.8deg}
+.progress-track .progress-fill.progress-pct-53{width:53%}
+.hero-ring.progress-pct-54{--progress:194.4deg}
+.progress-track .progress-fill.progress-pct-54{width:54%}
+.hero-ring.progress-pct-55{--progress:198.0deg}
+.progress-track .progress-fill.progress-pct-55{width:55%}
+.hero-ring.progress-pct-56{--progress:201.6deg}
+.progress-track .progress-fill.progress-pct-56{width:56%}
+.hero-ring.progress-pct-57{--progress:205.2deg}
+.progress-track .progress-fill.progress-pct-57{width:57%}
+.hero-ring.progress-pct-58{--progress:208.8deg}
+.progress-track .progress-fill.progress-pct-58{width:58%}
+.hero-ring.progress-pct-59{--progress:212.4deg}
+.progress-track .progress-fill.progress-pct-59{width:59%}
+.hero-ring.progress-pct-60{--progress:216.0deg}
+.progress-track .progress-fill.progress-pct-60{width:60%}
+.hero-ring.progress-pct-61{--progress:219.6deg}
+.progress-track .progress-fill.progress-pct-61{width:61%}
+.hero-ring.progress-pct-62{--progress:223.2deg}
+.progress-track .progress-fill.progress-pct-62{width:62%}
+.hero-ring.progress-pct-63{--progress:226.8deg}
+.progress-track .progress-fill.progress-pct-63{width:63%}
+.hero-ring.progress-pct-64{--progress:230.4deg}
+.progress-track .progress-fill.progress-pct-64{width:64%}
+.hero-ring.progress-pct-65{--progress:234.0deg}
+.progress-track .progress-fill.progress-pct-65{width:65%}
+.hero-ring.progress-pct-66{--progress:237.6deg}
+.progress-track .progress-fill.progress-pct-66{width:66%}
+.hero-ring.progress-pct-67{--progress:241.2deg}
+.progress-track .progress-fill.progress-pct-67{width:67%}
+.hero-ring.progress-pct-68{--progress:244.8deg}
+.progress-track .progress-fill.progress-pct-68{width:68%}
+.hero-ring.progress-pct-69{--progress:248.4deg}
+.progress-track .progress-fill.progress-pct-69{width:69%}
+.hero-ring.progress-pct-70{--progress:252.0deg}
+.progress-track .progress-fill.progress-pct-70{width:70%}
+.hero-ring.progress-pct-71{--progress:255.6deg}
+.progress-track .progress-fill.progress-pct-71{width:71%}
+.hero-ring.progress-pct-72{--progress:259.2deg}
+.progress-track .progress-fill.progress-pct-72{width:72%}
+.hero-ring.progress-pct-73{--progress:262.8deg}
+.progress-track .progress-fill.progress-pct-73{width:73%}
+.hero-ring.progress-pct-74{--progress:266.4deg}
+.progress-track .progress-fill.progress-pct-74{width:74%}
+.hero-ring.progress-pct-75{--progress:270.0deg}
+.progress-track .progress-fill.progress-pct-75{width:75%}
+.hero-ring.progress-pct-76{--progress:273.6deg}
+.progress-track .progress-fill.progress-pct-76{width:76%}
+.hero-ring.progress-pct-77{--progress:277.2deg}
+.progress-track .progress-fill.progress-pct-77{width:77%}
+.hero-ring.progress-pct-78{--progress:280.8deg}
+.progress-track .progress-fill.progress-pct-78{width:78%}
+.hero-ring.progress-pct-79{--progress:284.4deg}
+.progress-track .progress-fill.progress-pct-79{width:79%}
+.hero-ring.progress-pct-80{--progress:288.0deg}
+.progress-track .progress-fill.progress-pct-80{width:80%}
+.hero-ring.progress-pct-81{--progress:291.6deg}
+.progress-track .progress-fill.progress-pct-81{width:81%}
+.hero-ring.progress-pct-82{--progress:295.2deg}
+.progress-track .progress-fill.progress-pct-82{width:82%}
+.hero-ring.progress-pct-83{--progress:298.8deg}
+.progress-track .progress-fill.progress-pct-83{width:83%}
+.hero-ring.progress-pct-84{--progress:302.4deg}
+.progress-track .progress-fill.progress-pct-84{width:84%}
+.hero-ring.progress-pct-85{--progress:306.0deg}
+.progress-track .progress-fill.progress-pct-85{width:85%}
+.hero-ring.progress-pct-86{--progress:309.6deg}
+.progress-track .progress-fill.progress-pct-86{width:86%}
+.hero-ring.progress-pct-87{--progress:313.2deg}
+.progress-track .progress-fill.progress-pct-87{width:87%}
+.hero-ring.progress-pct-88{--progress:316.8deg}
+.progress-track .progress-fill.progress-pct-88{width:88%}
+.hero-ring.progress-pct-89{--progress:320.4deg}
+.progress-track .progress-fill.progress-pct-89{width:89%}
+.hero-ring.progress-pct-90{--progress:324.0deg}
+.progress-track .progress-fill.progress-pct-90{width:90%}
+.hero-ring.progress-pct-91{--progress:327.6deg}
+.progress-track .progress-fill.progress-pct-91{width:91%}
+.hero-ring.progress-pct-92{--progress:331.2deg}
+.progress-track .progress-fill.progress-pct-92{width:92%}
+.hero-ring.progress-pct-93{--progress:334.8deg}
+.progress-track .progress-fill.progress-pct-93{width:93%}
+.hero-ring.progress-pct-94{--progress:338.4deg}
+.progress-track .progress-fill.progress-pct-94{width:94%}
+.hero-ring.progress-pct-95{--progress:342.0deg}
+.progress-track .progress-fill.progress-pct-95{width:95%}
+.hero-ring.progress-pct-96{--progress:345.6deg}
+.progress-track .progress-fill.progress-pct-96{width:96%}
+.hero-ring.progress-pct-97{--progress:349.2deg}
+.progress-track .progress-fill.progress-pct-97{width:97%}
+.hero-ring.progress-pct-98{--progress:352.8deg}
+.progress-track .progress-fill.progress-pct-98{width:98%}
+.hero-ring.progress-pct-99{--progress:356.4deg}
+.progress-track .progress-fill.progress-pct-99{width:99%}
+.hero-ring.progress-pct-100{--progress:360.0deg}
+.progress-track .progress-fill.progress-pct-100{width:100%}
+.clock-number[data-clock-position="outer-0"]{left:50.00%;top:11.00%}
+.clock-number[data-clock-position="inner-0"]{left:50.00%;top:24.00%}
+.clock-number[data-clock-position="outer-1"]{left:69.50%;top:16.23%}
+.clock-number[data-clock-position="inner-1"]{left:63.00%;top:27.48%}
+.clock-number[data-clock-position="outer-2"]{left:83.77%;top:30.50%}
+.clock-number[data-clock-position="inner-2"]{left:72.52%;top:37.00%}
+.clock-number[data-clock-position="outer-3"]{left:89.00%;top:50.00%}
+.clock-number[data-clock-position="inner-3"]{left:76.00%;top:50.00%}
+.clock-number[data-clock-position="outer-4"]{left:83.77%;top:69.50%}
+.clock-number[data-clock-position="inner-4"]{left:72.52%;top:63.00%}
+.clock-number[data-clock-position="outer-5"]{left:69.50%;top:83.77%}
+.clock-number[data-clock-position="inner-5"]{left:63.00%;top:72.52%}
+.clock-number[data-clock-position="outer-6"]{left:50.00%;top:89.00%}
+.clock-number[data-clock-position="inner-6"]{left:50.00%;top:76.00%}
+.clock-number[data-clock-position="outer-7"]{left:30.50%;top:83.77%}
+.clock-number[data-clock-position="inner-7"]{left:37.00%;top:72.52%}
+.clock-number[data-clock-position="outer-8"]{left:16.23%;top:69.50%}
+.clock-number[data-clock-position="inner-8"]{left:27.48%;top:63.00%}
+.clock-number[data-clock-position="outer-9"]{left:11.00%;top:50.00%}
+.clock-number[data-clock-position="inner-9"]{left:24.00%;top:50.00%}
+.clock-number[data-clock-position="outer-10"]{left:16.23%;top:30.50%}
+.clock-number[data-clock-position="inner-10"]{left:27.48%;top:37.00%}
+.clock-number[data-clock-position="outer-11"]{left:30.50%;top:16.23%}
+.clock-number[data-clock-position="inner-11"]{left:37.00%;top:27.48%}
+.clock-hand[data-clock-hand="hour-0"]{width:39%;transform:rotate(-90deg)}
+.clock-hand[data-clock-hand="hour-1"]{width:39%;transform:rotate(-60deg)}
+.clock-hand[data-clock-hand="hour-2"]{width:39%;transform:rotate(-30deg)}
+.clock-hand[data-clock-hand="hour-3"]{width:39%;transform:rotate(0deg)}
+.clock-hand[data-clock-hand="hour-4"]{width:39%;transform:rotate(30deg)}
+.clock-hand[data-clock-hand="hour-5"]{width:39%;transform:rotate(60deg)}
+.clock-hand[data-clock-hand="hour-6"]{width:39%;transform:rotate(90deg)}
+.clock-hand[data-clock-hand="hour-7"]{width:39%;transform:rotate(120deg)}
+.clock-hand[data-clock-hand="hour-8"]{width:39%;transform:rotate(150deg)}
+.clock-hand[data-clock-hand="hour-9"]{width:39%;transform:rotate(180deg)}
+.clock-hand[data-clock-hand="hour-10"]{width:39%;transform:rotate(210deg)}
+.clock-hand[data-clock-hand="hour-11"]{width:39%;transform:rotate(240deg)}
+.clock-hand[data-clock-hand="hour-12"]{width:26%;transform:rotate(-90deg)}
+.clock-hand[data-clock-hand="hour-13"]{width:26%;transform:rotate(-60deg)}
+.clock-hand[data-clock-hand="hour-14"]{width:26%;transform:rotate(-30deg)}
+.clock-hand[data-clock-hand="hour-15"]{width:26%;transform:rotate(0deg)}
+.clock-hand[data-clock-hand="hour-16"]{width:26%;transform:rotate(30deg)}
+.clock-hand[data-clock-hand="hour-17"]{width:26%;transform:rotate(60deg)}
+.clock-hand[data-clock-hand="hour-18"]{width:26%;transform:rotate(90deg)}
+.clock-hand[data-clock-hand="hour-19"]{width:26%;transform:rotate(120deg)}
+.clock-hand[data-clock-hand="hour-20"]{width:26%;transform:rotate(150deg)}
+.clock-hand[data-clock-hand="hour-21"]{width:26%;transform:rotate(180deg)}
+.clock-hand[data-clock-hand="hour-22"]{width:26%;transform:rotate(210deg)}
+.clock-hand[data-clock-hand="hour-23"]{width:26%;transform:rotate(240deg)}
+.clock-hand[data-clock-hand="minute-0"]{width:39%;transform:rotate(-90deg)}
+.clock-hand[data-clock-hand="minute-5"]{width:39%;transform:rotate(-60deg)}
+.clock-hand[data-clock-hand="minute-10"]{width:39%;transform:rotate(-30deg)}
+.clock-hand[data-clock-hand="minute-15"]{width:39%;transform:rotate(0deg)}
+.clock-hand[data-clock-hand="minute-20"]{width:39%;transform:rotate(30deg)}
+.clock-hand[data-clock-hand="minute-25"]{width:39%;transform:rotate(60deg)}
+.clock-hand[data-clock-hand="minute-30"]{width:39%;transform:rotate(90deg)}
+.clock-hand[data-clock-hand="minute-35"]{width:39%;transform:rotate(120deg)}
+.clock-hand[data-clock-hand="minute-40"]{width:39%;transform:rotate(150deg)}
+.clock-hand[data-clock-hand="minute-45"]{width:39%;transform:rotate(180deg)}
+.clock-hand[data-clock-hand="minute-50"]{width:39%;transform:rotate(210deg)}
+.clock-hand[data-clock-hand="minute-55"]{width:39%;transform:rotate(240deg)}

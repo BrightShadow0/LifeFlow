@@ -1312,12 +1312,12 @@ function renderToday(){
         <div class="hero-summary"><span>${dueToday.length} task${dueToday.length===1?'':'s'} today</span><span class="hero-dot">•</span><span>${completed} completed</span></div>
       </div>
       <div class="hero-progress">
-        <div class="hero-ring" style="--progress:${percent*3.6}deg"><span>${percent}%</span></div>
+        <div class="hero-ring progress-pct-${percent}"><span>${percent}%</span></div>
       </div>
     </section>
     ${overloaded?`<div class="workload-warning"><div class="load-icon">!</div><div><strong>Your day is getting full</strong><span>${esc(loadReasons.join(' · '))}. Consider protecting some space before adding more.</span></div></div>`:''}<div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${activeDueToday.length? 'Stay focused on what needs your attention.':dueToday.length?'You are all caught up for today.':'You have a clear slate.'}</p></div><span class="section-count">${activeDueToday.length}</span></div>${activeDueToday.length?'<div class="task-scroll">'+activeDueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">'+(dueToday.length?'All today’s tasks are done.':'Nothing due today. Add a task to get started.')+'</div>'}</div>
     ${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2><div class="task-scroll">${overdue.map(taskRow).join('')}</div></div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?'<div class="task-scroll">'+upcoming.map(taskRow).join('')+'</div>':'<div class="empty">Nothing upcoming.</div>'}</div></div>
-    <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
+    <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill progress-pct-${percent}"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
 
@@ -1504,14 +1504,14 @@ function renderClock(){
   const numbers=[];
   const add=(n,angle,radius,label)=>{
     const x=50+radius*Math.sin(angle),y=50-radius*Math.cos(angle);
-    numbers.push(`<button type="button" class="clock-number ${selected===n?'selected':''}" style="left:${x}%;top:${y}%" aria-label="${active==='hour'?'Hour':'Minute'} ${String(n).padStart(2,'0')}" data-lf-action="select-clock-value" data-clock-value="${n}">${label}</button>`);
+    numbers.push(`<button type="button" class="clock-number ${selected===n?'selected':''}" data-clock-position="${radius===39?'outer':'inner'}-${Math.round(angle/(Math.PI/6))%12}" aria-label="${active==='hour'?'Hour':'Minute'} ${String(n).padStart(2,'0')}" data-lf-action="select-clock-value" data-clock-value="${n}">${label}</button>`);
   };
   if(active==='hour'){
     for(let i=0;i<12;i++){let angle=i*Math.PI/6; add(i,angle,39,String(i));add(i+12,angle,26,String(i+12));}
   }else for(let i=0;i<12;i++) add(i*5,i*Math.PI/6,39,String(i*5).padStart(2,'0'));
   const angle=(active==='hour'?(hour%12):minute/5)*Math.PI/6;
   const radius=active==='hour'?(hour>=12?26:39):39;
-  const hand=`<div class="clock-hand" style="width:${radius}%;transform:rotate(${angle*180/Math.PI-90}deg)"></div><div class="clock-center"></div>`;
+  const hand=`<div class="clock-hand" data-clock-hand="${active==='hour'?'hour-'+hour:'minute-'+minute}"></div><div class="clock-center"></div>`;
   document.getElementById('clockHost').innerHTML=`<div class="clock-overlay" role="presentation" data-lf-overlay="close-clock"><div class="clock-dialog" role="dialog" aria-modal="true" aria-label="Select ${field} time">
     <h2>Select ${field} time</h2><div class="clock-subtitle">24-hour clock · ${field==='start'?'Choose when this task starts':'Choose when this task ends'}</div>
     <div class="clock-display"><button type="button" class="${active==='hour'?'active':''}" data-lf-action="clock-hour" aria-label="Select hour">${String(hour).padStart(2,'0')}</button><span>:</span><button type="button" class="${active==='minute'?'active':''}" data-lf-action="clock-minute" aria-label="Select minute">${String(minute).padStart(2,'0')}</button></div>
@@ -2402,33 +2402,33 @@ function renderProfileTab(u){
   const langs=['English','Spanish','French','Hindi','German'].concat(s.languageRevealed?['Cobalt']:[]);
   return `<div class="card">
     <h2>Identity</h2>
-    <div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">
+    <div class="profile-identity-row">
       <div class="avatar" id="avatarBox">${u.avatar?`<img src="${esc(u.avatar)}">`:'👤'}</div>
       <div>
         <div class="profile-upload"><input type="file" class="profile-file-input" accept="image/*" data-lf-change="avatar-change"></div>
-        <div class="notice" style="margin:6px 0 0">Upload only — cropping isn't included in this build.</div>
+        <div class="notice profile-upload-note">Upload only — cropping isn't included in this build.</div>
       </div>
     </div>
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
-    <button class="primary" style="margin-top:8px" data-lf-action="save-profile">Save</button>
+    <button class="primary account-action-spaced" data-lf-action="save-profile">Save</button>
   </div>
   <div class="card">
     <h2>Localization</h2>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_tz" style="width:100%;margin-bottom:8px" data-lf-change="profile-timezone">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
+      <select id="prof_tz" class="profile-select" data-lf-change="profile-timezone">${tzs.map(tz=>`<option ${u.timezone===tz?'selected':''}>${tz}</option>`).join('')}</select>
     </div>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
-      <select id="prof_lang" style="width:100%;margin-bottom:8px" data-lf-change="profile-language">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
+      <select id="prof_lang" class="profile-select" data-lf-change="profile-language">${langs.map(l=>`<option ${u.language===l?'selected':''}>${l}</option>`).join('')}</select>
       ${s.languageRevealed?'<span class="lf-secret-dot" aria-label="Language option revealed"></span>':''}
     </div>
-    <select id="prof_week" style="width:100%;margin-bottom:8px" data-lf-change="profile-week">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
+    <select id="prof_week" class="profile-select" data-lf-change="profile-week">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
   </div>
   <div class="card">
     <h2>Account Tier</h2>
     <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" style="margin-top:8px;width:100%">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary" style="margin-top:8px" data-lf-action="save-tier">Update settings</button>
-    <div id="taskMasterHost" style="margin-top:12px">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+    <select id="prof_tier" class="profile-tier-select">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
+    <button class="primary account-action-spaced" data-lf-action="save-tier">Update settings</button>
+    <div id="taskMasterHost" class="task-master-host">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
   </div>
   <div class="card change-password-launcher">
     <button type="button" class="primary" id="toggleChangePassword" aria-expanded="false" aria-controls="changePasswordPanel" data-lf-action="toggle-change-password">Change password</button>
@@ -2436,10 +2436,10 @@ function renderProfileTab(u){
   <div class="card change-password-panel" id="changePasswordPanel" hidden>
     <div class="custom-section-head"><div><h2>Change Password</h2><p>Update your account password securely.</p></div><button type="button" class="hbtn" data-lf-action="close-change-password">Close</button></div>
     <input id="changeCurrentPassword" type="password" autocomplete="current-password" placeholder="Current password">
-    <input id="changeNewPassword" type="password" autocomplete="new-password" placeholder="New password" style="margin-top:8px">
-    <input id="changeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm new password" style="margin-top:8px">
-    <div class="notice" style="margin-top:8px">Use at least 8 characters.</div>
-    <button class="primary" style="margin-top:8px" data-lf-action="change-password">Change password</button>
+    <input id="changeNewPassword" class="password-change-input" type="password" autocomplete="new-password" placeholder="New password">
+    <input id="changeConfirmPassword" class="password-change-input" type="password" autocomplete="new-password" placeholder="Confirm new password">
+    <div class="notice password-guidance">Use at least 8 characters.</div>
+    <button class="primary account-action-spaced" data-lf-action="change-password">Change password</button>
   </div>`;
 }
 function renderCustomisationTab(u){
@@ -2543,7 +2543,7 @@ function saveTier(){
 function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
     ${['Google','Apple','GitHub'].map(p=>`<div class="row-between">
-      <div>${p}${u.connected[p]?' <span class="notice" style="display:inline;padding:2px 6px">Linked</span>':''}</div>
+      <div>${p}${u.connected[p]?' <span class="notice linked-provider-badge">Linked</span>':''}</div>
       <label class="switch"><input type="checkbox" ${u.connected[p]?'checked':''} data-lf-change="toggle-connected" data-provider="${p}"><span class="slider"></span></label>
     </div>`).join('')}
   </div>
@@ -2562,9 +2562,9 @@ function renderSessionsTab(u){
     {device:'Windows · Edge', loc:'Pune, IN', last:'1 week ago'}
   ]);
   return `<div class="card"><h2>Active Sessions</h2>
-    <div class="row-between"><div><strong>${browser} · This device</strong><div class="notice" style="display:inline">Current session — expires ${new Date(s.expiresAt).toLocaleString()}</div></div><span></span></div>
-    ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div style="font-size:11px;color:var(--muted)">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" data-lf-action="revoke-session" data-session-index="${i}">Revoke</button></div>`).join('')}
-    <button class="primary" style="margin-top:10px" data-lf-action="revoke-all">Log out all other devices</button>
+    <div class="row-between"><div><strong>${browser} · This device</strong><div class="notice current-session-notice">Current session — expires ${new Date(s.expiresAt).toLocaleString()}</div></div><span></span></div>
+    ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div class="session-detail">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" data-lf-action="revoke-session" data-session-index="${i}">Revoke</button></div>`).join('')}
+    <button class="primary session-logout-button" data-lf-action="revoke-all">Log out all other devices</button>
   </div>`;
 }
 function revokeSession(i){ state.mockSessions.splice(i,1); save(); renderApp(); }
@@ -2573,17 +2573,17 @@ function revokeAll(){ state.mockSessions = []; save(); renderApp(); }
 function renderDangerTab(u){
   const email = esc(state.currentUser || '');
   return `<div class="card"><h2>Delete Account</h2>
-    <div class="notice" style="border-color:var(--danger);color:var(--danger);background:transparent">You are deleting <strong>${email}</strong>. Only this account is removed; other accounts and their tasks stay.</div>
-    ${u.passwordHash?'<input id="danger_pass" type="password" placeholder="Confirm your password" style="margin-top:8px">':'<div class="notice">This account signs in with '+(u.oauthProvider||'an identity provider')+', so no password is needed to confirm.</div>'}
-    <select id="danger_mode" style="width:100%;margin:8px 0">
+    <div class="notice danger-notice">You are deleting <strong>${email}</strong>. Only this account is removed; other accounts and their tasks stay.</div>
+    ${u.passwordHash?'<input id="danger_pass" class="danger-password-input" type="password" placeholder="Confirm your password">':'<div class="notice">This account signs in with '+(u.oauthProvider||'an identity provider')+', so no password is needed to confirm.</div>'}
+    <select id="danger_mode" class="danger-mode-select">
       <option value="soft">Soft delete — 30-day recovery window</option>
       <option value="hard">Hard delete — immediate, permanent, email freed for reuse</option>
     </select>
-    <button class="primary" style="background:var(--danger)" data-lf-action="delete-account">Delete ${email}</button>
+    <button class="primary danger-action" data-lf-action="delete-account">Delete ${email}</button>
   </div>
   <div class="card"><h2>Reset All App Data</h2>
     <div class="notice">Stuck at login, or an email says "already taken" and you can't get in? This wipes every account, task, and setting LifeFlow stored in this browser - a clean slate. There is no undo.</div>
-    <button class="primary" style="background:var(--danger)" data-lf-action="reset-all-data">Erase everything in this browser</button>
+    <button class="primary danger-action" data-lf-action="reset-all-data">Erase everything in this browser</button>
   </div>`;
 }
 function resetAllData(){
