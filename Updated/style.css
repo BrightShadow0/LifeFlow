@@ -4656,3 +4656,16 @@ body::-webkit-scrollbar-corner{
 #app .master-archive-button{width:100%;min-height:48px;font-size:14px;font-weight:800}
 #app .master-archive-warning{border-left:3px solid var(--warn);padding:12px 14px;margin:0}
 #app .master-archive-card>.muted{color:var(--muted);line-height:1.6}
+
+/* Release 3.2: Validation Gate */
+#app .master-archive-actions{display:flex;gap:12px;flex-wrap:wrap}
+#app .master-archive-actions .master-archive-button{flex:1 1 190px;width:auto}
+#app .master-archive-file{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%)}
+.master-restore-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:22px;background:#050811c9;backdrop-filter:blur(12px)}
+.master-restore-dialog{width:min(560px,100%);padding:clamp(24px,4vw,38px);border:1px solid #55ddeb55;border-radius:12px;background:linear-gradient(145deg,#1a2434,#0e1522);box-shadow:0 30px 100px #000a}
+.master-restore-dialog h2{margin:12px 0;font-size:clamp(25px,4vw,34px)}
+.master-restore-dialog p{color:#b7c5d8;line-height:1.75;font-size:13px}
+.master-restore-dialog .master-restore-warning{padding:14px;border-left:3px solid #e7a85b;background:#e7a85b10}
+.master-restore-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:24px}
+.master-restore-actions button{min-height:44px;padding:0 20px}
+@media(max-width:520px){#app .master-archive-actions{flex-direction:column}.master-restore-actions{flex-direction:column-reverse}.master-restore-actions button{width:100%}}

@@ -133,6 +133,11 @@ export class StateManager {
     return clone(this.#state);
   }
 
+  replaceState(nextState) {
+    if (!nextState || typeof nextState !== 'object' || Array.isArray(nextState)) throw new TypeError('StateManager.replaceState expects a state object.');
+    const next={...clone(nextState),currentUser:this.#state.currentUser};
+    this.#replaceFromExternal(next);this.#scheduleSave();return this.getState();
+  }
   setState(update) {
     const previous = this.#state;
     const draft = clone(previous);
@@ -281,15 +286,14 @@ export function exportMasterArchive(encrypted = false, options = {}) {
   const { workspaceState = {}, profile = {}, appVersion = '1.0.0', now = new Date() } = options;
   const safeState = archiveStripSecrets(workspaceState || {});
   const archive = {
-    version: '1.0',
-    timestamp: now.toISOString(),
-    appVersion: String(appVersion || '1.0.0'),
-    profile: archivePick(profile, ARCHIVE_PROFILE_FIELDS),
-    preferences: archivePick(profile, ARCHIVE_PREFERENCE_FIELDS),
-    folders: clone(safeState.folders || []),
-    notes: { regular: clone(safeState.notes || []), code: clone(safeState.codeNotes || []) },
-    tasks: clone(safeState.tasks || []),
-    noteLinks: clone(safeState.noteLinks || [])
+    metadata: { version:'1.1', timestamp:now.toISOString(), appVersion:String(appVersion || '1.0.0') },
+    data: {
+      profile: archivePick(profile, ARCHIVE_PROFILE_FIELDS),
+      preferences: archivePick(profile, ARCHIVE_PREFERENCE_FIELDS),
+      folders: clone(safeState.folders || []),
+      notes: { regular:clone(safeState.notes || []), code:clone(safeState.codeNotes || []) },
+      tasks:clone(safeState.tasks || []), noteLinks:clone(safeState.noteLinks || []), state:safeState
+    }
   };
   const json = JSON.stringify(archive, null, 2);
   if (/"(?:sessionToken|accessToken|refreshToken|bearerToken|token|passwordHash|password|secret|authorization)"\\s*:/i.test(json)) {
@@ -308,4 +312,33 @@ export function exportMasterArchive(encrypted = false, options = {}) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   return { archive, filename: anchor.download };
 }
+
+function archiveObject(value){return !!value&&typeof value==='object'&&!Array.isArray(value);}
+export function validateMasterArchive(archive){
+ const errors=[],warnings=[];
+ if(!archiveObject(archive))return {valid:false,errors:['The file must contain a JSON object.'],warnings,migrationRequired:false};
+ if(!archiveObject(archive.metadata))errors.push('Missing metadata block.');
+ if(!archiveObject(archive.data))errors.push('Missing data block.');
+ if(errors.length)return {valid:false,errors,warnings,migrationRequired:false};
+ const m=archive.metadata,d=archive.data;
+ if(typeof m.version!=='string'||!m.version.trim())errors.push('Missing archive version.');
+ if(!m.timestamp||Number.isNaN(Date.parse(m.timestamp)))errors.push('Invalid archive timestamp.');
+ const legacy=m.version==='1.0'&&Array.isArray(archive.tasks)&&archiveObject(archive.notes);
+ const migrationRequired=m.version!=='1.1'&&!legacy;
+ if(migrationRequired)errors.push('This archive version is not supported by this LifeFlow version.');
+ const p=legacy?archive:d,n=p.notes;
+ if(!Array.isArray(p.tasks))errors.push('Tasks must be an array.');
+ if(!archiveObject(n)||!Array.isArray(n.regular)||!Array.isArray(n.code))errors.push('Notes must contain regular and code arrays.');
+ if(!Array.isArray(p.folders)||!Array.isArray(p.noteLinks))errors.push('Folders and note links must be arrays.');
+ if(Array.isArray(p.tasks))p.tasks.forEach((t,i)=>{if(!archiveObject(t)||t.id==null||!String(t.id).trim()||typeof t.title!=='string'||!t.title.trim())errors.push('Task '+(i+1)+' is missing an essential id or title.');});
+ if(archiveObject(n))['regular','code'].forEach(k=>Array.isArray(n[k])&&n[k].forEach((x,i)=>{if(!archiveObject(x)||x.id==null||!String(x.id).trim()||typeof x.title!=='string'||!x.title.trim())errors.push('Note '+(i+1)+' is missing an essential id or title.');}));
+ if(legacy)warnings.push('Legacy archive format detected. It will be normalized during restore.');
+ return {valid:errors.length===0,errors,warnings,migrationRequired};
+}
+export function normalizeMasterArchive(a){
+ const v=validateMasterArchive(a);if(!v.valid)throw new Error(v.errors.join(' '));
+ if(a.metadata.version==='1.0')return {metadata:{...a.metadata,version:'1.1'},data:{profile:a.profile||{},preferences:a.preferences||{},folders:a.folders||[],notes:a.notes,tasks:a.tasks,noteLinks:a.noteLinks||[],state:{...(a.state||{}),tasks:a.tasks,notes:a.notes.regular,codeNotes:a.notes.code,folders:a.folders||[],noteLinks:a.noteLinks||[]}}};
+ return a;
+}
+
 export default StateManager;

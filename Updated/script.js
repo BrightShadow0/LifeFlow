@@ -243,6 +243,7 @@ async function doLogin(){
   return lifeFlowAuthController.doLogin();
 }
 function initTaskEventDelegation(){
+  if(!window.lfMasterArchiveInputBound){document.addEventListener('change',event=>{if(event.target?.id==='masterArchiveFile')restoreMasterArchiveFile(event.target.files?.[0]);});window.lfMasterArchiveInputBound=true;}
   document.addEventListener('click',event=>{
     if(document.getElementById('lfNoteContextMenu')&&!event.target.closest('#lfNoteContextMenu'))closeNoteContextMenu();
     const control=event.target.closest('[data-lf-action],[data-lf-overlay]');
@@ -305,6 +306,9 @@ function initTaskEventDelegation(){
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
     else if(action==='backup-master-archive') backupMasterArchive();
+    else if(action==='choose-master-archive') document.getElementById('masterArchiveFile')?.click();
+    else if(action==='cancel-master-restore') closeMasterRestorePreview();
+    else if(action==='confirm-master-restore') restoreMasterArchiveNow();
     else if(action==='save-tier') saveTier();
     else if(action==='toggle-change-password') toggleChangePasswordPanel();
     else if(action==='close-change-password') toggleChangePasswordPanel(false);
@@ -994,7 +998,46 @@ function validTime(t){ return typeof t==='string' && /^([01]\d|2[0-3]):[0-5]\d$/
 function validInterval(a,b){ return validTime(a)&&validTime(b)&&a<b; }
 function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso); return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}); }
 
-async function backupMasterArchive(){
+async function closeMasterRestorePreview(){document.getElementById('masterRestoreOverlay')?.remove();window.lfPendingMasterArchive=null;}
+async function restoreMasterArchiveFile(file){
+ if(!file)return;const input=document.getElementById('masterArchiveFile'),button=document.querySelector('[data-lf-action="choose-master-archive"]');
+ if(button){button.disabled=true;button.textContent='Validating archive…';}
+ try{
+  if(file.size>25*1024*1024)throw new Error('The archive exceeds the 25 MB safety limit.');
+  const raw=await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('The selected file could not be read.'));r.onload=()=>resolve(String(r.result||''));r.readAsText(file);});
+  let parsed;try{parsed=JSON.parse(raw);}catch(_){throw new Error('Invalid backup file. The file may be corrupted or from an incompatible version of LifeFlow.');}
+  const {validateMasterArchive,normalizeMasterArchive}=await import('./state.js?v=20261108-validation-gate1');
+  const result=validateMasterArchive(parsed);if(!result.valid)throw new Error('Invalid backup file. '+result.errors.slice(0,4).join(' '));
+  const archive=normalizeMasterArchive(parsed),d=archive.data;
+  if(!d.state||typeof d.state!=='object'||Array.isArray(d.state))throw new Error('The archive is missing its complete workspace state.');
+  window.lfPendingMasterArchive={archive,fileName:file.name};
+  const overlay=document.createElement('div');overlay.id='masterRestoreOverlay';overlay.className='master-restore-overlay';
+  overlay.innerHTML='<section class="master-restore-dialog" role="dialog" aria-modal="true" aria-labelledby="masterRestoreTitle"><span class="custom-kicker">VALIDATION COMPLETE</span><h2 id="masterRestoreTitle">Restore this archive?</h2><p class="master-restore-summary"></p><p class="master-restore-warning"><strong>This will permanently replace your current workspace data.</strong> This action cannot be undone. Login credentials and active sessions are not restored.</p>'+(result.warnings.length?'<p class="master-restore-warning">'+esc(result.warnings.join(' '))+'</p>':'')+'<div class="master-restore-actions"><button type="button" class="secondary" data-lf-action="cancel-master-restore">Cancel</button><button type="button" class="primary danger-action" data-lf-action="confirm-master-restore">Restore Now</button></div></section>';
+  overlay.querySelector('.master-restore-summary').textContent='We found a valid backup from '+new Date(archive.metadata.timestamp).toLocaleString()+'. It contains '+d.tasks.length+' tasks and '+(d.notes.regular.length+d.notes.code.length)+' notes.';
+  document.body.appendChild(overlay);overlay.querySelector('[data-lf-action="cancel-master-restore"]')?.focus();
+ }catch(e){showToast(e.message||'Invalid backup file. The file may be corrupted or from an incompatible version of LifeFlow.');}
+ finally{if(button){button.disabled=false;button.textContent='↥ Restore Backup';}if(input)input.value='';}
+}
+async function restoreMasterArchiveNow(){
+ const pending=window.lfPendingMasterArchive;if(!pending)return;
+ const button=document.querySelector('#masterRestoreOverlay [data-lf-action="confirm-master-restore"]');if(button){button.disabled=true;button.textContent='Restoring…';}
+ try{
+  if(!getSession()||!state?.currentUser)throw new Error('Please sign in again before restoring a backup.');
+  const d=pending.archive.data;
+  const sanitize=items=>items.map(n=>({...n,content:window.DOMPurify?window.DOMPurify.sanitize(String(n.content||''),{USE_PROFILES:{html:true}}):String(n.content||'')}));
+  const restored={...d.state,currentUser:state.currentUser,tasks:d.tasks,notes:sanitize(d.notes.regular),codeNotes:sanitize(d.notes.code),folders:d.folders,noteLinks:d.noteLinks};
+  delete restored.sessionToken;delete restored.passwordHash;
+  const snap={timestamp:new Date().toISOString(),state:lifeFlowTaskStateManager?.getState?.()||state,profile:lifeFlowProfileManager?.getState?.()||null};
+  sessionStorage.setItem('lifeflow_pre_restore_snapshot',JSON.stringify(snap));
+  if(!lifeFlowTaskStateManager)throw new Error('Workspace state manager is unavailable.');
+  lifeFlowTaskStateManager.replaceState(restored);if(!lifeFlowTaskStateManager.flush())throw new Error('LifeFlow could not save the restored workspace to browser storage.');
+  const users=getUsers(),user=users[state.currentUser];
+  if(user){const profile=d.profile||{},prefs=d.preferences||{};['name','bio','avatar','timezone','language','weekStart','workspace'].forEach(k=>{if(Object.prototype.hasOwnProperty.call(profile,k))user[k]=profile[k];});Object.assign(user,prefs);saveUsers(users);}
+  if(lifeFlowProfileManager){lifeFlowProfileManager.setState({profile:readAppearancePreferences(user||{})});lifeFlowProfileManager.flush();}
+  state=lifeFlowTaskStateManager.getState();closeMasterRestorePreview();showToast('Backup restored successfully. Reloading LifeFlow…');setTimeout(()=>window.location.reload(),450);
+ }catch(e){if(button){button.disabled=false;button.textContent='Restore Now';}showToast(e.message||'Restore failed.');}
+}
+function backupMasterArchive(){
   try{
     if(!state?.currentUser || !getSession()){showToast('Please sign in again before creating an archive.');return;}
     save(); lifeFlowTaskStateManager?.flush?.(); lifeFlowProfileManager?.flush?.();
@@ -2428,7 +2471,7 @@ function revokeAll(){
 function renderDataManagementTab(){
   return `<section class="card master-archive-card">
     <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
-    <button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button>
+    <div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
     <p class="notice master-archive-warning"><strong>Protect your data:</strong> LifeFlow stores your workspace in this browser. Clearing browser storage or losing this device can erase it. Create and keep an archive somewhere safe, and repeat regularly.</p>
     <small class="muted">The archive contains your data, not your login session or password credentials. You will need to sign in again after a future restore.</small>
   </section>`;
