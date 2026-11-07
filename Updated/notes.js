@@ -91,7 +91,32 @@ function createNotesController(options){
     const title=first.length>52?first.slice(0,49).trimEnd()+'…':first;
     return title!==current&&updateFields('regular',id,{title});
   }
-  function getFolders(){return snapshot().folders||[{id:'unfiled',name:'Unfiled',icon:'▤'}];}\n  function createFolder(name,icon='▣'){\n    const clean=String(name||'').trim().slice(0,40);if(!clean)return null;\n    if(getFolders().some(folder=>folder.name.toLowerCase()===clean.toLowerCase()))return null;\n    const folder={id:'folder-'+uid(),name:clean,icon:String(icon||'▣').slice(0,4)};commit({folders:[...getFolders(),folder]});return folder;\n  }\n  function moveToFolder(id,name){\n    const folder=getFolders().find(item=>item.name===name);if(!folder)return false;\n    return updateFields('regular',id,{folder:folder.name});\n  }\n  function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}\n  function setSearchQuery(query){commit({searchQuery:String(query||'')});}\n  function updateAll(kind,updater){
+  function getFolders(){return snapshot().folders||[{id:'unfiled',name:'Unfiled',icon:'▤'}];}\n  function createFolder(name,icon='▣'){\n    const clean=String(name||'').trim().slice(0,40);if(!clean)return null;\n    if(getFolders().some(folder=>folder.name.toLowerCase()===clean.toLowerCase()))return null;\n    const folder={id:'folder-'+uid(),name:clean,icon:String(icon||'▣').slice(0,4)};commit({folders:[...getFolders(),folder]});return folder;\n  }\n  function moveToFolder(id,name){\n    const folder=getFolders().find(item=>item.name===name);if(!folder)return false;\n    return updateFields('regular',id,{folder:folder.name});\n  }\n  function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}\n  function setSearchQuery(query){commit({searchQuery:String(query||'')});}\n  function searchNotes(query){
+    const terms=String(query||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if(!terms.length)return [];
+    const results=[];
+    getNotes('regular').forEach(note=>{
+      const title=String(note.title||''),content=String(note.content||''),tags=Array.isArray(note.tags)?note.tags.join(' '):String(note.tags||''),folder=String(note.folder||'Unfiled');
+      const tl=title.toLowerCase(),cl=content.toLowerCase(),tg=tags.toLowerCase(),fl=folder.toLowerCase();
+      if(!terms.every(term=>(tl+' '+cl+' '+tg+' '+fl).includes(term)))return;
+      let score=0;
+      terms.forEach(term=>{if(tl.includes(term))score+=100;if(cl.includes(term))score+=12;if(tg.includes(term))score+=8;if(fl.includes(term))score+=5;});
+      const match=terms.find(term=>cl.includes(term)),flat=content.replace(/\s+/g,' ').trim();
+      const index=match?flat.toLowerCase().indexOf(match):0,start=Math.max(0,index-65),end=Math.min(flat.length,index+145);
+      const snippet=flat?(start?'…':'')+flat.slice(start,end)+(end<flat.length?'…':''):'Folder: '+folder;
+      results.push({id:note.id,title,folder,score,snippet,terms});
+    });
+    return results.sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
+  }
+  function highlightText(value,terms){
+    let output=esc(value);
+    (terms||[]).filter(Boolean).sort((a,b)=>b.length-a.length).forEach(term=>{
+      const escaped=term.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\  function updateAll(kind,updater){');
+      output=output.replace(new RegExp('('+escaped+')','gi'),'<mark class="search-highlight">$1</mark>');
+    });
+    return output;
+  }
+  function updateAll(kind,updater){
     const list=getNotes(kind),next=updater(list);
     if(!Array.isArray(next))throw new TypeError('Notes update must return an array.');
     commit({[noteKey(kind)]:next});return next;
@@ -261,7 +286,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
