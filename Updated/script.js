@@ -186,6 +186,7 @@ function showStep(id){
   const captions={stepLogin:['Welcome back.','Sign in to access your personal planning workspace.'],stepSignup1:['Create an account.','First, choose your email and password.'],stepSignup2:['Make it yours.','Add a name to your workspace.'],stepSignup3:['Your workspace.','One last step before you start planning.'],stepVerify:['Verify your account.','This activation is simulated in the browser.'],stepForgot:['Reset your password.','Enter the email you used to sign up.'],stepSent:['Reset link ready.','This simulated link expires in 15 minutes.'],stepReset:['New password.','Use at least eight characters.'],stepDone:['Password updated.','Return to sign in.']};
   const caption=captions[id]||captions.stepLogin;const heading=document.getElementById('authTitle');heading.textContent=caption[0];heading.setAttribute('tabindex','-1');document.getElementById('authSubtitle').textContent=caption[1];requestAnimationFrame(()=>{const target=step.querySelector('input:not([type=hidden]),button:not([disabled])')||heading;target.focus({preventScroll:true});});
   ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.style.display='none'; });
+  if(typeof setLoginError==='function')setLoginError('');
 }
 function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
 function showOAuthNotice(msg){ const el=document.getElementById('oauthNotice'); el.textContent=msg; el.hidden=false; el.style.display='block'; }
