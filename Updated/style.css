@@ -4360,3 +4360,26 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="light"] #app .top-theme-pull .theme-bulb{background:#fff3a8;box-shadow:0 0 18px 6px #ffe87a,0 0 0 1px #e6d47a}
 @media(max-width:900px){#app .app-content{width:calc(100% - 68px);padding-right:20px}}
 @media(max-width:600px){#app .app-content{width:calc(100% - 68px);padding-right:14px}}
+
+
+/* Calendar + board balance: compact date cells, wider shared workspace and
+   matching column rhythm so the two planning areas feel evenly weighted. */
+#app .app-content{max-width:none;width:calc(100% - 238px);padding-left:clamp(24px,3vw,44px);padding-right:clamp(24px,3vw,44px)}
+#app #main .calendar-wrap{width:100%;max-width:100%;overflow-x:auto}
+#app #main .cal-grid{width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr))}
+#app #main .cal-day{min-height:82px;padding:7px;overflow:hidden}
+#app #main .cal-day .cal-tasks{max-height:42px;overflow-y:auto;overflow-x:hidden}
+#app #main .dow{padding:6px 3px}
+#app .today-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+#app .today-grid>.card,#app .today-grid>div{min-width:0}
+#app .board{gap:14px}
+#app .board .col{min-width:0;min-height:230px}
+@media(max-width:900px){
+  #app .app-content{width:calc(100% - 68px);padding-left:20px;padding-right:20px}
+  #app .today-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:600px){
+  #app .app-content{width:calc(100% - 68px);padding-left:14px;padding-right:14px}
+  #app #main .cal-grid{min-width:0}
+  #app #main .cal-day{min-height:70px;padding:5px}
+}
