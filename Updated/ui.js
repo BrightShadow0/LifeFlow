@@ -48,11 +48,15 @@ function createViewOrchestrator(){
     const renderer=renderers[view];
     try{
       const output=typeof renderer==='function'?renderer(state||{}):'';
-      container.innerHTML=output;
+      // Parse once into a detached template, then commit the completed DOM as a fragment.
+      // This keeps large view updates off the live tree until the new view is ready.
+      const template=container.ownerDocument.createElement('template');
+      template.innerHTML=String(output||'');
+      container.replaceChildren(template.content);
       lastError=null;
     }catch(error){
       lastError=error;
-      try{container.innerHTML=FALLBACK;}catch(_){container.textContent='Something went wrong loading this section.';}
+      try{const template=container.ownerDocument.createElement('template');template.innerHTML=FALLBACK;container.replaceChildren(template.content);}catch(_){container.textContent='Something went wrong loading this section.';}
       if(typeof onError==='function'){
         try{onError(error,view);}catch(callbackError){console.error('LifeFlow render error handler failed:',callbackError);}
       }else{

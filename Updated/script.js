@@ -1531,7 +1531,10 @@ function renderCommandResults(){
   const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,folderIcon:note.folderIcon,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
   const otherResults=(matches.concat(tasks)).slice(0,5).join('');
-  host.innerHTML=heading+noteHtml.join('')+otherResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
+  const output=heading+noteHtml.join('')+otherResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
+  const template=host.ownerDocument.createElement('template');
+  template.innerHTML=output;
+  host.replaceChildren(template.content);
 }
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeCommandPalette();closeNoteContextMenu();}
