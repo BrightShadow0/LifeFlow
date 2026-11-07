@@ -4799,20 +4799,22 @@ body::-webkit-scrollbar-corner{
   #app #main .cal-day .citem{font-size:8px;padding:2px 3px}
 }
 
-/* Weekday labels: use readable three-letter names with stronger hierarchy. */
+/* Weekday header: compact, balanced labels that stay legible at every width. */
 #app #main .cal-grid .dow{
-  min-height:42px;padding:10px 4px;
+  box-sizing:border-box;min-width:0;min-height:38px;padding:9px 2px;
+  display:flex;align-items:center;justify-content:center;
   color:var(--text)!important;
-  font-size:11px;font-weight:850;line-height:1;
-  letter-spacing:.11em;text-transform:uppercase;
-  background:var(--panel2,var(--card))!important;
+  font-size:clamp(8px, .82vw, 10px);font-weight:800;line-height:1;
+  letter-spacing:.075em;text-align:center;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;
+  background:color-mix(in srgb,var(--accent) 5%,var(--panel2,var(--card)))!important;
   border:1px solid var(--border)!important;
-  border-radius:9px;
-  opacity:1;
+  border-bottom:2px solid color-mix(in srgb,var(--accent) 28%,var(--border))!important;
+  border-radius:8px;opacity:1;
 }
 @media(max-width:760px){
-  #app #main .cal-grid .dow{min-height:36px;padding:8px 2px;font-size:9px;letter-spacing:.045em}
+  #app #main .cal-grid .dow{min-height:34px;padding:8px 1px;font-size:9px;letter-spacing:.035em}
 }
 @media(max-width:420px){
-  #app #main .cal-grid .dow{font-size:8px;letter-spacing:0}
+  #app #main .cal-grid .dow{min-height:32px;padding:7px 0;font-size:8px;letter-spacing:0;border-radius:6px}
 }
