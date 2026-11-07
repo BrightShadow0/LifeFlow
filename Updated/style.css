@@ -4817,3 +4817,28 @@ body::-webkit-scrollbar-corner{
 @media(max-width:420px){
   #app #main .cal-grid .dow{min-height:32px;padding:6px 0;font-size:8px;letter-spacing:0}
 }
+
+/* Live task calendar: workload states, live filters and clear task completion feedback. */
+#app #main .cal-live-summary{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 13px}
+#app #main .cal-live-summary span{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel2,var(--card));color:var(--muted);font-size:11px}
+#app #main .cal-live-summary strong{color:var(--text);font-size:13px;margin-right:3px}
+#app #main .cal-filter-row{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px}
+#app #main .cal-filter{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer}
+#app #main .cal-filter span{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:6px;background:var(--panel2,var(--card));color:var(--text);font-size:10px}
+#app #main .cal-filter.active{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
+#app #main .cal-filter.active span{background:var(--accent);color:#071007}
+#app #main .cal-date-row{display:flex;align-items:center;justify-content:space-between;gap:4px}
+#app #main .cal-day-count{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:6px;background:var(--panel2,var(--card));color:var(--muted);font-size:9px;font-weight:800}
+#app #main .cal-day.is-clear{background:color-mix(in srgb,var(--panel2,var(--card)) 42%,var(--card))!important}
+#app #main .cal-day.is-complete{border-top:2px solid color-mix(in srgb,var(--ok) 65%,var(--border))!important}
+#app #main .cal-day.has-open{border-top:2px solid color-mix(in srgb,var(--accent) 55%,var(--border))!important}
+#app #main .cal-day.is-busy{border-top:2px solid var(--warn)!important}
+#app #main .cal-day .citem.is-done{opacity:.58;border-left-color:var(--ok)!important}
+#app #main .cal-day .citem.is-done .cal-task-title{text-decoration:line-through;color:var(--muted)}
+#app #main .cal-filter-empty{display:block;padding:5px 2px;color:var(--muted);font-size:9px;font-style:italic}
+#app #main .cal-legend{display:flex;gap:14px;flex-wrap:wrap;margin:13px 0 3px;color:var(--muted);font-size:10px}
+#app #main .cal-legend span{display:inline-flex;align-items:center;gap:6px}
+#app #main .cal-legend i{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+#app #main .cal-legend .done-dot{background:var(--ok)}
+#app #main .cal-legend .clear-dot{background:var(--border)}
+@media(max-width:600px){#app #main .cal-live-summary{gap:6px}#app #main .cal-live-summary span{padding:6px 8px;font-size:10px}#app #main .cal-filter{padding:7px 8px;font-size:10px}#app #main .cal-legend{gap:9px}}
