@@ -3921,3 +3921,39 @@ body.auth-embed #authScreen .termcontent input{height:56px}
 body.auth-embed #authScreen .auth-brand-panel{
   border-right-color:#55ddeb30;
 }
+
+
+/* Keep the decorative FLOW watermark fully inside the login brand panel. */
+#authScreen .auth-brand-panel{
+  min-width:0;
+  isolation:isolate;
+}
+#authScreen .auth-brand-watermark{
+  left:clamp(22px,3vw,46px);
+  right:clamp(18px,2.5vw,36px);
+  bottom:clamp(22px,3vw,42px);
+  max-width:calc(100% - clamp(40px,5.5vw,82px));
+  overflow:hidden;
+  font-size:clamp(76px,13vw,190px);
+  line-height:.82;
+  letter-spacing:-.12em;
+  white-space:nowrap;
+}
+@media(max-width:850px){
+  #authScreen .auth-brand-watermark{
+    left:24px;
+    right:20px;
+    bottom:18px;
+    max-width:calc(100% - 44px);
+    font-size:clamp(72px,17vw,132px);
+  }
+}
+@media(max-width:520px){
+  #authScreen .auth-brand-watermark{
+    left:24px;
+    right:16px;
+    bottom:14px;
+    max-width:calc(100% - 40px);
+    font-size:clamp(64px,20vw,104px);
+  }
+}
