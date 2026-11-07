@@ -4446,3 +4446,32 @@ body::-webkit-scrollbar-corner{
   border-radius:8px;
   background:color-mix(in srgb,var(--card) 82%,var(--bg));
 }
+
+
+/* Light theme contrast: sidebar and navigation must follow the active workspace palette. */
+#app[data-theme="light"] .app-sidebar{
+  background:#ffffff;
+  border-right-color:#dce2e8;
+  color:#202938;
+  box-shadow:2px 0 18px rgba(25,40,60,.045);
+}
+#app[data-theme="light"] .workspace-wordmark::after{
+  background:linear-gradient(100deg,#17243a 0%,#263d5c 43%,#168bb7 66%,#7650bd 88%,#9652bb 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+#app[data-theme="light"] .navlabel{color:#68758a}
+#app[data-theme="light"] #nav button,
+#app[data-theme="light"] .sidebar-action{color:#465267}
+#app[data-theme="light"] #nav button:hover,
+#app[data-theme="light"] #nav button.active,
+#app[data-theme="light"] .sidebar-action:hover{
+  background:#edf2fa;
+  color:#17243a;
+}
+#app[data-theme="light"] #nav button.active{box-shadow:inset 3px 0 var(--accent)}
+#app[data-theme="light"] .nav-icon{color:var(--accent)}
+#app[data-theme="light"] .sidebottom{border-top-color:#dce2e8}
+#app[data-theme="light"] .sidebar-action.logout{color:#b83242}
+#app[data-theme="light"] .sidebar-action.logout .nav-icon{color:#b83242}
