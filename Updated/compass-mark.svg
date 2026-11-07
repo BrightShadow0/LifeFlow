@@ -5,7 +5,7 @@
  <linearGradient id="blue" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#173bdc"/><stop offset=".55" stop-color="#315dff"/><stop offset="1" stop-color="#8cb5ff"/></linearGradient>
  <linearGradient id="violet" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5114d4"/><stop offset=".55" stop-color="#a43ff2"/><stop offset="1" stop-color="#ef9bff"/></linearGradient>
 </defs>
-<path d="M13 104V79c0-4 2-8 6-10l26-14c7-4 14 1 14 8v41c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#cyan)"/>
-<path d="M62 104V57c0-4 2-8 6-10l26-14c7-4 14 1 14 8v65c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#blue)"/>
-<path d="M111 104V34c0-4 2-8 6-10l26-14c7-4 14 1 14 8v81c0 5-2 8-7 11l-25 13c-7 3-14-1-14-8Z" fill="url(#violet)" transform="translate(-49 0)"/>
+<path d="M8 105V83q0-6 6-9l21-11q7-4 7 4v38q0 6-6 9l-21 11q-7 3-7-5Z" fill="url(#cyan)"/>
+<path d="M46 105V57q0-6 6-9l21-11q7-4 7 4v64q0 6-6 9l-21 11q-7 3-7-5Z" fill="url(#blue)"/>
+<path d="M84 105V31q0-6 6-9l21-11q7-4 7 4v88q0 6-6 9l-21 11q-7 3-7-5Z" fill="url(#violet)"/>
 </svg>
