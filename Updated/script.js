@@ -597,13 +597,16 @@ async function initializeTaskArchitecture() {
     state = lifeFlowTaskStateManager.getState();
   }
 }
-function saveTaskStateFromLegacy() {
-  if (!lifeFlowTaskStateManager || !state?.currentUser) {
-    save();
-    return;
+function updateWorkspaceState(patch) {
+  if (lifeFlowTaskStateManager) {
+    lifeFlowTaskStateManager.setState(patch);
+    state = lifeFlowTaskStateManager.getState();
+    lifeFlowTaskStateManager.flush();
+    return state;
   }
-  lifeFlowTaskStateManager.setState(state);
-  lifeFlowTaskStateManager.flush();
+  state = { ...state, ...patch };
+  save();
+  return state;
 }
 
 let lifeFlowNoteController = null;
@@ -2167,18 +2170,31 @@ function renderSessionsTab(u){
   const ua = navigator.userAgent;
   const browser = /Chrome/.test(ua)?'Chrome':/Firefox/.test(ua)?'Firefox':/Safari/.test(ua)?'Safari':'Browser';
   const s = getSession();
-  const mock = state.mockSessions || (state.mockSessions = [
-    {device:'iPhone · Safari', loc:'Mumbai, IN', last:'2 days ago'},
-    {device:'Windows · Edge', loc:'Pune, IN', last:'1 week ago'}
-  ]);
+  let mock = state.mockSessions;
+  if (!Array.isArray(mock)) {
+    mock = [
+      {device:'iPhone · Safari', loc:'Mumbai, IN', last:'2 days ago'},
+      {device:'Windows · Edge', loc:'Pune, IN', last:'1 week ago'}
+    ];
+    updateWorkspaceState({ mockSessions: mock });
+  }
   return `<div class="card"><h2>Active Sessions</h2>
     <div class="row-between"><div><strong>${browser} · This device</strong><div class="notice current-session-notice">Current session — expires ${new Date(s.expiresAt).toLocaleString()}</div></div><span></span></div>
     ${mock.map((m,i)=>`<div class="row-between"><div>${esc(m.device)}<div class="session-detail">${esc(m.loc)} · ${esc(m.last)} (simulated)</div></div><button class="del" data-lf-action="revoke-session" data-session-index="${i}">Revoke</button></div>`).join('')}
     <button class="primary session-logout-button" data-lf-action="revoke-all">Log out all other devices</button>
   </div>`;
 }
-function revokeSession(i){ state.mockSessions.splice(i,1); save(); renderApp(); }
-function revokeAll(){ state.mockSessions = []; save(); renderApp(); }
+function revokeSession(i){
+  const sessions=Array.isArray(state.mockSessions)?state.mockSessions.slice():[];
+  if(!Number.isInteger(i)||i<0||i>=sessions.length)return;
+  sessions.splice(i,1);
+  updateWorkspaceState({mockSessions:sessions});
+  renderApp();
+}
+function revokeAll(){
+  updateWorkspaceState({mockSessions:[]});
+  renderApp();
+}
 
 function renderDangerTab(u){
   const email = esc(state.currentUser || '');
