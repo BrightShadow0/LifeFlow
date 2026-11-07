@@ -1839,13 +1839,14 @@ body::-webkit-scrollbar{
   box-sizing:border-box;
 }
 
-/* New Task compact layout */
+/* New Task layout: fit the form to its card instead of forcing desktop minimum widths. */
 .new-task-card .new-task-fields{
   display:grid;
-  grid-template-columns:minmax(280px,1.8fr) minmax(180px,1fr) minmax(180px,1fr);
+  grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(100px,.7fr);
   gap:14px;
   width:100%;
   align-items:end;
+  box-sizing:border-box;
 }
 .new-task-card .new-task-fields>input,
 .new-task-card .task-field-select,
@@ -1864,7 +1865,7 @@ body::-webkit-scrollbar{
 }
 .new-task-card .repeat-interval{
   display:grid;
-  grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);
+  grid-template-columns:repeat(2,minmax(0,1fr));
   gap:16px;
   width:100%;
   margin-top:16px;
@@ -1888,11 +1889,18 @@ body::-webkit-scrollbar{
 }
 .new-task-card .new-task-time{
   display:grid;
-  grid-template-columns:auto auto auto auto 1fr auto;
+  grid-template-columns:auto auto auto auto minmax(0,1fr) auto;
   align-items:center;
-  gap:10px;
-  margin-top:18px;
+  gap:12px;
+  margin-top:22px;
+  min-width:0;
 }
+.new-task-card .new-task-time>*{min-width:0}
+.new-task-card .new-task-time .new-task-tags{width:100%;min-width:0}
+.new-task-card .new-task-actions{margin-top:22px}
+.new-task-card .new-task-fields,
+.new-task-card .repeat-interval{min-width:0}
+.new-task-card .new-task-fields>*{min-width:0}
 .new-task-card .new-task-time .clear-timing{
   justify-self:end;
 }
