@@ -1075,6 +1075,7 @@ body{scrollbar-gutter:stable}
 :root[data-theme="dark"][data-color-theme="emerald"]{
   --bg:#06120c;--card:#0d1c14;--panel2:#10271b;--border:#214d36;--accent:#45d98a;--accent-soft:#103b27;
 }
+:root[data-theme="dark"][data-color-theme="gold"]{
   --bg:#120e05;--card:#1d1709;--panel2:#29200d;--border:#55421b;--accent:#f5b83d;--accent-soft:#4a3210;
 }
 :root[data-theme="dark"][data-color-theme="platinum"]{
@@ -2493,8 +2494,11 @@ select option:checked{
 :root[data-theme="dark"][data-color-theme="emerald"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 22%,#f5f5d9 0 1.25%,#c6f3d7 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#4c9879 0%,transparent 14%),linear-gradient(180deg,#0c2c2a 0%,#17473f 48%,#071813 100%)!important
 }
+:root[data-theme="light"][data-color-theme="gold"] #app[data-workspace-backdrop],
+:root[data-theme="paper"][data-color-theme="gold"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 25%,#fff9c9 0 3%,#ffca75 3.5% 5.5%,transparent 16%),linear-gradient(180deg,#8ec4e5 0%,#f3cb85 35%,#f49a68 57%,#d4a46f 100%)!important
 }
+:root[data-theme="dark"][data-color-theme="gold"] #app[data-workspace-backdrop]{
  background:radial-gradient(circle at 76% 22%,#fff4cf 0 1.25%,#ffe0a1 1.5% 1.9%,transparent 2.2%),radial-gradient(circle at 76% 22%,#a86c45 0%,transparent 14%),linear-gradient(180deg,#261c35 0%,#49304a 48%,#100e20 100%)!important
 }
 :root[data-theme="light"][data-color-theme="platinum"] #app[data-workspace-backdrop],
