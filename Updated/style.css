@@ -4394,3 +4394,11 @@ body::-webkit-scrollbar-corner{
 #app .note-folder-move{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--muted);font-size:12px}
 #app .note-folder-move select{max-width:220px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text)}
 #app .notes-list-actions{flex-wrap:wrap}
+
+/* Release 2.2: indexed note search */
+#app .notes-search-wrap{display:flex;align-items:center;gap:10px;padding:0 0 12px}
+#app .notes-search{flex:1;min-width:0;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit;font-size:12px}
+#app .notes-search-wrap>span{font-size:10px;color:var(--muted);white-space:nowrap}
+#app mark.search-highlight{background:color-mix(in srgb,var(--accent) 28%,transparent);color:inherit;font-weight:800;border-radius:2px}
+#app .command-section-label{padding:8px 10px 5px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+#app .command-note-result span{line-height:1.45}
