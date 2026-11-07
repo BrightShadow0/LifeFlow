@@ -40,6 +40,29 @@ The primary vector asset is `Updated/compass-mark.svg`.
 
 ---
 
+## Authentication Updates
+
+### Authentication v2.1 — Login handling
+
+- Email-only login with a generic incorrect-credentials response.
+- Progressive client-side lockout and a live countdown.
+- Failed-attempt state resets when a lock expires.
+
+### Authentication v2.2 — Accessibility and usability
+
+- Login and signup fields use appropriate labels, input types, and autocomplete hints.
+- Authentication step changes move keyboard focus and clear stale validation state.
+- Login errors are associated with their relevant fields and announced to assistive technology.
+- Password visibility controls expose their pressed state.
+- Remember me is unchecked by default.
+- Google and Apple provider marks use inline SVG artwork; unconfigured providers remain demo-mode actions.
+- Passkey sign-in is clearly marked as coming soon until server-side WebAuthn is available.
+- The login-panel tagline is real, selectable HTML text rather than generated CSS content.
+
+**Security limitation:** The current application is a browser-only build. Client-side lockout and local CAPTCHA checks are usability deterrents, not enforceable security controls. Production authentication requires server-side credential verification, rate limiting, CAPTCHA verification, and secure session management.
+
+---
+
 ## Three-Stage Experience
 
 LifeFlow is organised into three distinct stages. Each stage owns its layout and visual identity, and theme preferences must not leak between stages.
