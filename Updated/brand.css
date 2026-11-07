@@ -1,10 +1,18 @@
-/* LifeFlow geometric progress identity */
+/* LifeFlow official geometric logo lockup */
 .workspace-wordmark{display:flex;align-items:center;gap:10px;margin:0 10px 27px;padding:5px 0;color:transparent;font-size:0;line-height:1.2;white-space:nowrap}
 .workspace-wordmark::before{content:"";display:block;flex:0 0 34px;width:34px;height:34px;background:url("compass-mark.svg") center/contain no-repeat}
-.workspace-wordmark::after{content:"LifeFlow";display:block;color:var(--text);font-size:16px;font-weight:800;letter-spacing:-.045em;line-height:1}
+.workspace-wordmark::after{content:"LifeFlow";display:block;font-size:16px;font-weight:800;letter-spacing:-.045em;line-height:1;background:linear-gradient(100deg,#fff 0%,#fff 43%,#61d8ff 62%,#a66cff 82%,#e19aff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media(max-width:900px){.workspace-wordmark{justify-content:center;margin:0 0 26px}.workspace-wordmark::after{font-size:13px}}
-#authScreen .auth-brand-word{display:flex;align-items:center;gap:18px;font-size:clamp(40px,5.1vw,68px);letter-spacing:-.065em;color:#f5f7ff}
-#authScreen .auth-brand-word::before{content:"";display:block;flex:0 0 clamp(54px,6.5vw,82px);width:clamp(54px,6.5vw,82px);height:clamp(54px,6.5vw,82px);background:url("compass-mark.svg") center/contain no-repeat}
-#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 18% 14%,#159cf222,transparent 48%),radial-gradient(ellipse at 82% 86%,#8d45f51b,transparent 45%),linear-gradient(145deg,#0c1425,#080d18 72%)}
-.brand-symbol{filter:drop-shadow(0 5px 12px #0879ed35)}
-.window-brand img{filter:none}
+#authScreen .auth-brand-word{display:flex;align-items:center;gap:18px;font-size:clamp(40px,5.1vw,68px);letter-spacing:-.065em;color:#fff}
+#authScreen .auth-brand-word::before{display:none}
+#authScreen .auth-brand-word .brand-symbol{width:clamp(54px,6.5vw,82px);height:clamp(54px,6.5vw,82px);object-fit:contain}
+.brand-name{display:inline-flex;align-items:baseline;gap:0;font-weight:850;letter-spacing:-.065em;line-height:1}
+.brand-name>span:first-child{color:#fff}
+.brand-name>span:last-child{background:linear-gradient(100deg,#53d9ff 0%,#3e8fff 48%,#b45dff 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.site-header .brand{gap:10px;letter-spacing:0;font-size:inherit}
+.site-header .brand-symbol{width:34px;height:34px;border:0;border-radius:0;filter:drop-shadow(0 0 8px #168eff35)}
+.site-header .brand-name{font-size:16px;letter-spacing:-.045em}
+.window-brand img{width:23px;height:23px;display:block;object-fit:contain}
+.window-brand .brand-name{font-size:10px;letter-spacing:-.035em}
+.site-footer .brand-symbol{width:34px;height:34px}
+#authScreen .auth-brand-word .brand-name{font-size:inherit}
