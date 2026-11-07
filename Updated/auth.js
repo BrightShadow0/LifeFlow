@@ -7,6 +7,9 @@ const OAUTH_CONFIG={
   github:{clientId:'',authorizeUrl:'https://github.com/login/oauth/authorize',tokenUrl:'https://github.com/login/oauth/access_token',scope:'read:user user:email'},
   apple:{clientId:''}
 };
+let viewRenderers={};
+function configureRenderers(renderers){viewRenderers={...(renderers||{})};}
+function render(state,view){const renderer=viewRenderers[view];return typeof renderer==='function'?renderer(state||{}):'';}
 function createAuthController(deps){
   const {
     getUsers,saveUsers,newUserRecord,loadForUser,saveWorkspaceState,setWorkspaceState,
@@ -221,5 +224,5 @@ function createAuthController(deps){
     renderOAuthButtons,oauthLogin,demoOAuthLogin,handleOAuthCallback,doLogin
   };
 }
-global.LifeFlowAuthModule={createAuthController};
+global.LifeFlowAuthModule={createAuthController,configureRenderers,render};
 })(window);
