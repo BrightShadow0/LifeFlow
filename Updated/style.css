@@ -4155,7 +4155,6 @@ body.auth-embed #authScreen .auth-brand-panel{
   color:var(--text);
 }
 #app .app-sidebar{
-  background:var(--card)!important;
   border-right-color:var(--border)!important;
 }
 #app .card,
@@ -4300,10 +4299,6 @@ body.auth-embed #authScreen .auth-brand-panel{
 }
 
 /* Light appearances must never inherit dark-only utility surfaces. */
-:root[data-theme="light"] #app .app-sidebar,
-:root[data-theme="paper"] #app .app-sidebar{
-  background:var(--card)!important;
-}
 :root[data-theme="light"] #app .task,
 :root[data-theme="paper"] #app .task,
 :root[data-theme="light"] #app .stat,
