@@ -1592,11 +1592,11 @@ function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!nam
 let notesSearchTimer=null;
 function scheduleNotesSearch(control){
   const query=control.value;
+  lifeFlowNoteController?.setSearchQuery(query);
   if(notesSearchTimer!==null)window.clearTimeout(notesSearchTimer);
   notesSearchTimer=window.setTimeout(()=>{
     notesSearchTimer=null;
     if(!control.isConnected)return;
-    lifeFlowNoteController?.setSearchQuery(query);
     renderNotesListOnly();
   },140);
 }
@@ -1620,7 +1620,6 @@ function renderNotesListOnly(){
   const temp=document.createElement('div');temp.innerHTML=renderNotesManager();
   const current=main.querySelector('.notes-list'),next=temp.querySelector('.notes-list');
   if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
-  if(main.querySelector('.branch-graph'))refreshBranchesGraph();
 }
 function openKnowledgeBacklink(id,lineIndex){
   selectKnowledgeNote(id,'regular','edit');
