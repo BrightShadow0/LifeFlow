@@ -1452,6 +1452,10 @@ function renderCommandResults(){
 }
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeCommandPalette();closeNoteContextMenu();}
+  if((e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))&&e.target?.closest?.('[data-lf-folder-context]')){
+    e.preventDefault();const item=e.target.closest('[data-lf-folder-context]'),rect=item.getBoundingClientRect();
+    openFolderContextMenu({clientX:rect.left+24,clientY:rect.top+24,preventDefault(){}},item.dataset.folderName);
+  }
   if((e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))&&e.target?.closest?.('[data-lf-note-context]')){
     e.preventDefault();
     const item=e.target.closest('[data-lf-note-context]'),rect=item.getBoundingClientRect();
