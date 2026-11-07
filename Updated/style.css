@@ -4070,3 +4070,58 @@ body.auth-embed #authScreen .auth-brand-panel{
 #app #main .cal-day.today .dnum{
   color:var(--accent)!important;
 }
+
+/* Profile & Settings: keep form controls, helper copy and labels legible in every
+   workspace palette. The previous neutral cleanup used dark-only notice colours
+   and overrode the Daytime theme's intended contrast. */
+#app .card,
+#app .card h2,
+#app .card label,
+#app .card p,
+#app .card small,
+#app .card .custom-section-head,
+#app .card .custom-section-head p,
+#app .card .theme-preview-copy,
+#app .card .theme-preview-copy strong,
+#app .card .theme-preview-copy span{
+  color:var(--text);
+}
+#app .notice{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+  border:1px solid var(--border)!important;
+}
+#app input,
+#app select,
+#app textarea,
+#app .profile-file-input{
+  color:var(--text)!important;
+  background:var(--card)!important;
+  border-color:var(--border)!important;
+}
+#app input::placeholder,
+#app textarea::placeholder{
+  color:var(--muted)!important;
+  opacity:1;
+}
+#app .profile-file-input::file-selector-button{
+  background:var(--accent-soft)!important;
+  color:var(--accent)!important;
+  border-color:var(--border)!important;
+}
+#app .subnav button:not(.active){
+  color:var(--muted)!important;
+}
+#app .subnav button.active,
+#app button.primary{
+  color:#fff!important;
+}
+:root[data-theme="dark"] #app .notice{
+  color:var(--text)!important;
+  background:color-mix(in srgb,var(--accent-soft) 78%,var(--card))!important;
+}
+:root[data-theme="light"] #app .notice,
+:root[data-theme="paper"] #app .notice{
+  color:var(--text)!important;
+  background:var(--accent-soft)!important;
+}
