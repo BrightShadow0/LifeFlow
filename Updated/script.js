@@ -244,6 +244,7 @@ async function doLogin(){
 }
 function initTaskEventDelegation(){
   document.addEventListener('click',event=>{
+    if(document.getElementById('lfNoteContextMenu')&&!event.target.closest('#lfNoteContextMenu'))closeNoteContextMenu();
     const control=event.target.closest('[data-lf-action],[data-lf-overlay]');
     if(!control) return;
     if(control.dataset.lfOverlay){
@@ -288,6 +289,11 @@ function initTaskEventDelegation(){
     else if(action==='note-backlink'){openKnowledgeBacklink(control.dataset.noteId,Number(control.dataset.lineIndex));}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
     else if(action==='note-rename') beginKnowledgeNoteRename(control.dataset.noteId);
+    else if(action==='note-context-open'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');}
+    else if(action==='note-context-move'){const id=control.dataset.noteId,name=control.dataset.folderName;closeNoteContextMenu();if(lifeFlowNoteController?.moveToFolder(id,name)){showToast('Moved to '+name);renderApp();}}
+    else if(action==='note-context-rename'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');requestAnimationFrame(()=>beginKnowledgeNoteRename(id));}
+    else if(action==='note-context-delete'){const id=control.dataset.noteId;closeNoteContextMenu();deleteKnowledgeNote('regular',id);}
+    else if(action==='note-context-close') closeNoteContextMenu();
     else if(action==='branches-zoom') branchesZoom(Number(control.dataset.zoomFactor));
     else if(action==='branches-reset') branchesResetView();
     else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
@@ -352,8 +358,7 @@ function initTaskEventDelegation(){
   document.addEventListener('input',event=>{
     const control=event.target.closest('[data-lf-input="notes-search"]');
     if(!control)return;
-    lifeFlowNoteController?.setSearchQuery(control.value);
-    renderNotesListOnly();
+    scheduleNotesSearch(control);
   });
   document.addEventListener('input',event=>{
     const control=event.target.closest('[data-lf-input="ambient-intensity"]');
@@ -403,6 +408,11 @@ function initTaskEventDelegation(){
     dropDay(event,year,month,day);
   });
 }
+document.addEventListener('contextmenu',event=>{
+  const item=event.target.closest?.('[data-lf-note-context]');
+  if(!item){closeNoteContextMenu();return;}
+  event.preventDefault();openNoteContextMenu(event,item.dataset.noteId);
+});
 document.addEventListener('DOMContentLoaded',initTaskEventDelegation);
 
 function initLoginAccessibility(){
@@ -683,6 +693,17 @@ function initializeNotesArchitecture() {
   window.lfSelectedNote = lifeFlowNoteController.selectedId();
   window.lfNoteMode = lifeFlowNoteController.selectedKind();
   window.lfNoteView = lifeFlowNoteController.noteView();
+  if(!window.lfKnowledgeChangeListenerInstalled){
+    window.addEventListener('lifeflow:knowledge-change',event=>{
+      if(view==='branches'){
+        const scroll=document.querySelector('.branch-graph');
+        const left=scroll?.scrollLeft||0,top=scroll?.scrollTop||0;
+        renderApp();
+        requestAnimationFrame(()=>{const next=document.querySelector('.branch-graph');if(next){next.scrollLeft=left;next.scrollTop=top;}});
+      }
+    });
+    window.lfKnowledgeChangeListenerInstalled=true;
+  }
 }
 function selectedKnowledgeNote(kind='regular') { return lifeFlowNoteController?.getSelectedNote(kind) || null; }
 function selectKnowledgeNote(id,kind='regular',mode='edit') {
@@ -1402,12 +1423,17 @@ function renderCommandResults(){
   const matches=pages.filter(x=>!q||x.join(' ').toLowerCase().includes(q)).map(x=>'<button type="button" class="command-result" data-lf-action="command-view" data-view="'+x[0]+'"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>');
   const tasks=(state.tasks||[]).filter(t=>!q||((t.title||'')+' '+(t.description||'')).toLowerCase().includes(q)).slice(0,5).map(t=>'<button type="button" class="command-result" data-lf-action="command-task" data-task-id="'+t.id+'"><b>'+esc(t.title||'Untitled task')+'</b><span>'+((t.done?'Completed':'Open'))+(t.priority?' · '+esc(t.priority):'')+'</span></button>');
   const noteResults=lifeFlowNoteController?.searchNotes(q)||[];
-  const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+note.id+'"><b>'+esc(note.title||'Untitled note')+'</b><span>'+esc(note.folder)+' · '+lifeFlowNoteController.highlightText(note.snippet,note.terms)+'</span></button>');
+  const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
   host.innerHTML=(matches.concat(tasks)).slice(0,5).join('')+heading+noteHtml.join('')||'<div class="command-empty">No matching pages, tasks or notes.</div>';
 }
 window.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeCommandPalette();
+  if(e.key==='Escape'){closeCommandPalette();closeNoteContextMenu();}
+  if((e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))&&e.target?.closest?.('[data-lf-note-context]')){
+    e.preventDefault();
+    const item=e.target.closest('[data-lf-note-context]'),rect=item.getBoundingClientRect();
+    openNoteContextMenu({clientX:rect.left+24,clientY:rect.top+24,preventDefault(){}},item.dataset.noteId);
+  }
 });
 function makeKnowledgeNoteCode(){return lifeFlowNoteController?.makeNoteCode()||'';}
 function ensureKnowledgeState(){if(lifeFlowNoteController)lifeFlowNoteController.ensure();}
@@ -1563,12 +1589,38 @@ function openKnowledgeNoteByTitle(title){
   renderApp();
 }
 function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!name)return;const folder=lifeFlowNoteController?.createFolder(name);if(!folder)showToast('Folder name already exists or is invalid');else renderApp();}
+let notesSearchTimer=null;
+function scheduleNotesSearch(control){
+  const query=control.value;
+  if(notesSearchTimer!==null)window.clearTimeout(notesSearchTimer);
+  notesSearchTimer=window.setTimeout(()=>{
+    notesSearchTimer=null;
+    if(!control.isConnected)return;
+    lifeFlowNoteController?.setSearchQuery(query);
+    renderNotesListOnly();
+  },140);
+}
+function closeNoteContextMenu(){document.getElementById('lfNoteContextMenu')?.remove();}
+function openNoteContextMenu(event,noteId){
+  closeNoteContextMenu();
+  const note=noteStore('regular').find(item=>String(item.id)===String(noteId));if(!note)return;
+  event.preventDefault?.();
+  const folders=lifeFlowNoteController?.getFolders()||[{name:'Unfiled'}];
+  const menu=document.createElement('div');
+  menu.id='lfNoteContextMenu';menu.className='note-context-menu';menu.setAttribute('role','menu');menu.setAttribute('aria-label','Note actions');
+  menu.innerHTML='<button type="button" role="menuitem" data-lf-action="note-context-open" data-note-id="'+esc(note.id)+'">Open note</button><div class="note-context-label">MOVE TO FOLDER</div>'+folders.map(folder=>'<button type="button" role="menuitem" class="note-context-folder '+((note.folder||'Unfiled')===folder.name?'current':'')+'" data-lf-action="note-context-move" data-note-id="'+esc(note.id)+'" data-folder-name="'+esc(folder.name)+'" '+((note.folder||'Unfiled')===folder.name?'disabled':'')+'><span>'+esc(folder.icon||'▣')+'</span>'+esc(folder.name)+((note.folder||'Unfiled')===folder.name?'<small>Current</small>':'')+'</button>').join('')+'<div class="note-context-divider"></div><button type="button" role="menuitem" data-lf-action="note-context-rename" data-note-id="'+esc(note.id)+'">Rename note</button><button type="button" role="menuitem" class="danger" data-lf-action="note-context-delete" data-note-id="'+esc(note.id)+'">Delete note</button>';
+  document.body.appendChild(menu);
+  const width=250,height=menu.offsetHeight||240,left=Math.max(8,Math.min(Number(event.clientX)||8,window.innerWidth-width-8)),top=Math.max(8,Math.min(Number(event.clientY)||8,window.innerHeight-height-8));
+  menu.style.left=left+'px';menu.style.top=top+'px';
+  menu.querySelector('button')?.focus({preventScroll:true});
+}
 function renderNotesListOnly(){
   const main=document.getElementById('main');if(!main||view!=='notes')return;
   const active=document.activeElement,start=active?.selectionStart,end=active?.selectionEnd;
   const temp=document.createElement('div');temp.innerHTML=renderNotesManager();
   const current=main.querySelector('.notes-list'),next=temp.querySelector('.notes-list');
   if(current&&next){current.replaceWith(next);const input=next.querySelector('.notes-search');if(input){input.focus({preventScroll:true});try{input.setSelectionRange(start,end);}catch(_){}}}
+  if(main.querySelector('.branch-graph'))refreshBranchesGraph();
 }
 function openKnowledgeBacklink(id,lineIndex){
   selectKnowledgeNote(id,'regular','edit');
@@ -1601,7 +1653,7 @@ function renderNotesManager(){
   const searchQuery=String(state.searchQuery||''),filteredItems=searchQuery?lifeFlowNoteController.searchNotes(searchQuery).map(result=>items.find(note=>String(note.id)===String(result.id))).filter(Boolean):items;
   html+='<div class="notes-search-wrap"><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search titles, content, tags or folders..." aria-label="Search notes" data-lf-input="notes-search"><span>'+filteredItems.length+' results</span></div>';
   html+='<div class="notes-items">';
-  folders.forEach(function(folder){const group=filteredItems.filter(n=>(n.folder||'Unfiled')===folder.name);html+='<section class="note-folder"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+esc(folder.name)+'"><span>'+esc(folder.icon||'▣')+'</span><strong>'+esc(folder.name)+'</strong><small>'+group.length+'</small><span class="folder-chevron">'+(collapsed.has(folder.name)?'▸':'▾')+'</span></button>';if(!collapsed.has(folder.name)){group.forEach(function(n){html+='<button class="note-item '+(selected&&String(selected.id)===String(n.id)?'active':'')+'" data-lf-action="note-select" data-note-id="'+n.id+'"><strong>'+esc(n.title||'Untitled')+'</strong><small>'+esc(new Date(n.updatedAt||Date.now()).toLocaleDateString())+'</small></button>';});}html+='</section>';});
+  folders.forEach(function(folder){const group=filteredItems.filter(n=>(n.folder||'Unfiled')===folder.name);html+=window.LifeFlowUIModule.renderFolderCategory({folder,notes:group,collapsed:collapsed.has(folder.name),selectedId:selected?.id??null});});
   html+='</div></div><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
@@ -1612,7 +1664,7 @@ function renderNotesManager(){
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" data-note-id="'+selected.id+'" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
     const backlinks=lifeFlowNoteController?.getBacklinks(selected.id)||[];
-    html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+(backlinks.length?backlinks.map(item=>'<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+item.id+'" data-line-index="'+item.line+'"><strong>'+esc(item.title)+'</strong><span>'+esc(item.context)+'</span></button>').join(''):'<p class="note-backlinks-empty">No notes link here yet.</p>')+'</section>';
+    html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+(backlinks.length?backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join(''):'<p class="note-backlinks-empty">No notes link here yet.</p>')+'</section>';
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use + New to create one.</p></div>';
   html+='</div></div></div>';
   return html;
@@ -1748,7 +1800,7 @@ function initBranchesGraph(root){
   };
   window.lfBranchesFocusNode=focusNode;
   viewport.querySelectorAll('.branch-edge-hit').forEach(line=>{
-    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');renderApp();requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const token='[['+target.title+']]';const at=editor.value.toLowerCase().indexOf(token.toLowerCase());if(at>=0){editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const before=editor.value.slice(0,at).split('\\n').length-1;editor.scrollTop=Math.max(0,before*(parseFloat(getComputedStyle(editor).lineHeight)||22)-editor.clientHeight/2);}});};
+    const activate=()=>{const source=noteStore('regular').find(n=>String(n.id)===line.dataset.from),target=noteStore('regular').find(n=>String(n.id)===line.dataset.to);if(!source||!target)return;selectKnowledgeNote(source.id,'regular','edit');renderApp();requestAnimationFrame(()=>{const editor=document.getElementById('kn_content');if(!editor)return;const token='[['+target.title+']]';const at=editor.value.toLowerCase().indexOf(token.toLowerCase());if(at>=0){editor.focus({preventScroll:true});editor.setSelectionRange(at,at+token.length);const before=editor.value.slice(0,at).split(/\\r?\\n/).length-1;editor.scrollTop=Math.max(0,before*(parseFloat(getComputedStyle(editor).lineHeight)||22)-editor.clientHeight/2);}});};
     line.addEventListener('click',activate);line.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
   });
   viewport.querySelectorAll('.interactive-branch-node').forEach(function(node){
