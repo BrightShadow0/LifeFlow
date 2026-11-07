@@ -180,18 +180,28 @@ function createNotesController(options){
     });
     graphLinksCache={revision:regularNotesRevision,edges};return edges;
   }
+  function extractBacklinkContext(line,start,length){
+    const text=String(line||'').trim();if(!text)return '';
+    const matchStart=Math.max(0,start),matchEnd=matchStart+length;
+    const before=text.slice(0,matchStart),after=text.slice(matchEnd);
+    const leftBoundary=Math.max(before.lastIndexOf('. '),before.lastIndexOf('! '),before.lastIndexOf('? '),before.lastIndexOf('; '));
+    const rightCandidates=['. ','! ','? ','; '].map(token=>after.indexOf(token)).filter(index=>index>=0);
+    const rightBoundary=rightCandidates.length?Math.min(...rightCandidates):-1;
+    const context=text.slice(leftBoundary<0?0:leftBoundary+2,rightBoundary<0?text.length:matchEnd+rightBoundary+1).trim();
+    return context.length>220?context.slice(0,217)+'…':context;
+  }
   function getBacklinkIndex(){
     if(backlinkIndexCache&&backlinkIndexCache.revision===regularNotesRevision)return backlinkIndexCache.index;
     const index=new Map();
     getNotes('regular').forEach(source=>{
-      const lines=String(source.content||'').replace(/\r\n?/g,'\n').split('\n');
+      const lines=String(source.content||'').replace(/\r\n?/g,'\n').split('\n'),seen=new Set();
       lines.forEach((line,lineNumber)=>{
         const pattern=/\[\[\s*([^\]]+?)\s*\]\]/g;let match;
         while((match=pattern.exec(line))){
-          const key=match[1].trim().toLowerCase();if(!key)continue;
+          const key=match[1].trim().toLowerCase();if(!key||seen.has(key))continue;
+          seen.add(key);
           if(!index.has(key))index.set(key,[]);
-          const context=line.trim();
-          index.get(key).push({id:source.id,title:source.title||'Untitled',line:lineNumber,context:context.length>220?context.slice(0,217)+'…':context});
+          index.get(key).push({id:source.id,title:source.title||'Untitled',line:lineNumber,context:extractBacklinkContext(line,match.index,match[0].length),targetTitle:match[1].trim()});
         }
       });
     });
