@@ -181,8 +181,8 @@ function createNotesController(options){
     graphLinksCache={revision:regularNotesRevision,edges};return edges;
   }
   function extractBacklinkContext(line,start,length){
-    const text=String(line||'').trim();if(!text)return '';
-    const matchStart=Math.max(0,start),matchEnd=matchStart+length;
+    const raw=String(line||''),text=raw.trim();if(!text)return '';
+    const leading=raw.length-raw.trimStart().length,matchStart=Math.max(0,start-leading),matchEnd=matchStart+length;
     const before=text.slice(0,matchStart),after=text.slice(matchEnd);
     const leftBoundary=Math.max(before.lastIndexOf('. '),before.lastIndexOf('! '),before.lastIndexOf('? '),before.lastIndexOf('; '));
     const rightCandidates=['. ','! ','? ','; '].map(token=>after.indexOf(token)).filter(index=>index>=0);
