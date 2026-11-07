@@ -4669,3 +4669,13 @@ body::-webkit-scrollbar-corner{
 .master-restore-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:24px}
 .master-restore-actions button{min-height:44px;padding:0 20px}
 @media(max-width:520px){#app .master-archive-actions{flex-direction:column}.master-restore-actions{flex-direction:column-reverse}.master-restore-actions button{width:100%}}
+
+/* Release 3.3: encrypted backup controls */
+.master-secure-options{display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:10px}
+.master-secure-toggle{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;cursor:pointer}
+.master-password-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.master-password-fields[hidden]{display:none}
+.master-password-fields label{display:grid;gap:7px;font-size:12px;color:var(--muted)}
+.master-password-fields input{width:100%;min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--text)}
+.master-encryption-warning{grid-column:1/-1;margin:0;padding:12px;border-left:3px solid #e05252;background:#e0525210;color:var(--text);font-size:12px;line-height:1.6}
+@media(max-width:600px){.master-password-fields{grid-template-columns:1fr}}

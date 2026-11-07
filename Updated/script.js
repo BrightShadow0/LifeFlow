@@ -243,7 +243,7 @@ async function doLogin(){
   return lifeFlowAuthController.doLogin();
 }
 function initTaskEventDelegation(){
-  if(!window.lfMasterArchiveInputBound){document.addEventListener('change',event=>{if(event.target?.id==='masterArchiveFile')restoreMasterArchiveFile(event.target.files?.[0]);});window.lfMasterArchiveInputBound=true;}
+  if(!window.lfMasterArchiveInputBound){document.addEventListener('change',event=>{if(event.target?.id==='masterArchiveFile')restoreMasterArchiveFile(event.target.files?.[0]);if(event.target?.id==='masterArchiveSecure'){const fields=document.getElementById('masterArchivePasswordFields');if(fields)fields.hidden=!event.target.checked;}});window.lfMasterArchiveInputBound=true;}
   document.addEventListener('click',event=>{
     if(document.getElementById('lfNoteContextMenu')&&!event.target.closest('#lfNoteContextMenu'))closeNoteContextMenu();
     const control=event.target.closest('[data-lf-action],[data-lf-overlay]');
@@ -1007,6 +1007,8 @@ async function restoreMasterArchiveFile(file){
   const raw=await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('The selected file could not be read.'));r.onload=()=>resolve(String(r.result||''));r.readAsText(file);});
   let parsed;try{parsed=JSON.parse(raw);}catch(_){throw new Error('Invalid backup file. The file may be corrupted or from an incompatible version of LifeFlow.');}
   const {validateMasterArchive,normalizeMasterArchive}=await import('./state.js?v=20261108-validation-gate1');
+  const {isEncryptedMasterArchive,decryptMasterArchive}=await import('./state.js?v=20261108-encrypted-backups1');
+  if(isEncryptedMasterArchive(parsed)){const password=window.prompt('This backup is encrypted. Enter its backup password to continue:');if(password===null)throw new Error('Restore cancelled.');try{parsed=await decryptMasterArchive(parsed,password);}catch(error){throw error;}}
   const result=validateMasterArchive(parsed);if(!result.valid)throw new Error('Invalid backup file. '+result.errors.slice(0,4).join(' '));
   const archive=normalizeMasterArchive(parsed),d=archive.data;
   if(!d.state||typeof d.state!=='object'||Array.isArray(d.state))throw new Error('The archive is missing its complete workspace state.');
@@ -1044,8 +1046,12 @@ function backupMasterArchive(){
     const { exportMasterArchive } = await import('./state.js?v=20261108-master-archive1');
     const user=currentUser()||{};
     const profile={name:user.name||'',bio:user.bio||'',avatar:user.avatar||null,timezone:user.timezone||'UTC',language:user.language||'en',weekStart:user.weekStart||'Sunday',workspace:user.workspace||'My Workspace',...(lifeFlowProfileManager?.getState?.().profile||{}),...readAppearancePreferences(user)};
-    exportMasterArchive(false,{workspaceState:lifeFlowTaskStateManager?.getState?.()||state,profile,appVersion:document.documentElement.dataset.appVersion||'1.0.0'});
-    showToast('Archive created successfully. Keep this file in a safe place.');
+    const options={workspaceState:lifeFlowTaskStateManager?.getState?.()||state,profile,appVersion:document.documentElement.dataset.appVersion||'1.0.0'};
+    const secure=document.getElementById('masterArchiveSecure')?.checked;
+    if(secure){const password=document.getElementById('masterArchivePassword')?.value||'',confirm=document.getElementById('masterArchivePasswordConfirm')?.value||'';if(password!==confirm)throw new Error('The backup passwords do not match.');if(password.length<10)throw new Error('Use a backup password with at least 10 characters.');await exportEncryptedMasterArchive({...options,password});}
+    else exportMasterArchive(false,options);
+    if(document.getElementById('masterArchivePassword'))document.getElementById('masterArchivePassword').value='';if(document.getElementById('masterArchivePasswordConfirm'))document.getElementById('masterArchivePasswordConfirm').value='';
+    showToast(secure?'Encrypted archive created successfully. Keep your password safe.':'Archive created successfully. Keep this file in a safe place.');
   }catch(error){console.error('LifeFlow master archive export failed:',error);showToast(error?.message||'Archive could not be created. Please try again.');}
 }
 function exportData(fmt){
@@ -2471,7 +2477,7 @@ function revokeAll(){
 function renderDataManagementTab(){
   return `<section class="card master-archive-card">
     <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
-    <div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
+    <div class="master-secure-options"><label class="master-secure-toggle"><input id="masterArchiveSecure" type="checkbox"> <span>Secure Backup (password-protected)</span></label><div id="masterArchivePasswordFields" class="master-password-fields" hidden><label>Backup password<input id="masterArchivePassword" type="password" autocomplete="new-password" minlength="10" placeholder="At least 10 characters"></label><label>Confirm password<input id="masterArchivePasswordConfirm" type="password" autocomplete="new-password" minlength="10" placeholder="Re-enter backup password"></label><p class="master-encryption-warning">Critical: If you lose this password, your backup cannot be recovered. There is no reset password for encrypted files.</p></div></div><div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
     <p class="notice master-archive-warning"><strong>Protect your data:</strong> LifeFlow stores your workspace in this browser. Clearing browser storage or losing this device can erase it. Create and keep an archive somewhere safe, and repeat regularly.</p>
     <small class="muted">The archive contains your data, not your login session or password credentials. You will need to sign in again after a future restore.</small>
   </section>`;

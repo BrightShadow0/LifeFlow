@@ -282,7 +282,7 @@ function archiveStripSecrets(value) {
   return clean;
 }
 export function exportMasterArchive(encrypted = false, options = {}) {
-  if (encrypted) throw new Error('Encrypted archives are not available yet. Export an unencrypted JSON archive.');
+  if (encrypted) return exportEncryptedMasterArchive(options);
   const { workspaceState = {}, profile = {}, appVersion = '1.0.0', now = new Date() } = options;
   const safeState = archiveStripSecrets(workspaceState || {});
   const archive = {
@@ -311,6 +311,42 @@ export function exportMasterArchive(encrypted = false, options = {}) {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   return { archive, filename: anchor.download };
+}
+
+
+const ARCHIVE_KDF_ITERATIONS = 310000;
+function bytesToBase64(bytes){let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);return btoa(binary);}
+function base64ToBytes(value){const binary=atob(value);const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes;}
+async function deriveArchiveKey(password,salt){
+ const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:ARCHIVE_KDF_ITERATIONS,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+export async function exportEncryptedMasterArchive(options={}){
+ const {password,workspaceState={},profile={},appVersion='1.0.0',now=new Date()}=options;
+ if(typeof password!=='string'||password.length<10)throw new Error('Use a backup password with at least 10 characters.');
+ const safeState=archiveStripSecrets(workspaceState||{});
+ const archive={metadata:{version:'1.1',timestamp:now.toISOString(),appVersion:String(appVersion)},data:{profile:archivePick(profile,ARCHIVE_PROFILE_FIELDS),preferences:archivePick(profile,ARCHIVE_PREFERENCE_FIELDS),folders:clone(safeState.folders||[]),notes:{regular:clone(safeState.notes||[]),code:clone(safeState.codeNotes||[])},tasks:clone(safeState.tasks||[]),noteLinks:clone(safeState.noteLinks||[]),state:safeState}};
+ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const key=await deriveArchiveKey(password,salt),plain=new TextEncoder().encode(JSON.stringify(archive));
+ const cipher=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plain));
+ const envelope={format:'lifeflow-encrypted-archive',encryption:{algorithm:'AES-256-GCM',kdf:'PBKDF2',hash:'SHA-256',iterations:ARCHIVE_KDF_ITERATIONS,salt:bytesToBase64(salt),iv:bytesToBase64(iv)},ciphertext:bytesToBase64(cipher)};
+ const blob=new Blob([JSON.stringify(envelope,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='lifeflow_archive_'+now.toISOString().slice(0,10)+'.json';a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ return {filename:a.download,envelope};
+}
+export function isEncryptedMasterArchive(value){return archiveObject(value)&&value.format==='lifeflow-encrypted-archive'&&typeof value.ciphertext==='string';}
+export async function decryptMasterArchive(envelope,password){
+ if(!isEncryptedMasterArchive(envelope))throw new Error('This is not a recognised encrypted LifeFlow archive.');
+ if(typeof password!=='string'||!password)throw new Error('Enter the backup password.');
+ const e=envelope.encryption||{};
+ if(e.algorithm!=='AES-256-GCM'||e.kdf!=='PBKDF2'||e.hash!=='SHA-256'||e.iterations!==ARCHIVE_KDF_ITERATIONS)throw new Error('Unsupported encryption settings in this backup.');
+ try{
+  const salt=base64ToBytes(e.salt),iv=base64ToBytes(e.iv),cipher=base64ToBytes(envelope.ciphertext);
+  if(salt.length!==16||iv.length!==12||cipher.length<17)throw new Error('Invalid encrypted payload.');
+  const key=await deriveArchiveKey(password,salt);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,cipher);
+  return JSON.parse(new TextDecoder().decode(plain));
+ }catch(error){if(error instanceof SyntaxError)throw new Error('Decrypted archive is not valid JSON.');throw new Error('Incorrect password. Decryption failed.');}
 }
 
 function archiveObject(value){return !!value&&typeof value==='object'&&!Array.isArray(value);}
