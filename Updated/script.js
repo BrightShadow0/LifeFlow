@@ -1727,17 +1727,7 @@ function renderBranches(){
       return position?{...note,graphX:position.x,graphY:position.y}:note;
     }));
   }
-  const edges=[],seen={};
-  items.forEach(function(n){
-    const matches=String(n.content||'').match(/\[\[\s*([^\]\n]+?)\s*\]\]/g)||[];
-    matches.forEach(function(token){
-      const title=token.replace(/^\[\[\s*/,'').replace(/\s*\]\]$/,'').trim();
-      const target=items.find(function(item){return String(item.title||'').trim().toLowerCase()===title.toLowerCase();});
-      if(!target||target.id===n.id)return;
-      const key=[String(n.id),String(target.id)].sort().join('|');
-      if(seen[key])return;seen[key]=true;edges.push({from:String(n.id),to:String(target.id)});
-    });
-  });
+  const edges=lifeFlowNoteController?.getGraphLinks()||[];
   let svg='';
   edges.forEach(function(edge){
     const a=positions[edge.from],b=positions[edge.to];
