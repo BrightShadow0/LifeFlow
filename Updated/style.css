@@ -4034,3 +4034,26 @@ body.auth-embed #authScreen .auth-brand-panel{
 /* Restore the sign-in provider row while keeping its notice hidden until needed. */
 #authScreen #oauthRow{display:grid!important}
 #authScreen #oauthNotice:not([hidden]){display:block!important}
+
+/* Calendar theme correction: keep today's cell and task chips consistent in light themes.
+   The default Sapphire neutral override above must not force dark tiles in light mode. */
+:root[data-theme="light"] #app #main .cal-day.today,
+:root[data-theme="paper"] #app #main .cal-day.today{
+  background:var(--accent-soft)!important;
+  border-color:var(--accent)!important;
+}
+:root[data-theme="light"] #app #main .cal-day.today .dnum,
+:root[data-theme="paper"] #app #main .cal-day.today .dnum{
+  background:var(--card)!important;
+  color:var(--accent)!important;
+}
+:root[data-theme="light"] #app #main .cal-day .citem,
+:root[data-theme="paper"] #app #main .cal-day .citem{
+  background:var(--accent-soft)!important;
+  color:var(--text)!important;
+}
+:root[data-theme="light"] #app #main .cal-day,
+:root[data-theme="paper"] #app #main .cal-day{
+  background:var(--card);
+  color:var(--text);
+}
