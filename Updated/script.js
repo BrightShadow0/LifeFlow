@@ -668,7 +668,7 @@ function initializeNotesArchitecture() {
   lifeFlowNoteController = window.LifeFlowNotesModule.createNotesController({
     stateManager: lifeFlowTaskStateManager, getCurrentState: () => state, uid
   });
-  ['notes','codeNotes','noteLinks','selectedNoteId','selectedNoteKind','noteView'].forEach(key => {
+  ['notes','codeNotes','noteLinks','folders','collapsedFolders','searchQuery','selectedNoteId','selectedNoteKind','noteView'].forEach(key => {
     lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key, () => {
       state = lifeFlowTaskStateManager.getState();
       window.lfSelectedNote = state.selectedNoteId ?? null;
