@@ -227,3 +227,38 @@ main{position:relative;z-index:1}.hero{min-height:min(100svh,1040px);padding:150
 
 @media(max-width:760px){.connect-preview{grid-template-columns:1fr;gap:22px}.branch-map{height:340px}.branch-map .node{width:82px;height:82px;font-size:9px}.branch-map .node-main{width:108px;height:108px;top:calc(50% - 54px);left:calc(50% - 54px)}}
 @media(prefers-reduced-motion:reduce){.branch-map .branch-link{animation:none}.branch-map .node{transition:none}}
+
+
+/* Neutral blue-slate finish: remove leftover green undertones from the Experience Lab. */
+:root{
+  --paper:#eef2f8;
+  --muted:#aab7ca;
+  --line:#dce6f51c;
+}
+body{background:#090c12;color:var(--paper)}
+::selection{background:var(--lime);color:#101622}
+.ambient-field{
+  background:
+    radial-gradient(ellipse at 74% 12%,#263c5045,transparent 38%),
+    radial-gradient(ellipse at 15% 68%,#182c4030,transparent 40%),
+    linear-gradient(145deg,#0b0e15,#090c12 52%,#0b0e15);
+}
+.mock-sidebar small{color:#8493a9}
+.mock-summary>div:first-child b i{color:#9baac0}
+.mock-task>i{border-color:#8797ae;color:#101622}
+.float-card small,.visual-caption{color:#9baac0}
+.preview-stage:before{
+  background:radial-gradient(ellipse at 75% 18%,#4b6a9c20,transparent 54%);
+}
+.focus-row>i{border-color:#8797ae;color:#101622}
+.mini-cal-grid i{color:#93a3ba}
+.mini-cal-grid span{color:#c5d1e2}
+.mini-cal-grid span.faded{color:#65748a}
+.board-column>small{color:#aab6ca}
+.note-toolbar{color:#9aa9bf}
+.markdown-code{color:#d2def0}
+.markdown-code i{color:#9aabc4}
+.data-core b{color:#b8c8df}
+.data-core span{color:#9aaac1}
+.data-chip{color:#c3d0e2}
+.cal-legend .cal-selected-label{color:#a8b5c9}
