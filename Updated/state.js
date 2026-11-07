@@ -52,19 +52,28 @@ export class StateManager {
   #saveDelay;
   #onStorage;
   #onPageHide;
+  #keyForUser;
+  #loadStateAdapter;
+  #saveStateAdapter;
 
   constructor({
     currentUser = null,
     defaults = defaultProfileState,
     storage = globalThis.localStorage,
     saveDelay = DEFAULT_SAVE_DELAY,
-    listenToBrowserEvents = true
+    listenToBrowserEvents = true,
+    keyForUser = profileStateKey,
+    loadState = null,
+    saveState = null
   } = {}) {
     if (!storage) throw new Error('StateManager requires a Storage-compatible adapter.');
 
     this.#storage = storage;
     this.#saveDelay = Math.max(0, Number(saveDelay) || 0);
     this.defaults = defaults;
+    this.#keyForUser = typeof keyForUser === 'function' ? keyForUser : () => keyForUser;
+    this.#loadStateAdapter = typeof loadState === 'function' ? loadState : null;
+    this.#saveStateAdapter = typeof saveState === 'function' ? saveState : null;
 
     this.#state = this.#loadForUser(currentUser);
 
@@ -82,12 +91,24 @@ export class StateManager {
   }
 
   #storageKey() {
-    return this.#state?.currentUser ? profileStateKey(this.#state.currentUser) : null;
+    return this.#state?.currentUser ? this.#keyForUser(this.#state.currentUser) : null;
   }
 
   #loadForUser(email) {
     const base = this.defaults(email);
     if (!email) return base;
+
+    if (this.#loadStateAdapter) {
+      try {
+        const adapted = this.#loadStateAdapter(email, { storage: this.#storage, defaults: clone(base) });
+        if (adapted && typeof adapted === 'object' && !Array.isArray(adapted)) {
+          return { ...base, ...clone(adapted), currentUser: email };
+        }
+      } catch (_) {
+        // Keep the application bootable if an optional slice adapter fails.
+      }
+      return base;
+    }
 
     const accountState = readJSON(this.#storage, profileStateKey(email));
     if (accountState && typeof accountState === 'object' && !Array.isArray(accountState)) {
@@ -204,6 +225,9 @@ export class StateManager {
     if (!key) return false;
 
     try {
+      if (this.#saveStateAdapter) {
+        return this.#saveStateAdapter(clone(this.#state), this.#state.currentUser, this.#storage) !== false;
+      }
       this.#storage.setItem(key, JSON.stringify(this.#state));
       return true;
     } catch (_) {
@@ -216,10 +240,7 @@ export class StateManager {
    * into the next profile. Auth integration should call this on login/logout.
    */
   switchUser(email) {
-    if (this.#saveTimer !== null) {
-      clearTimeout(this.#saveTimer);
-      this.#saveTimer = null;
-    }
+    this.flush();
     const next = this.#loadForUser(email || null);
     this.#replaceFromExternal(next);
     return this.getState();
