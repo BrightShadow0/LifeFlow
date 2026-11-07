@@ -30,7 +30,16 @@ function renderSearchSnippet(options){
 }
 function renderBacklinkItem(item){
   const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
+  const context=String(item?.context||''),target=String(item?.targetTitle||'');
+  const escapedTarget=target.replace(/[.*+?^${}()|[\]\\]/g,'\\function renderBacklinkItem(item){
+  const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
   return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+escapeKnowledgeHtml(item?.context||'')+'</span></button>';
+}');
+  const highlighted=escapedTarget?escapeKnowledgeHtml(context).replace(new RegExp(escapeKnowledgeHtml(target).replace(/[.*+?^${}()|[\]\\]/g,'\\function renderBacklinkItem(item){
+  const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
+  return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+escapeKnowledgeHtml(item?.context||'')+'</span></button>';
+}'),'ig'),match=>'<mark class="backlink-highlight">'+match+'</mark>'):escapeKnowledgeHtml(context);
+  return '<button type="button" class="backlink-item" data-lf-action="note-backlink" data-note-id="'+id+'" data-line-index="'+line+'"><strong>'+escapeKnowledgeHtml(item?.title||'Untitled')+'</strong><span>'+highlighted+'</span></button>';
 }
 function createViewOrchestrator(){
   let activeView=null,renderers={},lastError=null;
