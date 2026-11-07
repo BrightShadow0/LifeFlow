@@ -4030,3 +4030,7 @@ body.auth-embed #authScreen .auth-brand-panel{
  #authScreen .oauth-provider{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){#authScreen .auth-submit .submit-spinner{animation:none}}
+
+/* Restore the sign-in provider row while keeping its notice hidden until needed. */
+#authScreen #oauthRow{display:grid!important}
+#authScreen #oauthNotice:not([hidden]){display:block!important}
