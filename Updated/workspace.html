@@ -6,9 +6,9 @@
 <title>LifeFlow Login Terminal</title>
 <link rel="stylesheet" href="style.css?v=20261107-calendar-theme-fix1">
 </head>
-<body>
+<body data-stage="login-terminal">
 
-<div id="authScreen">
+<div id="authScreen" data-stage="login-terminal">
   <div class="card">
 
     <div class="term-layout"><aside class="auth-brand-panel" aria-label="LifeFlow"><div class="auth-brand-word">LifeFlow<span>.</span></div><div class="auth-brand-watermark">FLOW</div></aside><div class="termcontent"><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle" class="auth-subtitle-hidden">Sign in to access your personal planning workspace.</p>
@@ -85,7 +85,7 @@
   </div>
 </div>
 
-<div id="app" style="display:none">
+<div id="app" data-stage="workspace" style="display:none">
   <aside class="app-sidebar" aria-label="Main navigation">
     <div class="brand">LifeFlow<i class="brand-mark">.</i></div>
     <div class="navlabel">Workspace</div><nav id="nav"></nav>
