@@ -218,9 +218,15 @@ function createAuthController(deps){
     finally{setLoginAttemptsInProgress(false);setLoginLoading(false);}
   }
 
+  // Expose session metadata to the UI, never the bearer token itself.
+  function getPublicSession(){
+    const session=getSession();
+    if(!session)return null;
+    return {email:session.email,createdAt:session.createdAt,expiresAt:session.expiresAt};
+  }
   return {
     base64url,randomToken,sha256B64url,timingSafeEqual,hashPassword,verifyPassword,
-    getSession,createSession,destroySession,doLogout,doSignup,doVerify,
+    getSession:getPublicSession,createSession,destroySession,doLogout,doSignup,doVerify,
     renderOAuthButtons,oauthLogin,demoOAuthLogin,handleOAuthCallback,doLogin
   };
 }
