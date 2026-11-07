@@ -16,7 +16,7 @@ function renderFolderCategory(options){
   return '<section class="note-folder" data-folder-name="'+escapeKnowledgeHtml(folderName)+'"><button class="note-folder-heading" type="button" data-lf-action="note-folder-toggle" data-folder-name="'+name+'" data-lf-folder-context aria-haspopup="menu"><span>'+icon+'</span><strong>'+name+'</strong><small>'+notes.length+'</small><span class="folder-chevron">'+(collapsed?'▸':'▾')+'</span></button>'+rows+'</section>';
 }
 function renderSearchSnippet(options){
-  const {folder='',snippet='',terms=[]}=options||{};
+  const {folder='',folderIcon='▤',snippet='',terms=[]}=options||{};
   const source=String(snippet||''),needles=Array.from(new Set((terms||[]).map(value=>String(value||'').trim()).filter(Boolean))).sort((a,b)=>b.length-a.length);
   let html='',cursor=0;
   while(cursor<source.length){
@@ -26,7 +26,7 @@ function renderSearchSnippet(options){
     html+=escapeKnowledgeHtml(source.slice(cursor,found))+'<mark class="search-highlight">'+escapeKnowledgeHtml(matched)+'</mark>';
     cursor=found+matched.length;
   }
-  return '<span class="search-snippet-folder">'+escapeKnowledgeHtml(folder)+'</span> · <span class="search-snippet-text">'+html+'</span>';
+  return '<span class="search-snippet-folder"><span class="search-snippet-icon" aria-hidden="true">'+escapeKnowledgeHtml(folderIcon)+'</span> '+escapeKnowledgeHtml(folder)+'</span> · <span class="search-snippet-text">'+html+'</span>';
 }
 function renderBacklinkItem(item){
   const id=escapeKnowledgeHtml(item?.id),line=Number.isInteger(item?.line)?item.line:0;
