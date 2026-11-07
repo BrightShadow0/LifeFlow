@@ -1451,7 +1451,8 @@ function renderCommandResults(){
   const noteResults=lifeFlowNoteController?.searchNotes(q)||[];
   const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
-  host.innerHTML=(matches.concat(tasks)).slice(0,5).join('')+heading+noteHtml.join('')||'<div class="command-empty">No matching pages, tasks or notes.</div>';
+  const otherResults=(matches.concat(tasks)).slice(0,5).join('');
+  host.innerHTML=heading+noteHtml.join('')+otherResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
 }
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeCommandPalette();closeNoteContextMenu();}
