@@ -4682,3 +4682,29 @@ body::-webkit-scrollbar-corner{
 
 /* Release 4 · Note version history */
 #app .note-history-toggle{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit;font-size:12px;font-weight:750;cursor:pointer}#app .note-history-toggle.active{border-color:var(--accent);background:var(--accent-soft)}#app .note-history-toggle span{min-width:19px;padding:2px 5px;border-radius:20px;background:var(--surface);text-align:center;font-size:10px}#app .note-version-history{margin:18px 0 0;padding:16px;border:1px solid var(--border);border-radius:13px;background:var(--panel2);box-shadow:0 8px 24px rgba(0,0,0,.07)}#app .note-version-head,#app .note-version-item,#app .note-version-preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px}#app .note-version-head>div,#app .note-version-item>div{display:grid;gap:4px;min-width:0}#app .note-version-head small,#app .note-version-item small,#app .note-version-preview-head span{color:var(--muted);font-size:11px;line-height:1.5}#app .note-version-head>button{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:20px;cursor:pointer}#app .note-version-list{display:grid;gap:8px;margin-top:14px;max-height:340px;overflow:auto}#app .note-version-item{padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card)}#app .note-version-item strong{font-size:12px;overflow-wrap:anywhere}#app .note-version-item button,#app .note-version-actions button{flex:0 0 auto;padding:8px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--text);font:inherit;font-size:11px;font-weight:750;cursor:pointer}#app .note-version-empty{margin:14px 0 2px;color:var(--muted);font-size:12px;line-height:1.6}#app .note-version-preview{margin-top:14px;padding:13px;border:1px solid var(--border);border-radius:10px;background:var(--card)}#app .note-version-preview pre{max-height:360px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.65 inherit;color:var(--text)}#app .note-version-actions{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:600px){#app .note-history-toggle{margin:8px 0 0;width:100%;justify-content:center}#app .note-version-item{align-items:flex-start}#app .note-version-item button{align-self:center}}
+
+/* Release 4 · Data Health Indicator */
+#app .data-health-panel{display:grid;gap:15px;padding:17px;border:1px solid var(--border);border-radius:13px;background:var(--panel2)}
+#app .data-health-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#app .data-health-heading h3{margin:4px 0 0;font-size:18px}
+#app .data-health-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--border);border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+#app .data-health-pill:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+#app .data-health-pill.is-good{color:var(--success,var(--accent));background:color-mix(in srgb,var(--accent) 9%,transparent)}
+#app .data-health-pill.is-warning{color:var(--warn,#d99b42);background:color-mix(in srgb,var(--warn,#d99b42) 10%,transparent)}
+#app .data-health-pill.is-missing{color:var(--danger,#e46d7c);background:color-mix(in srgb,var(--danger,#e46d7c) 9%,transparent)}
+#app .data-health-pill.is-missing{animation:data-health-pulse 2.4s ease-in-out infinite}
+#app .data-health-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#app .data-health-metric{display:grid;align-content:start;gap:6px;min-width:0;padding:11px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
+#app .data-health-metric>span,.data-health-storage>div:first-child span{font-size:10px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.05em}
+#app .data-health-metric>strong{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#app .health-integrity-ok{color:var(--accent)}
+#app .health-integrity-warning{color:var(--warn,#d99b42)}
+#app .data-health-storage{display:grid;gap:8px}
+#app .data-health-storage>div:first-child{display:flex;justify-content:space-between;gap:10px;align-items:center}
+#app .data-health-storage>div:first-child strong{font-size:12px;font-variant-numeric:tabular-nums}
+#app .data-health-track{height:8px;overflow:hidden;border-radius:99px;background:var(--surface-2);border:1px solid var(--border)}
+#app .data-health-track>span{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .25s ease}
+#app .data-health-storage small{font-size:10px;line-height:1.5;color:var(--muted)}
+@keyframes data-health-pulse{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--danger,#e46d7c) 12%,transparent)}}
+@media(max-width:640px){#app .data-health-grid{grid-template-columns:1fr}#app .data-health-heading{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){#app .data-health-pill.is-missing{animation:none}}

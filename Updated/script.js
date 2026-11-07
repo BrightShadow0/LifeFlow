@@ -1062,6 +1062,7 @@ async function backupMasterArchive(){
     if(secure){const password=document.getElementById('masterArchivePassword')?.value||'',confirm=document.getElementById('masterArchivePasswordConfirm')?.value||'';if(password!==confirm)throw new Error('The backup passwords do not match.');if(password.length<10)throw new Error('Use a backup password with at least 10 characters.');await exportEncryptedMasterArchive({...options,password});}
     else exportMasterArchive(false,options);
     if(document.getElementById('masterArchivePassword'))document.getElementById('masterArchivePassword').value='';if(document.getElementById('masterArchivePasswordConfirm'))document.getElementById('masterArchivePasswordConfirm').value='';
+    recordLastBackup();
     showToast(secure?'Encrypted archive created successfully. Keep your password safe.':'Archive created successfully. Keep this file in a safe place.');
   }catch(error){console.error('LifeFlow master archive export failed:',error);showToast(error?.message||'Archive could not be created. Please try again.');}
 }
@@ -2494,8 +2495,38 @@ function revokeAll(){
   renderApp();
 }
 
+function getDataHealthSnapshot(){
+  const user=currentUser()||{},lastBackup=user.lastBackupAt?new Date(user.lastBackupAt):null;
+  const validBackupDate=lastBackup&&!Number.isNaN(lastBackup.getTime());
+  const ageMs=validBackupDate?Math.max(0,Date.now()-lastBackup.getTime()):null;
+  const backupState=ageMs===null?'missing':ageMs<86400000?'fresh':'stale';
+  let usedBytes=0,integrity='ok',integrityMessage='Basic workspace structure check passed';
+  try{
+    const keys=[];
+    for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&(key.startsWith('lifeflow2_')||key==='lifeflow_users'))keys.push(key);}
+    keys.forEach(key=>{const value=localStorage.getItem(key)||'';usedBytes+=(key.length+value.length)*2;});
+    const stateKey='lifeflow2_state_'+encodeURIComponent(String(state?.currentUser||''));
+    const raw=localStorage.getItem(stateKey);
+    const stored=raw?JSON.parse(raw):(lifeFlowTaskStateManager?.getState?.()||state);
+    if(!stored||typeof stored!=='object'||Array.isArray(stored)||!Array.isArray(stored.tasks||[]))throw new Error('Workspace state has an unexpected structure');
+    ['notes','codeNotes','folders','noteLinks'].forEach(key=>{if(stored[key]!==undefined&&!Array.isArray(stored[key]))throw new Error('Invalid '+key);});
+    JSON.stringify(stored);
+  }catch(error){integrity='check';integrityMessage='Could not verify all saved workspace data';}
+  const approximateLimit=5*1024*1024,percent=Math.min(100,Math.round(usedBytes/approximateLimit*100));
+  const formatBytes=bytes=>bytes<1024?bytes+' B':bytes<1024*1024?(bytes/1024).toFixed(1)+' KB':(bytes/1024/1024).toFixed(2)+' MB';
+  let backupLabel='No backup recorded';
+  if(ageMs!==null){const hours=Math.floor(ageMs/3600000);backupLabel=hours<1?'Backed up less than an hour ago':hours<24?'Last backup '+hours+' hour'+(hours===1?'':'s')+' ago':'Last backup '+Math.floor(hours/24)+' day'+(Math.floor(hours/24)===1?'':'s')+' ago';}
+  return {backupState,backupLabel,usedLabel:formatBytes(usedBytes),percent,integrity,integrityMessage};
+}
+function recordLastBackup(){
+  const users=getUsers(),email=state?.currentUser;
+  if(!email||!users[email])return;
+  users[email].lastBackupAt=new Date().toISOString();
+  saveUsers(users);
+}
 function renderDataManagementTab(){
-  return `<section class="card master-archive-card">
+  const health=getDataHealthSnapshot();
+  return `<section class="card master-archive-card">\n    <div class="data-health-panel" aria-label="Data health"><div class="data-health-heading"><div><span class="custom-kicker">WORKSPACE STATUS</span><h3>Data Health</h3></div><span class="data-health-pill ${health.backupState==='fresh'?'is-good':health.backupState==='stale'?'is-warning':'is-missing'}">${health.backupState==='fresh'?'Protected':health.backupState==='stale'?'Backup overdue':'No backup yet'}</span></div><div class="data-health-grid"><div class="data-health-metric"><span>Last backup</span><strong>${health.backupLabel}</strong></div><div class="data-health-metric"><span>Storage used</span><strong>${health.usedLabel}</strong></div><div class="data-health-metric"><span>Data integrity</span><strong class="${health.integrity==='ok'?'health-integrity-ok':'health-integrity-warning'}">${health.integrityMessage}</strong></div></div><div class="data-health-storage"><div><span>Estimated browser storage</span><strong>${health.percent}%</strong></div><div class="data-health-track"><span style="width:${health.percent}%"></span></div><small>Approximation based on LifeFlow localStorage data and a 5 MB reference limit. Actual browser limits vary.</small></div></div>
     <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
     <div class="master-secure-options"><label class="master-secure-toggle"><input id="masterArchiveSecure" type="checkbox"> <span>Secure Backup (password-protected)</span></label><div id="masterArchivePasswordFields" class="master-password-fields" hidden><label>Backup password<input id="masterArchivePassword" type="password" autocomplete="new-password" minlength="10" placeholder="At least 10 characters"></label><label>Confirm password<input id="masterArchivePasswordConfirm" type="password" autocomplete="new-password" minlength="10" placeholder="Re-enter backup password"></label><p class="master-encryption-warning">Critical: If you lose this password, your backup cannot be recovered. There is no reset password for encrypted files.</p></div></div><div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
     <p class="notice master-archive-warning"><strong>Protect your data:</strong> LifeFlow stores your workspace in this browser. Clearing browser storage or losing this device can erase it. Create and keep an archive somewhere safe, and repeat regularly.</p>
