@@ -106,6 +106,27 @@ function createNotesController(options){
   }
   function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}
   function setSearchQuery(query){commit({searchQuery:String(query||'')});}
+  function getBacklinks(targetId){
+    const target=getNotes('regular').find(note=>String(note.id)===String(targetId));
+    if(!target)return [];
+    const title=String(target.title||'').trim().toLowerCase();
+    if(!title)return [];
+    const found=[];
+    getNotes('regular').forEach(source=>{
+      if(String(source.id)===String(targetId))return;
+      const lines=String(source.content||'').replace(/\r\n?/g,'\n').split('\n');
+      lines.forEach((line,index)=>{
+        const pattern=/\[\[\s*([^\]]+?)\s*\]\]/g;let match;
+        while((match=pattern.exec(line))){
+          if(match[1].trim().toLowerCase()===title){
+            const context=line.trim();
+            found.push({id:source.id,title:source.title||'Untitled',line:index,context:context.length>220?context.slice(0,217)+'…':context});
+          }
+        }
+      });
+    });
+    return found;
+  }
   function searchNotes(query){
     const terms=String(query||'').trim().toLowerCase().split(/\s+/).filter(Boolean);
     if(!terms.length)return [];
@@ -309,7 +330,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
