@@ -13,17 +13,22 @@
 
     <div class="term-layout"><aside class="auth-brand-panel" aria-label="LifeFlow"><div class="auth-brand-word">LifeFlow<span>.</span></div><div class="auth-brand-watermark">FLOW</div></aside><div class="termcontent"><h2 id="authTitle">Welcome back.</h2><p id="authSubtitle" class="auth-subtitle-hidden">Sign in to access your personal planning workspace.</p>
     <div id="stepLogin" class="authstep active">
-      <label for="loginEmail">EMAIL / USERNAME</label><input id="loginEmail" placeholder="Email">
-      <label for="loginPass">PASSWORD</label>
-      <div class="auth-password-wrap"><input id="loginPass" type="password" placeholder="Password"><button type="button" class="password-eye" aria-label="Show password" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
-      <div id="loginError" class="notice" style="display:none;color:var(--danger);background:transparent;border:1px solid var(--danger)"></div>
-      <button class="primary auth-submit" onclick="doLogin()" style="width:100%">Sign in</button>
-      <div class="oauth-row" id="oauthRow"></div>
-      <div id="oauthNotice" class="notice" style="display:none"></div>
-      <div style="margin-top:8px;display:flex;justify-content:space-between">
-        <button class="linklike" onclick="startSignup()">Create account</button>
-        <button class="linklike" onclick="showStep('stepForgot')">Forgot password?</button>
-      </div>
+      <form id="loginForm" novalidate>
+        <div class="auth-label-row"><label for="loginEmail">EMAIL / USERNAME</label></div>
+        <input id="loginEmail" name="username" type="text" placeholder="Email / Username" autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="loginError" required>
+        <div class="auth-label-row"><label for="loginPass">PASSWORD</label><button class="linklike forgot-inline" type="button" onclick="showStep('stepForgot')">Forgot password?</button></div>
+        <div class="auth-password-wrap"><input id="loginPass" name="password" type="password" placeholder="Password" autocomplete="current-password" aria-describedby="capsWarning loginError" required><button type="button" class="password-eye" aria-label="Show password" aria-pressed="false" title="Show password" onclick="togglePasswordVisibility('loginPass',this)"><svg class="password-eye-icon" viewBox="0 0 64 44" aria-hidden="true"><path d="M4 22C14 8 25 3 32 3s18 5 28 19c-10 14-21 19-28 19S14 36 4 22Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="22" r="9" fill="currentColor"/></svg></button></div>
+        <p id="capsWarning" class="auth-inline-hint" role="status" aria-live="polite" hidden>Caps Lock is on.</p>
+        <div class="auth-remember"><label><input id="rememberMe" type="checkbox" checked> <span>Remember me</span></label></div>
+        <div id="loginCaptcha" class="login-captcha" hidden><label for="captchaAnswer">Quick verification: <span id="captchaQuestion"></span></label><input id="captchaAnswer" type="text" inputmode="numeric" autocomplete="off" placeholder="Answer" aria-describedby="captchaHelp"><small id="captchaHelp">Complete this check after repeated sign-in attempts.</small></div>
+        <div id="loginError" class="notice auth-error" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
+        <button class="primary auth-submit" id="loginSubmit" type="submit" style="width:100%"><span class="submit-label">Sign in</span><span class="submit-spinner" aria-hidden="true"></span></button>
+      </form>
+      <div class="oauth-divider"><span>OR CONTINUE WITH</span></div>
+      <div class="oauth-row" id="oauthRow" aria-label="Alternative sign-in options"></div>
+      <button class="passkey-button" type="button" onclick="startPasskeyLogin()"><span aria-hidden="true">⌑</span> Continue with a passkey</button>
+      <div id="oauthNotice" class="notice auth-oauth-notice" role="status" aria-live="polite" hidden></div>
+      <p class="auth-signup-prompt">New here? <button class="linklike" type="button" onclick="startSignup()">Create account</button></p>
     </div>
     <div id="stepSignup1" class="authstep">
       <div class="stepdots"><span class="on"></span><span></span><span></span></div>
