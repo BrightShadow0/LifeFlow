@@ -178,7 +178,7 @@
       reduced?.addEventListener?.('change', () => { if (reduced.matches) resetPointer(); });
     }
 
-    profileState.subscribe('profile', () => {
+    const unsubscribeProfile = profileState.subscribe('profile', () => {
       const app = document.getElementById('app');
       if (!app || app.classList.contains('lifeflow-stage-hidden')) return;
       const user = currentUserWithPreferences();
@@ -186,10 +186,16 @@
       applyWorkspaceAppearance(user);
       applyAmbientEnvironment();
     });
+    let destroyed = false;
+    function destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      unsubscribeProfile();
+    }
     return {
       profile, updatePreferences, effectiveTheme, applyTheme, themeLabel,
       ambientSettings, applyAmbientEnvironment, setTheme, setAutoThemeSync,
-      setColorTheme, initWorkspaceAtmosphereInteraction
+      setColorTheme, initWorkspaceAtmosphereInteraction, destroy
     };
   }
   global.LifeFlowThemeModule = { createThemeController };
