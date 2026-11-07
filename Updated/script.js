@@ -1347,7 +1347,7 @@ function renderCalendar(){
       <strong>${monthName}</strong>
       <button class="hbtn" data-lf-action="shift-month" data-month-delta="1">›</button>
     </div>
-    <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['M','T','W','T','F','S','S']:['S','M','T','W','T','F','S']).map(d=>`<div class="dow">${d}</div>`).join('')}${cells}</div></div>
+    <div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['MON','TUE','WED','THU','FRI','SAT','SUN']:['SUN','MON','TUE','WED','THU','FRI','SAT']).map((d,i)=>`<div class="dow" role="columnheader" aria-label="${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(i+(weekStartsMonday?1:0))%7]}">${d}</div>`).join('')}${cells}</div></div>
     <div class="notice">Drag a task onto another day to reschedule it.</div>
   </div>`;
 }

@@ -4798,3 +4798,21 @@ body::-webkit-scrollbar-corner{
   #app #main .cal-day.today:after{content:"";display:none}
   #app #main .cal-day .citem{font-size:8px;padding:2px 3px}
 }
+
+/* Weekday labels: use readable three-letter names with stronger hierarchy. */
+#app #main .cal-grid .dow{
+  min-height:42px;padding:10px 4px;
+  color:var(--text)!important;
+  font-size:11px;font-weight:850;line-height:1;
+  letter-spacing:.11em;text-transform:uppercase;
+  background:var(--panel2,var(--card))!important;
+  border:1px solid var(--border)!important;
+  border-radius:9px;
+  opacity:1;
+}
+@media(max-width:760px){
+  #app #main .cal-grid .dow{min-height:36px;padding:8px 2px;font-size:9px;letter-spacing:.045em}
+}
+@media(max-width:420px){
+  #app #main .cal-grid .dow{font-size:8px;letter-spacing:0}
+}
