@@ -1,5 +1,14 @@
 (function(global){
 'use strict';
+let viewRenderers={};
+function configureRenderers(renderers){viewRenderers={...(renderers||{})};}
+function render(state,view){const renderer=viewRenderers[view];return typeof renderer==='function'?renderer(state||{}):'';}
+function updateTaskCompletion(id,done,root){
+  const scope=root||document,escaped=global.CSS?.escape?global.CSS.escape(String(id)):String(id).replace(/["\\]/g,'\\$&');
+  const rows=scope.querySelectorAll('[data-task-id="'+escaped+'"]');let updated=0;
+  rows.forEach(node=>{const row=node.matches('.task,.kcard')?node:node.closest('.task,.kcard');if(row){row.classList.toggle('done',!!done);const checkbox=row.querySelector('input[data-lf-change="task-done"]');if(checkbox)checkbox.checked=!!done;updated++;}});
+  return updated;
+}
 function createTaskController(options){
   const {stateManager,getCurrentState,uid}=options||{};
   if(!stateManager||typeof stateManager.setState!=='function')throw new TypeError('Task controller requires a StateManager.');
@@ -102,5 +111,5 @@ function createTaskController(options){
   }
   return {getTasks,add,addMany,toggleDone,remove,restore,addSubtask,toggleSubtask,completeAll,clearCompleted,update,updateAll};
 }
-global.LifeFlowTasksModule={createTaskController};
+global.LifeFlowTasksModule={createTaskController,configureRenderers,render,updateTaskCompletion};
 })(window);
