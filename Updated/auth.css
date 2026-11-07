@@ -222,16 +222,9 @@ body.auth-embed #authScreen .termcontent input{height:56px}
 
 /* Sapphire / neutral cleanup:
 
-#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
-#authScreen .auth-brand-lockup{position:relative;z-index:2;display:flex;align-items:center;gap:18px;color:#f4fbff;font-size:clamp(27px,3vw,42px);font-weight:800;letter-spacing:.2em}
-#authScreen .auth-brand-lockup img{width:clamp(54px,6vw,82px);height:clamp(54px,6vw,82px);object-fit:contain;filter:drop-shadow(0 0 15px #10d9e866)}
-#authScreen .auth-brand-watermark{color:#12d9e50b}
-@media(max-width:620px){#authScreen .auth-brand-lockup{font-size:28px;gap:12px}#authScreen .auth-brand-lockup img{width:48px;height:48px}}
 
-#authScreen .auth-brand-word{font-size:clamp(30px,3.5vw,48px);letter-spacing:.18em;font-weight:850;color:#f4fbff;line-height:1.1}
-#authScreen .auth-brand-word span{color:inherit}
-#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
-#authScreen .auth-brand-watermark{color:#12d9e50b}
+
+
 
 /* Sapphire login terminal: match the blue workspace palette instead of the legacy lime treatment. */
 #authScreen{
@@ -430,3 +423,14 @@ body.auth-embed #authScreen .auth-brand-panel{
 #authScreen .strength-fill[data-score="2"]{width:50%;background:var(--warn)}
 #authScreen .strength-fill[data-score="3"]{width:75%;background:var(--ok)}
 #authScreen .strength-fill[data-score="4"]{width:100%;background:var(--ok)}
+
+#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
+#authScreen .auth-brand-lockup{position:relative;z-index:2;display:flex;align-items:center;gap:18px;color:#f4fbff;font-size:clamp(27px,3vw,42px);font-weight:800;letter-spacing:.2em}
+#authScreen .auth-brand-lockup img{width:clamp(54px,6vw,82px);height:clamp(54px,6vw,82px);object-fit:contain;filter:drop-shadow(0 0 15px #10d9e866)}
+#authScreen .auth-brand-watermark{color:#12d9e50b}
+@media(max-width:620px){#authScreen .auth-brand-lockup{font-size:28px;gap:12px}#authScreen .auth-brand-lockup img{width:48px;height:48px}}
+
+#authScreen .auth-brand-word{font-size:clamp(30px,3.5vw,48px);letter-spacing:.18em;font-weight:850;color:#f4fbff;line-height:1.1}
+#authScreen .auth-brand-word span{color:inherit}
+#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 20% 18%,#00d9df20,transparent 48%),linear-gradient(145deg,#0b1b27,#07111d 72%);border-right:1px solid #18dce52b}
+#authScreen .auth-brand-watermark{color:#12d9e50b}
