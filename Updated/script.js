@@ -182,9 +182,9 @@ setInterval(()=>{ if(!getSession() && document.getElementById('app').style.displ
 
 function showStep(id){
   document.querySelectorAll('.authstep').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const step=document.getElementById(id);if(!step)return;step.classList.add('active');
   const captions={stepLogin:['Welcome back.','Sign in to access your personal planning workspace.'],stepSignup1:['Create an account.','First, choose your email and password.'],stepSignup2:['Make it yours.','Add a name to your workspace.'],stepSignup3:['Your workspace.','One last step before you start planning.'],stepVerify:['Verify your account.','This activation is simulated in the browser.'],stepForgot:['Reset your password.','Enter the email you used to sign up.'],stepSent:['Reset link ready.','This simulated link expires in 15 minutes.'],stepReset:['New password.','Use at least eight characters.'],stepDone:['Password updated.','Return to sign in.']};
-  const caption=captions[id]||captions.stepLogin;document.getElementById('authTitle').textContent=caption[0];document.getElementById('authSubtitle').textContent=caption[1];
+  const caption=captions[id]||captions.stepLogin;const heading=document.getElementById('authTitle');heading.textContent=caption[0];heading.setAttribute('tabindex','-1');document.getElementById('authSubtitle').textContent=caption[1];requestAnimationFrame(()=>{const target=step.querySelector('input:not([type=hidden]),button:not([disabled])')||heading;target.focus({preventScroll:true});});
   ['loginError','signupError','forgotError','resetError'].forEach(e=>{ const el=document.getElementById(e); if(el) el.style.display='none'; });
 }
 function showAuthError(id,msg){ const el=document.getElementById(id); el.textContent=msg; el.style.display='block'; }
@@ -441,10 +441,7 @@ async function doLogin(){
   if(identifier.includes('@')&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(identifier)){
     setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
   }
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(identifier)){
-    setLoginError('Enter a valid email address.','loginEmail');emailInput.focus();return;
-  }
-  if(!pass){setLoginError('Enter your password.','loginPass');passInput.focus();return;}
+    if(!pass){setLoginError('Enter your password.','loginPass');passInput.focus();return;}
   const guard=readLoginGuard();
   if(guard.lockUntil&&Date.now()<guard.lockUntil){
     startLoginLockCountdown();setLoginError('Too many attempts. Try again in '+Math.ceil((guard.lockUntil-Date.now())/1000)+' seconds.');updateLoginLockUI();return;
