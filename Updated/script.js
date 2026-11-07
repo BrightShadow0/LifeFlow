@@ -687,6 +687,16 @@ function setTheme(theme){
   applyWorkspaceAppearance(currentUser());
   const currentLabel=document.getElementById('currentThemeLabel');
   if(currentLabel) currentLabel.innerHTML=`Currently using <b>${themeLabel(effectiveTheme(currentUser()))}</b>`;
+  // Update the visible theme picker immediately without re-rendering the whole workspace.
+  document.querySelectorAll('.theme-preview').forEach(button=>{
+    const selected=button.classList.contains('theme-preview-'+next);
+    button.classList.toggle('active',selected);
+    button.setAttribute('aria-pressed',String(selected));
+    const check=button.querySelector('.theme-check');
+    if(check)check.textContent=selected?'✓':'○';
+  });
+  const autoToggle=document.querySelector('.theme-sync-row input[type="checkbox"]');
+  if(autoToggle)autoToggle.checked=false;
   if(appVisible){
     requestAnimationFrame(()=>{
       window.scrollTo(scrollState.x,scrollState.y);
