@@ -1214,6 +1214,8 @@ function renderCalendar(){
       <div class="cal-tasks">${dayTasks.map(t=>`<div class="citem" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}">${esc(t.title)}${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}<button class="linklike" data-lf-action="edit-task-time" data-task-id="${t.id}" aria-label="Edit time for ${esc(t.title)}">Edit</button></div>`).join('')}</div>
     </div>`;
   }
+  const trailingCells=(7-((startDow+daysInMonth)%7))%7;
+  for(let i=0;i<trailingCells;i++) cells += `<div class="cal-empty" aria-hidden="true"></div>`;
   return `<div class="card"><div class="cal-head">
       <button class="hbtn" data-lf-action="shift-month" data-month-delta="-1">‹</button>
       <strong>${monthName}</strong>
