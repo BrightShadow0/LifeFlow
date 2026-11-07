@@ -45,7 +45,7 @@ function createNotesController(options){
   }
   function newNote(kind='regular'){
     ensure();const number=kind==='regular'?nextNumber(kind):null;
-    const note={id:uid(),noteCode:makeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
+    const note={id:uid(),noteCode:makeNoteCode(),title:kind==='code'?'Untitled Code Note':'Untitled Note '+number,noteNumber:number,content:'',code:'',language:'javascript',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
     commit({[noteKey(kind)]:[note,...getNotes(kind)],selectedNoteId:note.id,selectedNoteKind:kind==='code'?'code':'regular',noteView:'edit'});
     return note;
   }
@@ -78,7 +78,7 @@ function createNotesController(options){
     const clean=String(title||'').trim();if(!clean)return null;
     let note=getNotes('regular').find(item=>String(item.title||'').trim().toLowerCase()===clean.toLowerCase());
     if(!note){
-      note={id:uid(),noteCode:makeNoteCode(),title:clean,noteNumber:null,content:'',code:'',language:'javascript',createdAt:Date.now(),updatedAt:Date.now()};
+      note={id:uid(),noteCode:makeNoteCode(),title:clean,noteNumber:null,content:'',code:'',language:'javascript',folder:'Unfiled',createdAt:Date.now(),updatedAt:Date.now()};
       commit({notes:[note,...getNotes('regular')]});
     }
     select(note.id,'regular','edit');return note;
