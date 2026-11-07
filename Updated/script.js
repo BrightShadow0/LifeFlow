@@ -477,6 +477,8 @@ function initLoginAccessibility(){
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
 function enterApp(){
+  document.body.dataset.stage='workspace';
+  document.title='LifeFlow';
   if(window.self!==window.top && new URLSearchParams(window.location.search).get('embed')==='1'){
     window.parent.postMessage({type:'lifeflow-authenticated'},window.location.origin);
     return;
@@ -495,6 +497,11 @@ function resetAuthViewport(){
 }
 function doLogout(){
   destroySession();
+  document.body.dataset.stage='login-terminal';
+  document.title='LifeFlow Login Terminal';
+  // Clear workspace-only ambient state before showing the independent login terminal.
+  ['data-ambient','data-load','data-time','data-density','data-glass-sidebar','data-interactive-atmosphere','data-mouse-light'].forEach(key=>document.documentElement.removeAttribute(key));
+  ['--lf-load','--lf-ambient-intensity','--lf-theme-transition'].forEach(key=>document.documentElement.style.removeProperty(key));
   // Restore the independent authentication palette so the previous account's
   // workspace colour theme cannot leak onto the login screen.
   applyAuthTheme(getAuthTheme());
@@ -557,6 +564,13 @@ function applyTheme(theme){
   if(color==='gold') color='sapphire';
   if(color==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
+  // Keep an explicit theme snapshot on the workspace stage. The public site and
+  // login terminal use their own documents/stage state and never read this value.
+  const workspace=document.getElementById('app');
+  if(workspace){
+    workspace.setAttribute('data-theme',actual);
+    workspace.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
+  }
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
 const WORKSPACE_BACKDROP_GROUPS={
@@ -702,6 +716,7 @@ function setColorTheme(theme){
   }
   const next=allowed.includes(theme)?theme:'sapphire';
   document.documentElement.setAttribute('data-color-theme',next);
+  document.getElementById('app')?.setAttribute('data-color-theme',next);
   if(u){
     updateUser(user=>{
       user.colorTheme=next;
@@ -742,8 +757,16 @@ function getAuthTheme(){ return localStorage.getItem('lifeflow2_auth_theme') || 
 function systemTheme(){ return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; }
 function applyAuthTheme(mode){
   const actual=mode==='auto' ? systemTheme() : mode;
-  applyTheme(actual);
+  // Login Terminal owns a separate saved theme; do not call applyTheme(), which
+  // belongs to the authenticated workspace stage.
+  document.documentElement.setAttribute('data-theme',actual);
+  document.documentElement.setAttribute('data-mouse-light',actual==='light'?'off':'on');
   document.documentElement.setAttribute('data-color-theme','platinum');
+  const authScreen=document.getElementById('authScreen');
+  if(authScreen){
+    authScreen.setAttribute('data-auth-theme',actual);
+    authScreen.setAttribute('data-auth-color-theme','platinum');
+  }
   const auto=document.getElementById('authAuto'), dark=document.getElementById('authDark'), light=document.getElementById('authLight'), bulb=document.getElementById('authBulb');
   if(auto) auto.classList.toggle('active',mode==='auto');
   if(dark) dark.classList.toggle('active',mode==='dark');
