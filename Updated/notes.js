@@ -21,10 +21,10 @@ function createNotesController(options){
   }
   function ensure(){
     const current=snapshot(),patch={};let changed=false;
-    ['notes','codeNotes','noteLinks'].forEach(key=>{if(!Array.isArray(current[key])){patch[key]=[];changed=true;}});
+    ['notes','codeNotes','noteLinks'].forEach(key=>{if(!Array.isArray(current[key])){patch[key]=[];changed=true;}});\n    if(!Array.isArray(current.folders)||!current.folders.length){patch.folders=[{id:'unfiled',name:'Unfiled',icon:'▤'}];changed=true;}\n    if(!Array.isArray(current.collapsedFolders)){patch.collapsedFolders=[];changed=true;}\n    if(typeof current.searchQuery!=='string'){patch.searchQuery='';changed=true;}
     ['notes','codeNotes'].forEach(key=>{
       const list=Array.isArray(current[key])?current[key]:[];
-      const next=list.map(note=>{if(note.noteCode)return note;changed=true;return {...note,noteCode:makeNoteCode()};});
+      const next=list.map(note=>{let updated=note;if(!note.noteCode){updated={...updated,noteCode:makeNoteCode()};changed=true;}if(!updated.folder){updated={...updated,folder:'Unfiled'};changed=true;}return updated;});
       if(next.some((note,index)=>note!==list[index]))patch[key]=next;
     });
     if(changed)commit(patch);
@@ -91,7 +91,7 @@ function createNotesController(options){
     const title=first.length>52?first.slice(0,49).trimEnd()+'…':first;
     return title!==current&&updateFields('regular',id,{title});
   }
-  function updateAll(kind,updater){
+  function getFolders(){return snapshot().folders||[{id:'unfiled',name:'Unfiled',icon:'▤'}];}\n  function createFolder(name,icon='▣'){\n    const clean=String(name||'').trim().slice(0,40);if(!clean)return null;\n    if(getFolders().some(folder=>folder.name.toLowerCase()===clean.toLowerCase()))return null;\n    const folder={id:'folder-'+uid(),name:clean,icon:String(icon||'▣').slice(0,4)};commit({folders:[...getFolders(),folder]});return folder;\n  }\n  function moveToFolder(id,name){\n    const folder=getFolders().find(item=>item.name===name);if(!folder)return false;\n    return updateFields('regular',id,{folder:folder.name});\n  }\n  function toggleFolder(name){const collapsed=new Set(snapshot().collapsedFolders||[]);if(collapsed.has(name))collapsed.delete(name);else collapsed.add(name);commit({collapsedFolders:[...collapsed]});}\n  function setSearchQuery(query){commit({searchQuery:String(query||'')});}\n  function updateAll(kind,updater){
     const list=getNotes(kind),next=updater(list);
     if(!Array.isArray(next))throw new TypeError('Notes update must return an array.');
     commit({[noteKey(kind)]:next});return next;
@@ -261,7 +261,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,toggleFolder,setSearchQuery,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);
