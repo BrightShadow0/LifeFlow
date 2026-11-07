@@ -1,11 +1,12 @@
 /**
  * LifeFlow State Manager
  *
- * Release 1 / Task 1: centralized workspace-state persistence and subscriptions.
+ * Centralized account-scoped workspace-state persistence and subscriptions.
  * Keep account-scoped keys and the legacy migration key compatible with v2.
  *
- * This module is intentionally not wired into script.js yet. The next migration
- * step can adopt it incrementally without changing the current boot/auth flow.
+ * Theme, task and notes controllers use this manager as their shared workspace
+ * state boundary. Profile preferences use its adapter hooks while retaining
+ * the existing lifeflow2_users storage contract.
  */
 
 export const LEGACY_STATE_KEY = 'lifeflow2_state';
