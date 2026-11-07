@@ -307,7 +307,7 @@ function initTaskEventDelegation(){
     if(action==='repeat-fields') updateRepeatIntervalFields();
     else if(action==='task-done') toggleDone(Number(control.dataset.taskId));
     else if(action==='subtask-done') toggleSub(Number(control.dataset.taskId),Number(control.dataset.subtaskId));
-    else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);
+    else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);\n    else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='avatar-change') onAvatarChange(event);
     else if(action==='profile-timezone'){saveLocalizationField('timezone',control.value);lfSecretAction(control.value==='-'?'timezoneDash':'timezoneOther');}
     else if(action==='profile-language'){saveLocalizationField('language',control.value);lfSecretAction(control.value==='Cobalt'?'languageCobalt':'languageOther');}
@@ -1564,7 +1564,7 @@ function createKnowledgeFolder(){const name=window.prompt('Folder name');if(!nam
     const content=selected.content||'';
 
     html+='<div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div><div class="note-title-actions"><button type="button" class="note-rename-btn" data-lf-action="note-rename" data-note-id="'+selected.id+'">Rename</button><input id="kn_title_edit" class="note-title-edit" value="'+esc(selected.title||'Untitled')+'" maxlength="80" aria-label="Note title" hidden data-lf-keydown="note-title-edit" data-lf-blur="note-title-edit" data-note-id="'+selected.id+'"></div></div>';
-    html+='<div class="note-content-surface">';
+    html+='<label class="note-folder-move">Move to Folder <select data-lf-change="note-move-folder" data-note-id="'+selected.id+'">'+folders.map(folder=>'<option value="'+esc(folder.name)+'" '+((selected.folder||'Unfiled')===folder.name?'selected':'')+'>'+esc(folder.name)+'</option>').join('')+'</select></label>';html+='<div class="note-content-surface">';
     if(mode==='preview') html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" data-note-id="'+selected.id+'" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
