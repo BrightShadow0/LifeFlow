@@ -289,3 +289,29 @@ body{background:#090c12;color:var(--paper)}
 #preview-plan .mini-calendar{min-height:300px}
 #preview-plan .mini-board{min-height:0}
 }
+
+/* Release 4 · Task 1: landing-page clarity */
+.power-phrase{color:var(--lime);font-weight:800;text-shadow:0 0 24px color-mix(in srgb,var(--lime) 14%,transparent)}
+.hero-actions{gap:18px 24px}
+.primary-link.pulse-cta{position:relative;isolation:isolate;box-shadow:0 0 0 1px color-mix(in srgb,var(--lime) 55%,transparent);animation:cta-breathe 3.2s ease-in-out infinite}
+.primary-link.pulse-cta:before{content:"";position:absolute;z-index:-1;inset:-13px;border-radius:9px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--lime) 25%,transparent),transparent 70%);opacity:.42;filter:blur(9px);animation:cta-glow 3.2s ease-in-out infinite;pointer-events:none}
+.primary-link.pulse-cta:hover{animation-play-state:paused;box-shadow:0 10px 30px color-mix(in srgb,var(--lime) 25%,transparent)}
+@keyframes cta-breathe{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--lime) 38%,transparent),0 0 12px color-mix(in srgb,var(--lime) 10%,transparent)}50%{box-shadow:0 0 0 1px color-mix(in srgb,var(--lime) 72%,transparent),0 0 25px color-mix(in srgb,var(--lime) 25%,transparent)}}
+@keyframes cta-glow{0%,100%{opacity:.24;transform:scale(.94)}50%{opacity:.7;transform:scale(1.05)}}
+.safe-haven-badge{display:inline-flex;align-items:center;gap:10px;margin-top:19px;padding:9px 12px;border:1px solid #55ddeb2b;border-radius:5px;background:#55ddeb0a;color:#c8d6e8}
+.safe-haven-badge>span:first-child{display:grid;place-items:center;width:25px;height:25px;border:1px solid #55ddeb45;border-radius:50%;color:var(--lime);font-size:17px}
+.safe-haven-badge strong,.safe-haven-badge small{display:block}.safe-haven-badge strong{font:8px var(--mono);letter-spacing:.13em;color:var(--lime)}.safe-haven-badge small{margin-top:3px;font-size:10px;color:#aab8cc}
+.how-flow{padding-top:110px;padding-bottom:120px;border-bottom:1px solid var(--line)}
+.how-flow-heading{display:flex;align-items:end;justify-content:space-between;gap:30px;margin:28px 0 54px}
+.how-flow-heading h2{margin:0;font-size:clamp(42px,5.5vw,72px);line-height:.98;letter-spacing:-.075em}.how-flow-heading h2 em{font-family:var(--serif);font-weight:500;color:var(--lime)}
+.how-flow-heading>p{max-width:350px;margin:0 0 5px;color:#aab8cc;font-size:13px;line-height:1.85}
+.flow-steps{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(12px,3vw,38px)}
+.flow-step{position:relative;min-height:210px;padding:26px 25px;border:1px solid #dce8d51c;border-radius:8px;background:linear-gradient(145deg,#131b29a8,#0d121b70)}
+.flow-step-number{position:absolute;top:22px;right:22px;color:#71839d;font:9px var(--mono);letter-spacing:.1em}
+.flow-step-icon{display:grid;place-items:center;width:44px;height:44px;border:1px solid #55ddeb40;border-radius:50%;color:var(--lime);background:#55ddeb0c}
+.flow-step-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.flow-step h3{margin:23px 0 8px;font-size:19px;letter-spacing:-.04em}.flow-step p{max-width:270px;margin:0;color:#aab8cc;font-size:12px;line-height:1.8}
+.flow-connector{color:var(--lime);font:20px var(--mono);opacity:.7}
+@media(max-width:850px){.how-flow{padding-top:85px;padding-bottom:90px}.how-flow-heading{align-items:start;flex-direction:column;gap:18px;margin-bottom:34px}.how-flow-heading>p{max-width:520px}.flow-steps{grid-template-columns:1fr;gap:12px}.flow-step{min-height:0;padding:22px}.flow-step h3{margin-top:16px}.flow-connector{justify-self:center;transform:rotate(90deg);font-size:17px}}
+@media(max-width:620px){.hero-actions{align-items:flex-start;flex-direction:column;gap:17px}.safe-haven-badge{margin-top:17px}.how-flow{padding-top:72px;padding-bottom:75px}.how-flow-heading h2{font-size:43px}.flow-step{padding:20px}.flow-step h3{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.primary-link.pulse-cta,.primary-link.pulse-cta:before{animation:none}.primary-link.pulse-cta:before{opacity:.25}}
