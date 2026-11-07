@@ -288,9 +288,13 @@ function doVerify(){
 
 function redirectUri(){ return location.href.split(/[?#]/)[0]; }
 function renderOAuthButtons(){
-  document.getElementById('oauthRow').innerHTML = ['Google','Apple'].map(p=>{
-    const configured = !!(OAUTH_CONFIG[p.toLowerCase()] && OAUTH_CONFIG[p.toLowerCase()].clientId);
-    return `<button type="button" class="oauth-provider oauth-${p.toLowerCase()}" onclick="oauthLogin('${p}')" aria-label="Continue with ${p}${configured?'':' (local demo mode)'}"><span class="oauth-mark" aria-hidden="true">${p==='Google'?'G':'●'}</span><span>${p}${configured?'':' · Demo'}</span></button>`;
+  const marks={
+    Google:'<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.4-.1-2.8-.4-4.1H24v7.8h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.7c3.9-3.6 6-8.8 6-15Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.7-5.1c-1.8 1.2-4 1.9-6.8 1.9-5.2 0-9.6-3.5-11.2-8.2H5.9v5.3A20 20 0 0 0 24 44Z"/><path fill="#FBBC05" d="M12.8 27.7a12 12 0 0 1 0-7.4V15H5.9a20 20 0 0 0 0 18Z"/><path fill="#EA4335" d="M24 12.1c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 5.9 29.5 4 24 4A20 20 0 0 0 5.9 15l6.9 5.3c1.6-4.7 6-8.2 11.2-8.2Z"/></svg>',
+    Apple:'<svg viewBox="0 0 384 512" aria-hidden="true"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.9 20.7-15.4 0-49.7-19.7-76.7-19.7C62.6 141.2 0 184.8 0 273.5c0 26.2 4.8 53.3 14.4 81.1 12.8 36.7 59 126.6 107.2 125.1 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.4 102.6-119.2-65.1-30.7-57.7-89.9-57.7-91.8ZM262.5 104.5C289.9 72 287.4 42.4 286.6 32c-24.2 1.4-52.2 16.5-68.1 35-17.5 19.8-27.8 44.3-25.6 72 26.1 2 50-11.4 69.6-34.5Z"/></svg>'
+  };
+  document.getElementById('oauthRow').innerHTML=['Google','Apple'].map(p=>{
+    const configured=!!(OAUTH_CONFIG[p.toLowerCase()]&&OAUTH_CONFIG[p.toLowerCase()].clientId);
+    return `<button type="button" class="oauth-provider oauth-${p.toLowerCase()}" onclick="oauthLogin('${p}')" aria-label="Continue with ${p}${configured?'':' (local demo mode)'}"><span class="oauth-mark" aria-hidden="true">${marks[p]}</span><span>${p}${configured?'':' · Demo'}</span></button>`;
   }).join('');
 }
 function startPasskeyLogin(){
