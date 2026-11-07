@@ -118,17 +118,62 @@
  }));
 
  // Make the sample task list usable: click or press Enter/Space to complete a task.
- // Calendar preview: browse months and select dates.
+ // Calendar + board preview: exactly three sample dates, each with its own tasks.
+ // A date marker remains while that date has unfinished tasks and disappears when all are done.
  const calendar=document.querySelector('.mini-calendar');
- if(calendar){const grid=calendar.querySelector('.mini-cal-grid'),label=calendar.querySelector('.cal-month-label'),selected=calendar.querySelector('.cal-selected-label'),now=new Date();let year=now.getFullYear(),month=now.getMonth(),chosen=new Date(year,month,now.getDate());const planned=new Set([5,8,12,18,24]);const key=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
-  const render=()=>{const first=new Date(year,month,1),offset=(first.getDay()+6)%7,count=new Date(year,month+1,0).getDate(),previous=new Date(year,month,0).getDate();label.textContent=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});grid.innerHTML='';['M','T','W','T','F','S','S'].forEach(v=>{const el=document.createElement('i');el.textContent=v;grid.append(el);});
-   for(let i=0;i<42;i++){let day,date,muted=false;if(i<offset){day=previous-offset+i+1;date=new Date(year,month-1,day);muted=true;}else if(i>=offset+count){day=i-offset-count+1;date=new Date(year,month+1,day);muted=true;}else{day=i-offset+1;date=new Date(year,month,day);}const b=document.createElement('button');b.type='button';b.className='cal-day'+(muted?' faded':'')+(key(date)===key(now)?' today':'')+(key(date)===key(chosen)?' selected':'');b.textContent=day;b.setAttribute('aria-label',date.toLocaleDateString(undefined,{dateStyle:'full'}));b.setAttribute('aria-pressed',String(key(date)===key(chosen)));if(!muted&&planned.has(day)){b.classList.add('marked');b.title='Planned tasks';}b.addEventListener('click',()=>{chosen=date;year=date.getFullYear();month=date.getMonth();render();});grid.append(b);}selected.textContent='Selected: '+chosen.toLocaleDateString(undefined,{month:'short',day:'numeric'});};
-  calendar.querySelector('.cal-prev').addEventListener('click',()=>{month--;if(month<0){month=11;year--;}render();});calendar.querySelector('.cal-next').addEventListener('click',()=>{month++;if(month>11){month=0;year++;}render();});render();}
- // Kanban preview: drag cards between columns or tap to advance their status.
  const board=document.querySelector('.mini-board');
- if(board){let dragged=null;const columns=[...board.querySelectorAll('.board-column')],feedback=board.querySelector('.board-feedback');const update=()=>columns.forEach(c=>c.querySelector('small i').textContent=String(c.querySelectorAll('.board-card').length).padStart(2,'0'));const move=(card,col)=>{col.querySelector('.board-cards').append(card);feedback.textContent='"'+card.textContent+'" moved to '+col.dataset.status.toUpperCase()+'.';update();};
-  board.querySelectorAll('.board-card').forEach(card=>{card.addEventListener('dragstart',e=>{dragged=card;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',card.textContent);});card.addEventListener('dragend',()=>{card.classList.remove('dragging');dragged=null;columns.forEach(c=>c.classList.remove('drop-target'));});card.addEventListener('click',()=>{const i=columns.findIndex(c=>c.contains(card));move(card,columns[(i+1)%columns.length]);});});
-  columns.forEach(col=>{col.addEventListener('dragover',e=>{e.preventDefault();col.classList.add('drop-target');});col.addEventListener('dragleave',e=>{if(!col.contains(e.relatedTarget))col.classList.remove('drop-target');});col.addEventListener('drop',e=>{e.preventDefault();col.classList.remove('drop-target');if(dragged)move(dragged,col);});});update();}
+ if(calendar&&board){
+  const grid=calendar.querySelector('.mini-cal-grid'),label=calendar.querySelector('.cal-month-label'),selected=calendar.querySelector('.cal-selected-label');
+  const now=new Date();let year=now.getFullYear(),month=now.getMonth();
+  const key=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+  const dateAt=offset=>new Date(now.getFullYear(),now.getMonth(),now.getDate()+offset);
+  const samples=[
+   {date:dateAt(2),tasks:[{title:'Review project brief',status:'todo'},{title:'Collect references',status:'todo'}]},
+   {date:dateAt(5),tasks:[{title:'Prepare weekly plan',status:'todo'},{title:'Confirm meeting slot',status:'doing'}]},
+   {date:dateAt(8),tasks:[{title:'Organise research notes',status:'todo'},{title:'Draft project outline',status:'todo'}]}
+  ];
+  let chosen=samples[0].date,dragged=null;
+  const sampleFor=date=>samples.find(item=>key(item.date)===key(date));
+  const activeFor=date=>{const item=sampleFor(date);return !!item&&item.tasks.some(task=>task.status!=='done');};
+  const columns=[...board.querySelectorAll('.board-column')],feedback=board.querySelector('.board-feedback');
+  const updateCounts=()=>columns.forEach(col=>{col.querySelector('small i').textContent=String(col.querySelectorAll('.board-card').length).padStart(2,'0');});
+  const renderBoard=()=>{
+   const sample=sampleFor(chosen);columns.forEach(col=>col.querySelector('.board-cards').innerHTML='');
+   if(sample)sample.tasks.forEach(task=>{
+    const card=document.createElement('button');card.className='board-card';card.type='button';card.draggable=true;card.textContent=task.title;
+    card.addEventListener('click',()=>{const order=['todo','doing','done'];task.status=order[(order.indexOf(task.status)+1)%order.length];renderBoard();renderCalendar();feedback.textContent='"'+task.title+'" moved to '+task.status.toUpperCase()+'.';});
+    card.addEventListener('dragstart',event=>{dragged=task;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',task.title);});
+    columns.find(col=>col.dataset.status===task.status)?.querySelector('.board-cards').append(card);
+   });
+   const heading=board.querySelector('.board-title b');if(heading)heading.textContent=sample?'Tasks · '+chosen.toLocaleDateString(undefined,{month:'short',day:'numeric'}):'No planned tasks';
+   updateCounts();
+  };
+  const renderCalendar=()=>{
+   const first=new Date(year,month,1),offset=(first.getDay()+6)%7,count=new Date(year,month+1,0).getDate(),previous=new Date(year,month,0).getDate();
+   label.textContent=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});grid.innerHTML='';
+   ['M','T','W','T','F','S','S'].forEach(value=>{const el=document.createElement('i');el.textContent=value;grid.append(el);});
+   for(let i=0;i<42;i++){
+    let day,date,muted=false;
+    if(i<offset){day=previous-offset+i+1;date=new Date(year,month-1,day);muted=true;}
+    else if(i>=offset+count){day=i-offset-count+1;date=new Date(year,month+1,day);muted=true;}
+    else{day=i-offset+1;date=new Date(year,month,day);}
+    const button=document.createElement('button');button.type='button';button.className='cal-day'+(muted?' faded':'')+(key(date)===key(now)?' today':'')+(key(date)===key(chosen)?' selected':'');
+    button.textContent=day;button.setAttribute('aria-label',date.toLocaleDateString(undefined,{dateStyle:'full'}));button.setAttribute('aria-pressed',String(key(date)===key(chosen)));
+    if(!muted&&activeFor(date)){button.classList.add('marked');button.title='Unfinished tasks';}
+    button.addEventListener('click',()=>{chosen=date;year=date.getFullYear();month=date.getMonth();renderCalendar();renderBoard();});
+    grid.append(button);
+   }
+   selected.textContent='Selected: '+chosen.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  };
+  calendar.querySelector('.cal-prev').addEventListener('click',()=>{month--;if(month<0){month=11;year--;}renderCalendar();});
+  calendar.querySelector('.cal-next').addEventListener('click',()=>{month++;if(month>11){month=0;year++;}renderCalendar();});
+  columns.forEach(col=>{
+   col.addEventListener('dragover',event=>{event.preventDefault();col.classList.add('drop-target');});
+   col.addEventListener('dragleave',event=>{if(!col.contains(event.relatedTarget))col.classList.remove('drop-target');});
+   col.addEventListener('drop',event=>{event.preventDefault();col.classList.remove('drop-target');if(dragged){dragged.status=col.dataset.status;const title=dragged.title;renderBoard();renderCalendar();feedback.textContent='"'+title+'" moved to '+dragged.status.toUpperCase()+'.';dragged=null;}});
+  });
+  renderCalendar();renderBoard();
+ }
  document.querySelectorAll('.focus-row').forEach(row=>{
   row.tabIndex=0;row.setAttribute('role','checkbox');row.setAttribute('aria-checked',String(row.classList.contains('done')));
   const toggle=()=>{
