@@ -445,6 +445,10 @@ function initLoginAccessibility(){
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
 function enterApp(){
+  if(lifeFlowTaskStateManager){
+    lifeFlowTaskStateManager.switchUser(state.currentUser || null);
+    state = lifeFlowTaskStateManager.getState();
+  }
   if(lifeFlowProfileManager) lifeFlowProfileManager.switchUser(state.currentUser || null);
   document.body.dataset.stage='workspace';
   document.title='LifeFlow';
@@ -467,6 +471,7 @@ function resetAuthViewport(){
 function doLogout(){
   if(lifeFlowAuthController) lifeFlowAuthController.doLogout();
   else destroySession();
+  if(lifeFlowTaskStateManager) lifeFlowTaskStateManager.switchUser(null);
   if(lifeFlowProfileManager) lifeFlowProfileManager.switchUser(null);
   document.body.dataset.stage='login-terminal';
   document.title='LifeFlow Login Terminal';
@@ -517,6 +522,8 @@ function currentUser(){ const users=getUsers(); return users[state.currentUser];
 
 let lifeFlowProfileManager = null;
 let lifeFlowThemeController = null;
+let lifeFlowTaskStateManager = null;
+let lifeFlowTaskController = null;
 const LIFE_FLOW_APPEARANCE_KEYS = [
   'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop',
   'translucentSidebar', 'interactiveAtmosphere'
@@ -563,6 +570,40 @@ function syncAppearanceStateFromUser(user) {
   if (!lifeFlowProfileManager || !user) return;
   lifeFlowProfileManager.setState({ profile: readAppearancePreferences(user) });
   lifeFlowProfileManager.flush();
+}
+
+async function initializeTaskArchitecture() {
+  const { StateManager } = await import('./state.js');
+  lifeFlowTaskStateManager = new StateManager({
+    currentUser: null,
+    defaults: defaultProfileState,
+    storage: localStorage,
+    saveDelay: 300
+  });
+  lifeFlowTaskController = window.LifeFlowTasksModule.createTaskController({
+    stateManager: lifeFlowTaskStateManager,
+    getCurrentState: () => state,
+    uid
+  });
+  lifeFlowTaskStateManager.subscribe('tasks', tasks => {
+    state = { ...lifeFlowTaskStateManager.getState(), tasks: tasks || [] };
+    if (getSession() && !document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')) {
+      renderApp();
+    }
+  });
+  const session = getSession();
+  if (session?.email) {
+    lifeFlowTaskStateManager.switchUser(session.email);
+    state = lifeFlowTaskStateManager.getState();
+  }
+}
+function saveTaskStateFromLegacy() {
+  if (!lifeFlowTaskStateManager || !state?.currentUser) {
+    save();
+    return;
+  }
+  lifeFlowTaskStateManager.setState(state);
+  lifeFlowTaskStateManager.flush();
 }
 
 function effectiveTheme(u){
@@ -809,36 +850,22 @@ function updateUser(fn){
 }
 
 function uid(){ return Date.now()+Math.floor(Math.random()*1000); }
-function addTask(t){ state.tasks.push(Object.assign({id:uid(), title:'', tags:[], priority:'medium', due:null, startTime:null, endTime:null, recur:'none', status:'todo', done:false, subtasks:[]}, t)); save(); renderApp(); }
-function toggleDone(id){
-  const t = state.tasks.find(x=>x.id===id); if(!t) return;
-  t.done = !t.done;
-  if(t.done && t.recur !== 'none' && t.due){
-    const d = new Date(t.due);
-    if(t.recur==='daily') d.setDate(d.getDate()+1);
-    if(t.recur==='weekly') d.setDate(d.getDate()+7);
-    if(t.recur==='monthly') d.setMonth(d.getMonth()+1);
-    addTask({title:t.title, tags:t.tags, priority:t.priority, due:d.toISOString(), startTime:t.startTime||null, endTime:t.endTime||null, recur:t.recur, status:'todo'});
-  }
-  save(); renderApp();
-}
+function addTask(task){ if(lifeFlowTaskController) lifeFlowTaskController.add(task); else { state.tasks.push(Object.assign({id:uid(),title:'',tags:[],priority:'medium',due:null,startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]},task)); save(); renderApp(); } }
+function toggleDone(id){ if(lifeFlowTaskController) lifeFlowTaskController.toggleDone(id); else { const task=state.tasks.find(item=>item.id===id); if(task){task.done=!task.done;save();renderApp();} } }
 let lastDeletedTask=null;
 let lastDeletedTimer=null;
 function deleteTask(id){
-  const index=state.tasks.findIndex(t=>t.id===id);
-  if(index<0)return;
-  lastDeletedTask={task:JSON.parse(JSON.stringify(state.tasks[index])),index};
-  state.tasks.splice(index,1);
-  save();
+  const removed=lifeFlowTaskController ? lifeFlowTaskController.remove(id) : null;
+  if(!removed)return;
+  lastDeletedTask=removed;
   renderApp();
   showUndoToast('Task deleted');
 }
 function undoDelete(){
   if(!lastDeletedTask)return;
-  const exists=state.tasks.some(t=>t.id===lastDeletedTask.task.id);
-  if(!exists) state.tasks.splice(Math.min(lastDeletedTask.index,state.tasks.length),0,lastDeletedTask.task);
-  save(); lastDeletedTask=null;
-  clearTimeout(lastDeletedTimer); lastDeletedTimer=null;
+  if(lifeFlowTaskController) lifeFlowTaskController.restore(lastDeletedTask);
+  lastDeletedTask=null;
+  clearTimeout(lastDeletedTimer);lastDeletedTimer=null;
   document.getElementById('toastHost').innerHTML='';
   renderApp();
 }
@@ -848,14 +875,8 @@ function showUndoToast(message){
   host.innerHTML='<div class="toast" role="status"><span>'+esc(message)+'</span><button class="undo-action" type="button" data-app-action="undo-delete">Undo</button></div>';
   lastDeletedTimer=setTimeout(()=>{lastDeletedTask=null;host.innerHTML='';},5000);
 }
-function addSubtask(id, text){
-  const t = state.tasks.find(x=>x.id===id); if(!t||!text) return;
-  t.subtasks.push({id:uid(), text, done:false}); save(); renderApp();
-}
-function toggleSub(tid,sid){
-  const t = state.tasks.find(x=>x.id===tid); const s = t.subtasks.find(x=>x.id===sid);
-  s.done = !s.done; save(); renderApp();
-}
+function addSubtask(id,text){ if(lifeFlowTaskController) lifeFlowTaskController.addSubtask(id,text); }
+function toggleSub(tid,sid){ if(lifeFlowTaskController) lifeFlowTaskController.toggleSubtask(tid,sid); }
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function intervalHtml(t){ return validTime(t.startTime)&&validTime(t.endTime)?`<span class="time-chip">◷ ${esc(t.startTime)}–${esc(t.endTime)}</span>`:''; }
@@ -996,8 +1017,9 @@ function submitTask(){
   if(endDate<startDate){ toast('The repeat end date must be on or after the start date.'); return; }
   const dates=recurringDates(startDate,endDate,recur);
   const base={title,tags,priority:document.getElementById('nt_pri').value,startTime:newTaskTimes.start||null,endTime:newTaskTimes.end||null,status:'todo',done:false,subtasks:[],repeatPattern:recur,repeatEnd:dateToIsoDay(endDate)};
-  dates.forEach(d=>state.tasks.push(Object.assign({id:uid(),due:dateToIsoDay(d),recur:'none'},base)));
-  save();
+  const recurringTasks=dates.map(d=>Object.assign({id:uid(),due:dateToIsoDay(d),recur:'none'},base));
+  if(lifeFlowTaskController) lifeFlowTaskController.addMany(recurringTasks);
+  else { state.tasks.push(...recurringTasks); save(); }
   clearNewTimes();
   renderApp();
 }
@@ -1051,29 +1073,15 @@ function renderToday(){
 }
 
 function completeAllTasks(){
-  const remaining=state.tasks.filter(t=>!t.done);
-  if(!remaining.length){
-    toast('All tasks are already completed.');
-    return;
-  }
-  remaining.forEach(t=>{t.done=true;t.status='done';});
-  save();
-  renderApp();
-  toast(remaining.length+' task'+(remaining.length===1?'':'s')+' marked as completed.');
+  const count=lifeFlowTaskController ? lifeFlowTaskController.completeAll() : 0;
+  if(!count){toast('All tasks are already completed.');return;}
+  renderApp();toast(count+' task'+(count===1?'':'s')+' marked as completed.');
 }
-
 function clearCompletedTasks(){
-  const completed=state.tasks.filter(t=>t.done);
-  if(!completed.length){
-    toast('No completed tasks to clear.');
-    return;
-  }
-  state.tasks=state.tasks.filter(t=>!t.done);
-  save();
-  renderApp();
-  toast(completed.length+' completed task'+(completed.length===1?'':'s')+' cleared.');
+  const count=lifeFlowTaskController ? lifeFlowTaskController.clearCompleted() : 0;
+  if(!count){toast('No completed tasks to clear.');return;}
+  renderApp();toast(count+' completed task'+(count===1?'':'s')+' cleared.');
 }
-
 function renderList(){
   const today=new Date();
   today.setHours(0,0,0,0);
@@ -1123,7 +1131,10 @@ function kanbanCardDrop(e,card,targetStatus){
   col?.classList.remove('drag-over');
   dropCol(e,targetStatus);
 }
-function dropCol(e,col){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.status=col; t.done=col==='done'; save(); renderApp(); } }
+function dropCol(e,col){
+  const id=+e.dataTransfer.getData('id');
+  if(lifeFlowTaskController && lifeFlowTaskController.update(id,{status:col,done:col==='done'})) renderApp();
+}
 
 function renderCalendar(){
   const first = new Date(calYear, calMonth, 1);
@@ -1153,7 +1164,10 @@ function renderCalendar(){
   </div>`;
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
-function dropDay(e,y,m,d){ const id=+e.dataTransfer.getData('id'); const t=state.tasks.find(x=>x.id===id); if(t){ t.due=new Date(y,m,d).toISOString(); save(); renderApp(); } }
+function dropDay(e,y,m,d){
+  const id=+e.dataTransfer.getData('id');
+  if(lifeFlowTaskController && lifeFlowTaskController.update(id,{due:new Date(y,m,d).toISOString()})) renderApp();
+}
 
 let densityMode=localStorage.getItem('lifeflow2_density')||'comfortable';
 function setDensity(mode){
@@ -1181,13 +1195,15 @@ function renderTimeEditor(){
 }
 function closeTimeEditor(){timeEdit=null;renderTimeEditor();}
 function clearTaskTimes(){
-  const t=state.tasks.find(x=>x.id===timeEdit?.id); if(!t)return;
-  t.startTime=null;t.endTime=null;save();closeTimeEditor();renderApp();
+  if(!lifeFlowTaskController || !timeEdit)return;
+  lifeFlowTaskController.update(timeEdit.id,{startTime:null,endTime:null});
+  closeTimeEditor();renderApp();
 }
 function saveTaskTimes(){
   if(!validInterval(timeEdit.start,timeEdit.end)){document.getElementById('editTimeError').textContent='Choose a start and end time, with the end after the start (same day).';return;}
-  const t=state.tasks.find(x=>x.id===timeEdit.id);if(!t)return;
-  t.startTime=timeEdit.start;t.endTime=timeEdit.end;save();closeTimeEditor();renderApp();
+  if(!lifeFlowTaskController || !timeEdit)return;
+  lifeFlowTaskController.update(timeEdit.id,{startTime:timeEdit.start,endTime:timeEdit.end});
+  closeTimeEditor();renderApp();
 }
 function currentLocalClockTime(){
   const now=new Date();
@@ -2074,18 +2090,24 @@ function activateCobaltSequence(){
     Array.isArray(t.tags)&&t.tags.includes('Task Master')&&
     (!validTime(t.startTime)||!validTime(t.endTime)||!validInterval(t.startTime,t.endTime))
   );
-  missingMasterTimes.forEach((t,index)=>{
-    const minute=8*60+(index%10)*70+Math.floor(Math.random()*25);
-    const duration=30+Math.floor(Math.random()*31);
-    const end=Math.min(minute+duration,20*60);
-    const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
-    const mm=n=>String(n%60).padStart(2,'0');
-    t.startTime=hh(minute)+':'+mm(minute);
-    t.endTime=hh(end)+':'+mm(end);
-  });
-
-  state.tasks.push(...generated);
-  save();
+  if(lifeFlowTaskController){
+    lifeFlowTaskController.updateAll(current=>current.map(t=>{
+      if(!(Array.isArray(t.tags)&&t.tags.includes('Task Master')) ||
+         (validTime(t.startTime)&&validTime(t.endTime)&&validInterval(t.startTime,t.endTime))) return t;
+      const index=missingMasterTimes.findIndex(item=>String(item.id)===String(t.id));
+      if(index<0)return t;
+      const minute=8*60+(index%10)*70+Math.floor(Math.random()*25);
+      const duration=30+Math.floor(Math.random()*31);
+      const end=Math.min(minute+duration,20*60);
+      const hh=n=>String(Math.floor(n/60)).padStart(2,'0');
+      const mm=n=>String(n%60).padStart(2,'0');
+      return {...t,startTime:hh(minute)+':'+mm(minute),endTime:hh(end)+':'+mm(end)};
+    }));
+    lifeFlowTaskController.addMany(generated);
+  }else{
+    missingMasterTimes.forEach(t=>{t.startTime=t.startTime||'08:00';t.endTime=t.endTime||'08:30';});
+    state.tasks.push(...generated);save();
+  }
 
   const next=Object.assign(s,{used:false,unlocked:true});
   updateSecretSequence(next);
@@ -2350,6 +2372,7 @@ async function deleteAccount(){
   initializeAuthArchitecture();
   try {
     await initializeThemeArchitecture();
+    await initializeTaskArchitecture();
   } catch (error) {
     console.error('LifeFlow appearance state could not be initialized:', error);
     showToast('Appearance settings could not be loaded. Please refresh the workspace.');
