@@ -295,7 +295,7 @@ function renderOAuthButtons(){
   };
   document.getElementById('oauthRow').innerHTML=['Google','Apple'].map(p=>{
     const configured=!!(OAUTH_CONFIG[p.toLowerCase()]&&OAUTH_CONFIG[p.toLowerCase()].clientId);
-    return `<button type="button" class="oauth-provider oauth-${p.toLowerCase()}" onclick="oauthLogin('${p}')" aria-label="Continue with ${p}${configured?'':' (local demo mode)'}"><span class="oauth-mark" aria-hidden="true">${marks[p]}</span><span>${p}${configured?'':' · Demo'}</span></button>`;
+    return `<button type="button" class="oauth-provider oauth-${p.toLowerCase()}" data-auth-action="oauth" data-auth-provider="${p.toLowerCase()}" aria-label="Continue with ${p}${configured?'':' (local demo mode)'}"><span class="oauth-mark" aria-hidden="true">${marks[p]}</span><span>${p}${configured?'':' · Demo'}</span></button>`;
   }).join('');
 }
 function startPasskeyLogin(){
@@ -480,6 +480,37 @@ async function doLogin(){
   finally{loginAttemptsInProgress=false;setLoginLoading(false);}
 }
 function initLoginAccessibility(){
+  const authRoot=document.getElementById('authScreen');
+  if(authRoot){
+    authRoot.addEventListener('click',event=>{
+      const control=event.target.closest('[data-auth-action]');
+      if(!control || !authRoot.contains(control)) return;
+      const handlers={
+        'forgot-password':()=>showStep('stepForgot'),
+        'toggle-login-password':()=>togglePasswordVisibility('loginPass',control),
+        'start-signup':()=>startSignup(),
+        'toggle-signup-password':()=>togglePasswordVisibility('signupPass',control),
+        'signup-next-step-2':()=>showStep('stepSignup2'),
+        'signup-back-to-login':()=>showStep('stepLogin'),
+        'signup-next-step-3':()=>showStep('stepSignup3'),
+        'signup-back-step-1':()=>showStep('stepSignup1'),
+        'signup-submit':()=>doSignup(),
+        'signup-back-step-2':()=>showStep('stepSignup2'),
+        'verify-submit':()=>doVerify(),
+        'reset-request':()=>sendReset(),
+        'forgot-back-to-login':()=>showStep('stepLogin'),
+        'reset-open':()=>showStep('stepReset'),
+        'reset-submit':()=>doReset(),
+        'reset-back-to-login':()=>showStep('stepLogin'),
+        'oauth':()=>oauthLogin(control.dataset.authProvider)
+      };
+      const action=handlers[control.dataset.authAction];
+      if(action) action();
+    });
+    authRoot.addEventListener('input',event=>{
+      if(event.target.matches('[data-auth-input="signup-validation"]')) validateSignup1();
+    });
+  }
   const form=document.getElementById('loginForm');
   if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin();});
   const password=document.getElementById('loginPass'),caps=document.getElementById('capsWarning');

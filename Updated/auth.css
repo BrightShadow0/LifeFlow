@@ -1,0 +1,185 @@
+/* Sapphire login terminal: match the blue workspace palette instead of the legacy lime treatment. */
+#authScreen{
+  --auth-blue:#55ddeb;
+  --auth-blue-soft:#55ddeb20;
+  --auth-blue-border:#55ddeb42;
+}
+#authScreen>.card{
+  border-color:#55ddeb38;
+}
+#authScreen .auth-brand-panel{
+  background:
+    radial-gradient(ellipse at 15% 12%,#55ddeb20,transparent 49%),
+    radial-gradient(ellipse at 82% 86%,#315a8c24,transparent 48%),
+    linear-gradient(145deg,#12243b,#080d16 72%);
+  border-right-color:#55ddeb30;
+}
+#authScreen .auth-brand-word span{
+  color:var(--auth-blue);
+}
+#authScreen .auth-brand-watermark{
+  color:#55ddeb12;
+}
+#authScreen .termcontent label{
+  color:#aabbd0;
+}
+#authScreen .termcontent input{
+  border-color:#354a64;
+  background:#0b1421;
+}
+#authScreen .termcontent input:focus{
+  border-color:var(--auth-blue);
+  box-shadow:0 0 0 3px #55ddeb20;
+}
+#authScreen .termcontent input::placeholder{
+  color:#788ba5;
+}
+#authScreen .auth-submit,
+#authScreen .authstep .primary:not(.auth-submit){
+  background:var(--auth-blue);
+  color:#07131a;
+  box-shadow:0 8px 30px #55ddeb22;
+}
+#authScreen .auth-submit:hover{
+  box-shadow:0 12px 34px #55ddeb38;
+}
+#authScreen .linklike{
+  color:var(--auth-blue);
+}
+#authScreen .stepdots span.on{
+  background:var(--auth-blue);
+}
+#authScreen .stepdots span{
+  background:#2b3b50;
+}
+#authScreen .auth-password-wrap .password-eye{
+  color:#a9bdd3;
+}
+#authScreen .auth-brand-panel,
+#authScreen .termcontent,
+#authScreen>.card{
+  transition:border-color .2s ease,background .2s ease;
+}
+/* Keep the same Sapphire treatment in the embedded login preview. */
+body.auth-embed #authScreen .auth-brand-panel{
+  border-right-color:#55ddeb30;
+}
+
+
+/* Keep the decorative FLOW watermark fully inside the login brand panel. */
+#authScreen .auth-brand-panel{
+  min-width:0;
+  isolation:isolate;
+}
+#authScreen .auth-brand-watermark{
+  left:clamp(22px,3vw,46px);
+  right:clamp(18px,2.5vw,36px);
+  bottom:clamp(22px,3vw,42px);
+  max-width:calc(100% - clamp(40px,5.5vw,82px));
+  overflow:hidden;
+  font-size:clamp(76px,13vw,190px);
+  line-height:.82;
+  letter-spacing:-.12em;
+  white-space:nowrap;
+}
+@media(max-width:850px){
+  #authScreen .auth-brand-watermark{
+    left:24px;
+    right:20px;
+    bottom:18px;
+    max-width:calc(100% - 44px);
+    font-size:clamp(72px,17vw,132px);
+  }
+}
+@media(max-width:520px){
+  #authScreen .auth-brand-watermark{
+    left:24px;
+    right:16px;
+    bottom:14px;
+    max-width:calc(100% - 40px);
+    font-size:clamp(64px,20vw,104px);
+  }
+}
+
+
+/* Login form spacing: keep browser password-manager/autofill prompts clear of the password label. */
+#authScreen #loginEmail{
+  margin-bottom:30px;
+}
+#authScreen #stepLogin label[for="loginPass"]{
+  margin-top:24px;
+}
+
+/* Accessible login terminal refinement */
+#authScreen .termcontent{display:flex;flex-direction:column;justify-content:center;align-self:stretch;min-height:100%;box-sizing:border-box}
+#authScreen .termcontent h2{letter-spacing:-.025em;line-height:1.12}
+#authScreen .auth-brand-word{letter-spacing:-.045em}
+#authScreen .auth-brand-panel{background:radial-gradient(ellipse at 15% 12%,#55ddeb20,transparent 49%),radial-gradient(ellipse at 82% 86%,#315a8c24,transparent 48%),linear-gradient(145deg,#12243b,#080d16 72%);border-right-color:#55ddeb30}
+#authScreen .auth-brand-word span{color:#55ddeb}
+#authScreen .auth-brand-watermark{color:#55ddeb18;letter-spacing:-.08em}
+#authScreen .auth-brand-tagline{position:relative;z-index:1;max-width:280px;margin:18px 0 0;color:#c2d4e9;font:500 14px/1.65 Inter,system-ui,sans-serif;letter-spacing:0}
+#authScreen .auth-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 8px}
+#authScreen .auth-label-row label{margin:0;color:#c4d2e5;font-size:11px;font-weight:700;letter-spacing:.09em}
+#authScreen .termcontent input{border-color:#405570;background:#0b1421;color:#f5f8ff}
+#authScreen .termcontent input::placeholder{color:#b0bfd2;opacity:1}
+#authScreen .termcontent input:focus-visible{outline:2px solid #55ddeb;outline-offset:2px;border-color:#55ddeb;box-shadow:0 0 0 4px #55ddeb26}
+#authScreen .termcontent input[aria-invalid="true"]{border-color:#ff858b}
+#authScreen .linklike{color:#8ceaf5;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px}
+#authScreen .linklike:hover{color:#c3f7fc;text-decoration-color:currentColor}
+#authScreen button:focus-visible,#authScreen a:focus-visible{outline:2px solid #55ddeb!important;outline-offset:3px!important;box-shadow:0 0 0 4px #55ddeb26}
+#authScreen .auth-submit{background:#55ddeb;color:#07131a}
+#authScreen .auth-submit:disabled{opacity:.75;cursor:wait}
+#authScreen .auth-submit .submit-spinner{display:none;width:15px;height:15px;margin-left:9px;vertical-align:middle;border:2px solid #07131a55;border-top-color:#07131a;border-radius:50%;animation:lf-auth-spin .7s linear infinite}
+#authScreen .auth-submit.is-loading .submit-spinner{display:inline-block}
+@keyframes lf-auth-spin{to{transform:rotate(360deg)}}
+#authScreen .auth-remember{margin:12px 0 4px}
+#authScreen .auth-remember label{display:inline-flex;align-items:center;gap:8px;margin:0;color:#c4d2e5;font-size:12px;letter-spacing:0;cursor:pointer}
+#authScreen .auth-remember input{width:16px;height:16px;margin:0;accent-color:#55ddeb}
+#authScreen .auth-inline-hint{margin:4px 0 0;color:#ffe0a3;font-size:12px}
+#authScreen .auth-error{margin:12px 0 0;padding:10px 12px;border:1px solid #ff858b;background:#351b28;color:#ffe0e2;border-radius:7px;font:12px/1.55 Inter,system-ui,sans-serif}
+#authScreen .login-captcha{margin:12px 0;padding:12px;border:1px solid #526984;border-radius:8px;background:#111e30}
+#authScreen .login-captcha label{display:block;margin:0 0 8px;color:#d7e4f5;font-size:12px;letter-spacing:0}
+#authScreen .login-captcha input{height:42px}
+#authScreen .login-captcha small{display:block;color:#b7c6d9;font-size:11px}
+#authScreen .oauth-divider{display:flex;align-items:center;gap:12px;margin:22px 0 12px;color:#b7c6d9;font:600 9px ui-monospace,monospace;letter-spacing:.12em}
+#authScreen .oauth-divider:before,#authScreen .oauth-divider:after{content:"";height:1px;flex:1;background:#405570}
+#authScreen .oauth-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+#authScreen .oauth-provider,#authScreen .passkey-button{min-height:46px;display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid #526984;border-radius:8px;background:#111e30;color:#e7f0fc;font:600 12px Inter,system-ui,sans-serif;cursor:pointer}
+#authScreen .oauth-provider:hover,#authScreen .passkey-button:hover{border-color:#55ddeb;background:#172a40}
+#authScreen .oauth-mark{font-size:16px;font-weight:800}
+#authScreen .oauth-google .oauth-mark{color:#8ceaf5}
+#authScreen .oauth-apple .oauth-mark{color:#fff}
+#authScreen .passkey-button{width:100%;margin-top:9px;background:transparent}
+#authScreen .passkey-button>span{font-size:19px;color:#8ceaf5}
+#authScreen .auth-oauth-notice{margin-top:10px;padding:10px 12px;border:1px solid #526984;background:#111e30;color:#d6e5f7;border-radius:7px;font:12px/1.5 Inter,system-ui,sans-serif}
+#authScreen .auth-signup-prompt{margin:18px 0 0;text-align:center;color:#c4d2e5;font:12px Inter,system-ui,sans-serif}
+#authScreen .auth-signup-prompt .linklike{margin-left:3px;font-weight:700}
+#authScreen .password-eye{color:#c4d2e5}
+#authScreen .password-eye:focus-visible{outline:2px solid #55ddeb;outline-offset:2px}
+@media(max-width:850px){
+ #authScreen .term-layout{grid-template-columns:1fr;grid-template-areas:"brand" "form";min-height:0}
+ #authScreen .auth-brand-panel{min-height:105px;padding:22px 28px;border-right:0;border-bottom:1px solid #55ddeb30}
+ #authScreen .auth-brand-word{font-size:42px}
+ #authScreen .auth-brand-watermark{font-size:110px;bottom:-.18em}
+ #authScreen .auth-brand-panel:after{display:none}
+ #authScreen .termcontent{width:100%;max-width:620px;padding:32px clamp(22px,7vw,60px);margin:0 auto}
+}
+@media(max-width:520px){
+ #authScreen .auth-brand-panel{min-height:76px;padding:18px 22px}
+ #authScreen .auth-brand-word{font-size:34px}
+ #authScreen .auth-brand-watermark{display:none}
+ #authScreen .termcontent{padding:28px 22px 38px}
+ #authScreen .termcontent h2{font-size:29px;margin-bottom:20px}
+ #authScreen .oauth-provider{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){#authScreen .auth-submit .submit-spinner{animation:none}}
+
+/* Restore the sign-in provider row while keeping its notice hidden until needed. */
+#authScreen #oauthRow{display:grid!important}
+#authScreen #oauthNotice:not([hidden]){display:block!important}
+
+/* Authentication v2.2 accessibility refinements */
+#authScreen .oauth-mark{display:inline-flex;width:19px;height:19px;align-items:center;justify-content:center;flex:none}
+#authScreen .oauth-mark svg{display:block;width:100%;height:100%}
+#authScreen .auth-brand-tagline{user-select:text}
+#authScreen input[aria-invalid="true"]{border-color:#ff8792!important;box-shadow:0 0 0 2px #ff879233!important}
