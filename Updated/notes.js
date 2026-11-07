@@ -80,9 +80,25 @@ function createNotesController(options){
     },0);
     return Math.max(notes.length,highest)+1;
   }
+  function recordVersion(id,reason='manual'){
+    const note=getNotes('regular').find(item=>String(item.id)===String(id));if(!note)return null;
+    const history=Array.isArray(note.versionHistory)?note.versionHistory.slice():[],title=String(note.title||''),content=String(note.content||''),latest=history[history.length-1];
+    if(latest&&latest.title===title&&latest.content===content)return latest;
+    const version={id:'v-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),title,content,createdAt:Date.now(),reason:String(reason||'autosave')};
+    history.push(version);updateFields('regular',id,{versionHistory:history.slice(-20)});return version;
+  }
+  function getVersionHistory(id){const note=getNotes('regular').find(item=>String(item.id)===String(id));return note&&Array.isArray(note.versionHistory)?note.versionHistory.slice().sort((a,b)=>b.createdAt-a.createdAt):[];}
+  function restoreVersion(id,versionId){
+    const note=getNotes('regular').find(item=>String(item.id)===String(id));if(!note)return false;
+    const version=(note.versionHistory||[]).find(item=>String(item.id)===String(versionId));if(!version)return false;
+    recordVersion(id,'before-restore');
+    const refreshed=getNotes('regular').find(item=>String(item.id)===String(id)),history=Array.isArray(refreshed?.versionHistory)?refreshed.versionHistory:[];
+    const next=getNotes('regular').map(item=>String(item.id)===String(id)?{...item,title:String(version.title||'Untitled note'),content:String(version.content||''),versionHistory:history,updatedAt:Date.now()}:item);
+    commit({notes:next,selectedNoteId:id,selectedNoteKind:'regular',noteView:'edit'});notifyKnowledgeChange('note-version-restored');return true;
+  }
   function select(id,kind='regular',view='edit'){
-    commit({selectedNoteId:id??null,selectedNoteKind:kind==='code'?'code':'regular',noteView:view==='preview'?'preview':'edit'});
-    return id??null;
+    const previous=selectedId(),previousKind=selectedKind();if(previous!=null&&String(previous)!==String(id)&&previousKind==='regular')recordVersion(previous,'note-switch');
+    commit({selectedNoteId:id??null,selectedNoteKind:kind==='code'?'code':'regular',noteView:view==='preview'?'preview':'edit'});return id??null;
   }
   function newNote(kind='regular'){
     ensure();const number=kind==='regular'?nextNumber(kind):null;
@@ -459,7 +475,7 @@ function renderMarkdownPreview(element,source){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,moveNoteToFolder:moveToFolder,renameFolder,deleteFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,getFolders,createFolder,moveToFolder,moveNoteToFolder:moveToFolder,renameFolder,deleteFolder,toggleFolder,setSearchQuery,searchNotes,highlightText,getBacklinks,getGraphLinks,recordVersion,getVersionHistory,restoreVersion,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController,configureRenderers,render};
 })(window);

@@ -292,6 +292,9 @@ function initTaskEventDelegation(){
     else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='note-backlink'){openKnowledgeBacklink(control.dataset.noteId,Number(control.dataset.lineIndex));}
     else if(action==='note-view') setKnowledgeNoteView(control.dataset.noteView);
+    else if(action==='note-history-toggle'){window.lfNoteHistoryOpen=!window.lfNoteHistoryOpen;window.lfNoteHistoryPreview=null;renderApp();}
+    else if(action==='note-history-preview'){window.lfNoteHistoryPreview=control.dataset.versionId||null;renderApp();}
+    else if(action==='note-history-restore')restoreKnowledgeVersion(control.dataset.noteId,control.dataset.versionId);
     else if(action==='note-context-open'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');}
     else if(action==='note-context-move'){const id=control.dataset.noteId,name=control.dataset.folderName;closeNoteContextMenu();if(lifeFlowNoteController?.moveToFolder(id,name)){showToast('Moved to '+name);renderApp();}}
     else if(action==='note-context-rename'){const id=control.dataset.noteId;closeNoteContextMenu();selectKnowledgeNote(id,'regular','edit');requestAnimationFrame(()=>beginKnowledgeNoteRename(id));}
@@ -741,8 +744,16 @@ function initializeNotesArchitecture() {
   }
 }
 function selectedKnowledgeNote(kind='regular') { return lifeFlowNoteController?.getSelectedNote(kind) || null; }
+let knowledgeVersionTimer=null,knowledgeVersionTimerNoteId=null;
+function stopKnowledgeVersionTimer(){if(knowledgeVersionTimer!==null)window.clearTimeout(knowledgeVersionTimer);knowledgeVersionTimer=null;knowledgeVersionTimerNoteId=null;}
+function startKnowledgeVersionTimer(id){
+  if(!id)return;if(knowledgeVersionTimerNoteId!==String(id)){stopKnowledgeVersionTimer();knowledgeVersionTimerNoteId=String(id);}if(knowledgeVersionTimer!==null)return;
+  const tick=()=>{knowledgeVersionTimer=null;if(view!=='notes'||String(lifeFlowNoteController?.selectedId())!==String(id)){stopKnowledgeVersionTimer();return;}const version=lifeFlowNoteController?.recordVersion(id,'10-minute-autosave');if(version)showToast('Note version saved');knowledgeVersionTimer=window.setTimeout(tick,600000);};
+  knowledgeVersionTimer=window.setTimeout(tick,600000);
+}
 function selectKnowledgeNote(id,kind='regular',mode='edit') {
   if(!lifeFlowNoteController)return;
+  if(String(lifeFlowNoteController.selectedId())!==String(id))stopKnowledgeVersionTimer();
   if(view==='branches'&&window.lfBranchesFocusMode)window.lfBranchesFocusedId=id==null?null:String(id);
   else if(view!=='branches'){window.lfBranchesFocusMode=false;window.lfBranchesFocusedId=null;}
   lifeFlowNoteController.select(id,kind,mode);
@@ -1542,7 +1553,8 @@ function newKnowledgeNote(kind){
   const note=lifeFlowNoteController.newNote(kind);
   window.lfSelectedNote=note.id;window.lfNoteMode=kind;window.lfNoteView='edit';renderApp();
 }
-function updateKnowledgeNote(kind,id,value){lifeFlowNoteController?.updateContent(kind,id,value);}
+function updateKnowledgeNote(kind,id,value){lifeFlowNoteController?.updateContent(kind,id,value);if(kind==='regular')startKnowledgeVersionTimer(id);}
+function restoreKnowledgeVersion(id,versionId){if(!window.confirm('Restore this version? Your current note will first be saved as a version.'))return;if(lifeFlowNoteController?.restoreVersion(id,versionId)){window.lfNoteHistoryPreview=null;window.lfNoteHistoryOpen=true;stopKnowledgeVersionTimer();showToast('Previous note version restored');renderApp();}}
 function refreshCodeEditor(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(!t||!h)return;h.innerHTML=highlightCode(t.value);syncCodeScroll();}function syncCodeScroll(){const t=document.getElementById('kn_content'),h=document.getElementById('kn_highlight');if(t&&h){h.scrollTop=t.scrollTop;h.scrollLeft=t.scrollLeft;}}
 function deleteKnowledgeNote(kind,id){
   if(!confirm('Delete this note?'))return;
@@ -1780,13 +1792,21 @@ function renderNotesManager(){
   let html='<div class="knowledge-shell notes-workspace"><div class="notes-searchbar"><label class="notes-global-search"><span aria-hidden="true">⌕</span><input class="notes-search" type="search" value="'+esc(searchQuery)+'" placeholder="Search notes, folders and content..." aria-label="Search notes, folders and content" data-lf-input="notes-search"></label><span class="notes-search-count">'+filteredItems.length+' of '+items.length+' notes</span></div><div class="notes-editor-stage"><div class="card note-editor">';
   if(selected){
     const content=selected.content||'';
-    html+='<div class="note-identity"><label for="kn_title_edit">CURRENT NOTE</label><input id="kn_title_edit" class="note-title-edit" type="text" value="'+esc(selected.title||'')+'" maxlength="80" placeholder="Untitled note" aria-label="Current note name" data-lf-input="note-title-live" data-lf-blur="note-title-live" data-note-id="'+selected.id+'"></div><div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div></div>';
+    html+='<div class="note-identity"><label for="kn_title_edit">CURRENT NOTE</label><input id="kn_title_edit" class="note-title-edit" type="text" value="'+esc(selected.title||'')+'" maxlength="80" placeholder="Untitled note" aria-label="Current note name" data-lf-input="note-title-live" data-lf-blur="note-title-live" data-note-id="'+selected.id+'"></div><div class="markdown-toolbar"><div class="markdown-tabs"><button type="button" class="'+(mode==='edit'?'active':'')+'" data-lf-action="note-view" data-note-view="edit">Write</button><button type="button" class="'+(mode==='preview'?'active':'')+'" data-lf-action="note-view" data-note-view="preview">Preview</button></div><button type="button" class="note-history-toggle '+(window.lfNoteHistoryOpen?'active':'')+'" data-lf-action="note-history-toggle" aria-expanded="'+(!!window.lfNoteHistoryOpen)+'">↶ Version history <span>'+((lifeFlowNoteController?.getVersionHistory(selected.id)||[]).length)+'</span></button></div>';
     html+='<label class="note-folder-move">Move to Folder <select data-lf-change="note-move-folder" data-note-id="'+selected.id+'">'+folders.map(folder=>'<option value="'+esc(folder.id)+'" '+((selected.folderId||'unfiled')===folder.id?'selected':'')+'>'+esc(folder.name)+'</option>').join('')+'</select></label><div class="note-content-surface">';
     if(mode==='preview')html+='<article id="kn_preview" class="markdown-preview">'+markdownToHtml(content)+'</article>';
     else html+='<div class="regular-note-source-wrap"><textarea id="kn_content" class="regular-note-source" spellcheck="false" data-lf-keydown="markdown-editor" data-lf-input="markdown-content" data-note-id="'+selected.id+'" data-lf-blur="markdown-content" placeholder="Write here...">'+esc(content)+'</textarea><div id="noteLinkSuggestions" class="note-link-suggestions" hidden></div></div>';
     html+='</div>';
     const backlinks=lifeFlowNoteController?.getBacklinks(selected.id)||[];
     if(backlinks.length)html+='<section class="note-backlinks"><div class="note-backlinks-head"><strong>Referenced In</strong><span>'+backlinks.length+'</span></div>'+backlinks.map(item=>window.LifeFlowUIModule.renderBacklinkItem(item)).join('')+'</section>';
+    if(window.lfNoteHistoryOpen){
+      const versions=lifeFlowNoteController?.getVersionHistory(selected.id)||[],preview=versions.find(item=>String(item.id)===String(window.lfNoteHistoryPreview));
+      html+='<section class="note-version-history" aria-label="Note version history"><div class="note-version-head"><div><strong>Version history</strong><small>Snapshots on note switch and every 10 minutes while editing</small></div><button type="button" data-lf-action="note-history-toggle" aria-label="Close version history">×</button></div>';
+      if(preview)html+='<div class="note-version-preview"><div class="note-version-preview-head"><strong>'+esc(preview.title||'Untitled note')+'</strong><span>'+new Date(preview.createdAt).toLocaleString()+'</span></div><pre>'+esc(preview.content||'')+'</pre><div class="note-version-actions"><button type="button" data-lf-action="note-history-restore" data-note-id="'+esc(selected.id)+'" data-version-id="'+esc(preview.id)+'">Restore this version</button><button type="button" data-lf-action="note-history-preview" data-version-id="">Back to history</button></div></div>';
+      else if(!versions.length)html+='<p class="note-version-empty">No previous versions yet. A snapshot will be created when you switch notes or after 10 minutes of editing.</p>';
+      else html+='<div class="note-version-list">'+versions.map(item=>'<article class="note-version-item"><div><strong>'+esc(item.title||'Untitled note')+'</strong><small>'+new Date(item.createdAt).toLocaleString()+' · '+esc(item.reason==='note-switch'?'Saved on note switch':item.reason==='10-minute-autosave'?'10-minute autosave':item.reason==='before-restore'?'Before restore':'Saved version')+'</small></div><button type="button" data-lf-action="note-history-preview" data-version-id="'+esc(item.id)+'">Preview</button></article>').join('')+'</div>';
+      html+='</section>';
+    }
   }else html+='<div class="empty-state"><h3>No notes yet</h3><p>Use New note to create one.</p></div>';
   html+='</div><div class="notes-panel-tabs" aria-label="Notes panels"><button type="button" class="notes-ear '+(panelOpen&&activePanel==='folders'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="folders" aria-expanded="'+(panelOpen&&activePanel==='folders')+'" title="Folders"><span>▣</span><small>Folders</small></button><button type="button" class="notes-ear '+(panelOpen&&activePanel==='notes'?'active':'')+'" data-lf-action="note-panel-toggle" data-notes-panel="notes" aria-expanded="'+(panelOpen&&activePanel==='notes')+'" title="Notes"><span>▤</span><small>Notes</small></button></div><aside class="notes-drawer '+(panelOpen?'is-open':'')+'" data-active-panel="'+activePanel+'" aria-label="'+(activePanel==='folders'?'Folders':'Notes')+'"><div class="notes-drawer-content">';
   if(activePanel==='folders'){
