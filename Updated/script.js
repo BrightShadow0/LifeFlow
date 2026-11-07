@@ -49,8 +49,11 @@ function readLegacyState(){
   return null;
 }
 function storedSessionEmail(){
+  // Authentication is tab-scoped: sessionStorage survives refreshes but is
+  // discarded by the browser when this tab is closed.
+  try{ localStorage.removeItem('lifeflow2_session'); }catch(e){}
   try{
-    const s=JSON.parse(localStorage.getItem('lifeflow2_session')||'null');
+    const s=JSON.parse(sessionStorage.getItem('lifeflow2_session')||'null');
     if(s && s.token && s.email && s.expiresAt && Date.now()<s.expiresAt) return s.email;
   }catch(e){}
   return null;
@@ -128,10 +131,10 @@ async function verifyPassword(password, u){
 
 function getSession(){
   try{
-    const s = JSON.parse(localStorage.getItem('lifeflow2_session'));
+    const s = JSON.parse(sessionStorage.getItem('lifeflow2_session')||'null');
     if(s && s.token && s.email && s.expiresAt && Date.now() < s.expiresAt){
       s.expiresAt = Date.now() + SESSION_TTL_MS;
-      localStorage.setItem('lifeflow2_session', JSON.stringify(s));
+      sessionStorage.setItem('lifeflow2_session', JSON.stringify(s));
       return s;
     }
   }catch(e){}
@@ -141,14 +144,16 @@ function createSession(email, remember=true){
   normalizeDemoProfile(email);
   const sessionDuration = remember ? SESSION_TTL_MS : 8 * 3600 * 1000;
   const s = {token: randomToken(32), email, createdAt: Date.now(), expiresAt: Date.now() + sessionDuration};
-  localStorage.setItem('lifeflow2_session', JSON.stringify(s));
+  try{ localStorage.removeItem('lifeflow2_session'); }catch(e){}
+  sessionStorage.setItem('lifeflow2_session', JSON.stringify(s));
   state=loadForUser(email);
   state.currentUser=email;
   save();
   return s;
 }
 function destroySession(){
-  localStorage.removeItem('lifeflow2_session');
+  sessionStorage.removeItem('lifeflow2_session');
+  try{ localStorage.removeItem('lifeflow2_session'); }catch(e){}
   state=defaultProfileState(null);
 }
 
