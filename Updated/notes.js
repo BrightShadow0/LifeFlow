@@ -228,7 +228,7 @@ function createNotesController(options){
     const results=[];
     getSearchIndex().forEach(note=>{
       const {title,content,tags,folder,folderIcon,tl,cl,tg,fl,flat}=note;
-      const searchable=tl+' '+cl+' '+tg+' '+fl;
+      const searchable=tl+' '+cl+' '+fl;
       if(!terms.every(term=>searchable.includes(term)))return;
       let score=0;
       if(tl===normalized)score+=100;
@@ -247,7 +247,6 @@ function createNotesController(options){
         snippet=(from>0?'…':'')+flat.slice(from,to)+(to<flat.length?'…':'');
       }else if(tl.includes(normalized))snippet='Title: '+title;
       else if(fl.includes(normalized))snippet='Folder: '+folder;
-      else if(tg.includes(normalized))snippet='Tags: '+tags;
       else snippet=flat.slice(0,80);
       results.push({id:note.id,title,folder,folderIcon,score,snippet,terms});
     });
