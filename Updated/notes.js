@@ -182,7 +182,7 @@ function createNotesController(options){
     if(!terms.length)return [];
     const results=[];
     getSearchIndex().forEach(note=>{
-      const {title,content,folder,tl,cl,tg,fl,flat}=note;
+      const {title,content,tags,folder,tl,cl,tg,fl,flat}=note;
       if(!terms.every(term=>(tl+' '+cl+' '+tg+' '+fl).includes(term)))return;
       let score=0;
       terms.forEach(term=>{if(tl.includes(term))score+=100;if(cl.includes(term))score+=12;if(tg.includes(term))score+=8;if(fl.includes(term))score+=5;});
