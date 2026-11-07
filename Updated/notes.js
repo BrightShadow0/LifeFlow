@@ -8,7 +8,13 @@ function createNotesController(options){
   if(!stateManager||typeof stateManager.setState!=='function')throw new TypeError('Notes controller requires a StateManager.');
   const snapshot=()=>stateManager.getState();
   const noteKey=kind=>kind==='code'?'codeNotes':'notes';
-  let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null,graphLinksCache=null;
+  let regularNotesRevision=0,searchIndexCache=null,backlinkIndexCache=null,graphLinksCache=null,committingNotes=false;
+  if(typeof stateManager.subscribe==='function'){
+    stateManager.subscribe('notes',()=>{
+      regularNotesRevision++;searchIndexCache=null;backlinkIndexCache=null;graphLinksCache=null;
+      if(!committingNotes)notifyKnowledgeChange('notes-synced-from-another-window');
+    });
+  }
   function notifyKnowledgeChange(reason){
     if(typeof global.dispatchEvent!=='function'||typeof global.CustomEvent!=='function')return;
     global.dispatchEvent(new global.CustomEvent('lifeflow:knowledge-change',{detail:{reason,revision:regularNotesRevision}}));
@@ -20,7 +26,9 @@ function createNotesController(options){
       backlinkIndexCache=null;
       graphLinksCache=null;
     }
-    stateManager.setState({...getCurrentState(),...patch});
+    committingNotes=true;
+    try{stateManager.setState({...getCurrentState(),...patch});}
+    finally{committingNotes=false;}
   }
   function getNotes(kind){const list=snapshot()[noteKey(kind)];return Array.isArray(list)?list:[];}
   function selectedId(){return snapshot().selectedNoteId??null;}
