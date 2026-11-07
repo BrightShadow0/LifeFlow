@@ -109,11 +109,19 @@ function createNotesController(options){
     return results.sort((a,b)=>b.score-a.score||a.title.localeCompare(b.title));
   }
   function highlightText(value,terms){
-    let output=esc(value);
-    (terms||[]).filter(Boolean).sort((a,b)=>b.length-a.length).forEach(term=>{
-      const escaped=term.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\  function updateAll(kind,updater){');
-      output=output.replace(new RegExp('('+escaped+')','gi'),'<mark class="search-highlight">$1</mark>');
-    });
+    const source=String(value||''),needles=(terms||[]).filter(Boolean).sort((a,b)=>b.length-a.length);
+    if(!needles.length)return esc(source);
+    let output='',cursor=0;
+    while(cursor<source.length){
+      let found=-1,matched='';
+      needles.forEach(term=>{
+        const index=source.toLowerCase().indexOf(term.toLowerCase(),cursor);
+        if(index>=0&&(found<0||index<found)){found=index;matched=source.slice(index,index+term.length);}
+      });
+      if(found<0){output+=esc(source.slice(cursor));break;}
+      output+=esc(source.slice(cursor,found))+'<mark class="search-highlight">'+esc(matched)+'</mark>';
+      cursor=found+matched.length;
+    }
     return output;
   }
   function updateAll(kind,updater){
