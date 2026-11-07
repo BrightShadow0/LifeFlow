@@ -96,6 +96,151 @@ function createNotesController(options){
   function getSelectedNote(kind='regular'){
     const id=selectedId();return getNotes(kind).find(note=>String(note.id)===String(id))||getNotes(kind)[0]||null;
   }
+function safeMarkdownUrl(url){
+  const raw=String(url||'').trim();
+  try{
+    const parsed=new URL(raw,window.location.href);
+    if(['http:','https:','mailto:'].includes(parsed.protocol)) return parsed.href;
+  }catch(e){}
+  return '#';
+}
+function safeMarkdownImageUrl(url){
+  const raw=String(url||'').trim();
+  if(/^data:image\/(?:png|jpeg|gif|webp|avif|bmp|x-icon);base64,/i.test(raw))return raw;
+  return safeMarkdownUrl(raw)==='#'?'#':safeMarkdownUrl(raw);
+}
+function markdownInline(input){
+  let s=esc(String(input||'')),stash=[];
+  const hold=function(html){const key='@@LFMD'+stash.length+'@@';stash.push(html);return key;};
+  s=s.replace(/\`([^\`\n]+)\`/g,function(_,code){return hold('<code class="md-inline-code">'+highlightCode(code)+'</code>');});
+  s=s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,alt,url,title){
+    const src=safeMarkdownUrl(url);
+    if(src==='#')return _;
+    return hold('<img class="md-image" src="'+esc(src)+'" alt="'+esc(alt||'')+'"'+(title?' title="'+esc(title)+'"':'')+' loading="lazy">');
+  });
+  s=s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g,function(_,label,url,title){
+    const href=safeMarkdownUrl(url);
+    if(href==='#')return _;
+    return hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>');
+  });
+  s=s.replace(/&lt;(https?:\/\/[^&\s]+)&gt;/g,function(_,url){const href=safeMarkdownUrl(url);return href==='#'?_:hold('<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(url)+'</a>');});
+  s=s.replace(/\[\[\s*([^\]\n]+?)\s*\]\]/g,function(_,title){const clean=title.trim();return hold('<a href="#" class="md-note-link" data-note-title="'+esc(clean)+'">'+esc(clean)+'</a>');});
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>').replace(/__([^_\n]+)__/g,'<strong>$1</strong>');
+  s=s.replace(/~~([^~\n]+)~~/g,'<del>$1</del>');
+  s=s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>').replace(/(?<!_)_([^_\n]+)_(?!_)/g,'<em>$1</em>');
+  s=s.replace(/ {2}\n/g,'<br>');
+  s=s.replace(/\n/g,'<br>');
+  stash.forEach(function(html,i){s=s.replace('@@LFMD'+i+'@@',html);});
+  return s;
+}
+function markdownToHtmlFallback(source){
+  const lines=String(source||'').replace(/\r\n?/g,'\n').split('\n');
+  let html='',i=0;
+  const isBlockStart=function(line){
+    return /^\s{0,3}(#{1,6})\s+/.test(line)||/^\s{0,3}(\`\`\`|~~~)/.test(line)||/^\s{0,3}>\s?/.test(line)||/^\s{0,3}([-*+]|\d+\.)\s+/.test(line)||/^\s{0,3}([-*_])(?:\s*\3){2,}\s*$/.test(line);
+  };
+  while(i<lines.length){
+    const line=lines[i];
+    if(!line.trim()){i++;continue;}
+    const fence=line.match(/^\s{0,3}(\`\`\`|~~~)\s*([A-Za-z0-9_+-]*)\s*$/);
+    if(fence){
+      const marker=fence[1],lang=fence[2]||'',buf=[];i++;
+      const closeRe=new RegExp('^\\s{0,3}'+marker.replace(/[.*+?^$(){}|[\]\\]/g,'\\$&')+'\\s*$');
+      while(i<lines.length&&!closeRe.test(lines[i])){buf.push(lines[i]);i++;}
+      if(i<lines.length)i++;
+      html+='<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+esc(buf.join('\n'))+'</code></pre>';
+      continue;
+    }
+    const heading=line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if(heading){const level=heading[1].length;html+='<h'+level+'>'+markdownInline(heading[2])+'</h'+level+'>';i++;continue;}
+    if(/^\s{0,3}((\*\s*){3,}|(-\s*){3,}|(_\s*){3,})$/.test(line)){html+='<hr>';i++;continue;}
+    if(/^\s{0,3}>\s?/.test(line)){
+      const buf=[];while(i<lines.length&&/^\s{0,3}>\s?/.test(lines[i])){buf.push(lines[i].replace(/^\s{0,3}>\s?/,'').replace(/\s+$/,''));i++;}
+      html+='<blockquote>'+markdownToHtml(buf.join('\n'))+'</blockquote>';continue;
+    }
+    const ul=/^\s{0,3}([-*+])\s+(.+)$/.exec(line),ol=/^\s{0,3}(\d+)\.\s+(.+)$/.exec(line);
+    if(ul||ol){
+      const ordered=!!ol,items=[];
+      let hasTasks=false;
+      while(i<lines.length){
+        const m=(ordered?/^\s{0,3}\d+\.\s+(.+)$/:/^\s{0,3}[-*+]\s+(.+)$/).exec(lines[i]);
+        if(!m)break;
+        let item=m[1],checked=false;
+        const task=item.match(/^\[(x|X| )\]\s+(.+)$/);
+        if(task){hasTasks=true;checked=/x/i.test(task[1]);item=task[2];}
+        const taskLineIndex=i;
+        items.push('<li'+(task?' class="md-task-item"':'')+'>'+(task?'<input class="md-task" type="checkbox" data-md-task-line="'+taskLineIndex+'" data-lf-change="markdown-task" data-line-index="'+taskLineIndex+'" '+(checked?'checked':'')+'> ':'')+markdownInline(item)+'</li>');
+        i++;
+      }
+      const listStart=ordered?Number(ol[1]):1;
+      const startAttr=ordered&&listStart!==1?' start="'+listStart+'"':'';
+      const listClass=hasTasks?' class="md-task-list"':'';
+      html+='<'+(ordered?'ol':'ul')+startAttr+listClass+'>'+items.join('')+'</'+(ordered?'ol':'ul')+'>';
+      continue;
+    }
+    const buf=[line];i++;
+    while(i<lines.length&&lines[i].trim()&&!isBlockStart(lines[i])){buf.push(lines[i]);i++;}
+    html+='<p>'+markdownInline(buf.join('\n'))+'</p>';
+  }
+  return html||'<p class="md-empty">Nothing to preview yet.</p>';
+}
+function markdownToHtml(source){
+  if(!window.marked||typeof window.marked.parse!=='function')return markdownToHtmlFallback(source);
+  let taskIndex=0;
+  const renderer=new window.marked.Renderer();
+  renderer.text=function(token){return markdownInline(token.text||'');};
+  renderer.image=function(token){
+    const src=safeMarkdownImageUrl(token.href||'');
+    if(src==='#')return esc(token.text||'');
+    const alt=esc(token.text||'');
+    const title=token.title?' title="'+esc(token.title)+'"':'';
+    return '<img class="md-image" src="'+esc(src)+'" alt="'+alt+'"'+title+' loading="lazy" decoding="async">';
+  };
+  renderer.code=function(token){
+    const lang=String(token.lang||'').trim().split(/\s+/)[0].toLowerCase();
+    if(lang==='mermaid')return '<pre class="md-mermaid"><code>'+esc(token.text||'')+'</code></pre>';
+    return '<pre class="md-code"><code'+(lang?' class="language-'+esc(lang)+'"':'')+'>'+highlightCodeBlock(token.text||'',lang)+'</code></pre>';
+  };
+  renderer.listitem=function(token){
+    const body=this.parser.parse(token.tokens||[]);
+    if(token.task){
+      const index=taskIndex++;
+      return '<li class="md-task-item"><input class="md-task" type="checkbox" data-md-task-index="'+index+'" '+(token.checked?'checked':'')+'> '+body+'</li>\n';
+    }
+    return '<li>'+body+'</li>\n';
+  };
+  const raw=window.marked.parse(String(source||''),{gfm:true,breaks:false,headerIds:false,mangle:false,renderer});
+  const clean=window.DOMPurify?window.DOMPurify.sanitize(raw,{USE_PROFILES:{html:true},ADD_ATTR:['target','rel','loading','decoding','class','start','checked','disabled','data-md-task-index','data-note-title']}):markdownToHtmlFallback(source);
+  return clean||'<p class="md-empty">Nothing to preview yet.</p>';
+}
+
+function renderMarkdownPreview(element,source){
+  element.innerHTML=markdownToHtml(source);
+  element.querySelectorAll('a.md-note-link').forEach(function(link){link.addEventListener('click',function(e){e.preventDefault();openKnowledgeNoteByTitle(link.dataset.noteTitle||'');});});
+  element.querySelectorAll('img.md-image').forEach(function(img){
+    img.addEventListener('error',function(){
+      img.classList.add('md-image-error');
+      img.alt=img.alt||'Image could not be loaded. Check the image URL or hosting permissions.';
+      img.title='Image could not be loaded. Check the image URL or hosting permissions.';
+    },{once:true});
+  });
+  element.querySelectorAll('input.md-task[data-md-task-index]').forEach(function(input){
+    input.addEventListener('change',function(){toggleMarkdownTaskByIndex(Number(input.dataset.mdTaskIndex),input.checked);});
+  });
+  const diagrams=element.querySelectorAll('.md-mermaid');
+  if(diagrams.length&&window.mermaid){
+    diagrams.forEach(function(node){
+      const code=node.querySelector('code');
+      if(!code)return;
+      const holder=document.createElement('div');
+      holder.className='mermaid';
+      holder.textContent=code.textContent;
+      node.replaceWith(holder);
+    });
+    window.mermaid.run({nodes:element.querySelectorAll('.mermaid')}).catch(function(){});
+  }
+}
+
   function toggleMarkdownTaskByIndex(index,checked){
     const note=getSelectedNote('regular');if(!note)return null;
     const lines=String(note.content||'').replace(/\r\n?/g,'\n').split('\n');let current=0,matched=-1;
@@ -113,7 +258,7 @@ function createNotesController(options){
     lines[lineIndex]=lines[lineIndex].replace(/^(\s{0,3}[-*+]\s+)\[[ xX]\](\s+)/,(_,prefix,space)=>prefix+'['+(checked?'x':' ')+']'+space);
     const content=lines.join('\n');updateContent('regular',note.id,content);return content;
   }
-  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,toggleMarkdownTaskByIndex,toggleMarkdownTask};
+  return {getNotes,selectedId,selectedKind,noteView,makeNoteCode,ensure,nextNumber,select,newNote,updateContent,updateFields,deleteNote,deleteAll,openByTitle,autoTitle,updateAll,getSelectedNote,toggleMarkdownTaskByIndex,toggleMarkdownTask,markdownToHtml,renderMarkdownPreview};
 }
 global.LifeFlowNotesModule={createNotesController};
 })(window);
