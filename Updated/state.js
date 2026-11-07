@@ -14,7 +14,7 @@ export const STATE_KEY_PREFIX = 'lifeflow2_state_';
 export const DEFAULT_SAVE_DELAY = 300;
 
 export function defaultProfileState(email) {
-  return { tasks: [], currentUser: email || null };
+  return { tasks: [], notes: [], codeNotes: [], noteLinks: [], folders: [{ id: 'unfiled', name: 'Unfiled', icon: '▤' }], searchQuery: '', collapsedFolders: [], currentUser: email || null };
 }
 
 export function profileStateKey(email) {
