@@ -64,4 +64,3 @@ jobs:
           assert.equal(result.migrated, true);
           console.log("Migration preserves existing content and adds schema metadata only.");
           JS
-          PY
