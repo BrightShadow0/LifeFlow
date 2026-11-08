@@ -505,8 +505,9 @@ function autoLogoutLimitMs(){
   const minutes=Number(value);
   return [10,15,30,60].includes(minutes)?minutes*60000:30*60000;
 }
-function recordAutoLogoutActivity(){
+function recordAutoLogoutActivity(event){
   if(!getSession()||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
+  if(autoLogoutOverlay&&!autoLogoutOverlay.hidden&&event&&!event.target?.closest?.('[data-auto-logout-stay]'))return;
   autoLogoutLastActivity=Date.now();
   try{sessionStorage.setItem(AUTO_LOGOUT_ACTIVITY_KEY,String(autoLogoutLastActivity));}catch(_){}
   if(autoLogoutOverlay)hideAutoLogoutReminder();
