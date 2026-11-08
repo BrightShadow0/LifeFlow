@@ -31,6 +31,7 @@ jobs:
           node --check Updated/ui.js
           node --check Updated/cloud-backup.js
           node --check Updated/supabase-auth.js
+          node --check Updated/supabase-auth.js
       - name: Check ES modules
         run: |
           node --input-type=module --check < Updated/state.js
@@ -76,5 +77,7 @@ jobs:
 
       - name: Test encrypted cloud backup engine
         run: node --test tests/cloud-backup.test.cjs
+      - name: Test cloud authentication and MFA flows
+        run: node --test tests/supabase-auth.test.cjs
       - name: Test cloud authentication and MFA
         run: node --test tests/supabase-auth.test.cjs
