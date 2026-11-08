@@ -129,3 +129,16 @@ test('rejects weak passphrases and malformed workspace payloads', async () => {
   await assert.rejects(h.api.create({ tasks: {} }), /collection "tasks" is invalid/);
   assert.equal(h.rows.length, 0);
 });
+
+
+test('a wrong passphrase does not prevent a later correct unlock on the same device', async () => {
+  const shared = { rows: [] };
+  const owner = harness(shared);
+  await owner.api.unlock(passphrase);
+  await owner.api.create(workspace());
+  const otherDevice = harness(shared);
+  await assert.rejects(otherDevice.api.unlock('a definitely wrong passphrase'), /could not be authenticated/);
+  const opened = await otherDevice.api.unlock(passphrase);
+  assert.equal(opened.hasRemote, true);
+  assert.equal(opened.workspace.tasks[0].title, 'Private task');
+});
