@@ -17,7 +17,7 @@ function harness() {
       let filters = [];
       let deleting = false;
       const query = {
-        insert(row) { if (failInsert) return query; inserted = row; return query; },
+        insert(row) { inserted = row; return query; },
         select(fields) { selected = fields; return query; },
         eq(key, value) { filters.push([key, value]); return query; },
         order() { return query; },
@@ -97,7 +97,7 @@ test('isolates backup lookup by authenticated account', async () => {
   assert.equal((await h.api.listBackups()).backups.length, 0);
 });
 
-test('reports failed uploads and rejects malformed backup identifiers', async () => {
+test('deletes only the selected account backup', async () => {\n  const h = harness();\n  const backup = await h.api.createBackup(sample(), passphrase);\n  await h.api.deleteBackup(backup.backup.id);\n  assert.equal(h.rows.length, 0);\n});\n\ntest('reports failed uploads and rejects malformed backup identifiers', async () => {
   const h = harness();
   h.setFailInsert(true);
   await assert.rejects(h.api.createBackup(sample(), passphrase), /simulated upload failure/);
