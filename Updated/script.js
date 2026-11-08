@@ -2411,14 +2411,16 @@ async function handleLifeFlowMfaAction(action,control){
     if(output)output.textContent='Authenticator successfully verified and enabled.';
     await refreshLifeFlowCloudSecurity();
   }else if(action==='mfa-cancel'){
-    if(lifeFlowPendingTotpFactorId)await api.removeAuthenticator(lifeFlowPendingTotpFactorId);
+    if(lifeFlowPendingTotpFactorId)await api.cancelAuthenticatorEnrollment(lifeFlowPendingTotpFactorId);
     lifeFlowPendingTotpFactorId=null;if(enrollment)enrollment.hidden=true;
     const qr=document.getElementById('cloudMfaQr');if(qr){qr.removeAttribute('src');qr.hidden=true;}
     if(output)output.textContent='Pending authenticator setup cancelled.';
     await refreshLifeFlowCloudSecurity();
   }else if(action==='mfa-remove'){
     if(!window.confirm('Remove this verified authenticator factor? You may lose access if this is your only factor.'))return;
-    const result=await api.removeAuthenticator(control.dataset.factorId);if(!result.ok)throw new Error(result.error);
+    const code=window.prompt('Enter the current six-digit code from this authenticator to confirm removal.');
+    if(code===null)return;
+    const result=await api.removeAuthenticator(control.dataset.factorId,code.trim());if(!result.ok)throw new Error(result.error);
     if(output)output.textContent='Authenticator factor removed.';
     await refreshLifeFlowCloudSecurity();
   }else if(action==='mfa-refresh'){await refreshLifeFlowCloudSecurity();}
