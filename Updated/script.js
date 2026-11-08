@@ -1707,22 +1707,8 @@ function showToast(message){const host=document.getElementById('toastHost');host
 let temporaryTheme=null;
 let temporaryThemeTimer=null;
 function renderReleaseNotes(){
-  return `<section class="lf-releases" aria-label="LifeFlow release notes">
-    <header class="lf-release-hero"><span class="lf-release-kicker">LIFEFLOW CHANGELOG</span><h2>Product updates</h2><p>Improvements, foundations and what is coming next.</p></header>
-    <article class="lf-release-card">
-      <div class="lf-release-top"><div><span class="lf-release-version">RELEASE 8</span><h2>Cloud Identity &amp; Security Foundation</h2></div><span class="lf-release-status">In progress</span></div>
-      <section><h3>1. Supabase Cloud Foundation</h3><ul><li>Integrated the Supabase JavaScript client.</li><li>Established the connection to the LifeFlow Supabase project.</li><li>Added the initial cloud database schema.</li><li>Created <code>account_profiles</code> with user-specific Row Level Security (RLS).</li><li>Created <code>encrypted_workspace_backups</code> for future encrypted cloud backups.</li><li>Added database connection testing in the Security section.</li></ul></section>
-      <section><h3>2. Cloud Authentication</h3><ul><li>Added a separate cloud-account registration and sign-in experience.</li><li>Implemented email/password registration and authentication.</li><li>Added password reset functionality.</li><li>Enabled persistent cloud authentication sessions.</li><li>Added authentication callback handling.</li><li>Added automatic cloud profile initialization.</li><li>Preserved the existing local login system as a separate fallback.</li></ul></section>
-      <section><h3>3. Optional Two-Factor Authentication Foundation</h3><ul><li>Added the architecture for optional authenticator-app-based TOTP verification.</li><li>Established the foundation for enrollment, challenge and verification.</li><li>Defined future authentication assurance requirements.</li><li>Kept 2FA separate from the existing local authentication system.</li></ul></section>
-      <section><h3>4. Data Protection &amp; Recovery</h3><ul><li>Established the foundation for encrypted cloud backups.</li><li>Documented the future local-to-cloud migration process.</li><li>Defined multi-device recovery and account security requirements.</li><li>Maintained the existing local-first storage architecture.</li></ul></section>
-      <section><h3>5. Deployment &amp; Security</h3><ul><li>Added Supabase configuration and deployment documentation.</li><li>Added database migration scripts.</li><li>Documented key management and security requirements.</li><li>Preserved existing local workspace data and authentication.</li></ul></section>
-      <section class="lf-release-pending"><h3>6. Important Pending Work</h3><ul><li>Connect cloud identities to existing LifeFlow workspaces.</li><li>Build a safe local-to-cloud migration process.</li><li>Implement encrypted cloud backup and restore.</li><li>Implement multi-device synchronization.</li><li>Complete optional 2FA enrollment and enforcement.</li><li>Complete end-to-end authentication testing.</li><li>Configure and verify production email delivery.</li></ul></section>
-    </article>
-    <article class="lf-release-card lf-release-patch"><div class="lf-release-top"><div><span class="lf-release-version">UI POLISH PATCH</span><h2>Mermaid Diagram Rendering</h2></div><span class="lf-release-status lf-release-status-done">UI update</span></div>
-      <section><h3>Mermaid Diagram Rendering</h3><ul><li>Addressed Mermaid diagram colour contrast in dark mode.</li><li>Introduced theme-aware diagram styling.</li><li>Improved node backgrounds, text contrast, borders and connectors.</li><li>Improved readability of flowcharts and decision diagrams in Notes Preview.</li><li>Preserved the light-mode appearance.</li></ul></section>
-      <section><h3>Notes Manager</h3><ul><li>Improved diagram presentation within the Markdown preview.</li><li>Maintained compatibility with existing Markdown notes and Mermaid syntax.</li></ul></section>
-      <p class="lf-release-footnote">Cloud functionality remains under development. Cloud sign-in does not yet connect, import or sync an existing local workspace.</p>
-    </article>
+  return `<section class="lf-releases" aria-label="LifeFlow product updates">
+    <header class="lf-release-hero"><span class="lf-release-kicker">LIFEFLOW</span><h2>Product updates</h2><p>No updates published yet.</p></header>
   </section>`;
 }
 function renderApp(){
