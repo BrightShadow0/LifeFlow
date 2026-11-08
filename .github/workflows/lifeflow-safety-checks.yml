@@ -30,6 +30,7 @@ jobs:
           node --check Updated/theme.js
           node --check Updated/ui.js
           node --check Updated/cloud-backup.js
+          node --check Updated/cloud-sync.js
           node --check Updated/supabase-auth.js
           node --check Updated/supabase-auth.js
       - name: Check ES modules
@@ -58,6 +59,14 @@ jobs:
           assert "data-cloud-delete" in html and "data-cloud-restore" in html, "Cloud backup UI must expose management and restore"
           assert "before-cloud-restore" in html and "checkpoint?.saved" in html, "Restore must require a successful local recovery checkpoint"
           assert "Cloud account:" in html, "Backup history must identify its owning cloud account"
+          sync = Path("Updated/cloud-sync.js").read_text()
+          migration = Path("supabase/migrations/20261108000200_encrypted_workspace_sync.sql").read_text()
+          assert "AES-GCM" in sync and "PBKDF2" in sync, "Cloud workspace sync must encrypt in the browser"
+          assert "encrypted_workspace_sync" in sync and "revision" in sync, "Cloud sync must use a revisioned remote record"
+          assert "enable row level security" in migration.lower(), "Cloud sync table must enable RLS"
+          assert '"Users can read their encrypted workspace"' in migration, "Cloud sync table must scope reads to owner"
+          assert '"Users can update their encrypted workspace"' in migration, "Cloud sync table must scope updates to owner"
+          print("Release 11 encrypted workspace sync contracts verified.")
           print("Release 9 encrypted backup management and restore contracts verified.")
           print("LifeFlow storage and recovery contracts verified.")
           PY
@@ -79,5 +88,7 @@ jobs:
         run: node --test tests/cloud-backup.test.cjs
       - name: Test cloud authentication and MFA flows
         run: node --test tests/supabase-auth.test.cjs
+      - name: Test encrypted multi-device workspace sync
+        run: node --test tests/cloud-sync.test.cjs
       - name: Test cloud authentication and MFA
         run: node --test tests/supabase-auth.test.cjs
