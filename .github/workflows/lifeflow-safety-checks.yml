@@ -48,5 +48,20 @@ jobs:
           assert "before-archive-restore" in script, "Archive restore must create a safety checkpoint"
           assert "MAX_SNAPSHOTS_PER_USER" in recovery, "Recovery retention limit must remain enabled"
           assert "clearAll" in recovery, "Explicit reset must be able to clear the recovery vault"
+          assert "clearUser" in recovery, "Account deletion must remove that account's recovery points"
           print("LifeFlow storage and recovery contracts verified.")
+          PY
+      - name: Verify migrations preserve existing workspace content
+        run: |
+          node --input-type=module <<'JS'
+          import assert from "node:assert/strict";
+          import { migrateWorkspaceState } from "./Updated/migrations.js";
+          const original = { currentUser: "person@example.com", tasks: [{ id: 7, title: "Keep me" }], customField: { preserved: true } };
+          const result = migrateWorkspaceState(original, { currentUser: "person@example.com", defaults: { tasks: [], notes: [], codeNotes: [], folders: [], noteLinks: [] } });
+          assert.deepEqual(result.state.tasks, original.tasks);
+          assert.deepEqual(result.state.customField, original.customField);
+          assert.equal(result.state.__lifeFlowSchemaVersion, 1);
+          assert.equal(result.migrated, true);
+          console.log("Migration preserves existing content and adds schema metadata only.");
+          JS
           PY
