@@ -4938,3 +4938,17 @@ body::-webkit-scrollbar-corner{
 .recovery-vault-dialog-note{margin:16px 0 0;color:var(--muted);font-size:11px;line-height:1.6}
 @media(max-width:640px){#app .recovery-vault-heading{align-items:flex-start;flex-direction:column}#app .recovery-vault-actions{display:grid;grid-template-columns:1fr}#app .recovery-vault-actions button{width:100%}.recovery-vault-overlay{padding:12px}.recovery-vault-dialog{padding:19px;border-radius:16px}.recovery-vault-item{align-items:flex-start;flex-direction:column}.recovery-vault-item button{width:100%}}
 @media(prefers-reduced-motion:reduce){.recovery-vault-overlay{backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+
+/* Release 7: cloud and account security panels */
+.cloud-security-card{padding:20px;}
+.cloud-security-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.cloud-security-head h2{margin:5px 0 8px;color:var(--text);font-size:16px;letter-spacing:0;text-transform:none;}
+.cloud-security-card p,.cloud-security-card li{color:var(--muted);font-size:14px;line-height:1.65;}
+.cloud-security-card ul{padding-left:20px;}
+.cloud-status-pill{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px;white-space:nowrap;}
+.cloud-status-pill.is-connected{color:var(--ok);border-color:var(--ok);}
+.cloud-status-pill.is-pending{color:var(--warn);}
+.cloud-connection-status{margin:14px 0;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-size:14px;line-height:1.5;}
+.cloud-security-note{padding:10px 12px;border-left:3px solid var(--warn);background:var(--accent-soft);border-radius:6px;}
+@media(max-width:600px){.cloud-security-card{padding:16px;}.cloud-security-head{gap:8px;}}
