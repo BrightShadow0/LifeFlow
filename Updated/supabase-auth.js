@@ -11,6 +11,16 @@
   function failed(error, fallback) {
     return { ok: false, error: error && error.message ? error.message : fallback };
   }
+  async function ensureProfile(user, displayName) {
+    if (!user || !user.id) return { ok: false, error: 'A signed-in cloud user is required.' };
+    try {
+      const { error } = await client().from('account_profiles').upsert({
+        id: user.id,
+        display_name: String(displayName || user.user_metadata?.display_name || '').trim()
+      }, { onConflict: 'id' });
+      return error ? failed(error, 'Cloud profile could not be initialized.') : { ok: true };
+    } catch (error) { return failed(error, 'Cloud profile could not be initialized.'); }
+  }
   async function signUp({ email, password, displayName } = {}) {
     if (!email || !password) return { ok: false, error: 'Enter an email address and password.' };
     try {
@@ -19,6 +29,10 @@
         options: { emailRedirectTo: global.location.origin + global.location.pathname, data: { display_name: String(displayName || '').trim() } }
       });
       if (error) return failed(error, 'Cloud account registration failed.');
+      if (data.session && data.user) {
+        const profile = await ensureProfile(data.user, displayName);
+        if (!profile.ok) return profile;
+      }
       return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, needsEmailConfirmation: !data.session };
     } catch (error) { return failed(error, 'Cloud account registration failed.'); }
   }
@@ -27,8 +41,17 @@
     try {
       const { data, error } = await client().auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: String(password) });
       if (error) return failed(error, 'Cloud sign-in failed.');
+      const profile = await ensureProfile(data.user);
+      if (!profile.ok) return profile;
       return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session };
     } catch (error) { return failed(error, 'Cloud sign-in failed.'); }
+  }
+  async function initializeSignedInProfile() {
+    try {
+      const { data, error } = await client().auth.getUser();
+      if (error) return failed(error, 'Could not verify the signed-in cloud account.');
+      return ensureProfile(data.user);
+    } catch (error) { return failed(error, 'Could not initialize the cloud profile.'); }
   }
   async function requestPasswordReset(email) {
     if (!email) return { ok: false, error: 'Enter your email address.' };
@@ -90,5 +113,5 @@
       return error ? failed(error, 'Could not check authentication assurance.') : { ok: true, currentLevel: data.currentLevel, nextLevel: data.nextLevel, currentAuthenticationMethods: data.currentAuthenticationMethods || [] };
     } catch (error) { return failed(error, 'Could not check authentication assurance.'); }
   }
-  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, requestPasswordReset, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
+  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, initializeSignedInProfile, ensureProfile, requestPasswordReset, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
 })(window);
