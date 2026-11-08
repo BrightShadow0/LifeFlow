@@ -19,7 +19,15 @@ function harness(shared = { rows: [] }, userId = 'user-a') {
       const query = {
         select() { return query; },
         eq(key, value) { filters.push([key, value]); return query; },
-        maybeSingle: async () => {\n          if (mode === 'update') {\n            const row = rows.find(matches);\n            if (!row) return { data: null, error: null };\n            Object.assign(row, values, { updated_at: new Date().toISOString() });\n            return { data: { revision: row.revision, updated_at: row.updated_at }, error: null };\n          }\n          return { data: rows.find(matches) || null, error: null };\n        },
+        maybeSingle: async () => {
+          if (mode === 'update') {
+            const row = rows.find(matches);
+            if (!row) return { data: null, error: null };
+            Object.assign(row, values, { updated_at: new Date().toISOString() });
+            return { data: { revision: row.revision, updated_at: row.updated_at }, error: null };
+          }
+          return { data: rows.find(matches) || null, error: null };
+        },
         single: async () => {
           if (mode === 'insert') {
             if (rows.some(row => row.user_id === values.user_id)) return { data: null, error: { code: '23505', message: 'duplicate' } };
