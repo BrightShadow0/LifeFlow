@@ -2827,26 +2827,38 @@ async function deleteAccount(){
   const u = users[deletingEmail];
   if(u.passwordHash && !(await verifyPassword(passEl ? passEl.value : '', u))){ alert('Incorrect password for '+deletingEmail+'.'); return; }
   let permanentlyDeleted = false;
+  let alreadySignedOut = false;
   if(mode==='soft'){
     u.deletedAt = new Date(Date.now()+30*86400000).toISOString();
     saveUsers(users);
     alert(deletingEmail+' scheduled for deletion. Data is recoverable until '+new Date(u.deletedAt).toDateString()+'.');
   }else{
     if(!confirm('Permanently delete '+deletingEmail+' right now? The email becomes reusable immediately. There is no undo.')) return;
+    // Flush the active workspace first, then remove its vault snapshots so the
+    // logout flush cannot recreate a recovery copy for the deleted account.
+    doLogout();
+    alreadySignedOut = true;
+    delete users[deletingEmail];
+    saveUsers(users);
+    if(getUsers()[deletingEmail]){
+      alert('Delete failed - storage did not update. Your workspace data has been kept.');
+      return;
+    }
     const recoveryStatus=window.LifeFlowRecovery?.getStatus?.()||{};
     if(recoveryStatus.available){
       try { await window.LifeFlowRecovery.clearUser(deletingEmail); }
-      catch(error){alert('The account recovery data could not be removed, so the account has not been deleted. '+(error?.message||''));return;}
+      catch(error){
+        users[deletingEmail]=u;
+        saveUsers(users);
+        alert('The account recovery data could not be removed, so the account deletion was cancelled. '+(error?.message||''));
+        return;
+      }
     }
-    delete users[deletingEmail];
-    saveUsers(users);
-    permanentlyDeleted = !getUsers()[deletingEmail];
-    alert(permanentlyDeleted
-      ? deletingEmail+' permanently deleted. That email is free to sign up again.'
-      : 'Delete failed - storage did not update. Try Reset All App Data instead.');
+    permanentlyDeleted = true;
+    alert(deletingEmail+' permanently deleted. That email is free to sign up again.');
   }
-  // Sign-out flushes the active StateManager before we remove its account key.
-  doLogout();
+  // Sign out soft-deleted users after preserving their recoverable data.
+  if(!alreadySignedOut)doLogout();
   if(permanentlyDeleted){
     try{localStorage.removeItem(profileStateKey(deletingEmail));}catch(_){}
   }
