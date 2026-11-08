@@ -52,11 +52,12 @@ Supabase Auth manages TOTP factors and exposes enrollment, challenge, verify, an
 
 ## Current status
 
-- Database scaffold: committed.
-- Live Supabase project: not linked.
-- Database migration: not applied.
-- Browser client integration: not enabled.
-- Backend authentication migration: not enabled.
+- Database scaffold: committed and manually applied in the Supabase project.
+- Database tables and RLS enabled: visually verified in the dashboard.
+- Browser client connectivity: verified from LifeFlow's Security tab.
+- Supabase Auth service wrapper: loaded as a foundation, not yet wired to the login/signup forms.
+- Existing local authentication: remains active and unchanged.
+- Universal account migration: not enabled.
 - TOTP MFA UI/login enforcement: not enabled.
 - Encrypted cloud backup and sync: not enabled.
 
