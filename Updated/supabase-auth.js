@@ -88,7 +88,7 @@
     } catch (error) { return failed(error, 'Authenticator challenge failed.'); }
   }
   async function removeAuthenticator(factorId, code) {
-    if (!factorId || !/^\\d{6}$/.test(String(code || ''))) return { ok: false, error: 'Enter the six-digit authenticator code to remove this factor.' };
+    if (!factorId || !/^[0-9]{6}$/.test(String(code || ''))) return { ok: false, error: 'Enter the six-digit authenticator code to remove this factor.' };
     try {
       const api = client().auth.mfa;
       const challenge = await api.challenge({ factorId });
