@@ -1,0 +1,52 @@
+name: LifeFlow safety checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-and-storage-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check browser scripts
+        run: |
+          node --check Updated/script.js
+          node --check Updated/recovery.js
+          node --check Updated/auth.js
+          node --check Updated/tasks.js
+          node --check Updated/notes.js
+          node --check Updated/theme.js
+          node --check Updated/ui.js
+      - name: Check ES modules
+        run: |
+          node --input-type=module --check < Updated/state.js
+          node --input-type=module --check < Updated/migrations.js
+      - name: Verify storage and asset contracts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("Updated/workspace.html").read_text()
+          state = Path("Updated/state.js").read_text()
+          script = Path("Updated/script.js").read_text()
+          recovery = Path("Updated/recovery.js").read_text()
+          assert html.index('recovery.js?') < html.index('script.js?'), "Recovery module must load before workspace bootstrap"
+          assert "lifeflow2_state_" in state, "Existing account-scoped storage contract must remain"
+          assert "lifeflow2_users" in script, "Existing profile storage contract must remain"
+          assert "globalThis.LifeFlowRecovery" in state, "StateManager must call the recovery layer"
+          assert "before-archive-restore" in script, "Archive restore must create a safety checkpoint"
+          assert "MAX_SNAPSHOTS_PER_USER" in recovery, "Recovery retention limit must remain enabled"
+          assert "clearAll" in recovery, "Explicit reset must be able to clear the recovery vault"
+          print("LifeFlow storage and recovery contracts verified.")
+          PY
