@@ -532,6 +532,12 @@ async function handleCloudLoginAction(action){
       return;
     }
     setCloudAuthMessage('Cloud sign-in successful for '+(result.user?.email||fields.email)+'. Your existing local workspace remains separate.');
+  }else if(action==='verify-mfa'){
+    const code=document.getElementById('cloudLoginMfaCode')?.value||'';
+    const factorId=document.querySelector('#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';
+    const result=await api.verifyAuthenticator(factorId,code);
+    if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
   }else if(action==='signup'){
     if(!fields.email||!fields.password){setCloudAuthMessage('Enter an email address and password.',true);return;}
     setCloudAuthMessage('Creating cloud account…');
