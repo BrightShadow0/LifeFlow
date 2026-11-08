@@ -459,7 +459,17 @@ function initLoginAccessibility(){
       else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
-  document.addEventListener('click',event=>{
+    document.addEventListener('click',event=>{
+    const control=event.target.closest('[data-cloud-auth]');
+    if(!control)return;
+    const action=control.dataset.cloudAuth;
+    if(action==='toggle'){const panel=document.getElementById('cloudAuthPanel');if(panel)panel.hidden=!panel.hidden;return;}
+    handleCloudLoginAction(action).catch(error=>setCloudAuthMessage(error.message||'Cloud account action failed.',true));
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&event.target.closest('#cloudAuthPanel')&&event.target.matches('input')){event.preventDefault();handleCloudLoginAction('signin').catch(error=>setCloudAuthMessage(error.message,true));}
+  });
+document.addEventListener('click',event=>{
       const control=event.target.closest('[data-auth-action]');
       if(!control || !control.closest('#authScreen')) return;
       const handlers={
@@ -501,7 +511,75 @@ function initLoginAccessibility(){
   updateLoginCaptcha();
   startLoginLockCountdown();
 }
+
+function setCloudAuthMessage(message,isError=false){
+  const host=document.getElementById('cloudAuthMessage');if(!host)return;
+  host.textContent=message;host.classList.toggle('is-error',!!isError);host.setAttribute('role',isError?'alert':'status');
+}
+function cloudAuthCredentials(){
+  return {email:document.getElementById('cloudAuthEmail')?.value?.trim()||'',password:document.getElementById('cloudAuthPassword')?.value||'',displayName:document.getElementById('cloudAuthName')?.value?.trim()||''};
+}
+async function handleCloudLoginAction(action){
+  const api=window.LifeFlowCloudAuth;if(!api){setCloudAuthMessage('Cloud sign-in is unavailable. Check your connection and try again.',true);return;}
+  const fields=cloudAuthCredentials();
+  if(action==='signin'){
+    if(!fields.email||!fields.password){setCloudAuthMessage('Enter your email address and password.',true);return;}
+    setCloudAuthMessage('Signing in securely…');
+    const result=await api.signIn(fields);if(!result.ok)throw new Error(result.error);
+    if(result.requiresMfa){
+      const host=document.getElementById('cloudAuthMessage');
+      host.innerHTML='<p>Authenticator verification is required to finish signing in.</p><label for="cloudLoginMfaCode">Six-digit authenticator code</label><input id="cloudLoginMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"><button type="button" class="primary" data-cloud-auth="verify-mfa" data-factor-id="'+String(result.factorId).replace(/[^a-zA-Z0-9-]/g,'')+'">Verify and finish sign-in</button>';
+      return;
+    }
+    setCloudAuthMessage('Cloud sign-in successful for '+(result.user?.email||fields.email)+'. Your existing local workspace remains separate.');
+  }else if(action==='verify-mfa'){
+    const code=document.getElementById('cloudLoginMfaCode')?.value||'';
+    const result=await api.verifyAuthenticator(controlSafeFactorId(),code);
+    if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
+  }else if(action==='signup'){
+    if(!fields.email||!fields.password){setCloudAuthMessage('Enter an email address and password.',true);return;}
+    setCloudAuthMessage('Creating cloud account…');
+    const result=await api.signUp(fields);if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage(result.needsEmailConfirmation?'Account created. Check your inbox for the confirmation link, then return here to sign in. You can resend the email below.':'Cloud account created and signed in. Your local workspace remains separate.');
+  }else if(action==='reset'){
+    if(!fields.email){setCloudAuthMessage('Enter your email address first.',true);return;}
+    const result=await api.requestPasswordReset(fields.email);if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('If this email belongs to a cloud account, a password recovery link has been sent. Check your inbox.');
+  }else if(action==='resend'){
+    if(!fields.email){setCloudAuthMessage('Enter your email address first.',true);return;}
+    const result=await api.resendConfirmation(fields.email);if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('If confirmation is still pending, a new confirmation email has been requested.');
+  }else if(action==='verify-mfa'){
+    const code=document.getElementById('cloudLoginMfaCode')?.value||'';
+    const result=await api.verifyAuthenticator(control.dataset.factorId,code);if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
+  }else if(action==='complete-recovery'){
+    const password=document.getElementById('cloudRecoveryPassword')?.value||'';
+    const confirm=document.getElementById('cloudRecoveryConfirm')?.value||'';
+    if(password!==confirm)throw new Error('The passwords do not match.');
+    const result=await api.completePasswordRecovery(password);if(!result.ok)throw new Error(result.error);
+    setCloudAuthMessage('Cloud password updated. You can now sign in with your new password.');
+  }
+}
+function controlSafeFactorId(){return document.querySelector('#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';}
+function showCloudPasswordRecovery(){
+  const host=document.getElementById('cloudAuthMessage');if(!host)return;
+  host.innerHTML='<p>Choose a new password for your cloud account.</p><label for="cloudRecoveryPassword">New password</label><input id="cloudRecoveryPassword" type="password" autocomplete="new-password" minlength="8"><label for="cloudRecoveryConfirm">Confirm new password</label><input id="cloudRecoveryConfirm" type="password" autocomplete="new-password" minlength="8"><button type="button" class="primary" data-cloud-auth="complete-recovery">Update cloud password</button>';
+}
+function initializeCloudAuthCallbacks(){
+  const api=window.LifeFlowCloudAuth;if(!api||window.lfCloudAuthListenerBound)return;
+  window.lfCloudAuthListenerBound=true;
+  api.onAuthStateChange(({event})=>{
+    if(event==='PASSWORD_RECOVERY')showCloudPasswordRecovery();
+    else if(event==='SIGNED_OUT')setCloudAuthMessage('Cloud account signed out. Your local workspace is unchanged.');
+  });
+  const hash=window.location.hash||'';
+  if(/type=recovery|access_token=/.test(hash)&&/type=recovery/.test(hash))showCloudPasswordRecovery();
+}
+
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
+document.addEventListener('DOMContentLoaded',initializeCloudAuthCallbacks);
 
 const AUTO_LOGOUT_ACTIVITY_KEY='lifeflow2_last_activity';
 let autoLogoutMonitorTimer=null;
