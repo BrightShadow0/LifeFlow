@@ -121,8 +121,13 @@ export class StateManager {
       const migrated = { ...base, ...legacy, currentUser: email };
       // Preserve the old migration behaviour: copy the legacy profile into
       // its account-scoped key. The debounced writer handles future changes.
-      try { this.#storage.setItem(profileStateKey(email), JSON.stringify(migrated)); }
-      catch (_) { /* Storage may be full or unavailable; keep the in-memory state. */ }
+      try {
+        this.#storage.setItem(profileStateKey(email), JSON.stringify(migrated));
+        const recovery = globalThis.LifeFlowRecovery;
+        if (typeof recovery?.capture === 'function') {
+          Promise.resolve(recovery.capture({ user: email, state: migrated, source: 'legacy-migration', force: true })).catch(() => {});
+        }
+      } catch (_) { /* Storage may be full or unavailable; keep the in-memory state. */ }
       return migrated;
     }
 
@@ -230,15 +235,33 @@ export class StateManager {
     const key = this.#storageKey();
     if (!key) return false;
 
+    let saved = false;
     try {
       if (this.#saveStateAdapter) {
-        return this.#saveStateAdapter(clone(this.#state), this.#state.currentUser, this.#storage) !== false;
+        saved = this.#saveStateAdapter(clone(this.#state), this.#state.currentUser, this.#storage) !== false;
+      } else {
+        this.#storage.setItem(key, JSON.stringify(this.#state));
+        saved = true;
       }
-      this.#storage.setItem(key, JSON.stringify(this.#state));
-      return true;
     } catch (_) {
       return false;
     }
+
+    // Keep a separate, rolling IndexedDB recovery copy after the primary
+    // localStorage write succeeds. Recovery failures never block normal saves.
+    if (saved && this.#state.currentUser && Array.isArray(this.#state.tasks)) {
+      const recovery = globalThis.LifeFlowRecovery;
+      if (typeof recovery?.capture === 'function') {
+        try {
+          Promise.resolve(recovery.capture({
+            user: this.#state.currentUser,
+            state: clone(this.#state),
+            source: 'automatic'
+          })).catch(() => {});
+        } catch (_) { /* Recovery is a secondary safety layer. */ }
+      }
+    }
+    return saved;
   }
 
   /**
