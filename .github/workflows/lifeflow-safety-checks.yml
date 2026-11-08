@@ -50,6 +50,13 @@ jobs:
           assert "MAX_SNAPSHOTS_PER_USER" in recovery, "Recovery retention limit must remain enabled"
           assert "clearAll" in recovery, "Explicit reset must be able to clear the recovery vault"
           assert "clearUser" in recovery, "Account deletion must remove that account's recovery points"
+          backup = Path("Updated/cloud-backup.js").read_text()
+          assert "AES-GCM" in backup and "PBKDF2" in backup, "Cloud backups must use authenticated client-side encryption"
+          assert "deleteBackup" in backup and "listBackups" in backup, "Cloud backup history must support listing and deletion"
+          assert "data-cloud-delete" in html and "data-cloud-restore" in html, "Cloud backup UI must expose management and restore"
+          assert "before-cloud-restore" in html and "checkpoint?.saved" in html, "Restore must require a successful local recovery checkpoint"
+          assert "Cloud account:" in html, "Backup history must identify its owning cloud account"
+          print("Release 9 encrypted backup management and restore contracts verified.")
           print("LifeFlow storage and recovery contracts verified.")
           PY
       - name: Verify migrations preserve existing workspace content
