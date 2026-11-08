@@ -17,12 +17,13 @@
       const { error } = await client().from('account_profiles').upsert({
         id: user.id,
         display_name: String(displayName || user.user_metadata?.display_name || '').trim()
-      }, { onConflict: 'id' });
+      }, { onConflict: 'id', ignoreDuplicates: true });
       return error ? failed(error, 'Cloud profile could not be initialized.') : { ok: true };
     } catch (error) { return failed(error, 'Cloud profile could not be initialized.'); }
   }
   async function signUp({ email, password, displayName } = {}) {
     if (!email || !password) return { ok: false, error: 'Enter an email address and password.' };
+    if (String(password).length < 8) return { ok: false, error: 'Use a password with at least eight characters.' };
     try {
       const { data, error } = await client().auth.signUp({
         email: String(email).trim().toLowerCase(), password: String(password),
@@ -59,6 +60,30 @@
       const { error } = await client().auth.resetPasswordForEmail(String(email).trim().toLowerCase(), { redirectTo: global.location.origin + global.location.pathname });
       return error ? failed(error, 'Password reset could not be requested.') : { ok: true };
     } catch (error) { return failed(error, 'Password reset could not be requested.'); }
+  }
+  async function resendConfirmation(email) {
+    if (!email) return { ok: false, error: 'Enter your email address.' };
+    try {
+      const { error } = await client().auth.resend({ type: 'signup', email: String(email).trim().toLowerCase(), options: { emailRedirectTo: global.location.origin + global.location.pathname } });
+      return error ? failed(error, 'Confirmation email could not be resent.') : { ok: true };
+    } catch (error) { return failed(error, 'Confirmation email could not be resent.'); }
+  }
+  async function completePasswordRecovery(password) {
+    return updatePassword(password);
+  }
+  async function challengeAuthenticator(factorId) {
+    if (!factorId) return { ok: false, error: 'Choose an authenticator factor.' };
+    try {
+      const { data, error } = await client().auth.mfa.challenge({ factorId });
+      return error ? failed(error, 'Authenticator challenge failed.') : { ok: true, challengeId: data.id };
+    } catch (error) { return failed(error, 'Authenticator challenge failed.'); }
+  }
+  async function removeAuthenticator(factorId) {
+    if (!factorId) return { ok: false, error: 'Choose an authenticator factor.' };
+    try {
+      const { error } = await client().auth.mfa.unenroll({ factorId });
+      return error ? failed(error, 'Authenticator could not be removed.') : { ok: true };
+    } catch (error) { return failed(error, 'Authenticator could not be removed.'); }
   }
   async function updatePassword(password) {
     if (!password || String(password).length < 8) return { ok: false, error: 'Use a password with at least eight characters.' };
@@ -113,5 +138,5 @@
       return error ? failed(error, 'Could not check authentication assurance.') : { ok: true, currentLevel: data.currentLevel, nextLevel: data.nextLevel, currentAuthenticationMethods: data.currentAuthenticationMethods || [] };
     } catch (error) { return failed(error, 'Could not check authentication assurance.'); }
   }
-  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, initializeSignedInProfile, ensureProfile, requestPasswordReset, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
+  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, initializeSignedInProfile, ensureProfile, requestPasswordReset, resendConfirmation, completePasswordRecovery, challengeAuthenticator, removeAuthenticator, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
 })(window);
