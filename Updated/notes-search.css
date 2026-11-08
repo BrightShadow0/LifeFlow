@@ -1,0 +1,7 @@
+/* Notes Manager: slightly roomier inner search field. */
+#app .notes-global-search input{
+  min-height:34px;
+  padding:6px 3px!important;
+  font-size:14px;
+  line-height:1.4;
+}
