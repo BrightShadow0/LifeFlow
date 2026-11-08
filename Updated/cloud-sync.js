@@ -162,11 +162,13 @@
       salt = row ? fromBase64(row.salt) : randomBytes(16);
       if (salt.length !== 16) throw new Error('Cloud workspace salt is invalid.');
       key = await deriveKey(passphrase, salt);
-      await storeDeviceKey(user.id, salt, key);
     }
     revision = row ? Number(row.revision) || 0 : 0;
     dirty = false;
+    // Verify an existing remote workspace before persisting this device key.
+    // A mistyped passphrase must never poison the device's remembered key.
     const workspace = row ? await decryptRow(row) : null;
+    if (passphrase) await storeDeviceKey(user.id, salt, key);
     return { ok: true, hasRemote: !!row, revision, workspace, account: user.email || user.id, deviceKeyStored: !!(await readDeviceKey(user.id)) };
   }
   async function resume() {
