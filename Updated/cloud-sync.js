@@ -236,6 +236,18 @@
     dirty = false;
     return { ok: true, workspace, revision, updatedAt: row.updated_at, account: user.email || user.id };
   }
+  async function forcePush(workspace) {
+    if (!user || !key) throw new Error('Cloud workspace sync is locked.');
+    const row = await readRemote();
+    if (!row) return create(workspace);
+    if (row.salt !== toBase64(salt)) throw new Error('The cloud workspace uses a different encryption key. This device cannot replace it.');
+    const expected = Number(row.revision);
+    if (!Number.isSafeInteger(expected) || expected < 1) throw new Error('The cloud workspace revision is invalid.');
+    const result = await writeEncrypted(workspace, expected, false);
+    if (result.ok) { revision = result.revision; dirty = false; }
+    else dirty = true;
+    return result;
+  }
   async function poll() {
     if (!user || !key) return { ok: false, locked: true };
     const row = await readRemote();
@@ -267,7 +279,7 @@
     timer = null; user = null; key = null; salt = null; revision = 0; dirty = false;
   }
   global.LifeFlowCloudSync = Object.freeze({
-    unlock, resume, create, push, pull, poll, schedulePush, setStatusHandler, getStatus,
+    unlock, resume, create, push, pull, poll, forcePush, schedulePush, setStatusHandler, getStatus,
     forgetDeviceKey, stop, version: VERSION
   });
 })(window);
