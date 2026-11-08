@@ -163,3 +163,11 @@ The current static GitHub Pages frontend uses browser JavaScript. Supabase's bro
 - The wrapper is loaded but is not yet connected to the visible login/signup forms and does not migrate or sync workspace data.
 - Do not announce universal accounts until Site URL/redirect URLs, email SMTP/delivery, signup confirmation, password recovery, account isolation, and multi-device workspace sync have been tested end to end.
 - TOTP operations are available only after a real Supabase-authenticated user session exists. Enrollment secrets/QR values must only be shown transiently to the signed-in user and never logged or stored in LifeFlow profile state.
+
+
+### Auth callback and profile initialization hardening
+
+- Enabled Supabase's PKCE callback detection so email confirmation and password recovery redirects can be exchanged for a managed Supabase session.
+- Added an idempotent own-profile upsert after a successful cloud sign-in or immediate confirmed signup. It writes only the authenticated user's UUID and display name to account_profiles, protected by the existing owner-only RLS policies.
+- Added an explicit profile initialization operation for a user returning from email confirmation. The caller must first verify the authenticated user through Supabase Auth.
+- These operations do not write workspace data or connect the cloud identity to the legacy local account store.
