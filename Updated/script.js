@@ -309,6 +309,9 @@ function initTaskEventDelegation(){
     else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
     else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
     else if(action==='check-cloud-connection') checkLifeFlowCloudConnection(control);
+    else if(action==='refresh-cloud-security') refreshLifeFlowCloudSecurity().catch(error=>showToast(error.message));
+    else if(action==='cloud-signout') window.LifeFlowCloudAuth?.signOut().then(result=>{if(!result.ok)showToast(result.error);else{showToast('Cloud account signed out');refreshLifeFlowCloudSecurity();}});
+    else if(action.startsWith('mfa-')) handleLifeFlowMfaAction(action,control).catch(error=>{const out=document.getElementById('cloudMfaStatus');if(out)out.textContent=error.message||'Authenticator operation failed.';});
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
     else if(action==='backup-master-archive') backupMasterArchive();
@@ -2300,12 +2303,59 @@ function renderAbout(){
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
 
+let lifeFlowPendingTotpFactorId=null;
 function renderSecurityTab(){
   const status=window.LifeFlowSupabase?.getStatus?.()||{configured:false,initialized:false,error:'Supabase client is unavailable.'};
-  return `<section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">RELEASE 7 · CLOUD FOUNDATION</span><h2>Cloud connection</h2></div><span class="cloud-status-pill" id="cloudConnectionBadge">${status.initialized?'SDK loaded':'Checking setup'}</span></div><p>LifeFlow is still local-first. This connection check only verifies that the Supabase database endpoint is reachable. It does not sign you in, upload workspace content or change your existing account.</p><div class="cloud-connection-status" id="cloudConnectionStatus" role="status" aria-live="polite">${status.error?'Connection setup issue: '+status.error:'Ready to run a safe database connectivity check.'}</div><button type="button" class="primary" data-lf-action="check-cloud-connection">Test database connection</button><small class="muted">The check reads only the account_profiles table structure with a one-row limit. With no Supabase user session, RLS should prevent access to private profile rows.</small></section>
-  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">ACCOUNT PROTECTION</span><h2>Two-factor authentication</h2></div><span class="cloud-status-pill is-pending">Not active</span></div><p>Optional authenticator-app 2FA is planned. It will be available after Supabase authentication is integrated and tested. Your current local sign-in is unchanged.</p><ul><li>Authenticator apps using time-based six-digit codes</li><li>Enrollment only when you choose to enable it</li><li>Server-enforced verification before protected workspace access</li></ul><p class="cloud-security-note">Do not treat this as enabled security yet. No 2FA setting is being stored or simulated.</p></section>
-  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">DATA PORTABILITY</span><h2>Encrypted cloud backup</h2></div><span class="cloud-status-pill is-pending">Not active</span></div><p>Cloud backup will remain opt-in. LifeFlow will encrypt workspace data on your device before sending ciphertext to Supabase. Until that workflow is implemented, continue using Master Archive and the local Recovery Vault.</p></section>`;
+  return `<section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">RELEASE 10 · CLOUD IDENTITY</span><h2>Cloud account security</h2></div><span class="cloud-status-pill" id="cloudConnectionBadge">${status.initialized?'SDK loaded':'Checking setup'}</span></div><p>Cloud identity is separate from your existing local LifeFlow account. Signing in here does not migrate or replace local workspace data.</p><div class="cloud-connection-status" id="cloudConnectionStatus" role="status" aria-live="polite">Check your cloud session and database connection.</div><div class="cloud-security-actions"><button type="button" class="primary" data-lf-action="refresh-cloud-security">Refresh cloud status</button><button type="button" class="secondary" data-lf-action="cloud-signout">Sign out of cloud account</button></div><small class="muted">Cloud sign-out does not sign you out of your local LifeFlow workspace.</small></section>
+  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">OPTIONAL PROTECTION</span><h2>Authenticator app (2FA)</h2></div><span class="cloud-status-pill is-pending" id="cloudMfaBadge">Checking status</span></div><p>Enroll an authenticator app using a six-digit time-based code. Enrollment is optional and managed by Supabase Auth. Do not share the setup secret or QR code.</p><div id="cloudMfaStatus" class="cloud-connection-status" role="status" aria-live="polite">Checking your cloud authentication session…</div><div class="cloud-security-actions"><button type="button" class="primary" data-lf-action="mfa-enroll">Set up authenticator</button><button type="button" class="secondary" data-lf-action="mfa-refresh">Refresh factors</button></div><div id="cloudMfaEnrollment" class="cloud-mfa-enrollment" hidden><p>Scan this QR code with your authenticator app, then enter its current six-digit code.</p><img id="cloudMfaQr" alt="Authenticator setup QR code" hidden><label for="cloudMfaCode">Six-digit verification code</label><input id="cloudMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000"><div class="cloud-security-actions"><button type="button" class="primary" data-lf-action="mfa-verify">Verify and enable</button><button type="button" class="secondary" data-lf-action="mfa-cancel">Cancel setup</button></div></div><div id="cloudMfaFactors" class="cloud-mfa-factors"></div><small class="muted">Users with a verified factor may need to complete an authenticator challenge when signing in. Keep a separate backup authenticator if you want an additional recovery method.</small></section>
+  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">DATA PORTABILITY</span><h2>Encrypted cloud backup</h2></div><span class="cloud-status-pill is-pending">Available in Data Management</span></div><p>Release 9 encrypted backup remains manual and opt-in. It is not automatic multi-device synchronization.</p></section>`;
 }
+async function refreshLifeFlowCloudSecurity(){
+  const output=document.getElementById('cloudConnectionStatus'),badge=document.getElementById('cloudConnectionBadge');
+  const mfaOutput=document.getElementById('cloudMfaStatus'),mfaBadge=document.getElementById('cloudMfaBadge');
+  const api=window.LifeFlowCloudAuth;
+  if(!api){if(output)output.textContent='Cloud authentication service is unavailable.';return;}
+  const [session,connection]=await Promise.all([api.getSession(),window.LifeFlowSupabase?.checkDatabaseReady?.()]);
+  if(output)output.textContent=session.ok&&session.session?'Signed in as '+session.session.email+'. Cloud identity is separate from this local workspace.':session.ok?'No cloud account is currently signed in.':session.error;
+  if(badge){badge.textContent=session.ok&&session.session?'Cloud session active':connection?.ready?'Connected, signed out':'Unavailable';badge.classList.toggle('is-connected',!!(session.ok&&session.session));}
+  if(!session.ok||!session.session){if(mfaOutput)mfaOutput.textContent='Sign in to your cloud account from the Login Terminal to manage authenticator factors.';if(mfaBadge)mfaBadge.textContent='Not signed in';return;}
+  const [factors,assurance]=await Promise.all([api.listAuthenticators(),api.assuranceLevel()]);
+  if(!factors.ok){if(mfaOutput)mfaOutput.textContent=factors.error;return;}
+  const verified=(factors.factors||[]).filter(f=>f.status==='verified');
+  if(mfaBadge)mfaBadge.textContent=verified.length?'Enabled':'Not enabled';
+  if(mfaOutput)mfaOutput.textContent=verified.length+' verified authenticator factor(s). Authentication assurance: '+(assurance.ok?assurance.currentLevel:'unavailable')+'.';
+  const host=document.getElementById('cloudMfaFactors');
+  if(host)host.innerHTML=verified.map(f=>'<div class="cloud-mfa-factor"><span>'+String(f.friendly_name||'Authenticator app').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))+'</span><button type="button" class="secondary" data-lf-action="mfa-remove" data-factor-id="'+String(f.id).replace(/[^a-zA-Z0-9-]/g,'')+'">Remove factor</button></div>').join('')||'<p class="muted">No verified authenticator is enrolled.</p>';
+}
+async function handleLifeFlowMfaAction(action,control){
+  const api=window.LifeFlowCloudAuth,output=document.getElementById('cloudMfaStatus'),enrollment=document.getElementById('cloudMfaEnrollment');
+  if(!api)throw new Error('Cloud authentication is unavailable.');
+  if(action==='mfa-enroll'){
+    const result=await api.enrollAuthenticator();if(!result.ok)throw new Error(result.error);
+    lifeFlowPendingTotpFactorId=result.factorId;
+    const qr=document.getElementById('cloudMfaQr');if(qr&&result.totp?.qrCode){qr.src=result.totp.qrCode;qr.hidden=false;}
+    if(enrollment)enrollment.hidden=false;
+    if(output)output.textContent='Authenticator setup started. Scan the QR code and verify a current six-digit code.';
+  }else if(action==='mfa-verify'){
+    const code=document.getElementById('cloudMfaCode')?.value||'';
+    const result=await api.verifyAuthenticator(lifeFlowPendingTotpFactorId,code);if(!result.ok)throw new Error(result.error);
+    lifeFlowPendingTotpFactorId=null;if(enrollment)enrollment.hidden=true;
+    if(output)output.textContent='Authenticator successfully verified and enabled.';
+    await refreshLifeFlowCloudSecurity();
+  }else if(action==='mfa-cancel'){
+    if(lifeFlowPendingTotpFactorId)await api.removeAuthenticator(lifeFlowPendingTotpFactorId);
+    lifeFlowPendingTotpFactorId=null;if(enrollment)enrollment.hidden=true;
+    const qr=document.getElementById('cloudMfaQr');if(qr){qr.removeAttribute('src');qr.hidden=true;}
+    if(output)output.textContent='Pending authenticator setup cancelled.';
+    await refreshLifeFlowCloudSecurity();
+  }else if(action==='mfa-remove'){
+    if(!window.confirm('Remove this verified authenticator factor? You may lose access if this is your only factor.'))return;
+    const result=await api.removeAuthenticator(control.dataset.factorId);if(!result.ok)throw new Error(result.error);
+    if(output)output.textContent='Authenticator factor removed.';
+    await refreshLifeFlowCloudSecurity();
+  }else if(action==='mfa-refresh'){await refreshLifeFlowCloudSecurity();}
+}
+
 async function checkLifeFlowCloudConnection(button){
   const output=document.getElementById('cloudConnectionStatus');
   const badge=document.getElementById('cloudConnectionBadge');
