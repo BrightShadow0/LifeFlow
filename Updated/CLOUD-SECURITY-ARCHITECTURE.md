@@ -193,3 +193,24 @@ The following encrypted-backup capabilities are implemented in the browser clien
 - The encryption KDF is PBKDF2 because it is available in the browser Web Crypto API without shipping an additional cryptographic implementation. Use a strong, unique passphrase; a memory-hard KDF migration would require a separately reviewed implementation and versioned compatibility path.
 - Supabase browser sessions are managed by the Supabase JS client and are accessible to application JavaScript. This is not an HttpOnly BFF session architecture.
 - No production penetration test, independent cryptographic audit, or full browser end-to-end test is implied by passing CI. Production SMTP and redirect configuration remain dashboard responsibilities.
+
+
+## Release 10 implementation status (2026-11-08)
+
+Release 10 connects the Supabase cloud identity service to the Login Terminal and account Security settings while preserving the legacy local account system.
+
+- Cloud signup validates an eight-character minimum password and reports when email confirmation is required. Users can request a confirmation resend from the cloud account panel.
+- Cloud password sign-in initializes the caller's own profile under the existing RLS policy and checks Supabase Auth assurance. If a verified TOTP factor makes AAL2 the next required level, the Login Terminal prompts for a six-digit code and completes a provider-issued challenge before reporting cloud sign-in complete.
+- Password reset requests use the configured Supabase redirect. A PASSWORD_RECOVERY auth event presents a new-password and confirmation form; the update is delegated to Supabase Auth.
+- The Security tab reports cloud session state, lists verified authenticator factors, supports optional TOTP enrollment with a transient QR code, verifies enrollment, and requires a current six-digit code before removing a verified factor. Pending enrollment can be cancelled.
+- Cloud sign-out affects the Supabase-managed cloud session only. It does not sign out the local LifeFlow workspace.
+- Automated Node tests cover signup validation, AAL2 challenge decisions, six-digit verification, guarded factor removal, failed verification, password reset, confirmation resend, and password update.
+
+### Release 10 boundaries and verification
+
+- The Supabase cloud identity remains separate from legacy local accounts. No automatic account linking, local workspace migration, or multi-device synchronization is performed in this release.
+- The browser app does not expose a server-side session or HttpOnly cookie. Supabase JS manages a browser-accessible session.
+- This implementation does not claim cross-device session listing/revocation or passkey support.
+- MFA challenge handling is wired for the cloud sign-in flow, but any future cloud data service that requires AAL2 must independently enforce that requirement through Supabase RLS policies or trusted server-side functions. A UI check alone is not a security boundary.
+- Email confirmation and password recovery delivery depend on the Supabase project's configured email provider, redirect allow-list, and rate limits. The built-in email sender is intended for testing and has low delivery limits; production launch requires a verified sender domain and transactional SMTP.
+- CI tests exercise provider behavior through mocks. They do not prove real email delivery, a live authenticator enrollment, production Supabase policy enforcement, or a complete browser end-to-end journey. Those require a real-account smoke test before public launch.
