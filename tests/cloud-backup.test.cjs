@@ -32,7 +32,7 @@ function harness() {
           return row ? { data: row, error: null } : { data: null, error: { message: 'not found' } };
         },
         then(resolve, reject) {
-          if (deleting) return Promise.resolve().then(() => resolve({ data: null, error: null }), reject);
+          if (deleting) { const index = rows.findIndex(item => filters.every(([key, value]) => item[key] === value)); if (index >= 0) rows.splice(index, 1); return Promise.resolve({ data: null, error: null }).then(resolve, reject); }
           const result = rows.filter(item => filters.every(([key, value]) => item[key] === value))
             .map(item => ({ id:item.id,label:item.label,created_at:item.created_at,payload_bytes:item.payload_bytes,encryption_version:item.encryption_version,workspace_schema_version:item.workspace_schema_version }));
           return Promise.resolve({ data: result, error: null }).then(resolve, reject);
