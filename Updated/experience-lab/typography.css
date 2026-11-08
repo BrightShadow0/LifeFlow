@@ -1,0 +1,77 @@
+/* LifeFlow experience site — global readability pass
+   Preserve display typography; lift microcopy and supporting UI text. */
+:root{--lf-type-scale:1.18}
+.site-header nav a,.header-status,.primary-link,.secondary-link,.text-link{font-size:10px}
+.brand{font-size:13px}
+.eyebrow,.section-index,.section-index b{font-size:10px}
+.hero-lede{font-size:16px;line-height:1.8}
+.hero-footnote{font-size:9px}
+.window-top>span,.mock-greeting>small,.mock-summary small,.task-head small,.mock-task em,.mock-bottom{font-size:8px}
+.mock-sidebar small{font-size:9px}
+.mock-sidebar b{font-size:11px}
+.mock-greeting p{font-size:11px}
+.mock-summary>div:first-child b{font-size:21px}
+.mock-summary>div:first-child b i{font-size:12px}
+.mock-summary>span{font-size:9px}
+.task-head b{font-size:12px}
+.mock-task>div b{font-size:11px}
+.mock-task>div small{font-size:9px}
+.float-card b{font-size:11px}
+.float-card small{font-size:9px}
+.visual-caption{font-size:9px}
+.kicker{font-size:10px}
+.statement-bottom p{font-size:15px}
+.statement-bottom span{font-size:10px}
+.section-heading>p{font-size:14px}
+.showcase-tab>span{font-size:10px}
+.showcase-tab>b{font-size:15px}
+.showcase-description>small{font-size:9px}
+.showcase-description p{font-size:13px;line-height:1.8}
+.preview-top{font-size:9px}
+.preview-bottom{font-size:8px}
+.focus-heading>small,.personal-copy>small{font-size:9px}
+.focus-heading p,.personal-copy p{font-size:12px}
+.focus-row b{font-size:11px}
+.focus-row small{font-size:9px}
+.focus-row>span{font-size:8px}
+.mini-cal-grid i{font-size:9px}
+.mini-cal-grid span{font-size:10px}
+.cal-legend{font-size:10px}
+.board-title span{font-size:8px}
+.board-column>small{font-size:8px}
+.board-column .board-card,.board-column>b{font-size:9px}
+.board-feedback{font-size:10px}
+.note-toolbar{font-size:8px}
+.note-content>small{font-size:8px}
+.note-content p{font-size:10px}
+.markdown-line{font-size:10px}
+.markdown-code{font-size:9px}
+.node{font-size:7px}
+.settings-title span,.setting-label{font-size:8px}
+.setting-row b{font-size:10px}
+.setting-row small{font-size:9px}
+.principle-grid article>small{font-size:11px}
+.principle-grid p{font-size:15px;line-height:1.7}
+.data-core b,.data-core span{font-size:8px}
+.data-chip{font-size:8px}
+.space-copy>p{font-size:14px;line-height:1.8}
+.site-footer>span,.site-footer>a:last-child{font-size:9px}
+
+/* Make interactive labels and compact controls readable without changing layout hierarchy. */
+button,.why-tab,.showcase-tab{ -webkit-tap-highlight-color:transparent }
+@media(max-width:850px){
+ .site-header nav a,.header-status,.primary-link,.secondary-link,.text-link{font-size:10px}
+ .hero-lede{font-size:15px}
+ .section-heading>p,.statement-bottom p,.principle-grid p,.space-copy>p{font-size:14px}
+ .showcase-tab>b{font-size:14px}
+ .showcase-description p{font-size:12px}
+ .preview-top{font-size:8px}
+ .preview-bottom{font-size:8px}
+}
+@media(max-width:520px){
+ .eyebrow,.section-index{font-size:9px}
+ .hero-lede{font-size:14px}
+ .statement-bottom p,.section-heading>p,.principle-grid p,.space-copy>p{font-size:13px}
+ .showcase-tab>b{font-size:13px}
+ .showcase-description p{font-size:12px}
+}
