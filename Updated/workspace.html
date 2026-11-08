@@ -6,7 +6,7 @@
 <title>LifeFlow Login Terminal</title>
 <link rel="icon" type="image/svg+xml" href="compass-mark.svg"><meta name="theme-color" content="#07111d">
 <link rel="stylesheet" href="style.css?v=20261108-release6-final1">
-<link rel="stylesheet" href="auth.css?v=20261107-auth-v23">
+<link rel="stylesheet" href="auth.css?v=20261108-release8-cloud-entry1">
 <link rel="stylesheet" href="brand.css?v=20261107-clean-lockup1">
 <link rel="stylesheet" href="notes-search.css?v=20261108-search-roomier1">
 </head>
@@ -36,6 +36,7 @@
       <button class="passkey-button" type="button" disabled aria-disabled="true" title="Server-side WebAuthn is not configured yet">Passkey sign-in · Coming soon</button>
       <div id="oauthNotice" class="notice auth-oauth-notice" role="status" aria-live="polite" hidden></div>
       <p class="auth-signup-prompt">New here? <button class="linklike" type="button" data-auth-action="start-signup">Create account</button></p>
+      <div class="cloud-auth-entry"><button type="button" class="linklike" data-cloud-auth="toggle">Use a universal cloud account</button><section id="cloudAuthPanel" class="cloud-auth-panel" hidden><div class="cloud-auth-heading"><strong>LifeFlow Cloud Account</strong><span>New universal account</span></div><p>Register or sign in with Supabase. This is separate from your existing local account and does not yet load or sync workspace data.</p><label for="cloudAuthEmail">EMAIL ADDRESS</label><input id="cloudAuthEmail" type="email" autocomplete="email" placeholder="you@example.com"><label for="cloudAuthPassword">PASSWORD</label><input id="cloudAuthPassword" type="password" autocomplete="current-password" placeholder="At least 8 characters"><label for="cloudAuthName">DISPLAY NAME <span>(for registration)</span></label><input id="cloudAuthName" type="text" autocomplete="name" placeholder="Your name"><div class="cloud-auth-actions"><button type="button" class="primary" data-cloud-auth="signin">Sign in to cloud</button><button type="button" class="secondary" data-cloud-auth="signup">Create cloud account</button><button type="button" class="linklike" data-cloud-auth="reset">Send password reset</button></div><div id="cloudAuthMessage" role="status" aria-live="polite" class="cloud-auth-message"></div></section></div>
     </div>
     <div id="stepSignup1" class="authstep">
       <div class="stepdots"><span class="on"></span><span></span><span></span></div>
@@ -119,8 +120,48 @@
 <script src="tasks.js?v=20261107-ui-decoupling-r1t3" defer></script>
 <script src="notes.js?v=20261108-version-history1" defer></script>
 <script src="ui.js?v=20261108-release4-performance1" defer></script>
-<script src="script.js?v=20261108-release7-cloudcheck1" defer></script>
+<script src="script.js?v=20261108-release8-cloud-entry1" defer></script>
 <script>
+  // Release 8: isolated cloud account entry. It never enters the legacy local workspace.
+  document.addEventListener('click', async function(event) {
+    var button = event.target.closest('[data-cloud-auth]');
+    if (!button) return;
+    var action = button.dataset.cloudAuth;
+    var panel = document.getElementById('cloudAuthPanel');
+    var message = document.getElementById('cloudAuthMessage');
+    if (action === 'toggle') { if (panel) panel.hidden = !panel.hidden; return; }
+    if (!message) return;
+    var email = (document.getElementById('cloudAuthEmail') || {}).value || '';
+    var password = (document.getElementById('cloudAuthPassword') || {}).value || '';
+    var displayName = (document.getElementById('cloudAuthName') || {}).value || '';
+    var controls = panel ? panel.querySelectorAll('button') : [];
+    controls.forEach(function(item){ item.disabled = true; });
+    message.textContent = 'Contacting Supabase securely…';
+    try {
+      var api = window.LifeFlowCloudAuth;
+      if (!api) throw new Error('Cloud authentication is still loading. Refresh and try again.');
+      var result;
+      if (action === 'signin') result = await api.signIn({email:email,password:password});
+      else if (action === 'signup') result = await api.signUp({email:email,password:password,displayName:displayName});
+      else if (action === 'reset') result = await api.requestPasswordReset(email);
+      else return;
+      if (!result.ok) throw new Error(result.error || 'The request could not be completed.');
+      if (action === 'signup') {
+        message.textContent = result.needsEmailConfirmation
+          ? 'Account request accepted. Check your email for the confirmation link. If no email arrives, email delivery must be configured in Supabase.'
+          : 'Cloud account created. Your cloud identity is ready, but workspace sync is not enabled yet.';
+      } else if (action === 'signin') {
+        message.textContent = 'Cloud sign-in successful for ' + (result.user && result.user.email ? result.user.email : email) + '. Your local workspace has not been migrated or loaded. Do not close this page until you have noted this status.';
+      } else {
+        message.textContent = 'If this email belongs to a cloud account, Supabase will send a password reset link. Check your inbox.';
+      }
+    } catch (error) {
+      message.textContent = error && error.message ? error.message : 'Cloud authentication failed. Please try again.';
+    } finally {
+      controls.forEach(function(item){ item.disabled = false; });
+    }
+  });
+
   // Capture auth interactions before any other handler or native form navigation.
   // Deferred scripts may still be downloading when the login form first becomes interactive.
   var lifeFlowLoginPending = false;
