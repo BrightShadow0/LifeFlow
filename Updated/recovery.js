@@ -230,6 +230,23 @@
     }
   }
 
+  async function clearUser(user) {
+    const account = String(user || '').trim().toLowerCase();
+    if (!account) return;
+    const db = await openDatabase();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.index('by-user').getAllKeys(account);
+      request.onsuccess = () => (request.result || []).forEach(id => store.delete(id));
+      request.onerror = () => reject(request.error || new Error('Could not locate this account’s recovery points.'));
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || new Error('Could not delete this account’s recovery points.'));
+      tx.onabort = () => reject(tx.error || new Error('Deleting this account’s recovery points was cancelled.'));
+    });
+    lastCaptureAt.delete(account);
+  }
+
   async function clearAll() {
     const db = await openDatabase();
     await new Promise((resolve, reject) => {
@@ -251,6 +268,7 @@
     list,
     get,
     summary,
+    clearUser,
     clearAll
   });
 })(window);
