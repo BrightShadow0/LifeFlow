@@ -87,10 +87,15 @@
       return error ? failed(error, 'Authenticator challenge failed.') : { ok: true, challengeId: data.id };
     } catch (error) { return failed(error, 'Authenticator challenge failed.'); }
   }
-  async function removeAuthenticator(factorId) {
-    if (!factorId) return { ok: false, error: 'Choose an authenticator factor.' };
+  async function removeAuthenticator(factorId, code) {
+    if (!factorId || !/^\\d{6}$/.test(String(code || ''))) return { ok: false, error: 'Enter the six-digit authenticator code to remove this factor.' };
     try {
-      const { error } = await client().auth.mfa.unenroll({ factorId });
+      const api = client().auth.mfa;
+      const challenge = await api.challenge({ factorId });
+      if (challenge.error) return failed(challenge.error, 'Authenticator challenge failed.');
+      const verified = await api.verify({ factorId, challengeId: challenge.data.id, code: String(code) });
+      if (verified.error) return failed(verified.error, 'Authenticator verification failed. The factor was not removed.');
+      const { error } = await api.unenroll({ factorId });
       return error ? failed(error, 'Authenticator could not be removed.') : { ok: true };
     } catch (error) { return failed(error, 'Authenticator could not be removed.'); }
   }
