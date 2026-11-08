@@ -316,6 +316,7 @@ function initTaskEventDelegation(){
     else if(action==='check-cloud-connection') checkLifeFlowCloudConnection(control);
     else if(action==='refresh-cloud-security') refreshLifeFlowCloudSecurity().catch(error=>showToast(error.message));
     else if(action==='cloud-signout') window.LifeFlowCloudAuth?.signOut().then(result=>{if(!result.ok)showToast(result.error);else{showToast('Cloud account signed out');refreshLifeFlowCloudSecurity();}});
+    else if(action.startsWith('cloud-sync-')) resolveCloudWorkspaceConflict(action).catch(error=>{setCloudWorkspaceStatus(error.message||'Cloud sync action failed.',true);showToast(error.message||'Cloud sync action failed.');});
     else if(action.startsWith('mfa-')) handleLifeFlowMfaAction(action,control).catch(error=>{const out=document.getElementById('cloudMfaStatus');if(out)out.textContent=error.message||'Authenticator operation failed.';});
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
@@ -727,7 +728,7 @@ async function resumeCloudWorkspaceSession(email){
     const remote=cloudWorkspaceLocalState(resumed.workspace,email,false);
     if(cloudWorkspaceHasContent(local)&&cloudWorkspaceDiffers(local,remote)){
       const useRemote=window.confirm('Your cloud workspace and this device’s saved copy are different. Load the cloud copy now? Your current local copy will be checkpointed.');
-      if(!useRemote){window.LifeFlowCloudSync.stop();sessionStorage.removeItem('lifeflow_cloud_workspace_session');return false;}
+      if(!useRemote){window.LifeFlowCloudSync.stop();sessionStorage.removeItem('lifeflow_cloud_workspace_session');destroySession();return false;}
       await checkpointCurrentCloudWorkspace('before-cloud-resume');
       lifeFlowCloudSyncApplying=true;
       try{window.LifeFlowWorkspaceData.replaceState(remote);state=window.LifeFlowWorkspaceData.getState();}
@@ -920,7 +921,13 @@ function resetAuthViewport(){
   document.body.scrollTop=0;
 }
 function doLogout(){
+  const wasCloudWorkspace=lifeFlowCloudWorkspaceActive||!!sessionStorage.getItem('lifeflow_cloud_workspace_session');
   try{save();lifeFlowTaskStateManager?.flush?.();lifeFlowProfileManager?.flush?.();}catch(error){console.warn('LifeFlow could not flush all pending changes before logout:',error);}
+  if(wasCloudWorkspace){
+    stopCloudWorkspaceSync();
+    sessionStorage.removeItem('lifeflow_cloud_workspace_session');
+    window.LifeFlowCloudAuth?.signOut?.().catch(error=>console.warn('Cloud sign-out failed:',error));
+  }
   stopAutoLogoutMonitor();
   if(lifeFlowAuthController) lifeFlowAuthController.doLogout();
   else destroySession();
@@ -1062,6 +1069,13 @@ async function initializeTaskArchitecture() {
       }
     }
   }));
+  ['tasks','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery'].forEach(key=>{
+    lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key,()=>{
+      if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||lifeFlowCloudSyncConflict||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
+      const snapshot=lifeFlowTaskStateManager.getState();
+      window.LifeFlowCloudSync?.schedulePush?.(cloudWorkspacePayload(snapshot,snapshot.currentUser));
+    }));
+  });
   const session = getSession();
   if (session?.email) {
     lifeFlowTaskStateManager.switchUser(session.email);
@@ -3165,6 +3179,13 @@ function renderDataManagementTab(){
       </div>
       <small class="recovery-vault-note">Recovery points stay in this browser profile. They are not cloud backups and will not protect against losing the device, uninstalling the browser or manually clearing site data. Keep a separate archive somewhere safe.</small>
     </div>
+    <div class="cloud-sync-panel">
+      <div class="recovery-vault-heading"><div><span class="custom-kicker">RELEASE 11 · GLOBAL WORKSPACE</span><h3>Encrypted Multi-Device Sync</h3></div><span class="recovery-vault-badge">End-to-end encrypted</span></div>
+      <p>Your cloud account keeps one encrypted workspace shared across your devices. Changes sync automatically while this device is online. Use the same sync passphrase on every device. Concurrent edits are detected instead of silently overwritten.</p>
+      <div id="cloudWorkspaceSyncStatus" class="cloud-backup-status" role="status" aria-live="polite">${lifeFlowCloudWorkspaceActive?'Connected · encrypted workspace revision '+(window.LifeFlowCloudSync?.getStatus?.().revision||0):'Sign in using Universal Cloud Login to connect this workspace.'}</div>
+      <div class="cloud-backup-actions"><button type="button" class="primary" data-lf-action="cloud-sync-now">Sync now</button><button type="button" class="secondary" data-lf-action="cloud-sync-use-remote">Use latest cloud copy</button><button type="button" class="secondary" data-lf-action="cloud-sync-publish-local">Replace cloud with this device</button></div>
+      <small class="recovery-vault-note">Your cloud data is encrypted before upload. LifeFlow cannot recover a forgotten sync passphrase. The local Recovery Vault remains available as a separate on-device safety layer.</small>
+    </div>
     <div class="cloud-backup-panel">
       <div class="recovery-vault-heading"><div><span class="custom-kicker">RELEASE 9 · OPT-IN CLOUD PROTECTION</span><h3>Encrypted Cloud Backup</h3></div><span class="recovery-vault-badge">Client-side encryption</span></div>
       <p>Your workspace is encrypted in this browser before upload. Supabase stores ciphertext only. Use a separate passphrase that you can safely retain. LifeFlow cannot reset it or decrypt your backups for you.</p>
@@ -3316,6 +3337,9 @@ window.handleOAuthCallback = handleOAuthCallback;
   if(session && document.getElementById('app').classList.contains('lifeflow-stage-hidden')){
     normalizeDemoProfile(session.email);
     state.currentUser = session.email;
-    enterApp();
+    if(sessionStorage.getItem('lifeflow_cloud_workspace_session')){
+      const resumed=await resumeCloudWorkspaceSession(session.email);
+      if(resumed)enterApp();
+    }else enterApp();
   }
 })();
