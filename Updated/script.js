@@ -344,6 +344,7 @@ function initTaskEventDelegation(){
     else if(action==='interactive-atmosphere') setInteractiveAtmosphere(control.checked);
     else if(action==='ambient-mode') updateAmbientMode(control.checked);
     else if(action==='toggle-connected') toggleConnected(control.dataset.provider);
+    else if(action==='auto-logout') saveAutoLogoutPreference(control.value);
   });
   document.addEventListener('keydown',event=>{
     const control=event.target.closest('[data-lf-keydown]');
@@ -493,6 +494,83 @@ function initLoginAccessibility(){
 }
 document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
+const AUTO_LOGOUT_ACTIVITY_KEY='lifeflow2_last_activity';
+let autoLogoutMonitorTimer=null;
+let autoLogoutLastActivity=0;
+let autoLogoutOverlay=null;
+let autoLogoutActivityBound=false;
+function autoLogoutLimitMs(){
+  const value=currentUser()?.autoLogoutMinutes??30;
+  if(value==='never')return Infinity;
+  const minutes=Number(value);
+  return [10,15,30,60].includes(minutes)?minutes*60000:30*60000;
+}
+function recordAutoLogoutActivity(){
+  if(!getSession()||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
+  autoLogoutLastActivity=Date.now();
+  try{sessionStorage.setItem(AUTO_LOGOUT_ACTIVITY_KEY,String(autoLogoutLastActivity));}catch(_){}
+  if(autoLogoutOverlay)hideAutoLogoutReminder();
+}
+function ensureAutoLogoutReminder(){
+  if(autoLogoutOverlay?.isConnected)return autoLogoutOverlay;
+  const overlay=document.createElement('div');
+  overlay.id='autoLogoutReminder';
+  overlay.className='auto-logout-overlay';
+  overlay.hidden=true;
+  overlay.innerHTML='<section class="auto-logout-dialog" role="dialog" aria-modal="true" aria-labelledby="autoLogoutTitle" aria-describedby="autoLogoutDescription"><div class="auto-logout-eyebrow"><span class="auto-logout-mark" aria-hidden="true">◈</span><span>SESSION REMINDER</span></div><h2 id="autoLogoutTitle">Still there?</h2><p id="autoLogoutDescription">You’ve been inactive for a while. For your security, LifeFlow will log you out soon.</p><div class="auto-logout-countdown"><strong id="autoLogoutCountdown">01:00</strong><span>Time remaining before logout</span></div><button type="button" class="primary auto-logout-stay" data-auto-logout-stay>I'm still here</button><p class="auto-logout-footnote">Otherwise, you'll be automatically logged out.</p></section>';
+  document.body.appendChild(overlay);
+  overlay.querySelector('[data-auto-logout-stay]')?.addEventListener('click',recordAutoLogoutActivity);
+  autoLogoutOverlay=overlay;
+  return overlay;
+}
+function hideAutoLogoutReminder(){
+  if(!autoLogoutOverlay)return;
+  autoLogoutOverlay.hidden=true;
+  autoLogoutOverlay.classList.remove('is-visible');
+}
+function showAutoLogoutReminder(seconds){
+  const overlay=ensureAutoLogoutReminder();
+  const countdown=overlay.querySelector('#autoLogoutCountdown');
+  const remaining=Math.max(0,Math.ceil(seconds));
+  if(countdown)countdown.textContent=String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0');
+  if(overlay.hidden){overlay.hidden=false;requestAnimationFrame(()=>overlay.classList.add('is-visible'));}
+}
+function autoLogoutTick(){
+  if(!getSession()||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden')){hideAutoLogoutReminder();return;}
+  const limit=autoLogoutLimitMs();
+  if(limit===Infinity){hideAutoLogoutReminder();return;}
+  const remaining=limit-(Date.now()-autoLogoutLastActivity);
+  if(remaining<=0){hideAutoLogoutReminder();doLogout();showToast('You were logged out after a period of inactivity.');return;}
+  if(remaining<=60000)showAutoLogoutReminder(remaining/1000);
+  else hideAutoLogoutReminder();
+}
+function startAutoLogoutMonitor(){
+  if(!autoLogoutActivityBound){
+    const activityEvents=['pointerdown','pointermove','keydown','input','change','scroll','touchstart','wheel'];
+    activityEvents.forEach(type=>document.addEventListener(type,recordAutoLogoutActivity,{capture:true,passive:type==='scroll'||type==='touchstart'||type==='wheel'}));
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoLogoutTick();});
+    autoLogoutActivityBound=true;
+  }
+  try{autoLogoutLastActivity=Number(sessionStorage.getItem(AUTO_LOGOUT_ACTIVITY_KEY))||Date.now();}catch(_){autoLogoutLastActivity=Date.now();}
+  if(!autoLogoutLastActivity)autoLogoutLastActivity=Date.now();
+  if(autoLogoutMonitorTimer)clearInterval(autoLogoutMonitorTimer);
+  autoLogoutMonitorTimer=setInterval(autoLogoutTick,1000);
+  autoLogoutTick();
+}
+function stopAutoLogoutMonitor(){
+  if(autoLogoutMonitorTimer){clearInterval(autoLogoutMonitorTimer);autoLogoutMonitorTimer=null;}
+  hideAutoLogoutReminder();
+  try{sessionStorage.removeItem(AUTO_LOGOUT_ACTIVITY_KEY);}catch(_){}
+  autoLogoutLastActivity=0;
+}
+function saveAutoLogoutPreference(value){
+  const normalized=value==='never'?'never':([10,15,30,60].includes(Number(value))?Number(value):30);
+  updateUser(user=>{user.autoLogoutMinutes=normalized;});
+  recordAutoLogoutActivity();
+  showToast('Auto logout preference saved');
+  autoLogoutTick();
+}
+
 function enterApp(){
   if(lifeFlowTaskStateManager){
     lifeFlowTaskStateManager.switchUser(state.currentUser || null);
@@ -510,6 +588,7 @@ function enterApp(){
   document.getElementById('app').classList.remove('lifeflow-stage-hidden');
   window.lifeFlowLoginEntry=true;
   renderApp();
+  startAutoLogoutMonitor();
 }
 function resetAuthViewport(){
   window.scrollTo(0,0);
@@ -518,6 +597,8 @@ function resetAuthViewport(){
   document.body.scrollTop=0;
 }
 function doLogout(){
+  try{save();lifeFlowTaskStateManager?.flush?.();lifeFlowProfileManager?.flush?.();}catch(error){console.warn('LifeFlow could not flush all pending changes before logout:',error);}
+  stopAutoLogoutMonitor();
   if(lifeFlowAuthController) lifeFlowAuthController.doLogout();
   else destroySession();
   if(lifeFlowTaskStateManager) lifeFlowTaskStateManager.switchUser(null);
@@ -2359,6 +2440,11 @@ function renderProfileTab(u){
     <input id="prof_name" value="${esc(u.name)}" placeholder="Display name">
     <button class="primary account-action-spaced" data-lf-action="save-profile">Save</button>
   </div>
+  <div class="card auto-logout-settings">
+    <div class="custom-section-head"><div><h2>Auto Logout</h2><p>Choose how long LifeFlow can remain inactive before signing you out.</p></div></div>
+    <label class="auto-logout-field" for="profileAutoLogout"><span><strong>Automatically log out after</strong><small>Your preference is saved to this account.</small></span><select id="profileAutoLogout" class="profile-select" data-lf-change="auto-logout"><option value="10" ${Number(u.autoLogoutMinutes??30)===10?'selected':''}>10 minutes</option><option value="15" ${Number(u.autoLogoutMinutes??30)===15?'selected':''}>15 minutes</option><option value="30" ${Number(u.autoLogoutMinutes??30)===30?'selected':''}>30 minutes</option><option value="60" ${Number(u.autoLogoutMinutes??30)===60?'selected':''}>1 hour</option><option value="never" ${u.autoLogoutMinutes==='never'?'selected':''}>Never</option></select></label>
+    <p class="auto-logout-help">A reminder appears 60 seconds before logout. Choose “I'm still here” to continue your session.</p>
+  </div>
   <div class="card">
     <h2>Localization</h2>
     <div class="lf-secret-field ${s.languageRevealed?'revealed':''}">
@@ -2658,6 +2744,7 @@ window.handleOAuthCallback = handleOAuthCallback;
     showToast('Some workspace features could not be initialized. Please refresh the workspace.');
   }
   lifeFlowCoreReady = true;
+  startAutoLogoutMonitor();
   initAuthTheme();
   initAppThemeSync();
   renderOAuthButtons();
