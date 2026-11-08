@@ -72,6 +72,11 @@ let view = 'today';
 let calMonth = new Date().getMonth(), calYear = new Date().getFullYear();
 let calendarMode = 'month';
 let taskMasterActivationActive = false;
+let lifeFlowCloudWorkspaceActive=false;
+let lifeFlowCloudSyncApplying=false;
+let lifeFlowCloudSyncPoller=null;
+let lifeFlowCloudSyncConflict=false;
+let pendingCloudLoginUser=null;
 
 function load(){ return loadForUser(state?.currentUser || storedSessionEmail()); }
 function save(){
@@ -512,6 +517,231 @@ document.addEventListener('click',event=>{
   startLoginLockCountdown();
 }
 
+function cloudWorkspaceHasContent(snapshot){
+  if(!snapshot)return false;
+  return ['tasks','notes','codeNotes','noteLinks'].some(key=>Array.isArray(snapshot[key])&&snapshot[key].length>0);
+}
+function cloudWorkspacePayload(snapshot,email){
+  const users=getUsers(),profile=users[email]||{};
+  const fields=['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'];
+  const accountProfile={};
+  fields.forEach(key=>{if(Object.prototype.hasOwnProperty.call(profile,key))accountProfile[key]=profile[key];});
+  return {...snapshot,currentUser:email,__lifeFlowAccountProfile:accountProfile};
+}
+function cloudWorkspaceLocalState(payload,email){
+  const workspace={...(payload||{}),currentUser:email};
+  const accountProfile=workspace.__lifeFlowAccountProfile||{};
+  delete workspace.__lifeFlowAccountProfile;
+  const users=getUsers(),profile=users[email]||newUserRecord(email);
+  Object.keys(accountProfile).forEach(key=>{
+    if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'].includes(key))profile[key]=accountProfile[key];
+  });
+  profile.cloudWorkspaceLinked=true;
+  users[email]=profile;
+  saveUsers(users);
+  return workspace;
+}
+function cloudWorkspaceDiffers(left,right){
+  const clean=value=>{const copy={...(value||{})};delete copy.currentUser;delete copy.__lifeFlowSchemaVersion;return JSON.stringify(copy);};
+  return clean(left)!==clean(right);
+}
+function setCloudWorkspaceStatus(message,isError=false){
+  const node=document.getElementById('cloudWorkspaceSyncStatus');
+  if(node){node.textContent=message;node.classList.toggle('is-error',!!isError);}
+}
+async function checkpointCurrentCloudWorkspace(source){
+  const snapshot=window.LifeFlowWorkspaceData?.getState?.();
+  const email=snapshot?.currentUser||state?.currentUser;
+  if(!snapshot||!email||!window.LifeFlowRecovery?.capture)throw new Error('Local recovery protection is unavailable. Workspace sync was stopped.');
+  const checkpoint=await window.LifeFlowRecovery.capture({user:email,state:snapshot,source:source||'before-cloud-sync-restore',force:true});
+  if(!checkpoint?.saved)throw new Error('A local recovery checkpoint could not be confirmed. Your current workspace was not replaced.');
+  return snapshot;
+}
+async function applyCloudWorkspaceSnapshot(payload,source){
+  const email=state?.currentUser;
+  if(!email||!window.LifeFlowWorkspaceData?.replaceState)throw new Error('Local workspace is not ready to receive cloud data.');
+  await checkpointCurrentCloudWorkspace(source||'before-cloud-sync-restore');
+  const next=cloudWorkspaceLocalState(payload,email);
+  lifeFlowCloudSyncApplying=true;
+  try{
+    window.LifeFlowWorkspaceData.replaceState(next);
+    state=window.LifeFlowWorkspaceData.getState();
+  }finally{lifeFlowCloudSyncApplying=false;}
+  return state;
+}
+async function finishCloudWorkspaceLogin(cloudUser){
+  const sync=window.LifeFlowCloudSync;
+  if(!sync)throw new Error('The encrypted workspace sync service did not load. Refresh and try again.');
+  if(!lifeFlowCoreReady||!lifeFlowTaskStateManager)throw new Error('LifeFlow is still initializing. Try signing in again shortly.');
+  const email=String(cloudUser?.email||'').trim().toLowerCase();
+  if(!email||!cloudUser?.id)throw new Error('Supabase did not return a verified cloud identity.');
+  const users=getUsers(),existing=users[email];
+  if(existing?.deletedAt)throw new Error('This local profile is marked for deletion. Restore it through the existing local account flow before linking it.');
+  if(existing?.cloudIdentityId&&existing.cloudIdentityId!==cloudUser.id)throw new Error('This local profile is already linked to a different cloud identity.');
+  const profile=existing||newUserRecord(email,{name:cloudUser.user_metadata?.display_name||email.split('@')[0],verified:true});
+  profile.cloudIdentityId=cloudUser.id;
+  profile.cloudLinkedAt=profile.cloudLinkedAt||new Date().toISOString();
+  users[email]=profile;
+  saveUsers(users);
+
+  lifeFlowTaskStateManager.switchUser(email);
+  state=lifeFlowTaskStateManager.getState();
+  const localState=state;
+  const passphrase=document.getElementById('cloudWorkspacePassphrase')?.value||'';
+  const unlocked=passphrase.trim()?await sync.unlock(passphrase):await sync.resume();
+  if(unlocked.hasRemote){
+    const remoteState=cloudWorkspaceLocalState(unlocked.workspace,email);
+    if(cloudWorkspaceHasContent(localState)&&cloudWorkspaceDiffers(localState,remoteState)){
+      const useRemote=window.confirm('An encrypted cloud workspace already exists and this device has different local data. Use the cloud workspace on this device? A local Recovery Vault checkpoint will preserve the current device copy. Choose Cancel to stop cloud login and keep working locally.');
+      if(!useRemote){sync.stop();throw new Error('Cloud workspace loading was cancelled. Your local workspace has not been changed.');}
+    }
+    if(cloudWorkspaceDiffers(localState,remoteState)){
+      await checkpointCurrentCloudWorkspace('before-global-workspace-load');
+      lifeFlowCloudSyncApplying=true;
+      try{window.LifeFlowWorkspaceData.replaceState(remoteState);state=window.LifeFlowWorkspaceData.getState();}
+      finally{lifeFlowCloudSyncApplying=false;}
+    }
+  }else{
+    const description=cloudWorkspaceHasContent(localState)
+      ?'Import this device’s existing LifeFlow tasks, notes and folders into a new encrypted cloud workspace? This will make the same workspace available when you sign in on other devices.'
+      :'Create a new encrypted cloud workspace for this account?';
+    if(!window.confirm(description)){sync.stop();throw new Error('Cloud workspace creation was cancelled. No local data was uploaded.');}
+    const created=await sync.create(cloudWorkspacePayload(localState,email));
+    if(!created.ok)throw new Error(created.reason||'The cloud workspace could not be created.');
+  }
+  const savedState=window.LifeFlowWorkspaceData.getState();
+  state={...savedState,currentUser:email};
+  save();
+  lifeFlowTaskStateManager.flush();
+  const latestUsers=getUsers();
+  latestUsers[email].cloudIdentityId=cloudUser.id;
+  latestUsers[email].cloudWorkspaceLinked=true;
+  latestUsers[email].cloudWorkspaceRevision=sync.getStatus().revision;
+  saveUsers(latestUsers);
+  createSession(email,true);
+  sessionStorage.setItem('lifeflow_cloud_workspace_session',JSON.stringify({userId:cloudUser.id,email}));
+  const input=document.getElementById('cloudWorkspacePassphrase');if(input)input.value='';
+  lifeFlowCloudWorkspaceActive=true;
+  enterApp();
+  startCloudWorkspaceSync();
+  showToast('Your encrypted cloud workspace is ready on this device.');
+  setCloudWorkspaceStatus('Connected · encrypted workspace revision '+sync.getStatus().revision);
+}
+function stopCloudWorkspaceSync(){
+  if(lifeFlowCloudSyncPoller){clearInterval(lifeFlowCloudSyncPoller);lifeFlowCloudSyncPoller=null;}
+  lifeFlowCloudWorkspaceActive=false;
+  lifeFlowCloudSyncConflict=false;
+  window.LifeFlowCloudSync?.stop?.();
+}
+function startCloudWorkspaceSync(){
+  if(!window.LifeFlowCloudSync?.getStatus?.().unlocked)return;
+  if(lifeFlowCloudSyncPoller)clearInterval(lifeFlowCloudSyncPoller);
+  lifeFlowCloudWorkspaceActive=true;
+  lifeFlowCloudSyncConflict=false;
+  window.LifeFlowCloudSync.setStatusHandler(result=>{
+    if(result.state==='synced'){
+      const users=getUsers(),email=state?.currentUser;
+      if(email&&users[email]){users[email].cloudWorkspaceRevision=result.revision;saveUsers(users);}
+      setCloudWorkspaceStatus('All changes synced · revision '+result.revision);
+    }else if(result.state==='conflict'){
+      lifeFlowCloudSyncConflict=true;
+      setCloudWorkspaceStatus(result.reason||'Sync conflict detected. Choose which workspace copy to keep.',true);
+      showToast('Cloud workspace conflict detected. Open Data Management to resolve it.');
+    }else if(result.state==='error')setCloudWorkspaceStatus(result.error||'Cloud sync failed. Local changes are safe on this device.',true);
+  });
+  const check=async()=>{
+    if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||document.visibilityState==='hidden')return;
+    try{
+      const result=await window.LifeFlowCloudSync.poll();
+      if(result.changed){
+        await applyCloudWorkspaceSnapshot(result.workspace,'before-cloud-sync-update');
+        lifeFlowCloudSyncConflict=false;
+        const users=getUsers(),email=state?.currentUser;
+        if(email&&users[email]){users[email].cloudWorkspaceRevision=result.revision;saveUsers(users);}
+        setCloudWorkspaceStatus('Updated from another device · revision '+result.revision);
+        showToast('Your workspace was updated from another device.');
+      }else if(result.conflict){
+        lifeFlowCloudSyncConflict=true;
+        setCloudWorkspaceStatus(result.reason,true);
+      }else if(result.ok&&!window.LifeFlowCloudSync.getStatus().dirty){
+        setCloudWorkspaceStatus('Connected · all changes synced · revision '+result.revision);
+      }
+    }catch(error){setCloudWorkspaceStatus(error.message||'Cloud sync check failed.',true);}
+  };
+  lifeFlowCloudSyncPoller=setInterval(check,45000);
+  if(!window.lfCloudSyncVisibilityBound){
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check();});
+    window.lfCloudSyncVisibilityBound=true;
+  }
+  check();
+}
+async function resolveCloudWorkspaceConflict(action){
+  const sync=window.LifeFlowCloudSync;
+  if(!sync?.getStatus?.().unlocked)throw new Error('Cloud workspace sync is locked.');
+  if(action==='cloud-sync-use-remote'){
+    const remote=await sync.pull();
+    if(!remote.ok)throw new Error(remote.reason||'The cloud workspace could not be loaded.');
+    await applyCloudWorkspaceSnapshot(remote.workspace,'before-cloud-conflict-restore');
+    lifeFlowCloudSyncConflict=false;
+    setCloudWorkspaceStatus('Cloud version loaded · revision '+remote.revision);
+    return;
+  }
+  if(action==='cloud-sync-publish-local'){
+    if(!window.confirm('Replace the latest shared cloud workspace with this device’s current copy? Other devices will receive this version.'))return;
+    const snapshot=window.LifeFlowWorkspaceData.getState();
+    const result=await sync.forcePush(cloudWorkspacePayload(snapshot,state.currentUser));
+    if(!result.ok)throw new Error(result.reason||'The latest cloud revision changed again. Refresh and retry.');
+    lifeFlowCloudSyncConflict=false;
+    setCloudWorkspaceStatus('This device’s version is now shared · revision '+result.revision);
+    return;
+  }
+  const status=sync.getStatus();
+  if(status.dirty){
+    const result=await sync.push(cloudWorkspacePayload(window.LifeFlowWorkspaceData.getState(),state.currentUser));
+    if(!result.ok)throw new Error(result.reason||'The cloud workspace changed on another device.');
+    lifeFlowCloudSyncConflict=false;
+    setCloudWorkspaceStatus('All changes synced · revision '+result.revision);
+  }else{
+    const result=await sync.poll();
+    if(result.changed){await applyCloudWorkspaceSnapshot(result.workspace,'before-cloud-sync-update');setCloudWorkspaceStatus('Updated from cloud · revision '+result.revision);}
+    else if(result.conflict){lifeFlowCloudSyncConflict=true;setCloudWorkspaceStatus(result.reason,true);}
+    else setCloudWorkspaceStatus('Already up to date · revision '+status.revision);
+  }
+}
+async function resumeCloudWorkspaceSession(email){
+  const markerRaw=sessionStorage.getItem('lifeflow_cloud_workspace_session');
+  if(!markerRaw)return false;
+  let marker;try{marker=JSON.parse(markerRaw);}catch(_){sessionStorage.removeItem('lifeflow_cloud_workspace_session');return false;}
+  const authSession=await window.LifeFlowCloudAuth?.getSession?.();
+  if(!authSession?.ok||!authSession.session||authSession.session.email?.toLowerCase()!==String(email).toLowerCase()){
+    sessionStorage.removeItem('lifeflow_cloud_workspace_session');
+    destroySession();
+    return false;
+  }
+  try{
+    const resumed=await window.LifeFlowCloudSync.resume();
+    if(resumed.account?.toLowerCase&&resumed.account.toLowerCase()!==String(email).toLowerCase())throw new Error('The stored cloud account does not match this local workspace.');
+    const local=lifeFlowTaskStateManager.getState();
+    const remote=cloudWorkspaceLocalState(resumed.workspace,email);
+    if(cloudWorkspaceHasContent(local)&&cloudWorkspaceDiffers(local,remote)){
+      const useRemote=window.confirm('Your cloud workspace and this device’s saved copy are different. Load the cloud copy now? Your current local copy will be checkpointed.');
+      if(!useRemote){window.LifeFlowCloudSync.stop();sessionStorage.removeItem('lifeflow_cloud_workspace_session');return false;}
+      await checkpointCurrentCloudWorkspace('before-cloud-resume');
+      lifeFlowCloudSyncApplying=true;
+      try{window.LifeFlowWorkspaceData.replaceState(remote);state=window.LifeFlowWorkspaceData.getState();}
+      finally{lifeFlowCloudSyncApplying=false;}
+    }
+    lifeFlowCloudWorkspaceActive=true;
+    startCloudWorkspaceSync();
+    return true;
+  }catch(error){
+    window.LifeFlowCloudSync.stop();
+    sessionStorage.removeItem('lifeflow_cloud_workspace_session');
+    destroySession();
+    setCloudAuthMessage(error.message||'Cloud workspace could not be resumed. Sign in again to unlock it.',true);
+    return false;
+  }
+}
 function setCloudAuthMessage(message,isError=false){
   const host=document.getElementById('cloudAuthMessage');if(!host)return;
   host.textContent=message;host.classList.toggle('is-error',!!isError);host.setAttribute('role',isError?'alert':'status');
