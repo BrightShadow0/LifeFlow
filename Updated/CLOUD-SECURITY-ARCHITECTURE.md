@@ -171,3 +171,25 @@ The current static GitHub Pages frontend uses browser JavaScript. Supabase's bro
 - Added an idempotent own-profile upsert after a successful cloud sign-in or immediate confirmed signup. It writes only the authenticated user's UUID and display name to account_profiles, protected by the existing owner-only RLS policies.
 - Added an explicit profile initialization operation for a user returning from email confirmation. The caller must first verify the authenticated user through Supabase Auth.
 - These operations do not write workspace data or connect the cloud identity to the legacy local account store.
+
+
+## Release 9 implementation status (2026-11-08)
+
+The following encrypted-backup capabilities are implemented in the browser client:
+
+- AES-256-GCM authenticated encryption is performed before upload. The AES key is derived locally from a user-held passphrase using PBKDF2-HMAC-SHA-256 (600,000 iterations) and a fresh random 128-bit salt. Each backup uses a fresh 96-bit nonce.
+- The authenticated additional data binds the encrypted payload to the LifeFlow backup format/version, authenticated Supabase user ID, and workspace schema version.
+- The backup passphrase and derived key are never uploaded. Losing the passphrase means the backup cannot be decrypted.
+- Uploads are manual and opt-in. The client enforces a 25 MiB workspace payload ceiling and validates workspace collection shapes before encryption.
+- Backup history is scoped to the signed-in Supabase user. Users can list, restore, and permanently delete their own encrypted backups.
+- Restore verifies authenticated encryption, metadata, payload size, UTF-8/JSON validity, and workspace collection shapes before presenting a preview. It requires explicit confirmation and a successful same-device Recovery Vault checkpoint before replacing local workspace state.
+- Automated Node tests cover round-trip encryption, ciphertext secrecy, weak passphrases, malformed workspace state, wrong passphrases, ciphertext tampering, metadata tampering, account isolation, failed uploads, and deletion.
+
+### Release 9 boundaries and remaining platform limitations
+
+- This is encrypted cloud backup, not continuous synchronization. It does not merge concurrent edits or synchronize multiple devices automatically.
+- Cloud authentication remains a separate Supabase identity layer from the existing local LifeFlow login. Users must understand which cloud account owns a backup; creating a cloud identity does not migrate or link local accounts.
+- Recovery checkpointing during restore requires the existing local Recovery Vault to be available. If it cannot confirm a checkpoint, restore is stopped rather than replacing current data.
+- The encryption KDF is PBKDF2 because it is available in the browser Web Crypto API without shipping an additional cryptographic implementation. Use a strong, unique passphrase; a memory-hard KDF migration would require a separately reviewed implementation and versioned compatibility path.
+- Supabase browser sessions are managed by the Supabase JS client and are accessible to application JavaScript. This is not an HttpOnly BFF session architecture.
+- No production penetration test, independent cryptographic audit, or full browser end-to-end test is implied by passing CI. Production SMTP and redirect configuration remain dashboard responsibilities.
