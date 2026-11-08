@@ -1,0 +1,94 @@
+(function (global) {
+  'use strict';
+  // Provider-backed auth foundation. Existing local login remains active until
+  // the complete account and workspace migration is verified.
+  function client() {
+    const api = global.LifeFlowSupabase;
+    const instance = api && api.getClient && api.getClient();
+    if (!instance) throw new Error('Supabase is not available. Check the network and SDK loading.');
+    return instance;
+  }
+  function failed(error, fallback) {
+    return { ok: false, error: error && error.message ? error.message : fallback };
+  }
+  async function signUp({ email, password, displayName } = {}) {
+    if (!email || !password) return { ok: false, error: 'Enter an email address and password.' };
+    try {
+      const { data, error } = await client().auth.signUp({
+        email: String(email).trim().toLowerCase(), password: String(password),
+        options: { emailRedirectTo: global.location.origin + global.location.pathname, data: { display_name: String(displayName || '').trim() } }
+      });
+      if (error) return failed(error, 'Cloud account registration failed.');
+      return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, needsEmailConfirmation: !data.session };
+    } catch (error) { return failed(error, 'Cloud account registration failed.'); }
+  }
+  async function signIn({ email, password } = {}) {
+    if (!email || !password) return { ok: false, error: 'Enter your email address and password.' };
+    try {
+      const { data, error } = await client().auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: String(password) });
+      if (error) return failed(error, 'Cloud sign-in failed.');
+      return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session };
+    } catch (error) { return failed(error, 'Cloud sign-in failed.'); }
+  }
+  async function requestPasswordReset(email) {
+    if (!email) return { ok: false, error: 'Enter your email address.' };
+    try {
+      const { error } = await client().auth.resetPasswordForEmail(String(email).trim().toLowerCase(), { redirectTo: global.location.origin + global.location.pathname });
+      return error ? failed(error, 'Password reset could not be requested.') : { ok: true };
+    } catch (error) { return failed(error, 'Password reset could not be requested.'); }
+  }
+  async function updatePassword(password) {
+    if (!password || String(password).length < 8) return { ok: false, error: 'Use a password with at least eight characters.' };
+    try {
+      const { data, error } = await client().auth.updateUser({ password: String(password) });
+      if (error) return failed(error, 'Password update failed.');
+      return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null };
+    } catch (error) { return failed(error, 'Password update failed.'); }
+  }
+  async function signOut() {
+    try { const { error } = await client().auth.signOut({ scope: 'local' }); return error ? failed(error, 'Cloud sign-out failed.') : { ok: true }; }
+    catch (error) { return failed(error, 'Cloud sign-out failed.'); }
+  }
+  async function getSession() {
+    try {
+      const { data, error } = await client().auth.getSession();
+      if (error) return failed(error, 'Could not read the cloud session.');
+      const session = data.session;
+      return { ok: true, session: session ? { userId: session.user.id, email: session.user.email, expiresAt: session.expires_at || null } : null };
+    } catch (error) { return failed(error, 'Could not read the cloud session.'); }
+  }
+  function onAuthStateChange(callback) {
+    if (typeof callback !== 'function') return () => {};
+    const { data } = client().auth.onAuthStateChange((event, session) => callback({
+      event, user: session && session.user ? { id: session.user.id, email: session.user.email } : null
+    }));
+    return () => data.subscription.unsubscribe();
+  }
+  async function enrollAuthenticator() {
+    try {
+      const { data, error } = await client().auth.mfa.enroll({ factorType: 'totp', friendlyName: 'LifeFlow authenticator' });
+      if (error) return failed(error, 'Authenticator enrollment could not start.');
+      return { ok: true, factorId: data.id, type: data.type, totp: data.totp ? { qrCode: data.totp.qr_code, secret: data.totp.secret, uri: data.totp.uri } : null };
+    } catch (error) { return failed(error, 'Authenticator enrollment could not start.'); }
+  }
+  async function verifyAuthenticator(factorId, code) {
+    if (!factorId || !/^\d{6}$/.test(String(code || ''))) return { ok: false, error: 'Enter the six-digit authenticator code.' };
+    try {
+      const api = client().auth.mfa, challenge = await api.challenge({ factorId });
+      if (challenge.error) return failed(challenge.error, 'Authenticator challenge failed.');
+      const result = await api.verify({ factorId, challengeId: challenge.data.id, code: String(code) });
+      return result.error ? failed(result.error, 'Authenticator verification failed.') : { ok: true };
+    } catch (error) { return failed(error, 'Authenticator verification failed.'); }
+  }
+  async function listAuthenticators() {
+    try { const { data, error } = await client().auth.mfa.listFactors(); return error ? failed(error, 'Could not list authenticator factors.') : { ok: true, factors: data.all || [] }; }
+    catch (error) { return failed(error, 'Could not list authenticator factors.'); }
+  }
+  async function assuranceLevel() {
+    try {
+      const { data, error } = await client().auth.mfa.getAuthenticatorAssuranceLevel();
+      return error ? failed(error, 'Could not check authentication assurance.') : { ok: true, currentLevel: data.currentLevel, nextLevel: data.nextLevel, currentAuthenticationMethods: data.currentAuthenticationMethods || [] };
+    } catch (error) { return failed(error, 'Could not check authentication assurance.'); }
+  }
+  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, requestPasswordReset, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
+})(window);
