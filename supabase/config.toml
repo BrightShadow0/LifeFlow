@@ -1,0 +1,4 @@
+# LifeFlow Supabase project configuration.
+# Link this local project with: supabase link --project-ref <project-ref>
+# Never put API keys, database passwords, or service-role secrets here.
+project_id = "lifeflow"
