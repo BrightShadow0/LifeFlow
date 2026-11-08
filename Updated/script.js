@@ -765,6 +765,17 @@ function updateWorkspaceState(patch) {
   save();
   return state;
 }
+window.LifeFlowWorkspaceData = Object.freeze({
+  getState: () => lifeFlowTaskStateManager ? lifeFlowTaskStateManager.getState() : state,
+  replaceState: next => {
+    if (!lifeFlowTaskStateManager) throw new Error('Workspace storage is not ready.');
+    lifeFlowTaskStateManager.replaceState(next);
+    state = lifeFlowTaskStateManager.getState();
+    lifeFlowTaskStateManager.flush();
+    renderApp();
+    return state;
+  }
+});
 
 
 let lifeFlowViewOrchestrator = null;
@@ -2802,6 +2813,16 @@ function renderDataManagementTab(){
         <button type="button" class="secondary" data-lf-action="enable-storage-protection">Enable browser storage protection</button>
       </div>
       <small class="recovery-vault-note">Recovery points stay in this browser profile. They are not cloud backups and will not protect against losing the device, uninstalling the browser or manually clearing site data. Keep a separate archive somewhere safe.</small>
+    </div>
+    <div class="cloud-backup-panel">
+      <div class="recovery-vault-heading"><div><span class="custom-kicker">RELEASE 9 · OPT-IN CLOUD PROTECTION</span><h3>Encrypted Cloud Backup</h3></div><span class="recovery-vault-badge">Client-side encryption</span></div>
+      <p>Your workspace is encrypted in this browser before upload. Supabase stores ciphertext only. Use a separate passphrase that you can safely retain. LifeFlow cannot reset it or decrypt your backups for you.</p>
+      <label class="cloud-backup-label" for="cloudBackupPassphrase">Backup passphrase</label>
+      <input id="cloudBackupPassphrase" class="cloud-backup-passphrase" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters">
+      <div class="cloud-backup-actions"><button type="button" class="primary" data-cloud-backup="create">Create encrypted backup</button><button type="button" class="secondary" data-cloud-backup="list">View cloud backups</button></div>
+      <div id="cloudBackupStatus" class="cloud-backup-status" role="status" aria-live="polite">Cloud backup is manual and opt-in. No workspace data is uploaded until you create a backup.</div>
+      <div id="cloudBackupList" class="cloud-backup-list"></div>
+      <small class="recovery-vault-note">Restore first decrypts and validates a selected backup. Your current workspace is not replaced unless you explicitly confirm. A local recovery checkpoint is created before restoration. Never lose the passphrase: it cannot be reset.</small>
     </div>
     <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
     <div class="master-secure-options"><label class="master-secure-toggle"><input id="masterArchiveSecure" type="checkbox"> <span>Secure Backup (password-protected)</span></label><div id="masterArchivePasswordFields" class="master-password-fields" hidden><label>Backup password<input id="masterArchivePassword" type="password" autocomplete="new-password" minlength="10" placeholder="At least 10 characters"></label><label>Confirm password<input id="masterArchivePasswordConfirm" type="password" autocomplete="new-password" minlength="10" placeholder="Re-enter backup password"></label><p class="master-encryption-warning">Critical: If you lose this password, your backup cannot be recovered. There is no reset password for encrypted files.</p></div></div><div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
