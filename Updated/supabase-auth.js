@@ -133,6 +133,13 @@
       return { ok: true, factorId: data.id, type: data.type, totp: data.totp ? { qrCode: data.totp.qr_code, secret: data.totp.secret, uri: data.totp.uri } : null };
     } catch (error) { return failed(error, 'Authenticator enrollment could not start.'); }
   }
+  async function cancelAuthenticatorEnrollment(factorId) {
+    if (!factorId) return { ok: false, error: 'Choose the pending authenticator factor.' };
+    try {
+      const { error } = await client().auth.mfa.unenroll({ factorId });
+      return error ? failed(error, 'Pending authenticator setup could not be cancelled.') : { ok: true };
+    } catch (error) { return failed(error, 'Pending authenticator setup could not be cancelled.'); }
+  }
   async function verifyAuthenticator(factorId, code) {
     if (!factorId || !/^\d{6}$/.test(String(code || ''))) return { ok: false, error: 'Enter the six-digit authenticator code.' };
     try {
@@ -152,5 +159,5 @@
       return error ? failed(error, 'Could not check authentication assurance.') : { ok: true, currentLevel: data.currentLevel, nextLevel: data.nextLevel, currentAuthenticationMethods: data.currentAuthenticationMethods || [] };
     } catch (error) { return failed(error, 'Could not check authentication assurance.'); }
   }
-  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, initializeSignedInProfile, ensureProfile, requestPasswordReset, resendConfirmation, completePasswordRecovery, challengeAuthenticator, removeAuthenticator, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, verifyAuthenticator, listAuthenticators, assuranceLevel });
+  global.LifeFlowCloudAuth = Object.freeze({ signUp, signIn, initializeSignedInProfile, ensureProfile, requestPasswordReset, resendConfirmation, completePasswordRecovery, challengeAuthenticator, removeAuthenticator, updatePassword, signOut, getSession, onAuthStateChange, enrollAuthenticator, cancelAuthenticatorEnrollment, verifyAuthenticator, listAuthenticators, assuranceLevel });
 })(window);
