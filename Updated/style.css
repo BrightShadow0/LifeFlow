@@ -4952,3 +4952,25 @@ body::-webkit-scrollbar-corner{
 .cloud-connection-status{margin:14px 0;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg);font-size:14px;line-height:1.5;}
 .cloud-security-note{padding:10px 12px;border-left:3px solid var(--warn);background:var(--accent-soft);border-radius:6px;}
 @media(max-width:600px){.cloud-security-card{padding:16px;}.cloud-security-head{gap:8px;}}
+
+/* Mermaid diagrams: inherit the active LifeFlow theme and remain readable in preview. */
+.md-preview .mermaid,
+.note-preview .mermaid,
+.mermaid{
+  max-width:100%;
+  overflow-x:auto;
+  background:transparent!important;
+  color:var(--text);
+}
+.mermaid svg{
+  display:block;
+  max-width:100%;
+  height:auto;
+  background:transparent!important;
+}
+.mermaid .edgeLabel,
+.mermaid .label,
+.mermaid .nodeLabel,
+.mermaid .cluster-label{
+  color:var(--text);
+}
