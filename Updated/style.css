@@ -4974,3 +4974,24 @@ body::-webkit-scrollbar-corner{
 .mermaid .cluster-label{
   color:var(--text);
 }
+
+
+/* Release 8: in-app release notes */
+#app .lf-releases{max-width:1040px;margin:0 auto;display:grid;gap:18px;color:var(--text)}
+#app .lf-release-hero{padding:24px 26px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(135deg,var(--surface-2),var(--panel2))}
+#app .lf-release-kicker,#app .lf-release-version{font-size:10px;font-weight:850;letter-spacing:.14em;color:var(--accent)}
+#app .lf-release-hero h2{margin:8px 0 5px;font-size:25px}
+#app .lf-release-hero p{margin:0;color:var(--muted);font-size:13px}
+#app .lf-release-card{padding:22px 24px;border:1px solid var(--border);border-radius:15px;background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+#app .lf-release-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+#app .lf-release-top h2{margin:6px 0 0;font-size:19px;line-height:1.35}
+#app .lf-release-status{flex:none;padding:6px 10px;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800}
+#app .lf-release-status-done{border-color:var(--border);background:var(--surface-2);color:var(--muted)}
+#app .lf-release-card section{padding-top:16px}
+#app .lf-release-card section h3{margin:0 0 8px;font-size:14px}
+#app .lf-release-card ul{margin:0;padding-left:19px;color:var(--muted);font-size:13px;line-height:1.75}
+#app .lf-release-card li{padding-left:3px}
+#app .lf-release-card code{padding:2px 5px;border-radius:5px;background:var(--surface-2);color:var(--text);font-size:.9em}
+#app .lf-release-pending{padding:14px 15px 0;margin-top:12px;border-top:1px dashed var(--border)}
+#app .lf-release-footnote{margin:18px 0 0;padding:12px 14px;border-left:3px solid var(--accent);border-radius:7px;background:var(--surface-2);color:var(--muted);font-size:12px;line-height:1.6}
+@media(max-width:600px){#app .lf-release-hero{padding:19px}#app .lf-release-card{padding:18px}#app .lf-release-top{flex-direction:column}#app .lf-release-top h2{font-size:17px}}
