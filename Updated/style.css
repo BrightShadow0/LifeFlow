@@ -5012,3 +5012,12 @@ body::-webkit-scrollbar-corner{
 #app .cloud-backup-item button{flex:none}
 #app .cloud-backup-panel .recovery-vault-note{display:block;margin-top:13px}
 @media(max-width:600px){#app .cloud-backup-panel{padding:15px}#app .cloud-backup-item{align-items:flex-start;flex-direction:column}#app .cloud-backup-item button{width:100%}}
+
+
+/* Release 9: cloud backup history and destructive-action clarity */
+#app .cloud-backup-account{padding:10px 12px;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:12px;background:var(--surface)}
+#app .cloud-backup-account strong{color:var(--text);overflow-wrap:anywhere}
+#app .cloud-backup-item-actions{display:flex;flex-wrap:wrap;gap:7px}
+#app .cloud-backup-item-actions .danger{border:1px solid var(--danger,var(--border));color:var(--danger,var(--text));background:transparent}
+#app .cloud-backup-item-actions button{font-size:11px;padding:8px 10px}
+@media(max-width:600px){#app .cloud-backup-item-actions{width:100%}#app .cloud-backup-item-actions button{flex:1}}
