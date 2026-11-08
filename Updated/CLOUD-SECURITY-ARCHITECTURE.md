@@ -37,17 +37,17 @@ Location: Profile & Settings → Security.
 - Support standards-based TOTP compatible with Google Authenticator, Microsoft Authenticator, 1Password, and other RFC 6238 apps.
 - Generate the secret on the server. Show a QR code and a manual setup key only during the pending enrollment flow.
 - Require a valid six-digit code to confirm enrollment. Do not mark 2FA enabled before confirmation.
-- Generate ten single-use recovery codes after confirmation. Show them once with copy and download actions and require the user to acknowledge safe storage.
-- On subsequent logins, password/OAuth success creates a short-lived, restricted 2FA challenge, not a full session. Only a valid TOTP or unused recovery code completes authentication.
-- Allow disabling 2FA only after recent re-authentication and a valid TOTP/recovery code. Notify the account owner of enrollment, disablement, and recovery-code regeneration.
-- Allow regeneration of recovery codes only after re-authentication; invalidate every previous code immediately.
-- Explain account recovery if the user loses both the authenticator and recovery codes. Recovery must not silently bypass the second factor.
+- Use Supabase Auth's TOTP factor enrollment, challenge, verification, and assurance-level APIs. Supabase Auth does not currently issue built-in one-time recovery codes for end users.
+- For the initial release, let users enroll a second authenticator factor as a backup and explain how to store it separately. Do not display invented or client-generated recovery codes.
+- On subsequent logins, a user with a verified factor must complete the AAL1-to-AAL2 challenge before LifeFlow reveals protected workspace data or performs protected operations.
+- Allow disabling or replacing a factor only through Supabase Auth's supported factor-management flow, with recent authentication and second-factor proof where required. Notify users of security changes where a trusted notification channel is configured.
+- If LifeFlow later requires one-time recovery codes, implement a dedicated server-side service with salted hashes, atomic single-use consumption, rate limits, audit events, and a tested account-recovery process. Never silently bypass the second factor.
 
 ### Server-side security requirements
 
-- Store TOTP secrets encrypted at rest using a managed KMS/envelope-encryption key. Never return an enrolled secret from account/profile endpoints.
-- Store only salted hashes of recovery codes. Consume a recovery code atomically so it cannot be reused in concurrent requests.
-- Use six-digit TOTP with a 30-second time step and a narrow clock-drift window (normally ±1 step).
+- Let Supabase Auth manage TOTP factor secrets and verification. Never copy factor secrets into LifeFlow profile tables or logs.
+- Supabase's documented TOTP implementation uses six-digit codes, 30-second time steps, and a one-step clock-skew allowance. Keep LifeFlow aligned with provider behavior.
+- Do not create a parallel TOTP implementation in application code.
 - Rate-limit challenge attempts by account and network signals; apply progressive delays/temporary lockout and security logging without leaking whether an account exists.
 - Protect enrollment start/confirm endpoints against CSRF and replay. Pending enrollment secrets expire and are invalidated after confirmation or cancellation.
 - Do not log TOTP values, recovery codes, provisioning URIs, passwords, session cookies, or secrets.
@@ -63,11 +63,10 @@ All endpoints are HTTPS, same-origin where possible, CSRF-protected when cookie 
 | POST /api/auth/signup | Create account |
 | POST /api/auth/login | Verify primary credential; return authenticated session only if 2FA is off, otherwise a restricted challenge |
 | POST /api/auth/oauth/callback | Validate provider assertion and apply the same 2FA policy |
-| POST /api/auth/2fa/enrollment | Start pending enrollment; return one-time provisioning URI/QR payload |
-| POST /api/auth/2fa/enrollment/confirm | Verify TOTP and activate 2FA; return recovery codes once |
-| POST /api/auth/2fa/challenge | Complete login challenge with TOTP or recovery code |
-| POST /api/auth/2fa/recovery-codes/regenerate | Re-authenticate, invalidate old codes, return new codes once |
-| DELETE /api/auth/2fa | Disable after recent re-authentication and second-factor proof |
+| Supabase Auth MFA enroll | Start TOTP factor enrollment and return a pending QR/secret for the current user |
+| Supabase Auth MFA challenge + verify | Verify the user's TOTP and promote the session to AAL2 |
+| Supabase Auth MFA listFactors + unenroll | List and remove verified factors after the required re-authentication |
+| Optional future recovery-code Edge Function | Only if product requirements justify custom one-time codes; hash and consume codes server-side atomically |
 | GET /api/auth/sessions | List active sessions/devices, excluding secrets |
 | DELETE /api/auth/sessions/{id} | Revoke one session |
 | POST /api/auth/logout | Revoke current server session |
@@ -78,7 +77,7 @@ All endpoints are HTTPS, same-origin where possible, CSRF-protected when cookie 
 2. Primary credential invalid → generic failure, rate-limited.
 3. Primary credential valid and 2FA off → server session established.
 4. Primary credential valid and 2FA on → short-lived challenge only; no workspace or account API access.
-5. Valid TOTP or unused recovery code → rotate identifier and establish server session.
+5. Valid TOTP → Supabase session reaches AAL2; only then reveal protected workspace data and permit protected operations.
 6. Invalid/expired challenge → reject, rate-limit, and require primary authentication again when appropriate.
 
 ## 3. Encrypted cloud backup and multi-device recovery
@@ -110,7 +109,7 @@ All endpoints are HTTPS, same-origin where possible, CSRF-protected when cookie 
 Profile & Settings → Security should eventually contain:
 
 - Account security status and signed-in email.
-- Two-factor authentication: Off / On, setup, recovery-code regeneration, disable.
+- Two-factor authentication: Off / On, setup, manage/remove authenticator factors, and clear backup-factor guidance.
 - Active devices and sessions with last activity and revoke controls.
 - Cloud backup: Off / On, last backup, backup now, encryption/recovery status.
 - Data migration and restore history.
@@ -126,10 +125,10 @@ All statuses and actions must be backed by authenticated API responses. Hide or 
 - Keep local-only mode working throughout.
 
 ### Phase B — Optional 2FA
-- Implement TOTP enrollment, confirmation, challenge, recovery codes, disable/regenerate flows, rate limiting, and security notifications.
+- Implement Supabase TOTP enrollment, confirmation, challenge, AAL enforcement, factor management, rate limits, and security notifications. Do not claim one-time recovery codes unless the custom recovery-code service is separately implemented and audited.
 - Verify that users who do not opt in retain the normal login flow.
 - Verify that users who opt in cannot access authenticated APIs before completing the challenge.
-- Test replay, expiry, clock drift, brute-force throttling, concurrent recovery-code use, OAuth login, session rotation, and lost-authenticator recovery.
+- Test replay, expiry, clock drift, brute-force throttling, OAuth login, session assurance enforcement, factor removal, and lost-authenticator recovery.
 
 ### Phase C — Encrypted cloud backup
 - Implement client-side encryption, upload/download, immutable versions, integrity checks, retention, and explicit opt-in.
@@ -141,6 +140,12 @@ All statuses and actions must be backed by authenticated API responses. Hide or 
 
 ### Release gate
 Do not advertise cloud authentication, 2FA, cloud backup, or multi-device recovery as available until the corresponding server-side acceptance tests pass in a deployed environment. A passing frontend build alone is not sufficient.
+
+## Supabase provider decision
+
+Supabase is the selected backend candidate for the initial integration because it provides managed Auth, PostgreSQL, Row Level Security, and TOTP MFA APIs. Its TOTP MFA feature is available on all projects; optional enrollment is supported by the Auth APIs. Supabase Auth does not provide built-in one-time user recovery codes, so the first implementation will support a separately enrolled backup authenticator factor. Any custom recovery-code feature requires a separate server-side design and security review.
+
+The current static GitHub Pages frontend uses browser JavaScript. Supabase's browser client normally manages its session in browser storage, which is accessible to JavaScript. If LifeFlow retains a strict HttpOnly-cookie requirement, add a server-side/BFF layer using the supported Supabase SSR pattern rather than claiming browser SDK sessions are HttpOnly. In either design, enforce AAL requirements in database RLS and server-side functions for sensitive operations.
 
 ## Current implementation status
 
