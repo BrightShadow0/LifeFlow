@@ -43,10 +43,11 @@ test('password sign-in signals an authenticator challenge when AAL2 is required'
   const result=await h.api.signIn({email:'a@b.test',password:'long-enough-password'});
   assert.equal(result.ok,true);assert.equal(result.requiresMfa,true);assert.equal(result.factorId,'factor-1');
 });
-test('sign-in does not request MFA when no verified factor is enrolled',async()=>{
+test('blocks sign-in when AAL2 is required but no verified factor is available',async()=>{
   const h=harness({aal:'aal1',factor:false});
   const result=await h.api.signIn({email:'a@b.test',password:'long-enough-password'});
-  assert.equal(result.ok,true);assert.equal(result.requiresMfa,false);
+  assert.equal(result.ok,false);
+  assert.match(result.error,/requires authenticator verification/i);
 });
 test('MFA verification uses a provider challenge and six-digit code',async()=>{
   const h=harness();
