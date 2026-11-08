@@ -308,6 +308,7 @@ function initTaskEventDelegation(){
     else if(action==='branches-reset') branchesResetView();
     else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
     else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
+    else if(action==='check-cloud-connection') checkLifeFlowCloudConnection(control);
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
     else if(action==='backup-master-archive') backupMasterArchive();
@@ -2282,10 +2283,29 @@ function renderAbout(){
 let accountTab='profile';
 function setAccountTab(t){ accountTab=t; renderApp(); }
 
+function renderSecurityTab(){
+  const status=window.LifeFlowSupabase?.getStatus?.()||{configured:false,initialized:false,error:'Supabase client is unavailable.'};
+  return `<section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">RELEASE 7 · CLOUD FOUNDATION</span><h2>Cloud connection</h2></div><span class="cloud-status-pill" id="cloudConnectionBadge">${status.initialized?'SDK loaded':'Checking setup'}</span></div><p>LifeFlow is still local-first. This connection check only verifies that the Supabase database endpoint is reachable. It does not sign you in, upload workspace content or change your existing account.</p><div class="cloud-connection-status" id="cloudConnectionStatus" role="status" aria-live="polite">${status.error?'Connection setup issue: '+status.error:'Ready to run a safe database connectivity check.'}</div><button type="button" class="primary" data-lf-action="check-cloud-connection">Test database connection</button><small class="muted">The check reads only the account_profiles table structure with a one-row limit. With no Supabase user session, RLS should prevent access to private profile rows.</small></section>
+  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">ACCOUNT PROTECTION</span><h2>Two-factor authentication</h2></div><span class="cloud-status-pill is-pending">Not active</span></div><p>Optional authenticator-app 2FA is planned. It will be available after Supabase authentication is integrated and tested. Your current local sign-in is unchanged.</p><ul><li>Authenticator apps using time-based six-digit codes</li><li>Enrollment only when you choose to enable it</li><li>Server-enforced verification before protected workspace access</li></ul><p class="cloud-security-note">Do not treat this as enabled security yet. No 2FA setting is being stored or simulated.</p></section>
+  <section class="card cloud-security-card"><div class="cloud-security-head"><div><span class="custom-kicker">DATA PORTABILITY</span><h2>Encrypted cloud backup</h2></div><span class="cloud-status-pill is-pending">Not active</span></div><p>Cloud backup will remain opt-in. LifeFlow will encrypt workspace data on your device before sending ciphertext to Supabase. Until that workflow is implemented, continue using Master Archive and the local Recovery Vault.</p></section>`;
+}
+async function checkLifeFlowCloudConnection(button){
+  const output=document.getElementById('cloudConnectionStatus');
+  const badge=document.getElementById('cloudConnectionBadge');
+  if(!output||!button)return;
+  button.disabled=true;button.textContent='Checking connection…';output.textContent='Contacting Supabase without signing in or uploading data…';
+  try{
+    const result=await window.LifeFlowSupabase?.checkDatabaseReady?.();
+    if(result?.ready){output.textContent='Connected. Supabase can reach the account_profiles table. No user data was read.';if(badge){badge.textContent='Reachable';badge.classList.add('is-connected');}}
+    else{output.textContent=result?.reason||'Supabase connection could not be verified.';if(badge){badge.textContent='Unavailable';badge.classList.remove('is-connected');}}
+  }catch(error){output.textContent='Connection check failed. Check your internet connection and Supabase project settings.';if(badge){badge.textContent='Check failed';badge.classList.remove('is-connected');}}
+  finally{button.disabled=false;button.textContent='Test database connection';}
+}
 function renderAccount(){
   const u = currentUser();
   if(!u) return '<div class="empty">No profile data.</div>';
-  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['danger','Danger Zone'],['data','Data Management']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" data-lf-action="account-tab" data-account-tab="${k}">${l}</button>`).join('')}</div>`;
+  const sub = `<div class="subnav">${[['profile','Profile'],['custom','Customisation'],['connected','Connected'],['sessions','Sessions'],['security','Security'],['danger','Danger Zone'],['data','Data Management']].map(([k,l])=>`<button class="${accountTab===k?'active':''}" data-lf-action="account-tab" data-account-tab="${k}">${l}</button>`).join('')}</div>`;
+  if(accountTab==='security') return sub + renderSecurityTab();
   if(accountTab==='profile') return sub + renderProfileTab(u);
   if(accountTab==='custom') return sub + renderCustomisationTab(u);
   if(accountTab==='connected') return sub + renderConnectedTab(u);
