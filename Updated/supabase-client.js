@@ -21,8 +21,8 @@
       client = global.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
         auth: {
           // Do not create or persist a Supabase session until the auth migration is ready.
-          persistSession: false,
-          autoRefreshToken: false,
+          persistSession: true,
+          autoRefreshToken: true,
           detectSessionInUrl: false
         },
         global: {
@@ -42,6 +42,7 @@
       configured: true,
       initialized: !!client,
       authMigrationEnabled: false,
+      authSessionPersistence: true,
       error: initializationError ? initializationError.message : null
     };
   }
