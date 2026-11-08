@@ -75,3 +75,24 @@ button,.why-tab,.showcase-tab{ -webkit-tap-highlight-color:transparent }
  .showcase-tab>b{font-size:13px}
  .showcase-description p{font-size:12px}
 }
+
+
+/* Place the privacy assurance beside the workspace preview, not under the hero copy. */
+.hero-visual .hero-local-badge{
+ position:absolute;
+ top:29%;
+ right:-1%;
+ z-index:8;
+ margin:0;
+ box-shadow:0 12px 34px #0007,0 0 22px #55ddeb12;
+ backdrop-filter:blur(12px);
+}
+@media(max-width:1120px){
+ .hero-visual .hero-local-badge{right:0;top:26%}
+}
+@media(max-width:850px){
+ .hero-visual .hero-local-badge{top:12%;right:1%;transform:scale(.96);transform-origin:top right}
+}
+@media(max-width:520px){
+ .hero-visual .hero-local-badge{top:8%;right:0;transform:scale(.88);transform-origin:top right}
+}
