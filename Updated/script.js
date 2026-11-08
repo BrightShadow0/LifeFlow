@@ -532,11 +532,6 @@ async function handleCloudLoginAction(action){
       return;
     }
     setCloudAuthMessage('Cloud sign-in successful for '+(result.user?.email||fields.email)+'. Your existing local workspace remains separate.');
-  }else if(action==='verify-mfa'){
-    const code=document.getElementById('cloudLoginMfaCode')?.value||'';
-    const result=await api.verifyAuthenticator(controlSafeFactorId(),code);
-    if(!result.ok)throw new Error(result.error);
-    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
   }else if(action==='signup'){
     if(!fields.email||!fields.password){setCloudAuthMessage('Enter an email address and password.',true);return;}
     setCloudAuthMessage('Creating cloud account…');
@@ -550,10 +545,6 @@ async function handleCloudLoginAction(action){
     if(!fields.email){setCloudAuthMessage('Enter your email address first.',true);return;}
     const result=await api.resendConfirmation(fields.email);if(!result.ok)throw new Error(result.error);
     setCloudAuthMessage('If confirmation is still pending, a new confirmation email has been requested.');
-  }else if(action==='verify-mfa'){
-    const code=document.getElementById('cloudLoginMfaCode')?.value||'';
-    const result=await api.verifyAuthenticator(control.dataset.factorId,code);if(!result.ok)throw new Error(result.error);
-    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
   }else if(action==='complete-recovery'){
     const password=document.getElementById('cloudRecoveryPassword')?.value||'';
     const confirm=document.getElementById('cloudRecoveryConfirm')?.value||'';
@@ -562,7 +553,6 @@ async function handleCloudLoginAction(action){
     setCloudAuthMessage('Cloud password updated. You can now sign in with your new password.');
   }
 }
-function controlSafeFactorId(){return document.querySelector('#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';}
 function showCloudPasswordRecovery(){
   const host=document.getElementById('cloudAuthMessage');if(!host)return;
   host.innerHTML='<p>Choose a new password for your cloud account.</p><label for="cloudRecoveryPassword">New password</label><input id="cloudRecoveryPassword" type="password" autocomplete="new-password" minlength="8"><label for="cloudRecoveryConfirm">Confirm new password</label><input id="cloudRecoveryConfirm" type="password" autocomplete="new-password" minlength="8"><button type="button" class="primary" data-cloud-auth="complete-recovery">Update cloud password</button>';
