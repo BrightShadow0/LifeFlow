@@ -113,7 +113,7 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="supabase-client.js?v=20261108-release8-authfoundation1" defer></script>
-<script src="supabase-auth.js?v=20261108-release8-authfoundation1" defer></script>
+<script src="supabase-auth.js?v=20261108-release8-authfoundation1" defer></script>\n<script src="cloud-backup.js?v=20261108-release9-backup1" defer></script>
 <script src="recovery.js?v=20261108-release6-final1" defer></script>
 <script src="theme.js?v=20261107-theme-cleanup1" defer></script>
 <script src="auth.js?v=20261108-login-load-race1" defer></script>
@@ -122,6 +122,60 @@
 <script src="ui.js?v=20261108-release4-performance1" defer></script>
 <script src="script.js?v=20261108-release8-releases1" defer></script>
 <script>
+  // Release 9: opt-in encrypted cloud backup. Restore is previewed and confirmed before local replacement.
+  (function(){
+    let stagedRestore = null;
+    const status = () => document.getElementById('cloudBackupStatus');
+    const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    document.addEventListener('click', async function(event){
+      const restoreButton = event.target.closest('[data-cloud-restore]');
+      if (restoreButton) {
+        const passphrase = (document.getElementById('cloudBackupPassphrase')||{}).value || '';
+        const output = status(); restoreButton.disabled = true;
+        if(output) output.textContent = 'Decrypting and validating the selected backup…';
+        try {
+          const result = await window.LifeFlowCloudBackup.decryptBackup(restoreButton.dataset.cloudRestore, passphrase);
+          const workspace = result.workspace;
+          const counts = ['tasks','notes','codeNotes','folders','noteLinks'].map(key => key+': '+(workspace[key]||[]).length).join(' · ');
+          stagedRestore = workspace;
+          if(output) output.textContent = 'Backup decrypted successfully. Preview: '+counts+'. Your current workspace is still unchanged.';
+          const confirmed = window.confirm('Restore this encrypted backup from '+new Date(result.createdAt).toLocaleString()+'?\n\n'+counts+'\n\nThis replaces the current workspace on this device. A local recovery point will be created first.');
+          if(confirmed && stagedRestore) {
+            const current = window.LifeFlowWorkspaceData?.getState?.();
+            if(window.LifeFlowRecovery?.capture) await window.LifeFlowRecovery.capture({user:current?.currentUser,state:current,source:'before-cloud-restore',force:true});
+            window.LifeFlowWorkspaceData.replaceState(stagedRestore);
+            if(output) output.textContent = 'Restore complete. Your previous workspace was checkpointed locally before replacement.';
+          } else if(output) output.textContent = 'Restore cancelled. Your current workspace was not changed.';
+        } catch(error) { if(output) output.textContent = error.message || 'Could not restore this backup.'; }
+        finally { stagedRestore = null; restoreButton.disabled = false; }
+        return;
+      }
+      const button = event.target.closest('[data-cloud-backup]');
+      if(!button)return;
+      const output=status(), action=button.dataset.cloudBackup;
+      const passphrase=(document.getElementById('cloudBackupPassphrase')||{}).value||'';
+      const controls=document.querySelectorAll('[data-cloud-backup]');
+      controls.forEach(item=>item.disabled=true);
+      try {
+        if(action==='create'){
+          if(passphrase.length<12) throw new Error('Enter a backup passphrase with at least 12 characters.');
+          if(output)output.textContent='Encrypting your workspace on this device and uploading ciphertext…';
+          const snapshot=window.LifeFlowWorkspaceData?.getState?.();
+          const result=await window.LifeFlowCloudBackup.createBackup(snapshot,passphrase);
+          if(output)output.textContent='Encrypted backup uploaded successfully at '+new Date(result.backup.created_at).toLocaleString()+'. The cloud received ciphertext, not readable workspace content.';
+        } else {
+          if(output)output.textContent='Loading backups for your signed-in cloud account…';
+        }
+        const backups=await window.LifeFlowCloudBackup.listBackups();
+        const host=document.getElementById('cloudBackupList');
+        if(host){
+          host.innerHTML=backups.length?backups.map(item=>'<div class="cloud-backup-item"><div><strong>'+escapeHtml(new Date(item.created_at).toLocaleString())+'</strong><small>'+Number(item.payload_bytes||0).toLocaleString()+' bytes · encryption v'+escapeHtml(item.encryption_version)+'</small></div><button type="button" class="secondary" data-cloud-restore="'+escapeHtml(item.id)+'">Preview &amp; restore</button></div>').join(''):'<p class="muted">No encrypted cloud backups found for this account yet.</p>';
+        }
+        if(action==='list'&&output)output.textContent='Cloud backup list refreshed. '+backups.length+' backup(s) found.';
+      } catch(error) { if(output)output.textContent=error.message||'Cloud backup operation failed.'; }
+      finally { controls.forEach(item=>item.disabled=false); }
+    });
+  })();
   // Release 8: isolated cloud account entry. It never enters the legacy local workspace.
   document.addEventListener('click', async function(event) {
     var button = event.target.closest('[data-cloud-auth]');
