@@ -44,7 +44,16 @@
       if (error) return failed(error, 'Cloud sign-in failed.');
       const profile = await ensureProfile(data.user);
       if (!profile.ok) return profile;
-      return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session };
+      const assurance = await client().auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assurance.error) return failed(assurance.error, 'Could not verify cloud sign-in assurance.');
+      if (assurance.data.nextLevel === 'aal2' && assurance.data.currentLevel !== 'aal2') {
+        const factors = await client().auth.mfa.listFactors();
+        if (factors.error) return failed(factors.error, 'Could not load authenticator factors.');
+        const factor = (factors.data.totp || []).find(item => item.status === 'verified');
+        if (!factor) return { ok: false, error: 'This account requires authenticator verification, but no verified factor is available. Contact support or use account recovery.' };
+        return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session, requiresMfa: true, factorId: factor.id, currentLevel: assurance.data.currentLevel, nextLevel: assurance.data.nextLevel };
+      }
+      return { ok: true, user: data.user ? { id: data.user.id, email: data.user.email } : null, session: !!data.session, requiresMfa: false, currentLevel: assurance.data.currentLevel, nextLevel: assurance.data.nextLevel };
     } catch (error) { return failed(error, 'Cloud sign-in failed.'); }
   }
   async function initializeSignedInProfile() {
