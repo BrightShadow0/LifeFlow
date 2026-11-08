@@ -20,10 +20,10 @@
     try {
       client = global.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
         auth: {
-          // Do not create or persist a Supabase session until the auth migration is ready.
+          // Supabase-managed sessions are isolated from LifeFlow's legacy local session keys.
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: false
+          detectSessionInUrl: true
         },
         global: {
           headers: { 'X-Client-Info': 'lifeflow-local-first-web' }
