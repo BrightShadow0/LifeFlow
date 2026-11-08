@@ -2791,11 +2791,14 @@ async function resetAllData(){
   if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting, including local recovery points? There is no undo.')) return;
   // Flush once, then remove the secondary recovery copies before deleting primary data.
   doLogout();
-  try {
-    await window.LifeFlowRecovery?.clearAll?.();
-  } catch (error) {
-    alert('The local recovery vault could not be cleared, so LifeFlow has not erased the primary workspace data. Please retry. ' + (error?.message || ''));
-    return;
+  const recoveryStatus=window.LifeFlowRecovery?.getStatus?.()||{};
+  if(recoveryStatus.available){
+    try {
+      await window.LifeFlowRecovery.clearAll();
+    } catch (error) {
+      alert('The local recovery vault could not be cleared, so LifeFlow has not erased the primary workspace data. Please retry. ' + (error?.message || ''));
+      return;
+    }
   }
   const keysToRemove=[];
   for(let i=0;i<localStorage.length;i++){
@@ -2830,6 +2833,11 @@ async function deleteAccount(){
     alert(deletingEmail+' scheduled for deletion. Data is recoverable until '+new Date(u.deletedAt).toDateString()+'.');
   }else{
     if(!confirm('Permanently delete '+deletingEmail+' right now? The email becomes reusable immediately. There is no undo.')) return;
+    const recoveryStatus=window.LifeFlowRecovery?.getStatus?.()||{};
+    if(recoveryStatus.available){
+      try { await window.LifeFlowRecovery.clearUser(deletingEmail); }
+      catch(error){alert('The account recovery data could not be removed, so the account has not been deleted. '+(error?.message||''));return;}
+    }
     delete users[deletingEmail];
     saveUsers(users);
     permanentlyDeleted = !getUsers()[deletingEmail];
