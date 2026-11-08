@@ -214,3 +214,26 @@ Release 10 connects the Supabase cloud identity service to the Login Terminal an
 - MFA challenge handling is wired for the cloud sign-in flow, but any future cloud data service that requires AAL2 must independently enforce that requirement through Supabase RLS policies or trusted server-side functions. A UI check alone is not a security boundary.
 - Email confirmation and password recovery delivery depend on the Supabase project's configured email provider, redirect allow-list, and rate limits. The built-in email sender is intended for testing and has low delivery limits; production launch requires a verified sender domain and transactional SMTP.
 - CI tests exercise provider behavior through mocks. They do not prove real email delivery, a live authenticator enrollment, production Supabase policy enforcement, or a complete browser end-to-end journey. Those require a real-account smoke test before public launch.
+
+
+## Release 11 | Encrypted multi-device workspace (2026-11-09)
+
+Release 11 extends the cloud identity flow with a single encrypted workspace shared across devices. The legacy local login remains available. A cloud account signs in through Supabase Auth; the workspace is encrypted and decrypted in the browser using a separate user-held sync passphrase.
+
+### Data protection and synchronization
+
+- `Updated/cloud-sync.js` encrypts the complete supported workspace payload in the browser with AES-256-GCM. The key is derived with PBKDF2-SHA256 (600,000 iterations), a 16-byte salt, and a 12-byte nonce. Authenticated additional data binds the ciphertext to the format, version, cloud user ID, schema version, and revision.
+- Supabase stores ciphertext and encryption metadata only. Workspace task, note, and profile content is not sent as readable plaintext by this sync layer.
+- The sync table is `encrypted_workspace_sync`, introduced by migration `20261108000200_encrypted_workspace_sync.sql`. Row-level security scopes reads and writes to the authenticated owner. Revision-checked updates reject stale writes.
+- The Login Terminal asks for the separate sync passphrase after cloud sign-in. On a first device, creating the remote workspace requires explicit confirmation. On a device with an existing remote workspace, loading it over different local data requires explicit confirmation and a successful local Recovery Vault checkpoint.
+- Supported workspace changes are queued for encrypted upload. The client polls for remote revisions while active and applies remote changes only after a local recovery checkpoint. Concurrent revision changes are surfaced as conflicts with explicit choices to use the cloud copy or publish this device's copy.
+- A per-device derived CryptoKey may be stored in IndexedDB to resume an unlocked session on that device. A wrong passphrase is verified against the remote ciphertext before a derived key is remembered.
+- The cloud account password and workspace sync passphrase are separate. Losing the sync passphrase means the encrypted shared workspace cannot be decrypted. Keep an independent encrypted Master Archive as an additional recovery option.
+
+### Required project setup and limitations
+
+- Apply `supabase/migrations/20261108000200_encrypted_workspace_sync.sql` in the Supabase SQL editor for project `krfzkaykxyagwrqabizp`. Until this migration is applied, the sync table will not exist and workspace sync will fail even though the Pages deployment is successful.
+- CI on commit `665eabbbcd2c9dd60fd00b2499a000347dc7645f` passed the syntax/storage contracts, cloud backup tests, cloud authentication/MFA tests, encrypted sync tests, Pages build, and Pages deployment.
+- The automated multi-device tests use a mocked Supabase client and Web Crypto. They verify ciphertext secrecy, cross-device decryption, revision conflict rejection, polling, account isolation, invalid input handling, and recovery after a mistyped passphrase. They are not a live-browser or live-Supabase end-to-end test.
+- Synchronization requires the same cloud account and sync passphrase on each device, a working network connection, the SQL migration, and a browser supporting Web Crypto and IndexedDB. Changes made offline remain local until connectivity returns; simultaneous edits can require a user-selected conflict resolution.
+- Supabase browser sessions remain accessible to application JavaScript. This is not an HttpOnly BFF session architecture. No independent cryptographic audit or production penetration test is implied.
