@@ -568,7 +568,6 @@ function initializeCloudAuthCallbacks(){
   window.lfCloudAuthListenerBound=true;
   api.onAuthStateChange(({event})=>{
     if(event==='PASSWORD_RECOVERY')showCloudPasswordRecovery();
-    else if(event==='SIGNED_IN')setCloudAuthMessage('Cloud account session detected. Complete any requested authenticator verification before using protected cloud features. Your local workspace remains separate.');
     else if(event==='SIGNED_OUT')setCloudAuthMessage('Cloud account signed out. Your local workspace is unchanged.');
   });
   const hash=window.location.hash||'';
