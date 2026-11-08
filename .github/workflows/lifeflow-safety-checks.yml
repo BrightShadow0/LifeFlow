@@ -29,6 +29,7 @@ jobs:
           node --check Updated/notes.js
           node --check Updated/theme.js
           node --check Updated/ui.js
+          node --check Updated/cloud-backup.js
       - name: Check ES modules
         run: |
           node --input-type=module --check < Updated/state.js
@@ -64,3 +65,6 @@ jobs:
           assert.equal(result.migrated, true);
           console.log("Migration preserves existing content and adds schema metadata only.");
           JS
+
+      - name: Test encrypted cloud backup engine
+        run: node --test tests/cloud-backup.test.cjs
