@@ -311,6 +311,11 @@ function initTaskEventDelegation(){
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
     else if(action==='backup-master-archive') backupMasterArchive();
+    else if(action==='save-recovery-point') saveRecoveryPoint();
+    else if(action==='open-recovery-vault') openRecoveryVault();
+    else if(action==='enable-storage-protection') enableStorageProtection();
+    else if(action==='close-recovery-vault') closeRecoveryVault();
+    else if(action==='restore-recovery-snapshot') restoreRecoverySnapshot(control.dataset.snapshotId);
     else if(action==='choose-master-archive') document.getElementById('masterArchiveFile')?.click();
     else if(action==='cancel-master-restore') closeMasterRestorePreview();
     else if(action==='confirm-master-restore') restoreMasterArchiveNow();
@@ -713,6 +718,7 @@ function syncAppearanceStateFromUser(user) {
 }
 
 async function initializeTaskArchitecture() {
+  await window.LifeFlowRecovery?.initialise?.();
   const { StateManager } = await import('./state.js?v=20261107-modular-core-final1');
   lifeFlowTaskStateManager = new StateManager({
     currentUser: null,
@@ -743,6 +749,8 @@ async function initializeTaskArchitecture() {
   if (session?.email) {
     lifeFlowTaskStateManager.switchUser(session.email);
     state = lifeFlowTaskStateManager.getState();
+    // Seed a recovery point for existing workspaces as well as new accounts.
+    lifeFlowTaskStateManager.flush();
   }
 }
 function updateWorkspaceState(patch) {
@@ -1124,7 +1132,13 @@ async function restoreMasterArchiveNow(){
   const sanitize=items=>items.map(n=>({...n,content:window.DOMPurify?window.DOMPurify.sanitize(String(n.content||''),{USE_PROFILES:{html:true}}):String(n.content||'')}));
   const restored={...d.state,currentUser:state.currentUser,tasks:d.tasks,notes:sanitize(d.notes.regular),codeNotes:sanitize(d.notes.code),folders:d.folders,noteLinks:d.noteLinks};
   delete restored.sessionToken;delete restored.passwordHash;
-  const snap={timestamp:new Date().toISOString(),state:lifeFlowTaskStateManager?.getState?.()||state,profile:lifeFlowProfileManager?.getState?.()||null};
+  const currentState=lifeFlowTaskStateManager?.getState?.()||state;
+  const recoveryStatus=window.LifeFlowRecovery?.getStatus?.()||{};
+  if(recoveryStatus.ready){
+    const checkpoint=await window.LifeFlowRecovery.capture({user:state.currentUser,state:currentState,source:'before-archive-restore',force:true});
+    if(!checkpoint?.saved)throw new Error('LifeFlow could not create a safety recovery point. The existing workspace has not been replaced.');
+  }
+  const snap={timestamp:new Date().toISOString(),state:currentState,profile:lifeFlowProfileManager?.getState?.()||null};
   sessionStorage.setItem('lifeflow_pre_restore_snapshot',JSON.stringify(snap));
   if(!lifeFlowTaskStateManager)throw new Error('Workspace state manager is unavailable.');
   lifeFlowTaskStateManager.replaceState(restored);if(!lifeFlowTaskStateManager.flush())throw new Error('LifeFlow could not save the restored workspace to browser storage.');
@@ -1134,6 +1148,94 @@ async function restoreMasterArchiveNow(){
   state=lifeFlowTaskStateManager.getState();closeMasterRestorePreview();showToast('Backup restored successfully. Reloading LifeFlow…');setTimeout(()=>window.location.reload(),450);
  }catch(e){if(button){button.disabled=false;button.textContent='Restore Now';}showToast(e.message||'Restore failed.');}
 }
+async function refreshRecoveryVaultSummary(){
+  const summaryEl=document.getElementById('recoveryVaultSummary');
+  const metaEl=document.getElementById('recoveryVaultMeta');
+  if(!summaryEl||!metaEl)return;
+  const recovery=window.LifeFlowRecovery;
+  if(!recovery){summaryEl.textContent='Local recovery is unavailable in this browser.';metaEl.textContent='Manual archive backups are still available.';return;}
+  const result=await recovery.summary(state?.currentUser);
+  if(!result.available){summaryEl.textContent='Recovery storage is unavailable';metaEl.textContent=result.error||'Use Master Archive to create a separate backup.';return;}
+  summaryEl.textContent=result.count
+    ? result.count+' recovery point'+(result.count===1?'':'s')+' available'
+    : 'No recovery points yet';
+  const latest=result.latest?new Date(result.latest.createdAt).toLocaleString():'No automatic checkpoint saved yet';
+  const storage=result.persisted===true?'Browser storage protection is enabled':result.persisted===false?'Browser storage protection is not enabled':'Browser persistence status is unavailable';
+  metaEl.textContent='Latest: '+latest+' · '+storage;
+}
+
+async function saveRecoveryPoint(){
+  const recovery=window.LifeFlowRecovery,user=state?.currentUser;
+  if(!recovery||!user||!lifeFlowTaskStateManager){showToast('Local recovery is not available right now.');return;}
+  const result=await recovery.capture({user,state:lifeFlowTaskStateManager.getState(),source:'manual',force:true});
+  if(result?.saved)showToast('Recovery point saved on this device.');
+  else showToast(result?.message||'Could not save a recovery point.');
+  await refreshRecoveryVaultSummary();
+}
+
+async function enableStorageProtection(){
+  const recovery=window.LifeFlowRecovery;
+  if(!recovery){showToast('This browser does not support the LifeFlow recovery vault.');return;}
+  const result=await recovery.requestPersistentStorage();
+  showToast(result.message||'Storage protection status updated.');
+  await refreshRecoveryVaultSummary();
+}
+
+function closeRecoveryVault(){
+  document.getElementById('lfRecoveryVaultOverlay')?.remove();
+}
+
+async function openRecoveryVault(){
+  closeRecoveryVault();
+  const host=document.createElement('div');
+  host.id='lfRecoveryVaultOverlay';
+  host.className='recovery-vault-overlay';
+  host.setAttribute('role','presentation');
+  host.innerHTML='<section class="recovery-vault-dialog" role="dialog" aria-modal="true" aria-labelledby="recoveryVaultTitle"><div class="recovery-vault-dialog-head"><div><span class="custom-kicker">DATA PROTECTION</span><h2 id="recoveryVaultTitle">Recovery history</h2><p>Restore a saved workspace checkpoint from this browser.</p></div><button type="button" class="hbtn" data-lf-action="close-recovery-vault" aria-label="Close recovery history">×</button></div><div class="recovery-vault-list" id="recoveryVaultList"><p>Loading recovery points…</p></div><p class="recovery-vault-dialog-note">Restoring a point replaces the current workspace. LifeFlow first creates a new recovery point of the current data.</p></section>';
+  document.body.appendChild(host);
+  const listHost=host.querySelector('#recoveryVaultList');
+  try{
+    const rows=await window.LifeFlowRecovery?.list?.(state?.currentUser)||[];
+    if(!rows.length){listHost.innerHTML='<div class="recovery-vault-empty">No recovery points are available yet. Save one now or continue working and LifeFlow will create one after a successful save.</div>';return;}
+    listHost.innerHTML=rows.map(row=>{
+      const when=new Date(row.createdAt).toLocaleString();
+      const label=row.source==='manual'?'Manual checkpoint':row.source==='before-archive-restore'?'Before archive restore':row.source==='pre-restore'?'Before recovery restore':row.source==='legacy-migration'?'Legacy data migration':'Automatic checkpoint';
+      return '<article class="recovery-vault-item"><div class="recovery-vault-item-copy"><strong>'+esc(when)+'</strong><span>'+esc(label)+' · '+row.taskCount+' tasks · '+row.noteCount+' notes · '+row.folderCount+' folders</span></div><button type="button" class="secondary" data-lf-action="restore-recovery-snapshot" data-snapshot-id="'+esc(row.id)+'">Restore</button></article>';
+    }).join('');
+  }catch(error){
+    listHost.innerHTML='<div class="recovery-vault-empty">Recovery history could not be loaded. '+esc(error?.message||'Please try again.')+'</div>';
+  }
+}
+
+async function restoreRecoverySnapshot(snapshotId){
+  const user=state?.currentUser,recovery=window.LifeFlowRecovery;
+  if(!user||!recovery||!lifeFlowTaskStateManager){showToast('Recovery is not available right now.');return;}
+  try{
+    const record=await recovery.get(user,snapshotId);
+    if(!record||record.schemaVersion!==1||!record.payload||typeof record.payload!=='object'||!Array.isArray(record.payload.tasks)){
+      throw new Error('This recovery point is invalid or uses an unsupported format.');
+    }
+    const date=new Date(record.createdAt).toLocaleString();
+    if(!confirm('Restore the workspace from '+date+'? Your current workspace will be replaced, but LifeFlow will first save a recovery point of the current data.'))return;
+    const previous=lifeFlowTaskStateManager.getState();
+    const checkpoint=await recovery.capture({user,state:previous,source:'pre-restore',force:true});
+    if(!checkpoint?.saved)throw new Error('A safety checkpoint could not be saved. The current workspace has not been replaced.');
+    const restored={...record.payload,currentUser:user};
+    lifeFlowTaskStateManager.replaceState(restored);
+    if(!lifeFlowTaskStateManager.flush()){
+      lifeFlowTaskStateManager.replaceState(previous);
+      lifeFlowTaskStateManager.flush();
+      throw new Error('The restored workspace could not be saved. Your previous workspace remains active.');
+    }
+    state=lifeFlowTaskStateManager.getState();
+    closeRecoveryVault();
+    showToast('Recovery point restored. Reloading LifeFlow…');
+    setTimeout(()=>window.location.reload(),450);
+  }catch(error){
+    showToast(error?.message||'Recovery could not be restored.');
+  }
+}
+
 async function backupMasterArchive(){
   try{
     if(!state?.currentUser || !getSession()){showToast('Please sign in again before creating an archive.');return;}
@@ -2648,12 +2750,26 @@ function recordLastBackup(){
 }
 function renderDataManagementTab(){
   const health=getDataHealthSnapshot();
-  return `<section class="card master-archive-card">\n    <div class="data-health-panel" aria-label="Data health"><div class="data-health-heading"><div><span class="custom-kicker">WORKSPACE STATUS</span><h3>Data Health</h3></div><span class="data-health-pill ${health.backupState==='fresh'?'is-good':health.backupState==='stale'?'is-warning':'is-missing'}">${health.backupState==='fresh'?'Protected':health.backupState==='stale'?'Backup overdue':'No backup yet'}</span></div><div class="data-health-grid"><div class="data-health-metric"><span>Last backup</span><strong>${health.backupLabel}</strong></div><div class="data-health-metric"><span>Storage used</span><strong>${health.usedLabel}</strong></div><div class="data-health-metric"><span>Data integrity</span><strong class="${health.integrity==='ok'?'health-integrity-ok':'health-integrity-warning'}">${health.integrityMessage}</strong></div></div><div class="data-health-storage"><div><span>Estimated browser storage</span><strong>${health.percent}%</strong></div><div class="data-health-track"><span style="width:${health.percent}%"></span></div><small>Approximation based on LifeFlow localStorage data and a 5 MB reference limit. Actual browser limits vary.</small></div></div>
+  const html=`<section class="card master-archive-card">
+    <div class="data-health-panel" aria-label="Data health"><div class="data-health-heading"><div><span class="custom-kicker">WORKSPACE STATUS</span><h3>Data Health</h3></div><span class="data-health-pill ${health.backupState==='fresh'?'is-good':health.backupState==='stale'?'is-warning':'is-missing'}">${health.backupState==='fresh'?'Protected':health.backupState==='stale'?'Backup overdue':'No backup yet'}</span></div><div class="data-health-grid"><div class="data-health-metric"><span>Last backup</span><strong>${health.backupLabel}</strong></div><div class="data-health-metric"><span>Storage used</span><strong>${health.usedLabel}</strong></div><div class="data-health-metric"><span>Data integrity</span><strong class="${health.integrity==='ok'?'health-integrity-ok':'health-integrity-warning'}">${health.integrityMessage}</strong></div></div><div class="data-health-storage"><div><span>Estimated browser storage</span><strong>${health.percent}%</strong></div><div class="data-health-track"><span style="width:${health.percent}%"></span></div><small>Approximation based on LifeFlow localStorage data and a 5 MB reference limit. Actual browser limits vary.</small></div></div>
+    <div class="recovery-vault-panel">
+      <div class="recovery-vault-heading"><div><span class="custom-kicker">RELEASE 6 · LOCAL SAFETY</span><h3>Automatic Recovery</h3></div><span class="recovery-vault-badge">On this device</span></div>
+      <p>LifeFlow keeps a rolling set of recovery points in a separate browser database after successful workspace saves. It can help recover from a damaged local save or a mistaken restore.</p>
+      <div class="recovery-vault-status"><strong id="recoveryVaultSummary">Checking recovery storage…</strong><small id="recoveryVaultMeta">Recovery status will appear here.</small></div>
+      <div class="recovery-vault-actions">
+        <button type="button" class="primary" data-lf-action="save-recovery-point">Save recovery point now</button>
+        <button type="button" class="secondary" data-lf-action="open-recovery-vault">View recovery history</button>
+        <button type="button" class="secondary" data-lf-action="enable-storage-protection">Enable browser storage protection</button>
+      </div>
+      <small class="recovery-vault-note">Recovery points stay in this browser profile. They are not cloud backups and will not protect against losing the device, uninstalling the browser or manually clearing site data. Keep a separate archive somewhere safe.</small>
+    </div>
     <div class="custom-section-head"><div><span class="custom-kicker">DATA OWNERSHIP</span><h2>Master Archive</h2><p>Download a portable snapshot of your LifeFlow workspace, including your profile, preferences, folders, notes, tasks and saved note links.</p></div></div>
     <div class="master-secure-options"><label class="master-secure-toggle"><input id="masterArchiveSecure" type="checkbox"> <span>Secure Backup (password-protected)</span></label><div id="masterArchivePasswordFields" class="master-password-fields" hidden><label>Backup password<input id="masterArchivePassword" type="password" autocomplete="new-password" minlength="10" placeholder="At least 10 characters"></label><label>Confirm password<input id="masterArchivePasswordConfirm" type="password" autocomplete="new-password" minlength="10" placeholder="Re-enter backup password"></label><p class="master-encryption-warning">Critical: If you lose this password, your backup cannot be recovered. There is no reset password for encrypted files.</p></div></div><div class="master-archive-actions"><button type="button" class="primary master-archive-button" data-lf-action="backup-master-archive">⇩ Backup Now</button><button type="button" class="secondary master-archive-button" data-lf-action="choose-master-archive">↥ Restore Backup</button></div><input id="masterArchiveFile" class="master-archive-file" type="file" accept=".json,application/json" aria-label="Choose LifeFlow backup file">
     <p class="notice master-archive-warning"><strong>Protect your data:</strong> LifeFlow stores your workspace in this browser. Clearing browser storage or losing this device can erase it. Create and keep an archive somewhere safe, and repeat regularly.</p>
     <small class="muted">The archive contains your data, not your login session or password credentials. You will need to sign in again after a future restore.</small>
   </section>`;
+  Promise.resolve().then(refreshRecoveryVaultSummary);
+  return html;
 }
 function renderDangerTab(u){
   const email = esc(state.currentUser || '');
@@ -2671,10 +2787,16 @@ function renderDangerTab(u){
     <button class="primary danger-action" data-lf-action="reset-all-data">Erase everything in this browser</button>
   </div>`;
 }
-function resetAllData(){
-  if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting? There is no undo.')) return;
-  // Let the active managers flush first, then remove every LifeFlow-owned key.
+async function resetAllData(){
+  if(!confirm('Erase ALL LifeFlow data in this browser - every account, task, and setting, including local recovery points? There is no undo.')) return;
+  // Flush once, then remove the secondary recovery copies before deleting primary data.
   doLogout();
+  try {
+    await window.LifeFlowRecovery?.clearAll?.();
+  } catch (error) {
+    alert('The local recovery vault could not be cleared, so LifeFlow has not erased the primary workspace data. Please retry. ' + (error?.message || ''));
+    return;
+  }
   const keysToRemove=[];
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i);
