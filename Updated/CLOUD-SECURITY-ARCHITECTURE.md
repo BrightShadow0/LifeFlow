@@ -154,3 +154,12 @@ The current static GitHub Pages frontend uses browser JavaScript. Supabase's bro
 - TOTP 2FA: architecture specified; not active.
 - Encrypted cloud backup: architecture specified; not active.
 - Multi-device sync/recovery: architecture specified; not active.
+
+
+## Release 8 implementation foundation
+
+- Added a browser-side Supabase Auth service wrapper for email/password signup, sign-in, email password reset, password update, sign-out, session inspection, auth-state observation, TOTP enrollment/challenge/verification, factor listing, and assurance-level inspection.
+- Supabase Auth SDK session persistence and automatic token refresh are enabled in Supabase-managed browser storage. This does not replace or modify the existing LifeFlow local login/session keys.
+- The wrapper is loaded but is not yet connected to the visible login/signup forms and does not migrate or sync workspace data.
+- Do not announce universal accounts until Site URL/redirect URLs, email SMTP/delivery, signup confirmation, password recovery, account isolation, and multi-device workspace sync have been tested end to end.
+- TOTP operations are available only after a real Supabase-authenticated user session exists. Enrollment secrets/QR values must only be shown transiently to the signed-in user and never logged or stored in LifeFlow profile state.
