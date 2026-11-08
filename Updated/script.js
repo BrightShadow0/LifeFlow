@@ -1273,7 +1273,7 @@ function renderNav(){
   sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
   if(hasPremiumAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
-  tabs.push(['account','Profile & settings','◎']);
+  tabs.push(['account','Profile & settings','◎'],['releases','Releases','◷']);
   document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" title="'+x[1]+'" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
 function setView(v){const u=currentUser();if((v==='branches'||v==='notes')&&!hasPremiumAccess(u)){toast('This feature is available to Premium and Team Admin accounts.');return;}view=v;clearNewTimes();renderApp();}
@@ -1695,16 +1695,36 @@ function clockPointer(e,finish=true){
 function showToast(message){const host=document.getElementById('toastHost');host.innerHTML='<div class="toast"></div>';host.firstElementChild.textContent=message;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>host.innerHTML='',3200);}
 let temporaryTheme=null;
 let temporaryThemeTimer=null;
+function renderReleaseNotes(){
+  return `<section class="lf-releases" aria-label="LifeFlow release notes">
+    <header class="lf-release-hero"><span class="lf-release-kicker">LIFEFLOW CHANGELOG</span><h2>Product updates</h2><p>Improvements, foundations and what is coming next.</p></header>
+    <article class="lf-release-card">
+      <div class="lf-release-top"><div><span class="lf-release-version">RELEASE 8</span><h2>Cloud Identity &amp; Security Foundation</h2></div><span class="lf-release-status">In progress</span></div>
+      <section><h3>1. Supabase Cloud Foundation</h3><ul><li>Integrated the Supabase JavaScript client.</li><li>Established the connection to the LifeFlow Supabase project.</li><li>Added the initial cloud database schema.</li><li>Created <code>account_profiles</code> with user-specific Row Level Security (RLS).</li><li>Created <code>encrypted_workspace_backups</code> for future encrypted cloud backups.</li><li>Added database connection testing in the Security section.</li></ul></section>
+      <section><h3>2. Cloud Authentication</h3><ul><li>Added a separate cloud-account registration and sign-in experience.</li><li>Implemented email/password registration and authentication.</li><li>Added password reset functionality.</li><li>Enabled persistent cloud authentication sessions.</li><li>Added authentication callback handling.</li><li>Added automatic cloud profile initialization.</li><li>Preserved the existing local login system as a separate fallback.</li></ul></section>
+      <section><h3>3. Optional Two-Factor Authentication Foundation</h3><ul><li>Added the architecture for optional authenticator-app-based TOTP verification.</li><li>Established the foundation for enrollment, challenge and verification.</li><li>Defined future authentication assurance requirements.</li><li>Kept 2FA separate from the existing local authentication system.</li></ul></section>
+      <section><h3>4. Data Protection &amp; Recovery</h3><ul><li>Established the foundation for encrypted cloud backups.</li><li>Documented the future local-to-cloud migration process.</li><li>Defined multi-device recovery and account security requirements.</li><li>Maintained the existing local-first storage architecture.</li></ul></section>
+      <section><h3>5. Deployment &amp; Security</h3><ul><li>Added Supabase configuration and deployment documentation.</li><li>Added database migration scripts.</li><li>Documented key management and security requirements.</li><li>Preserved existing local workspace data and authentication.</li></ul></section>
+      <section class="lf-release-pending"><h3>6. Important Pending Work</h3><ul><li>Connect cloud identities to existing LifeFlow workspaces.</li><li>Build a safe local-to-cloud migration process.</li><li>Implement encrypted cloud backup and restore.</li><li>Implement multi-device synchronization.</li><li>Complete optional 2FA enrollment and enforcement.</li><li>Complete end-to-end authentication testing.</li><li>Configure and verify production email delivery.</li></ul></section>
+    </article>
+    <article class="lf-release-card lf-release-patch"><div class="lf-release-top"><div><span class="lf-release-version">UI POLISH PATCH</span><h2>Mermaid Diagram Rendering</h2></div><span class="lf-release-status lf-release-status-done">UI update</span></div>
+      <section><h3>Mermaid Diagram Rendering</h3><ul><li>Addressed Mermaid diagram colour contrast in dark mode.</li><li>Introduced theme-aware diagram styling.</li><li>Improved node backgrounds, text contrast, borders and connectors.</li><li>Improved readability of flowcharts and decision diagrams in Notes Preview.</li><li>Preserved the light-mode appearance.</li></ul></section>
+      <section><h3>Notes Manager</h3><ul><li>Improved diagram presentation within the Markdown preview.</li><li>Maintained compatibility with existing Markdown notes and Mermaid syntax.</li></ul></section>
+      <p class="lf-release-footnote">Cloud functionality remains under development. Cloud sign-in does not yet connect, import or sync an existing local workspace.</p>
+    </article>
+  </section>`;
+}
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession())return;
   applyDensity();renderNav();
-  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings',about:'Why LifeFlow'};
+  const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings',releases:'Releases',about:'Why LifeFlow'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
   const u=currentUser();applyTheme(temporaryTheme||u?.theme||'dark');applyWorkspaceAppearance(u);initWorkspaceAtmosphereInteraction();applyAmbientEnvironment();
   document.getElementById('pageSubtitle').textContent=view==='today'?new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}):'';
   const el=document.getElementById('main');
   if(!lifeFlowViewOrchestrator)initializeUIArchitecture();
+  if(view==='releases'){el.innerHTML=renderReleaseNotes();lfAccessibilityPass();initThemePull();return;}
   lifeFlowViewOrchestrator.render({view,state,container:el,onAfterRender:activeView=>{
     if(activeView==='branches')initBranchesGraph(el);
     if(activeView==='notes'){const preview=el.querySelector('#kn_preview');if(preview)renderMarkdownPreview(preview,noteStore('regular').find(n=>String(n.id)===String(lifeFlowNoteController?.selectedId()??window.lfSelectedNote))?.content||'');}
