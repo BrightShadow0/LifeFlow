@@ -1,3 +1,5 @@
+import { migrateWorkspaceState } from './migrations.js';
+
 /**
  * LifeFlow State Manager
  *
@@ -97,7 +99,7 @@ export class StateManager {
 
   #loadForUser(email) {
     const base = this.defaults(email);
-    if (!email) return base;
+    if (!email) return migrateWorkspaceState(base, { defaults: base }).state;
 
     if (this.#loadStateAdapter) {
       try {
@@ -113,14 +115,25 @@ export class StateManager {
 
     const accountState = readJSON(this.#storage, profileStateKey(email));
     if (accountState && typeof accountState === 'object' && !Array.isArray(accountState)) {
-      return { ...base, ...accountState, currentUser: email };
+      const result = migrateWorkspaceState(
+        { ...base, ...accountState, currentUser: email },
+        { defaults: base, currentUser: email }
+      );
+      if (result.migrated) {
+        try { this.#storage.setItem(profileStateKey(email), JSON.stringify(result.state)); }
+        catch (_) { /* Keep the in-memory state; the migration is repeatable. */ }
+      }
+      return result.state;
     }
 
     const legacy = readJSON(this.#storage, LEGACY_STATE_KEY);
     if (legacy && legacy.currentUser === email) {
-      const migrated = { ...base, ...legacy, currentUser: email };
-      // Preserve the old migration behaviour: copy the legacy profile into
-      // its account-scoped key. The debounced writer handles future changes.
+      const migrated = migrateWorkspaceState(
+        { ...base, ...legacy, currentUser: email },
+        { defaults: base, currentUser: email }
+      ).state;
+      // Preserve the previous account-scoping behaviour while tagging the
+      // workspace schema. The original legacy key is deliberately retained.
       try {
         this.#storage.setItem(profileStateKey(email), JSON.stringify(migrated));
         const recovery = globalThis.LifeFlowRecovery;
