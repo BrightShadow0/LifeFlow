@@ -2375,7 +2375,7 @@ function renderAbout(){
   </section>`;
 }
 let accountTab='profile';
-function setAccountTab(t){ accountTab=t; renderApp(); }
+function setAccountTab(t){ accountTab=t; renderApp(); if(t==='security') Promise.resolve().then(()=>refreshLifeFlowCloudSecurity().catch(error=>{const out=document.getElementById('cloudConnectionStatus');if(out)out.textContent=error.message||'Cloud status could not be refreshed.';})); }
 
 let lifeFlowPendingTotpFactorId=null;
 function renderSecurityTab(){
