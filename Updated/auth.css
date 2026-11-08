@@ -471,3 +471,16 @@ body.auth-embed #authScreen .auth-brand-panel{
 
 /* Shared provider button baseline, scoped to the login terminal. */
 #authScreen .oauth-row button{background:var(--bg);border-color:var(--border)}
+
+/* Release 8: separate universal cloud-account entry */
+.cloud-auth-entry{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center;}
+.cloud-auth-panel{margin-top:14px;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--bg);text-align:left;}
+.cloud-auth-panel[hidden]{display:none!important;}
+.cloud-auth-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;color:var(--text);}
+.cloud-auth-heading span,.cloud-auth-panel label span{color:var(--muted);font-size:11px;}
+.cloud-auth-panel p{color:var(--muted);font-size:12px;line-height:1.55;margin:7px 0 13px;}
+.cloud-auth-panel label{display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;margin:10px 0 5px;}
+.cloud-auth-panel input{margin-bottom:4px!important;}
+.cloud-auth-actions{display:grid;gap:8px;margin-top:12px;}
+.cloud-auth-actions .secondary{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:10px;}
+.cloud-auth-message{min-height:18px;margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere;}
