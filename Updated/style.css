@@ -4995,3 +4995,20 @@ body::-webkit-scrollbar-corner{
 #app .lf-release-pending{padding:14px 15px 0;margin-top:12px;border-top:1px dashed var(--border)}
 #app .lf-release-footnote{margin:18px 0 0;padding:12px 14px;border-left:3px solid var(--accent);border-radius:7px;background:var(--surface-2);color:var(--muted);font-size:12px;line-height:1.6}
 @media(max-width:600px){#app .lf-release-hero{padding:19px}#app .lf-release-card{padding:18px}#app .lf-release-top{flex-direction:column}#app .lf-release-top h2{font-size:17px}}
+
+
+/* Release 9: encrypted cloud backup controls */
+#app .cloud-backup-panel{margin:18px 0;padding:19px;border:1px solid var(--border);border-radius:13px;background:var(--panel2)}
+#app .cloud-backup-panel>p{max-width:760px;color:var(--muted);font-size:13px;line-height:1.7}
+#app .cloud-backup-label{display:block;margin:14px 0 7px;font-size:12px;font-weight:750;color:var(--text)}
+#app .cloud-backup-passphrase{display:block;width:100%;max-width:440px;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);font:inherit}
+#app .cloud-backup-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+#app .cloud-backup-status{margin-top:13px;padding:11px 13px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--muted);font-size:12px;line-height:1.6}
+#app .cloud-backup-list{display:grid;gap:8px;margin-top:12px}
+#app .cloud-backup-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface)}
+#app .cloud-backup-item>div{display:grid;gap:4px;min-width:0}
+#app .cloud-backup-item strong{font-size:12px;color:var(--text)}
+#app .cloud-backup-item small{font-size:11px;color:var(--muted)}
+#app .cloud-backup-item button{flex:none}
+#app .cloud-backup-panel .recovery-vault-note{display:block;margin-top:13px}
+@media(max-width:600px){#app .cloud-backup-panel{padding:15px}#app .cloud-backup-item{align-items:flex-start;flex-direction:column}#app .cloud-backup-item button{width:100%}}
