@@ -528,17 +528,19 @@ function cloudWorkspacePayload(snapshot,email){
   fields.forEach(key=>{if(Object.prototype.hasOwnProperty.call(profile,key))accountProfile[key]=profile[key];});
   return {...snapshot,currentUser:email,__lifeFlowAccountProfile:accountProfile};
 }
-function cloudWorkspaceLocalState(payload,email){
+function cloudWorkspaceLocalState(payload,email,applyProfile=true){
   const workspace={...(payload||{}),currentUser:email};
   const accountProfile=workspace.__lifeFlowAccountProfile||{};
   delete workspace.__lifeFlowAccountProfile;
-  const users=getUsers(),profile=users[email]||newUserRecord(email);
-  Object.keys(accountProfile).forEach(key=>{
-    if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'].includes(key))profile[key]=accountProfile[key];
-  });
-  profile.cloudWorkspaceLinked=true;
-  users[email]=profile;
-  saveUsers(users);
+  if(applyProfile){
+    const users=getUsers(),profile=users[email]||newUserRecord(email);
+    Object.keys(accountProfile).forEach(key=>{
+      if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'].includes(key))profile[key]=accountProfile[key];
+    });
+    profile.cloudWorkspaceLinked=true;
+    users[email]=profile;
+    saveUsers(users);
+  }
   return workspace;
 }
 function cloudWorkspaceDiffers(left,right){
@@ -590,7 +592,7 @@ async function finishCloudWorkspaceLogin(cloudUser){
   const passphrase=document.getElementById('cloudWorkspacePassphrase')?.value||'';
   const unlocked=passphrase.trim()?await sync.unlock(passphrase):await sync.resume();
   if(unlocked.hasRemote){
-    const remoteState=cloudWorkspaceLocalState(unlocked.workspace,email);
+    const remoteState=cloudWorkspaceLocalState(unlocked.workspace,email,false);
     if(cloudWorkspaceHasContent(localState)&&cloudWorkspaceDiffers(localState,remoteState)){
       const useRemote=window.confirm('An encrypted cloud workspace already exists and this device has different local data. Use the cloud workspace on this device? A local Recovery Vault checkpoint will preserve the current device copy. Choose Cancel to stop cloud login and keep working locally.');
       if(!useRemote){sync.stop();throw new Error('Cloud workspace loading was cancelled. Your local workspace has not been changed.');}
@@ -722,7 +724,7 @@ async function resumeCloudWorkspaceSession(email){
     const resumed=await window.LifeFlowCloudSync.resume();
     if(resumed.account?.toLowerCase&&resumed.account.toLowerCase()!==String(email).toLowerCase())throw new Error('The stored cloud account does not match this local workspace.');
     const local=lifeFlowTaskStateManager.getState();
-    const remote=cloudWorkspaceLocalState(resumed.workspace,email);
+    const remote=cloudWorkspaceLocalState(resumed.workspace,email,false);
     if(cloudWorkspaceHasContent(local)&&cloudWorkspaceDiffers(local,remote)){
       const useRemote=window.confirm('Your cloud workspace and this device’s saved copy are different. Load the cloud copy now? Your current local copy will be checkpointed.');
       if(!useRemote){window.LifeFlowCloudSync.stop();sessionStorage.removeItem('lifeflow_cloud_workspace_session');return false;}
@@ -757,22 +759,29 @@ async function handleCloudLoginAction(action){
     setCloudAuthMessage('Signing in securely…');
     const result=await api.signIn(fields);if(!result.ok)throw new Error(result.error);
     if(result.requiresMfa){
+      pendingCloudLoginUser=result.user;
       const host=document.getElementById('cloudAuthMessage');
-      host.innerHTML='<p>Authenticator verification is required to finish signing in.</p><label for="cloudLoginMfaCode">Six-digit authenticator code</label><input id="cloudLoginMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"><button type="button" class="primary" data-cloud-auth="verify-mfa" data-factor-id="'+String(result.factorId).replace(/[^a-zA-Z0-9-]/g,'')+'">Verify and finish sign-in</button>';
+      host.innerHTML='<p>Authenticator verification is required before the encrypted workspace can open.</p><label for="cloudLoginMfaCode">Six-digit authenticator code</label><input id="cloudLoginMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"><button type="button" class="primary" data-cloud-auth="verify-mfa" data-factor-id="'+String(result.factorId).replace(/[^a-zA-Z0-9-]/g,'')+'">Verify and open workspace</button>';
       return;
     }
-    setCloudAuthMessage('Cloud sign-in successful for '+(result.user?.email||fields.email)+'. Your existing local workspace remains separate.');
+    await finishCloudWorkspaceLogin(result.user);
   }else if(action==='verify-mfa'){
     const code=document.getElementById('cloudLoginMfaCode')?.value||'';
     const factorId=document.querySelector('#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';
     const result=await api.verifyAuthenticator(factorId,code);
     if(!result.ok)throw new Error(result.error);
-    setCloudAuthMessage('Authenticator verified. Cloud sign-in is complete. Your local workspace remains separate.');
+    const user=pendingCloudLoginUser;pendingCloudLoginUser=null;
+    if(!user)throw new Error('The cloud sign-in expired. Please sign in again.');
+    await finishCloudWorkspaceLogin(user);
   }else if(action==='signup'){
     if(!fields.email||!fields.password){setCloudAuthMessage('Enter an email address and password.',true);return;}
     setCloudAuthMessage('Creating cloud account…');
     const result=await api.signUp(fields);if(!result.ok)throw new Error(result.error);
-    setCloudAuthMessage(result.needsEmailConfirmation?'Account created. Check your inbox for the confirmation link, then return here to sign in. You can resend the email below.':'Cloud account created and signed in. Your local workspace remains separate.');
+    if(result.needsEmailConfirmation){
+      setCloudAuthMessage('Account created. Check your inbox and confirm your email. Then sign in here with a workspace sync passphrase to create or open your encrypted workspace.');
+    }else if(result.user){
+      await finishCloudWorkspaceLogin(result.user);
+    }else setCloudAuthMessage('Cloud account created. Sign in to continue to your encrypted workspace.');
   }else if(action==='reset'){
     if(!fields.email){setCloudAuthMessage('Enter your email address first.',true);return;}
     const result=await api.requestPasswordReset(fields.email);if(!result.ok)throw new Error(result.error);
