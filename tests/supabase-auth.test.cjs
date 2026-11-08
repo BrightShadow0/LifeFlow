@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-function harness({aal='aal1',factor=true,failVerify=false}={}) {
+function harness({aal='aal1',factor=true,nextLevel=factor?'aal2':'aal1',failVerify=false}={}) {
   const calls=[];
   const user={id:'cloud-user',email:'cloud@example.test',user_metadata:{display_name:'Cloud User'}};
   const auth={
@@ -17,7 +17,7 @@ function harness({aal='aal1',factor=true,failVerify=false}={}) {
     getUser:async()=>({data:{user},error:null}),
     onAuthStateChange:callback=>({data:{subscription:{unsubscribe(){}}}}),
     mfa:{
-      getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:aal,nextLevel:factor?'aal2':'aal1'},error:null}),
+      getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:aal,nextLevel},error:null}),
       listFactors:async()=>({data:{all:factor?[{id:'factor-1',status:'verified',factor_type:'totp'}]:[],totp:factor?[{id:'factor-1',status:'verified'}]:[]},error:null}),
       enroll:async()=>({data:{id:'pending-1',type:'totp',totp:{qr_code:'data:image/svg+xml;base64,abc',secret:'secret',uri:'otpauth://test'}},error:null}),
       challenge:async()=>({data:{id:'challenge-1'},error:null}),
@@ -44,7 +44,7 @@ test('password sign-in signals an authenticator challenge when AAL2 is required'
   assert.equal(result.ok,true);assert.equal(result.requiresMfa,true);assert.equal(result.factorId,'factor-1');
 });
 test('blocks sign-in when AAL2 is required but no verified factor is available',async()=>{
-  const h=harness({aal:'aal1',factor:false});
+  const h=harness({aal:'aal1',factor:false,nextLevel:'aal2'});
   const result=await h.api.signIn({email:'a@b.test',password:'long-enough-password'});
   assert.equal(result.ok,false);
   assert.match(result.error,/requires authenticator verification/i);
