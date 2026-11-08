@@ -454,6 +454,52 @@ function renderMarkdownPreview(element,source){
       holder.textContent=code.textContent;
       node.replaceWith(holder);
     });
+    const isDark=document.documentElement.getAttribute('data-theme')!=='light';
+    window.mermaid.initialize({
+      startOnLoad:false,
+      theme:'base',
+      themeVariables:isDark?{
+        background:'transparent',
+        primaryColor:'#172b43',
+        primaryTextColor:'#edf5ff',
+        primaryBorderColor:'#69baff',
+        lineColor:'#8eacd0',
+        secondaryColor:'#203a56',
+        secondaryTextColor:'#edf5ff',
+        secondaryBorderColor:'#79c8e8',
+        tertiaryColor:'#18283b',
+        tertiaryTextColor:'#edf5ff',
+        tertiaryBorderColor:'#6686ad',
+        mainBkg:'#172b43',
+        nodeBorder:'#69baff',
+        clusterBkg:'#111d2d',
+        clusterBorder:'#52749b',
+        edgeLabelBackground:'#1b2d43',
+        textColor:'#edf5ff',
+        titleColor:'#edf5ff',
+        fontFamily:'Inter, system-ui, sans-serif'
+      }:{
+        background:'transparent',
+        primaryColor:'#eaf3ff',
+        primaryTextColor:'#18304a',
+        primaryBorderColor:'#477db7',
+        lineColor:'#54779e',
+        secondaryColor:'#e4eefb',
+        secondaryTextColor:'#18304a',
+        secondaryBorderColor:'#6a91bd',
+        tertiaryColor:'#f2f6fc',
+        tertiaryTextColor:'#18304a',
+        tertiaryBorderColor:'#8ba5c4',
+        mainBkg:'#eaf3ff',
+        nodeBorder:'#477db7',
+        clusterBkg:'#f5f8fc',
+        clusterBorder:'#9bb0ca',
+        edgeLabelBackground:'#f5f8fc',
+        textColor:'#18304a',
+        titleColor:'#18304a',
+        fontFamily:'Inter, system-ui, sans-serif'
+      }
+    });
     window.mermaid.run({nodes:element.querySelectorAll('.mermaid')}).catch(function(){});
   }
 }
