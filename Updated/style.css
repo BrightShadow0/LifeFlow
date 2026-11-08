@@ -5021,3 +5021,14 @@ body::-webkit-scrollbar-corner{
 #app .cloud-backup-item-actions .danger{border:1px solid var(--danger,var(--border));color:var(--danger,var(--text));background:transparent}
 #app .cloud-backup-item-actions button{font-size:11px;padding:8px 10px}
 @media(max-width:600px){#app .cloud-backup-item-actions{width:100%}#app .cloud-backup-item-actions button{flex:1}}
+
+
+/* Release 10: cloud identity and authenticator management */
+.cloud-security-actions{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.cloud-mfa-enrollment{margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.cloud-mfa-enrollment img{display:block;width:min(220px,100%);height:auto;margin:12px auto;border-radius:8px;background:#fff;padding:10px}
+.cloud-mfa-enrollment input{width:100%;max-width:240px;letter-spacing:.22em;font-variant-numeric:tabular-nums}
+.cloud-mfa-factor{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.cloud-mfa-factor:last-child{border-bottom:0}
+.cloud-mfa-factor span{font-size:13px;color:var(--text)}
+@media(max-width:560px){.cloud-security-actions>*{flex:1 1 100%}.cloud-mfa-factor{align-items:flex-start;flex-direction:column}}
