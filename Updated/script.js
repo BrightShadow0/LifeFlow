@@ -1856,7 +1856,8 @@ function renderList(){
   const list = state.tasks
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  const completedCount=state.tasks.filter(t=>t.done).length;\n  const events=(Array.isArray(state.events)?state.events:[]).filter(e=>e.startAt&&new Date(e.endAt||e.startAt)>=today).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));
+  const completedCount=state.tasks.filter(t=>t.done).length;
+  const events=(Array.isArray(state.events)?state.events:[]).filter(e=>e.startAt&&new Date(e.endAt||e.startAt)>=today).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));
   return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><div class="task-toolbar-actions"><button type="button" class="complete-all-button" data-lf-action="complete-all" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" data-lf-action="clear-completed" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>${events.length?`<div class="card"><div class="section-heading"><div><h2>Upcoming events</h2><p>Calendar events are shown here, separately from tasks.</p></div><span class="section-count">${events.length}</span></div><div class="dashboard-event-list">${events.map(dashboardEventRow).join('')}</div></div>`:''}`;
 }
 
