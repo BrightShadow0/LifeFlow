@@ -35,6 +35,7 @@ jobs:
           node --check Updated/supabase-auth.js
           node --check Updated/live-calendar.js
           node --check Updated/calendar-notifications.js
+          node --check Updated/push-config.js
           node --check service-worker.js
       - name: Check ES modules
         run: |
