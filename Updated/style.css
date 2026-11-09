@@ -5136,27 +5136,64 @@ body::-webkit-scrollbar-corner{
 }
 
 
-/* Background collections: one-click wallpaper selection, matched to the active
-   LifeFlow accent and automatically tuned for Light or Dark mode. */
+/* Background collections. The chosen style is independent of the active
+   accent and appearance mode: CSS remaps the same collection automatically. */
+#app[data-workspace-background]{background-color:#f5f7fb!important;background-repeat:repeat!important;transition:background-color .25s ease,background-image .25s ease;}
+#app[data-theme="dark"][data-workspace-background]{background-color:#07111f!important;}
+#app[data-workspace-background]::before{content:none!important;display:none!important;}
 #app[data-workspace-background="single-hue-landscape"]{
-  background-image:radial-gradient(ellipse 90% 72% at 50% 0%,color-mix(in srgb,var(--accent) 23%,transparent),transparent 72%)!important;
+  background-image:
+    radial-gradient(ellipse 78% 48% at 72% 4%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 74%),
+    linear-gradient(155deg,transparent 0 47%,color-mix(in srgb,var(--accent) 13%,#dce6f3) 47.2% 62%,transparent 62.2%),
+    linear-gradient(24deg,color-mix(in srgb,var(--accent) 17%,#e8edf5) 0 24%,transparent 24.2%),
+    linear-gradient(180deg,#f8faff 0%,#e9eff8 100%)!important;
+  background-size:cover!important;
+}
+#app[data-theme="dark"][data-workspace-background="single-hue-landscape"]{
+  background-image:
+    radial-gradient(ellipse 78% 48% at 72% 4%,color-mix(in srgb,var(--accent) 25%,transparent),transparent 74%),
+    linear-gradient(155deg,transparent 0 47%,color-mix(in srgb,var(--accent) 20%,#111b2d) 47.2% 62%,transparent 62.2%),
+    linear-gradient(24deg,color-mix(in srgb,var(--accent) 18%,#091323) 0 24%,transparent 24.2%),
+    linear-gradient(180deg,#101d30 0%,#07111f 100%)!important;
 }
 #app[data-workspace-background="dithered-images"]{
   background-image:
-    radial-gradient(ellipse 85% 65% at 50% 0%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 72%),
-    repeating-linear-gradient(0deg,color-mix(in srgb,var(--accent) 17%,transparent) 0 2px,transparent 2px 9px),
-    repeating-linear-gradient(90deg,color-mix(in srgb,var(--accent) 17%,transparent) 0 2px,transparent 2px 9px)!important;
-  background-size:auto,18px 18px,18px 18px!important;
+    radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 15%,transparent),transparent 72%),
+    radial-gradient(circle,color-mix(in srgb,var(--accent) 30%,#71839b) 1px,transparent 1.5px),
+    radial-gradient(circle,color-mix(in srgb,var(--accent) 17%,#9aa9bc) 1px,transparent 1.5px)!important;
+  background-size:auto,8px 8px,8px 8px!important;background-position:center,0 0,4px 4px!important;
+  background-color:#f1f4f9!important;
+}
+#app[data-theme="dark"][data-workspace-background="dithered-images"]{
+  background-image:
+    radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 72%),
+    radial-gradient(circle,color-mix(in srgb,var(--accent) 34%,#b7c3d5) 1px,transparent 1.5px),
+    radial-gradient(circle,color-mix(in srgb,var(--accent) 20%,#72839a) 1px,transparent 1.5px)!important;
+  background-color:#081426!important;
 }
 #app[data-workspace-background="specked"]{
   background-image:
-    radial-gradient(ellipse 90% 70% at 50% 0%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 75%),
-    radial-gradient(color-mix(in srgb,var(--accent) 28%,transparent) .75px,transparent 1px)!important;
-  background-size:auto,6px 6px!important;
+    radial-gradient(ellipse 90% 75% at 50% 0%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 78%),
+    radial-gradient(color-mix(in srgb,var(--accent) 34%,#26384f) .7px,transparent 1px),
+    radial-gradient(color-mix(in srgb,var(--accent) 19%,#62748a) .55px,transparent .9px)!important;
+  background-size:auto,4px 4px,7px 7px!important;background-position:center,0 0,2px 3px!important;
+  background-color:#f5f8fc!important;
 }
-#app[data-workspace-background="single-hue-landscape"]::before,
-#app[data-workspace-background="dithered-images"]::before,
-#app[data-workspace-background="specked"]::before{pointer-events:none;}
+#app[data-theme="dark"][data-workspace-background="specked"]{
+  background-image:
+    radial-gradient(ellipse 90% 75% at 50% 0%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 78%),
+    radial-gradient(rgba(224,233,246,.62) .65px,transparent 1px),
+    radial-gradient(color-mix(in srgb,var(--accent) 34%,#8799b1) .55px,transparent .9px)!important;
+  background-size:auto,4px 4px,7px 7px!important;background-position:center,0 0,2px 3px!important;
+  background-color:#071426!important;
+}
+/* The three previews use the same live accent and light/dark mode as the canvas. */
+.background-single-hue-landscape .background-swatch{background-image:linear-gradient(155deg,transparent 0 48%,color-mix(in srgb,var(--accent) 35%,#dce6f3) 48.2% 64%,transparent 64.2%),linear-gradient(180deg,#f8faff,#e5ebf5)!important;}
+.background-dithered-images .background-swatch{background-image:radial-gradient(circle,color-mix(in srgb,var(--accent) 75%,#53657c) 1px,transparent 1.5px),radial-gradient(circle,color-mix(in srgb,var(--accent) 35%,#8797aa) 1px,transparent 1.5px)!important;background-size:8px 8px,8px 8px!important;background-position:0 0,4px 4px!important;}
+.background-specked .background-swatch{background-image:radial-gradient(color-mix(in srgb,var(--accent) 50%,#33445a) .7px,transparent 1px),radial-gradient(#8c9bad .55px,transparent .9px)!important;background-size:4px 4px,7px 7px!important;background-position:0 0,2px 3px!important;}
+:root[data-theme="dark"] .background-single-hue-landscape .background-swatch{background-image:linear-gradient(155deg,transparent 0 48%,color-mix(in srgb,var(--accent) 30%,#111b2d) 48.2% 64%,transparent 64.2%),linear-gradient(180deg,#101d30,#07111f)!important;}
+:root[data-theme="dark"] .background-dithered-images .background-swatch{background-image:radial-gradient(circle,rgba(224,233,246,.7) 1px,transparent 1.5px),radial-gradient(color-mix(in srgb,var(--accent) 55%,#8799b1) 1px,transparent 1.5px)!important;}
+:root[data-theme="dark"] .background-specked .background-swatch{background-image:radial-gradient(rgba(224,233,246,.72) .7px,transparent 1px),radial-gradient(color-mix(in srgb,var(--accent) 55%,#8799b1) .55px,transparent .9px)!important;}
 .background-collection-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 20px;}
 .background-collection{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;min-width:0;padding:10px;border:1px solid var(--border);border-radius:13px;background:var(--surface);color:var(--text);text-align:left;cursor:pointer;transition:border-color .18s ease,background .18s ease,transform .18s ease;}
 .background-collection:hover{transform:translateY(-2px);border-color:var(--accent);}
