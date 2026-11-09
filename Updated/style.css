@@ -5246,6 +5246,27 @@ body::-webkit-scrollbar-corner{
   opacity:0!important;
 }
 
+/* Calendar event chip label spacing: keep EVENT distinct from the event title. */
+#app #main .cal-event-chip{
+  display:flex!important;
+  align-items:baseline!important;
+  column-gap:12px!important;
+}
+#app #main .cal-event-chip .cal-item-kind{
+  display:inline-block!important;
+  flex:0 0 auto!important;
+  margin-right:4px!important;
+  font-size:7px!important;
+  letter-spacing:.1em!important;
+  line-height:1.4!important;
+}
+#app #main .cal-event-chip .cal-task-title{
+  display:block!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  margin-left:0!important;
+}
+
 /* Calendar secondary actions: use the active LifeFlow accent in every theme. */
 #app #main .cal-calendar-actions button.secondary,
 #app #main #lfOtherCalendars button.secondary{
