@@ -5268,3 +5268,10 @@ body::-webkit-scrollbar-corner{
 .dashboard-event-main .meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 .dashboard-event-row>.linklike{flex:none}
 @media(max-width:520px){.dashboard-event-row{align-items:flex-start;flex-wrap:wrap}.dashboard-event-row>.linklike{margin-left:auto}}
+
+
+/* Quick Capture actions inside the global command palette. */
+.command-section-label{padding:10px 12px 5px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.command-capture-result{border-color:var(--border);background:var(--surface-2);margin-top:4px}
+.command-capture-result b{font-size:12px}
+.command-capture-result span{max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
