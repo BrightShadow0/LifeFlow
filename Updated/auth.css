@@ -496,8 +496,23 @@ body.auth-embed #authScreen .auth-brand-panel{
 #cloudSyncPassphraseWrap input{margin:0!important}
 #cloudSyncPassphraseWrap small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}
 
-/* Theme-aware authentication checkboxes */
-.authstep input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:0 0 18px;margin:0;border:1.5px solid var(--muted);border-radius:5px;background:var(--bg);accent-color:var(--accent);display:inline-grid;place-content:center;cursor:pointer;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
-.authstep input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
-.authstep input[type="checkbox"]:checked::before{content:"";width:8px;height:4px;border:2px solid var(--bg);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
-.authstep input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* Compact, theme-aware authentication checkboxes. Override auth form field sizing explicitly. */
+#authScreen .authstep input[type="checkbox"]{
+  -webkit-appearance:none!important;appearance:none!important;box-sizing:border-box!important;
+  display:inline-grid!important;place-content:center!important;
+  width:18px!important;min-width:18px!important;max-width:18px!important;
+  height:18px!important;min-height:18px!important;max-height:18px!important;
+  flex:0 0 18px!important;padding:0!important;margin:0!important;
+  border:1.5px solid var(--muted)!important;border-radius:5px!important;
+  background:var(--bg)!important;box-shadow:none;cursor:pointer;vertical-align:middle;
+}
+#authScreen .authstep input[type="checkbox"]:checked{
+  background:var(--accent)!important;border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);
+}
+#authScreen .authstep input[type="checkbox"]:checked::before{
+  content:"";width:8px;height:4px;border:2px solid var(--bg);
+  border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px);
+}
+#authScreen .authstep input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#authScreen .auth-cloud-mode{background:color-mix(in srgb,var(--card) 92%,var(--bg))}
