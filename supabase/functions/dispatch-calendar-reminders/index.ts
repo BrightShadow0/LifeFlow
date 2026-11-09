@@ -12,7 +12,7 @@ Deno.serve(async req=>{
  if(req.method!=="POST")return reply({ok:false,error:"Method not allowed."},405);
  const secret=Deno.env.get("REMINDER_CRON_SECRET");if(!secret||req.headers.get("Authorization")!=="Bearer "+secret)return reply({ok:false,error:"Unauthorized."},401);
  const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
- const now=Date.now(),from=new Date(now-5*60000),to=new Date(now+60000),{data:events,error}=await db.from("calendar_events").select("*,shared_calendars!inner(id,owner_id,name)").gt("starts_at",new Date(now-2*60000).toISOString()).lte("starts_at",new Date(now+7*86400000).toISOString());
+ const now=Date.now(),from=new Date(now-5*60000),to=new Date(now+60000),{data:events,error}=await db.from("calendar_events").select("*,shared_calendars!inner(id,owner_id,name)").gt("starts_at",new Date(now-2*60000).toISOString()).lte("starts_at",new Date(now+8*86400000).toISOString());
  if(error)return reply({ok:false,error:"Could not load upcoming events."},500);
  let processed=0,delivered=0,failed=0;
  async function claim(event:any,userId:string|null,recipientKey:string,channel:string){
