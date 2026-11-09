@@ -40,7 +40,7 @@
   function validateWorkspace(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Workspace data is invalid.');
     const clean = { ...value };
-    ['tasks', 'notes', 'codeNotes', 'folders', 'noteLinks'].forEach(name => {
+    ['tasks', 'notes', 'codeNotes', 'folders', 'noteLinks', 'events'].forEach(name => {
       if (clean[name] === undefined) clean[name] = [];
       if (!Array.isArray(clean[name])) throw new Error('Workspace collection "' + name + '" is invalid.');
     });
