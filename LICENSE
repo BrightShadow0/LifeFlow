@@ -1,21 +1,108 @@
-MIT License
+LifeFlow Source-Available License (Non-Commercial) v1.0
+Effective date: 9 November 2026
 
-Copyright (c) 2026 BrightShadow0
+Copyright (c) 2026 BrightShadow0. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+IMPORTANT
+This is a custom, proprietary source-available licence. It is not an
+OSI-approved open-source licence. The source code is publicly visible, but
+public availability does not grant unrestricted permission to use, copy,
+modify, distribute, or commercialise it.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. DEFINITIONS
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+"Software" means the LifeFlow application source code and accompanying
+project materials owned by the copyright holder and made available in this
+repository.
+
+"Copyright Holder" means BrightShadow0, or the person or entity that
+demonstrably owns the applicable copyright.
+
+2. LIMITED PERMISSION
+
+Subject to these terms, the Copyright Holder grants you a limited,
+non-exclusive, non-transferable, non-sublicensable permission to:
+
+(a) view and inspect the publicly available Software;
+(b) download and retain a copy solely for personal study, educational
+    evaluation, and non-commercial research; and
+(c) run an unmodified copy locally solely for your own personal,
+    non-commercial evaluation.
+
+This permission does not transfer ownership of the Software or any
+intellectual-property rights.
+
+3. RESTRICTIONS
+
+Unless you first obtain express written permission from the Copyright
+Holder, you must not:
+
+(a) use the Software or any part of it for commercial or revenue-generating
+    purposes;
+(b) sell, rent, lease, sublicense, publish, redistribute, or commercially
+    exploit the Software or copies or substantial portions of it;
+(c) incorporate the Software or substantial portions of it into another
+    product, service, platform, or hosted offering;
+(d) use the Software or substantial portions of it to create, market, or
+    operate a product or service that competes with LifeFlow;
+(e) make modified or derivative versions available to another person or
+    distribute such versions;
+(f) remove, obscure, or alter copyright, attribution, or proprietary notices;
+or
+(g) imply that you own, endorse, or are affiliated with LifeFlow or the
+    Copyright Holder.
+
+You may make private, local modifications only to the extent reasonably
+necessary for personal study and non-commercial evaluation. You may not
+publish, distribute, or commercially use those modifications.
+
+4. NO IMPLIED RIGHTS
+
+All rights not expressly granted in this licence are reserved. No permission
+is granted by implication, estoppel, or otherwise. In particular, no right
+to commercial use, redistribution, sublicensing, or creation of competing
+products is granted.
+
+5. THIRD-PARTY MATERIAL
+
+This licence does not replace or override the terms of third-party software,
+libraries, fonts, icons, images, or other materials included in or used by
+the project. Those materials remain subject to their own applicable licences
+and notices. Where a third-party licence conflicts with this document, the
+third-party licence governs that third-party material.
+
+6. TERMINATION
+
+The permission granted by this licence terminates automatically if you
+materially breach its terms. Upon termination, you must stop the uses that
+are no longer authorised and destroy copies in your possession, except to
+the extent retention is required by applicable law.
+
+7. DISCLAIMER
+
+To the maximum extent permitted by applicable law, the Software is provided
+"AS IS", without warranties or conditions of any kind, whether express or
+implied, including warranties of merchantability, fitness for a particular
+purpose, title, and non-infringement.
+
+8. LIMITATION OF LIABILITY
+
+To the maximum extent permitted by applicable law, the Copyright Holder
+will not be liable for any indirect, incidental, special, consequential, or
+punitive damages, or for loss of data, profits, revenue, or business arising
+from or related to the Software or this licence.
+
+9. GOVERNING LAW
+
+This licence is governed by the laws of India. Subject to applicable law,
+the courts having jurisdiction at Mumbai, Maharashtra, India shall have
+jurisdiction over disputes arising from this licence.
+
+10. CONTACT AND ADDITIONAL PERMISSION
+
+For written permission beyond the limited rights granted here, contact the
+Copyright Holder through the contact details published in the LifeFlow
+repository.
+
+If any provision of this licence is held unenforceable, the remaining
+provisions continue to apply to the extent permitted by law.
