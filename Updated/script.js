@@ -812,18 +812,20 @@ async function handleCloudLoginAction(action){
     const result=await api.signIn(fields);if(!result.ok)throw new Error(result.error);
     if(result.requiresMfa){
       pendingCloudLoginUser=result.user;
-      const host=document.getElementById('cloudAuthMessage');
+      const integrated=document.getElementById('useUniversalCloud')?.checked,host=integrated?document.getElementById('cloudLoginMfaHost'):document.getElementById('cloudAuthMessage');
+      if(integrated&&host)host.hidden=false;
       host.innerHTML='<p>Authenticator verification is required before the encrypted workspace can open.</p><label for="cloudLoginMfaCode">Six-digit authenticator code</label><input id="cloudLoginMfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"><button type="button" class="primary" data-cloud-auth="verify-mfa" data-factor-id="'+String(result.factorId).replace(/[^a-zA-Z0-9-]/g,'')+'">Verify and open workspace</button>';
       return;
     }
     await finishCloudWorkspaceLogin(result.user);
   }else if(action==='verify-mfa'){
     const code=document.getElementById('cloudLoginMfaCode')?.value||'';
-    const factorId=document.querySelector('#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';
+    const factorId=document.querySelector('#cloudLoginMfaHost [data-cloud-auth="verify-mfa"],#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';
     const result=await api.verifyAuthenticator(factorId,code);
     if(!result.ok)throw new Error(result.error);
     const user=pendingCloudLoginUser;pendingCloudLoginUser=null;
     if(!user)throw new Error('The cloud sign-in expired. Please sign in again.');
+    const mfaHost=document.getElementById('cloudLoginMfaHost');if(mfaHost){mfaHost.hidden=true;mfaHost.innerHTML='';}
     await finishCloudWorkspaceLogin(user);
   }else if(action==='signup'){
     if(!fields.email||!fields.password){setCloudAuthMessage('Enter an email address and password.',true);return;}
