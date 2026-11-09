@@ -1046,8 +1046,7 @@ function disposeWorkspaceSubscriptions(){
   lifeFlowThemeController?.destroy?.();
 }
 const LIFE_FLOW_APPEARANCE_KEYS = [
-  'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop', 'workspaceBackdropLight',
-  'translucentSidebar', 'interactiveAtmosphere'
+  'theme', 'autoTheme', 'colorTheme', 'ambient'
 ];
 function readAppearancePreferences(user) {
   const preferences = {};
@@ -1287,16 +1286,6 @@ function normalizedBackdropTheme(u=currentUser()){
   if(theme==='gold') theme='sapphire';
   if(theme==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) theme='sapphire';
   return theme;
-}
-function workspaceBackdropOptions(u=currentUser()){
-  const theme=normalizedBackdropTheme(u);
-  const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
-  const activeTheme=u?.autoTheme?systemTheme():(u?.theme||'dark');
-  const selected=activeTheme==='light'?theme+'-light':(options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0]);
-  return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" data-app-action="set-backdrop" data-backdrop-id="${id}" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
-}
-function defaultBackdropForTheme(theme){
-  return (WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire)[0][0];
 }
 function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
@@ -3203,7 +3192,7 @@ function subCustomisation(themes,u,a){
 }
 function updateAmbientMode(enabled){updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientMode:enabled});});}
 function updateAmbientIntensity(value){const levels=['low','medium','high'];updateUser(u=>{u.ambient=Object.assign(ambientSettings(u),{ambientIntensity:levels[+value]||'medium'});});}
-function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.workspaceBackdrop='amethyst';u.workspaceBackgroundCollection='single-hue-landscape';u.translucentSidebar=true;u.interactiveAtmosphere=true;u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
+function resetCustomisation(){updateUser(u=>{u.theme='dark';u.autoTheme=false;u.colorTheme='platinum';u.ambient={ambientMode:true,ambientIntensity:'medium'};});}
 function onAvatarChange(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
