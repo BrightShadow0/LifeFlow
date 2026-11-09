@@ -1231,19 +1231,24 @@ function applyTheme(theme){
 }
 const WORKSPACE_BACKDROP_GROUPS={
   sapphire:[
-    ['blue-hour','Blue Hour','Cobalt twilight and deep blue silhouettes']
+    ['blue-hour','Sapphire Dark','Existing midnight-blue atmosphere'],
+    ['sapphire-light','Sapphire Light','Airy blue gradients with luminous contour waves']
   ],
   emerald:[
-    ['green-hour','Green Hour','Sunlight filtering through a lush forest']
+    ['green-hour','Emerald Dark','Existing deep-green atmosphere'],
+    ['emerald-light','Emerald Light','Fresh mint gradients with luminous contour waves']
   ],
   platinum:[
-    ['grey-hour','Grey Hour','Foggy trees and soft silver-grey tones']
+    ['grey-hour','Platinum Dark','Existing silver-grey atmosphere'],
+    ['platinum-light','Platinum Light','Soft pearl gradients with delicate silver waves']
   ],
   amethyst:[
-    ['purple-hour','Purple Hour','Violet twilight and deep indigo silhouettes']
+    ['purple-hour','Amethyst Dark','Existing violet atmosphere'],
+    ['amethyst-light','Amethyst Light','Lavender gradients with luminous flowing waves']
   ],
   ruby:[
-    ['red-hour','Red Hour','Fiery red clouds above a dark horizon']
+    ['red-hour','Ruby Dark','Existing crimson atmosphere'],
+    ['ruby-light','Ruby Light','Soft rose gradients with luminous contour waves']
   ]
 };
 function normalizedBackdropTheme(u=currentUser()){
@@ -1256,7 +1261,8 @@ function normalizedBackdropTheme(u=currentUser()){
 function workspaceBackdropOptions(u=currentUser()){
   const theme=normalizedBackdropTheme(u);
   const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
-  const selected=options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0];
+  const activeTheme=u?.autoTheme?systemTheme():(u?.theme||'dark');
+  const selected=activeTheme==='light'?theme+'-light':(options.some(([id])=>id===u?.workspaceBackdrop)?u.workspaceBackdrop:options[0][0]);
   return options.map(([id,name,desc])=>`<button type="button" class="backdrop-option backdrop-${id} ${selected===id?'active':''}" data-app-action="set-backdrop" data-backdrop-id="${id}" aria-pressed="${selected===id}"><span class="backdrop-preview"><i></i><b></b><em></em></span><span class="backdrop-option-copy"><strong>${name}</strong><small>${desc}</small></span><b class="backdrop-check">${selected===id?'✓':'○'}</b></button>`).join('');
 }
 function defaultBackdropForTheme(theme){
@@ -1269,8 +1275,8 @@ function applyWorkspaceAppearance(u=currentUser()){
   const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
   const validIds=options.map(option=>option[0]);
   let backdrop=u?.workspaceBackdrop;
-  if(!validIds.includes(backdrop)){
-    // `darkMode` was never defined; this branch could throw before any page content rendered.
+  if(!validIds.includes(backdrop) || String(backdrop).endsWith('-light')){
+    // Keep each account's existing dark wallpaper choice intact.
     backdrop=defaultBackdropForTheme(theme);
     if(u && u.workspaceBackdrop!==backdrop){
       const users=getUsers();
@@ -1281,7 +1287,10 @@ function applyWorkspaceAppearance(u=currentUser()){
       }
     }
   }
-  if(app) app.setAttribute('data-workspace-backdrop',backdrop);
+  const activeTheme=u?.autoTheme?systemTheme():(u?.theme||'dark');
+  const lightBackdropId=theme+'-light';
+  const displayedBackdrop=activeTheme==='light'?lightBackdropId:backdrop;
+  if(app) app.setAttribute('data-workspace-backdrop',displayedBackdrop);
   root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
   root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
 }
@@ -1296,6 +1305,9 @@ function setWorkspaceBackdrop(backdrop){
   const theme=normalizedBackdropTheme(u);
   const allowed=(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
   if(!allowed.includes(backdrop))return;
+  // Dark choices remain the stored legacy IDs; Light is selected automatically
+  // for the active light theme and never overwrites the user's dark wallpaper.
+  if(String(backdrop).endsWith('-light')) return;
   updateUser(user=>{user.workspaceBackdrop=backdrop;});
 }
 function setTranslucentSidebar(enabled){
