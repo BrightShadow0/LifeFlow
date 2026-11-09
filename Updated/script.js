@@ -638,7 +638,15 @@ async function finishCloudWorkspaceLogin(cloudUser){
   state=lifeFlowTaskStateManager.getState();
   const localState=state;
   const passphrase=document.getElementById('cloudWorkspacePassphrase')?.value||'';
-  const unlocked=passphrase.trim()?await sync.unlock(passphrase):await sync.resume();
+  let unlocked;
+  try{
+    unlocked=passphrase.trim()?await sync.unlock(passphrase):await sync.resume();
+  }catch(error){
+    if(error?.name==='OperationError'||/decrypt|operation-specific/i.test(error?.message||'')){
+      throw new Error('The workspace sync passphrase did not unlock this cloud workspace. Use the exact passphrase that was set when the original encrypted workspace was created. Your cloud account password is different.');
+    }
+    throw error;
+  }
   if(unlocked.hasRemote){
     const remoteState=cloudWorkspaceLocalState(unlocked.workspace,email,false);
     if(cloudWorkspaceHasContent(localState)&&cloudWorkspaceDiffers(localState,remoteState)){
