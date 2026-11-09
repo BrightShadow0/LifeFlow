@@ -1,64 +1,47 @@
-# LifeFlow Supabase foundation
+# LifeFlow Supabase services
 
-This directory contains the initial database scaffold. It does not connect the deployed LifeFlow website to Supabase yet, and it does not change existing local authentication or localStorage/IndexedDB data.
+## Release 8: live calendar sharing and reminders
 
-## Included
+Apply migrations in timestamp order with the Supabase CLI:
 
-- config.toml: Supabase CLI project configuration without credentials.
-- migrations/20261108000100_lifeflow_cloud_foundation.sql: account profile metadata and immutable encrypted-backup records with Row Level Security (RLS).
+```sh
+supabase db push
+```
 
-The backup table is designed for client-side encrypted ciphertext only. Do not upload raw tasks, notes, folders, calendar events, passwords, TOTP secrets, or encryption keys.
+### Live calendars
+- Owners create calendars and control access.
+- `read_only` members can view; `read_write` members can edit event details and locations.
+- Only owners can add members, change roles, or revoke access. Members cannot invite others.
+- The invitation Edge Function stores only SHA-256 token hashes; links expire after seven days and can be accepted only by the signed-in account matching the invited email.
+- Live calendar data is stored separately from the encrypted workspace sync record. Only events the owner explicitly publishes to a shared calendar are readable by its members. Do not assume these dedicated shared-calendar rows are end-to-end encrypted.
+- The calendar-events table is added to Supabase Realtime when the standard publication exists.
 
-## Prerequisites and linking
+### Deploy Edge Functions
 
-1. Create a Supabase account and a new project in the Supabase Dashboard.
-2. Keep the database password in a password manager.
-3. Install the Supabase CLI using https://supabase.com/docs/guides/cli
-4. From the repository root, authenticate and link the project:
+```sh
+supabase functions deploy calendar-invites
+supabase functions deploy dispatch-calendar-reminders --no-verify-jwt
+```
 
-   ```sh
-   supabase login
-   supabase link --project-ref YOUR_PROJECT_REF
-   ```
+Set these Edge Function secrets in Supabase (never in browser assets or Git):
 
-5. Review the migration, then apply it:
+- Supabase-provided: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- App: `APP_ORIGIN`, `APP_BASE_URL`
+- Email: `RESEND_API_KEY`, `INVITE_FROM_EMAIL`, `REMINDER_FROM_EMAIL`
+- Scheduler: `REMINDER_CRON_SECRET`
+- Web Push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+- WhatsApp Cloud API: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`
+- Twilio SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_SMS_FROM`
 
-   ```sh
-   supabase db push
-   ```
+Configure a Supabase Cron job or trusted scheduler to POST to `/functions/v1/dispatch-calendar-reminders` every minute with `Authorization: Bearer <REMINDER_CRON_SECRET>`. Do not expose that secret to the browser.
 
-6. Verify in the Dashboard that both tables have RLS enabled and the listed policies are present.
+Email/WhatsApp/SMS/push remain unavailable until their provider credentials, sender identity, and compliance requirements are configured. Push also requires HTTPS and the VAPID public key passed to `LifeFlowNotifications.enablePush(publicKey)`.
 
-## Authentication configuration
+### Browser services
+- `Updated/live-calendar.js`: owner/member/event/invitation operations and realtime event subscriptions.
+- `Updated/calendar-notifications.js`: per-user channel preferences, push registration, and in-app notification feed.
+- `/service-worker.js`: background push display and click-through.
+- Existing local-only events and encrypted workspace sync are not silently uploaded. The owner must explicitly publish an event to a shared calendar.
 
-In the Supabase Dashboard:
-
-- Configure the production Site URL and exact redirect URLs for the LifeFlow deployment origin.
-- Enable only sign-in providers that have been fully configured and tested. Remove demo-mode OAuth buttons from any production authentication path.
-- Configure SMTP before relying on email confirmation or password reset. Supabase's default email service is for testing and has delivery limitations.
-- Enable TOTP MFA (App Authenticator) for the project. Keep enrollment optional for LifeFlow users.
-- Test the AAL1-to-AAL2 login flow and ensure no authenticated workspace UI/data is exposed while a user with an enrolled factor is still at AAL1.
-- Do not globally require AAL2 for every account if 2FA is optional. Apply AAL2 checks to explicitly sensitive operations where appropriate.
-
-Supabase Auth manages TOTP factors and exposes enrollment, challenge, verify, and assurance-level APIs. Supabase Auth does not provide built-in user recovery codes. For the initial rollout, document a second authenticator factor as the backup method. If LifeFlow later requires one-time recovery codes, implement a dedicated server-side recovery-code service with salted hashes, atomic single-use consumption, rate limits, and security audit events. Never simulate recovery codes in the frontend.
-
-## Secrets and browser configuration
-
-- The Supabase project URL and publishable/anon key are designed for browser use when RLS is correctly configured.
-- A Supabase service_role key, secret API key, database password, JWT signing secret, SMTP credential, and encryption master key must never be committed or embedded in Updated/ browser assets.
-- Store server secrets in Supabase Edge Function secrets or the hosting provider's secret manager.
-- Do not put credentials in GitHub Actions logs or repository files.
-- Never disable RLS to make a request work.
-
-## Current status
-
-- Database scaffold: committed and manually applied in the Supabase project.
-- Database tables and RLS enabled: visually verified in the dashboard.
-- Browser client connectivity: verified from LifeFlow's Security tab.
-- Supabase Auth service wrapper: loaded as a foundation, not yet wired to the login/signup forms.
-- Existing local authentication: remains active and unchanged.
-- Universal account migration: not enabled.
-- TOTP MFA UI/login enforcement: not enabled.
-- Encrypted cloud backup and sync: not enabled.
-
-The current LifeFlow local login, local workspace data, and Release 6 IndexedDB Recovery Vault remain the active system until a separate, tested migration release is approved.
+### Current integration boundary
+This release adds the database, RLS policies, Edge Functions, and browser service primitives. The interactive Calendar UI for creating shared calendars, managing the **Other Calendars** list, invitations, role changes, guest management, and channel preferences still needs to be wired to these services. The Supabase migration, Edge Function deployment, provider secrets, and scheduled invocation are external setup steps; this repository cannot apply them to the hosted Supabase project by itself.
