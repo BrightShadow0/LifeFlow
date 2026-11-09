@@ -30,12 +30,12 @@ Set these Edge Function secrets in Supabase (never in browser assets or Git):
 - Email: `RESEND_API_KEY`, `INVITE_FROM_EMAIL`, `REMINDER_FROM_EMAIL`
 - Scheduler: `REMINDER_CRON_SECRET`
 - Web Push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
-- WhatsApp Cloud API: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`
+- WhatsApp Cloud API: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TEMPLATE_NAME`, `WHATSAPP_TEMPLATE_LANGUAGE`
 - Twilio SMS: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_SMS_FROM`
 
 Configure a Supabase Cron job or trusted scheduler to POST to `/functions/v1/dispatch-calendar-reminders` every minute with `Authorization: Bearer <REMINDER_CRON_SECRET>`. Do not expose that secret to the browser.
 
-Email/WhatsApp/SMS/push remain unavailable until their provider credentials, sender identity, and compliance requirements are configured. Push also requires HTTPS and the VAPID public key passed to `LifeFlowNotifications.enablePush(publicKey)`.
+Email/WhatsApp/SMS/push remain unavailable until their provider credentials, sender identity, and compliance requirements are configured. WhatsApp reminders use an approved business-initiated message template; configure its exact approved name, language, and four body placeholders (event, time, location, Maps link). Push also requires HTTPS and the VAPID public key passed to `LifeFlowNotifications.enablePush(publicKey)`.
 
 ### Browser services
 - `Updated/live-calendar.js`: owner/member/event/invitation operations and realtime event subscriptions.
