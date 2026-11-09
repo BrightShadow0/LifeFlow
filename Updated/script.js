@@ -285,6 +285,8 @@ function initTaskEventDelegation(){
     else if(action==='live-new-event') liveEditEvent(null);
     else if(action==='live-edit-event') liveEditEvent(control.dataset.eventId);
     else if(action==='live-save-event') liveSaveEvent();
+    else if(action==='live-add-guest') liveAddGuest();
+    else if(action==='live-remove-guest') liveRemoveGuest(control.dataset.guestId);
     else if(action==='live-cancel-event') {liveCalendarEditingEvent=null;renderLiveCalendarDialog();}
     else if(action==='live-delete-event') liveDeleteEvent();
     else if(action==='live-set-role') liveSetMemberRole(control.dataset.userId,control.dataset.role);
@@ -2062,34 +2064,54 @@ async function liveRevokeMember(userId){if(!confirm('Revoke this member’s acce
 async function liveDeleteCalendar(){if(!liveCalendarSelectedId||!confirm('Delete this shared calendar and revoke all member access?'))return;try{await window.LifeFlowLiveCalendar.deleteCalendar(liveCalendarSelectedId);liveCalendarSelectedId=null;showToast('Shared calendar deleted.');renderLiveCalendarDialog();}catch(e){liveDialogMessage(e.message);}}
 async function livePublishEvents(){const include=document.getElementById('liveIncludeDetails')?.checked===true;try{const result=await window.LifeFlowLiveCalendar.publishLocalEvents(liveCalendarSelectedId,state.events||[],include);const map=new Map(result.map(x=>[x.localId,x.remote]));updateWorkspaceState({events:(state.events||[]).map(e=>map.has(String(e.id))?{...e,sharedCalendarId:liveCalendarSelectedId,sharedEventId:map.get(String(e.id)).id}:e)});showToast(result.length+' events published to the shared calendar.');renderLiveCalendarDialog();}catch(e){liveDialogMessage(e.message);}}
 
-let liveCalendarEditingEvent=null;
+
+let liveCalendarEditingEvent=null,liveCalendarEventGuests=[];
 async function liveEditEvent(id){
- try{const items=await window.LifeFlowLiveCalendar.listEvents(liveCalendarSelectedId);liveCalendarEditingEvent=id?items.find(x=>String(x.id)===String(id))||null:null;renderLiveEventEditor();}
- catch(e){liveDialogMessage(e.message);}
+ try{
+  const items=await window.LifeFlowLiveCalendar.listEvents(liveCalendarSelectedId);
+  liveCalendarEditingEvent=id?items.find(x=>String(x.id)===String(id))||null:null;
+  liveCalendarEventGuests=liveCalendarEditingEvent?await window.LifeFlowLiveCalendar.listGuests(liveCalendarEditingEvent.id):[];
+  renderLiveEventEditor();
+ }catch(e){liveDialogMessage(e.message);}
 }
 function renderLiveEventEditor(){
  const e=liveCalendarEditingEvent||{},start=e.starts_at?localDateTime(e.starts_at):localDateTime(new Date(Date.now()+3600000)),end=e.ends_at?localDateTime(e.ends_at):localDateTime(new Date(Date.now()+7200000)),host=document.getElementById('calendarEventHost');
  if(!host)return;
+ const guestRows=liveCalendarEventGuests.map(g=>'<div class="live-member-row"><span>'+esc(g.email)+'</span><span class="muted">'+g.reminder_minutes+' min before</span><button class="danger" data-lf-action="live-remove-guest" data-guest-id="'+esc(g.id)+'">Remove</button></div>').join('');
  host.innerHTML='<div class="calendar-event-overlay" data-lf-overlay="close-calendar-share"><section class="calendar-event-dialog live-calendar-dialog" role="dialog" aria-modal="true"><header><div><span class="custom-kicker">SHARED CALENDAR EVENT</span><h2>'+(e.id?'Edit shared event':'New shared event')+'</h2></div><button class="hbtn" data-lf-action="live-cancel-event">×</button></header>'+
  '<label for="liveEventTitle">Event name</label><input id="liveEventTitle" maxlength="160" value="'+esc(e.title||'')+'">'+
  '<div class="calendar-event-grid"><div><label for="liveEventStart">Starts</label><input id="liveEventStart" type="datetime-local" value="'+start+'"></div><div><label for="liveEventEnd">Ends</label><input id="liveEventEnd" type="datetime-local" value="'+end+'"></div></div>'+
  '<label for="liveEventLocation">Location / address</label><input id="liveEventLocation" maxlength="500" value="'+esc(e.location||'')+'">'+
  '<label for="liveEventNotes">Notes</label><textarea id="liveEventNotes" rows="3" maxlength="4000">'+esc(e.notes||'')+'</textarea>'+
  '<div class="calendar-event-grid"><div><label for="liveEventTravel">Estimated travel (minutes)</label><input id="liveEventTravel" type="number" min="0" max="600" value="'+(Number(e.travel_minutes)||0)+'"></div><div><label for="liveEventLead">Alert before departure</label><select id="liveEventLead"><option value="" '+(e.leave_alert_minutes==null?'selected':'')+'>Use recipient preference</option><option value="0" '+(e.leave_alert_minutes===0?'selected':'')+'>At departure</option><option value="15" '+(e.leave_alert_minutes===15?'selected':'')+'>15 minutes</option><option value="30" '+(e.leave_alert_minutes===30?'selected':'')+'>30 minutes</option><option value="60" '+(e.leave_alert_minutes===60?'selected':'')+'>1 hour</option></select></div></div>'+
+ (e.id?'<div class="live-invite-form"><h4>Guest email reminders</h4><p class="muted">Guests receive event reminders with details, venue and Google Maps directions, plus update/cancellation emails.</p><div class="calendar-event-grid"><div><label for="liveGuestEmail">Guest email</label><input id="liveGuestEmail" type="email" placeholder="guest@example.com"></div><div><label for="liveGuestLead">Reminder schedule</label><select id="liveGuestLead"><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60" selected>1 hour before</option><option value="120">2 hours before</option><option value="1440">1 day before</option></select></div></div><button class="secondary" data-lf-action="live-add-guest">Add guest</button>'+ (guestRows||'<p class="muted">No guest reminders configured.</p>')+'</div>':'<p class="muted">Save this event first, then add guest email reminders.</p>')+
  '<div id="liveCalendarMessage" class="calendar-event-error" role="alert"></div><footer><div>'+(e.id?'<button class="danger" data-lf-action="live-delete-event">Delete event</button>':'')+'</div><div><button class="secondary" data-lf-action="live-cancel-event">Cancel</button><button class="primary" data-lf-action="live-save-event">Save event</button></div></footer></section></div>';
 }
+async function liveAddGuest(){
+ if(!liveCalendarEditingEvent?.id){liveDialogMessage('Save the event before adding guests.');return;}
+ try{await window.LifeFlowLiveCalendar.addGuest(liveCalendarEditingEvent.id,document.getElementById('liveGuestEmail')?.value||'', '',Number(document.getElementById('liveGuestLead')?.value||60));liveCalendarEventGuests=await window.LifeFlowLiveCalendar.listGuests(liveCalendarEditingEvent.id);renderLiveEventEditor();}
+ catch(e){liveDialogMessage(e.message);}
+}
+async function liveRemoveGuest(id){
+ try{await window.LifeFlowLiveCalendar.removeGuest(id);liveCalendarEventGuests=await window.LifeFlowLiveCalendar.listGuests(liveCalendarEditingEvent.id);renderLiveEventEditor();}
+ catch(e){liveDialogMessage(e.message);}
+}
 async function liveSaveEvent(){
- const title=document.getElementById('liveEventTitle')?.value.trim(),start=document.getElementById('liveEventStart')?.value,end=document.getElementById('liveEventEnd')?.value,lead=document.getElementById('liveEventLead')?.value;
+ const title=document.getElementById('liveEventTitle')?.value.trim(),start=document.getElementById('liveEventStart')?.value,end=document.getElementById('liveEventEnd')?.value,lead=document.getElementById('liveEventLead')?.value,wasExisting=!!liveCalendarEditingEvent?.id;
  try{
   if(!start||!end||Number.isNaN(Date.parse(start))||Number.isNaN(Date.parse(end)))throw Error('Choose valid event start and end times.');
-  await window.LifeFlowLiveCalendar.saveEvent(liveCalendarSelectedId,{id:liveCalendarEditingEvent?.id,title,starts_at:new Date(start).toISOString(),ends_at:new Date(end).toISOString(),location:document.getElementById('liveEventLocation')?.value||'',notes:document.getElementById('liveEventNotes')?.value||'',travel_minutes:Number(document.getElementById('liveEventTravel')?.value||0),leave_alert_minutes:lead===''?null:Number(lead),location_lat:liveCalendarEditingEvent?.location_lat??null,location_lng:liveCalendarEditingEvent?.location_lng??null,all_day:!!liveCalendarEditingEvent?.all_day});
+  const saved=await window.LifeFlowLiveCalendar.saveEvent(liveCalendarSelectedId,{id:liveCalendarEditingEvent?.id,title,starts_at:new Date(start).toISOString(),ends_at:new Date(end).toISOString(),location:document.getElementById('liveEventLocation')?.value||'',notes:document.getElementById('liveEventNotes')?.value||'',travel_minutes:Number(document.getElementById('liveEventTravel')?.value||0),leave_alert_minutes:lead===''?null:Number(lead),location_lat:liveCalendarEditingEvent?.location_lat??null,location_lng:liveCalendarEditingEvent?.location_lng??null,all_day:!!liveCalendarEditingEvent?.all_day});
+  if(wasExisting){try{await window.LifeFlowLiveCalendar.notifyGuests(saved.id,'updated');}catch(e){showToast('Event saved, but guest update emails could not be sent: '+e.message);}}
   liveCalendarEditingEvent=null;showToast('Shared event saved.');renderLiveCalendarDialog();
  }catch(e){liveDialogMessage(e.message);}
 }
 async function liveDeleteEvent(){
  if(!liveCalendarEditingEvent?.id||!confirm('Delete this shared event for everyone with calendar access?'))return;
- try{await window.LifeFlowLiveCalendar.deleteEvent(liveCalendarEditingEvent.id);liveCalendarEditingEvent=null;showToast('Shared event deleted.');renderLiveCalendarDialog();}
- catch(e){liveDialogMessage(e.message);}
+ try{
+  try{await window.LifeFlowLiveCalendar.notifyGuests(liveCalendarEditingEvent.id,'cancelled');}catch(e){showToast('Guest cancellation emails could not be sent: '+e.message);}
+  await window.LifeFlowLiveCalendar.deleteEvent(liveCalendarEditingEvent.id);
+  liveCalendarEditingEvent=null;showToast('Shared event deleted.');renderLiveCalendarDialog();
+ }catch(e){liveDialogMessage(e.message);}
 }
 
 async function liveSaveNotifications(){try{const email=document.getElementById('livePrefEmailAddress')?.value.trim()||'',whatsapp=document.getElementById('livePrefWhatsAppNumber')?.value.trim()||'',sms=document.getElementById('livePrefSmsNumber')?.value.trim()||'';if(document.getElementById('livePrefEmail')?.checked&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw Error('Enter a valid reminder email address.');if(document.getElementById('livePrefWhatsApp')?.checked&&!/^\\+[1-9][0-9]{7,14}$/.test(whatsapp))throw Error('Enter a WhatsApp number in international format, e.g. +919876543210.');if(document.getElementById('livePrefSms')?.checked&&!/^\\+[1-9][0-9]{7,14}$/.test(sms))throw Error('Enter an SMS number in international format, e.g. +919876543210.');await window.LifeFlowNotifications.savePreferences({departure_reminders_enabled:document.getElementById('livePrefDeparture')?.checked,in_app_enabled:document.getElementById('livePrefInApp')?.checked,email_enabled:document.getElementById('livePrefEmail')?.checked,whatsapp_enabled:document.getElementById('livePrefWhatsApp')?.checked,sms_enabled:document.getElementById('livePrefSms')?.checked,default_lead_minutes:Number(document.getElementById('livePrefLead')?.value||15),email_address:email||null,whatsapp_e164:whatsapp||null,phone_e164:sms||null});showToast('Reminder preferences saved.');}catch(e){liveDialogMessage(e.message);}}
