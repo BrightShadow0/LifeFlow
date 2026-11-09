@@ -721,6 +721,8 @@ function startCloudWorkspaceSync(){
       const result=await window.LifeFlowCloudSync.poll();
       if(result.changed){
         await applyCloudWorkspaceSnapshot(result.workspace,'before-cloud-sync-update');
+        const accepted=window.LifeFlowCloudSync.acceptRemoteRevision(result.revision);
+        if(!accepted.ok){lifeFlowCloudSyncConflict=true;setCloudWorkspaceStatus(accepted.reason,true);return;}
         lifeFlowCloudSyncConflict=false;
         const users=getUsers(),email=state?.currentUser;
         if(email&&users[email]){users[email].cloudWorkspaceRevision=result.revision;saveUsers(users);}
@@ -748,6 +750,8 @@ async function resolveCloudWorkspaceConflict(action){
     const remote=await sync.pull();
     if(!remote.ok)throw new Error(remote.reason||'The cloud workspace could not be loaded.');
     await applyCloudWorkspaceSnapshot(remote.workspace,'before-cloud-conflict-restore');
+    const accepted=sync.acceptRemoteRevision(remote.revision,true);
+    if(!accepted.ok)throw new Error(accepted.reason||'The cloud version could not be accepted.');
     lifeFlowCloudSyncConflict=false;
     setCloudWorkspaceStatus('Cloud version loaded · revision '+remote.revision);
     return;
@@ -769,7 +773,7 @@ async function resolveCloudWorkspaceConflict(action){
     setCloudWorkspaceStatus('All changes synced · revision '+result.revision);
   }else{
     const result=await sync.poll();
-    if(result.changed){await applyCloudWorkspaceSnapshot(result.workspace,'before-cloud-sync-update');setCloudWorkspaceStatus('Updated from cloud · revision '+result.revision);}
+    if(result.changed){await applyCloudWorkspaceSnapshot(result.workspace,'before-cloud-sync-update');const accepted=sync.acceptRemoteRevision(result.revision);if(!accepted.ok){lifeFlowCloudSyncConflict=true;setCloudWorkspaceStatus(accepted.reason,true);return;}setCloudWorkspaceStatus('Updated from cloud · revision '+result.revision);}
     else if(result.conflict){lifeFlowCloudSyncConflict=true;setCloudWorkspaceStatus(result.reason,true);}
     else setCloudWorkspaceStatus('Already up to date · revision '+status.revision);
   }
