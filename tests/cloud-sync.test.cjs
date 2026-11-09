@@ -111,6 +111,12 @@ test('poll detects a remote revision change and decrypts the newer workspace', a
   assert.equal(result.changed, true);
   assert.equal(result.workspace.tasks[0].title, 'v2');
   assert.equal(result.revision, 2);
+  assert.equal(first.api.getStatus().revision, 1, 'polling must not acknowledge before local apply');
+  const accepted = first.api.acceptRemoteRevision(result.revision);
+  assert.equal(accepted.ok, true);
+  assert.equal(first.api.getStatus().revision, 2);
+  const unchanged = await first.api.poll();
+  assert.equal(unchanged.changed, false);
 });
 
 test('another authenticated user cannot read or decrypt the first user workspace', async () => {
