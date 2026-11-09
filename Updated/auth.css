@@ -484,3 +484,14 @@ body.auth-embed #authScreen .auth-brand-panel{
 .cloud-auth-actions{display:grid;gap:8px;margin-top:12px;}
 .cloud-auth-actions .secondary{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:8px;padding:10px;}
 .cloud-auth-message{min-height:18px;margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5;overflow-wrap:anywhere;}
+
+
+/* Universal cloud login is integrated into the primary sign-in form. */
+.auth-cloud-mode{margin:10px 0 14px;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:color-mix(in srgb,var(--card) 82%,var(--accent) 18%);text-align:left}
+.auth-cloud-mode>label{display:flex!important;align-items:center;gap:9px;margin:0!important;color:var(--text)!important;font-size:13px!important;letter-spacing:0!important;font-weight:650;cursor:pointer}
+.auth-cloud-mode input[type=checkbox]{width:17px!important;height:17px;margin:0!important;accent-color:var(--accent);flex:none}
+#cloudSyncPassphraseWrap{margin-top:11px}
+#cloudSyncPassphraseWrap[hidden]{display:none!important}
+#cloudSyncPassphraseWrap label{display:block;margin:8px 0 5px;color:var(--muted);font-size:10px;letter-spacing:.08em}
+#cloudSyncPassphraseWrap input{margin:0!important}
+#cloudSyncPassphraseWrap small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}
