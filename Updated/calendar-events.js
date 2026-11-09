@@ -54,7 +54,7 @@ function createTaskEntry(task){
   const due=new Date(task?.due),title=String(task?.title||'').trim();
   if(!title||!task?.due||Number.isNaN(due.getTime()))return null;
   const start=new Date(due),end=new Date(due),startTime=String(task.startTime||''),endTime=String(task.endTime||'');
-  const timed=/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(startTime)&&/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(endTime)&&startTime<endTime;
+  const timed=/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime)&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(endTime)&&startTime<endTime;
   if(timed){
     const [sh,sm]=startTime.split(':').map(Number),[eh,em]=endTime.split(':').map(Number);
     start.setHours(sh,sm,0,0);end.setHours(eh,em,0,0);
