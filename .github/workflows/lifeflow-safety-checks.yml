@@ -35,6 +35,13 @@ jobs:
           node --check Updated/supabase-auth.js
           node --check Updated/live-calendar.js
           node --check Updated/calendar-notifications.js
+          node --check service-worker.js
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check Supabase Edge Functions
+        run: deno check --no-lock supabase/functions/calendar-invites/index.ts supabase/functions/notify-calendar-guests/index.ts supabase/functions/dispatch-calendar-reminders/index.ts
       - name: Check ES modules
         run: |
           node --input-type=module --check < Updated/state.js
