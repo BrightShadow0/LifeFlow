@@ -1231,23 +1231,23 @@ function applyTheme(theme){
 }
 const WORKSPACE_BACKDROP_GROUPS={
   sapphire:[
-    ['blue-hour','Sapphire Dark','Existing midnight-blue atmosphere'],
+    ['blue-hour','Sapphire Dark','Electric cobalt sculptural ribbon waves'],
     ['sapphire-light','Sapphire Light','Airy blue gradients with luminous contour waves']
   ],
   emerald:[
-    ['green-hour','Emerald Dark','Existing deep-green atmosphere'],
+    ['green-hour','Emerald Dark','Luminous teal sculptural ribbon waves'],
     ['emerald-light','Emerald Light','Fresh mint gradients with luminous contour waves']
   ],
   platinum:[
-    ['grey-hour','Platinum Dark','Existing silver-grey atmosphere'],
+    ['grey-hour','Platinum Dark','Brushed silver sculptural ribbon waves'],
     ['platinum-light','Platinum Light','Soft pearl gradients with delicate silver waves']
   ],
   amethyst:[
-    ['purple-hour','Amethyst Dark','Existing violet atmosphere'],
+    ['purple-hour','Amethyst Dark','Glossy violet sculptural ribbon waves'],
     ['amethyst-light','Amethyst Light','Lavender gradients with luminous flowing waves']
   ],
   ruby:[
-    ['red-hour','Ruby Dark','Existing crimson atmosphere'],
+    ['red-hour','Ruby Dark','Deep crimson sculptural ribbon waves'],
     ['ruby-light','Ruby Light','Soft rose gradients with luminous contour waves']
   ]
 };
