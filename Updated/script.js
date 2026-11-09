@@ -510,7 +510,6 @@ function initLoginAccessibility(){
       else if(control.dataset.appAction==='logout') doLogout();
       else if(control.dataset.appAction==='set-view') setView(control.dataset.view);
       else if(control.dataset.appAction==='set-backdrop') setWorkspaceBackdrop(control.dataset.backdropId);
-      else if(control.dataset.appAction==='set-background-collection') setWorkspaceBackgroundCollection(control.dataset.backgroundCollection);
       else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
@@ -575,7 +574,7 @@ function cloudWorkspaceHasContent(snapshot){
 }
 function cloudWorkspacePayload(snapshot,email){
   const users=getUsers(),profile=users[email]||{};
-  const fields=['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere','workspaceBackdropLight','workspaceBackgroundCollection'];
+  const fields=['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient'];
   const accountProfile={};
   fields.forEach(key=>{if(Object.prototype.hasOwnProperty.call(profile,key))accountProfile[key]=profile[key];});
   return {...snapshot,currentUser:email,__lifeFlowAccountProfile:accountProfile};
@@ -587,7 +586,7 @@ function cloudWorkspaceLocalState(payload,email,applyProfile=true){
   if(applyProfile){
     const users=getUsers(),profile=users[email]||newUserRecord(email);
     Object.keys(accountProfile).forEach(key=>{
-      if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere','workspaceBackdropLight','workspaceBackgroundCollection'].includes(key))profile[key]=accountProfile[key];
+      if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient'].includes(key))profile[key]=accountProfile[key];
     });
     profile.cloudWorkspaceLinked=true;
     users[email]=profile;
@@ -1282,42 +1281,6 @@ function applyTheme(theme){
   }
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
-const WORKSPACE_BACKDROP_GROUPS={
-  sapphire:[
-    ['blue-hour','Blue Radial Glow','PatternCraft · Blue Radial Glow'],
-    ['sapphire-light','Soft Blue Radial','PatternCraft · Soft Blue Radial']
-  ],
-  emerald:[
-    ['green-hour','Emerald Depths Glow','PatternCraft · Emerald Depths Glow'],
-    ['emerald-light','Top Emerald Glow','PatternCraft · Top Emerald Glow']
-  ],
-  platinum:[
-    ['grey-hour','Pearl Mist Glow','PatternCraft · Pearl Mist Glow'],
-    ['platinum-light','Top Slate Radial','PatternCraft · Top Slate Radial']
-  ],
-  amethyst:[
-    ['purple-hour','Violet Storm Glow','PatternCraft · Violet Storm Glow'],
-    ['amethyst-light','Top Violet Radial','PatternCraft · Top Violet Radial']
-  ],
-  ruby:[
-    ['red-hour','Crimson Shadow Glow','PatternCraft · Crimson Shadow Glow'],
-    ['ruby-light','Top Pink Glow','PatternCraft · Top Pink Glow']
-  ]
-};
-const WORKSPACE_BACKGROUND_COLLECTIONS=[
-  ['single-hue-landscape','Single Hue Landscape','Soft, flowing colour fields'],
-  ['dithered-images','Dithered Images','Geometric pixel texture'],
-  ['specked','Specked','Fine, atmospheric grain']
-];
-function workspaceBackgroundOptions(u=currentUser()){
-  const selected=['single-hue-landscape','dithered-images','specked'].includes(u?.workspaceBackgroundCollection)?u.workspaceBackgroundCollection:'single-hue-landscape';
-  return WORKSPACE_BACKGROUND_COLLECTIONS.map(([id,name,desc])=>`<button type="button" class="background-collection background-${id} ${selected===id?'active':''}" data-app-action="set-background-collection" data-background-collection="${id}" aria-pressed="${selected===id}"><span class="background-swatch" aria-hidden="true"></span><span class="background-collection-copy"><strong>${name}</strong><small>${desc}</small></span><b class="background-check">${selected===id?'✓':'○'}</b></button>`).join('');
-}
-function setWorkspaceBackgroundCollection(collection){
-  const allowed=WORKSPACE_BACKGROUND_COLLECTIONS.map(([id])=>id);
-  if(!allowed.includes(collection))return;
-  updateUser(user=>{user.workspaceBackgroundCollection=collection;});
-}
 function normalizedBackdropTheme(u=currentUser()){
   const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
   let theme=allowed.includes(u?.colorTheme)?u.colorTheme:'platinum';
@@ -1338,51 +1301,15 @@ function defaultBackdropForTheme(theme){
 function applyWorkspaceAppearance(u=currentUser()){
   const root=document.documentElement;
   const app=document.getElementById('app');
-  const theme=normalizedBackdropTheme(u);
-  const options=WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire;
-  const validIds=options.map(option=>option[0]);
-  let backdrop=u?.workspaceBackdrop;
-  if(!validIds.includes(backdrop) || String(backdrop).endsWith('-light')){
-    // Keep each account's existing dark wallpaper choice intact.
-    backdrop=defaultBackdropForTheme(theme);
-    if(u && u.workspaceBackdrop!==backdrop){
-      const users=getUsers();
-      if(users[state.currentUser]){
-        users[state.currentUser].workspaceBackdrop=backdrop;
-        saveUsers(users);
-        syncAppearanceStateFromUser(users[state.currentUser]);
-      }
-    }
-  }
   const activeTheme=u?.autoTheme?systemTheme():(u?.theme||'dark');
-  const lightBackdropId=theme+'-light';
-  const savedLightBackdrop=u?.workspaceBackdropLight;
-  const displayedBackdrop=activeTheme==='light'?(validIds.includes(savedLightBackdrop)&&String(savedLightBackdrop).endsWith('-light')?savedLightBackdrop:lightBackdropId):backdrop;
-  if(app) app.setAttribute('data-workspace-backdrop',displayedBackdrop);
-  if(app) app.setAttribute('data-workspace-background',
-    ['single-hue-landscape','dithered-images','specked'].includes(u?.workspaceBackgroundCollection)
-      ? u.workspaceBackgroundCollection : 'single-hue-landscape');
-  root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
-  root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
-}
-function setInteractiveAtmosphere(enabled){
-  updateUser(u=>{u.interactiveAtmosphere=!!enabled;});
-}
-function initWorkspaceAtmosphereInteraction(){
-  if(lifeFlowThemeController) return lifeFlowThemeController.initWorkspaceAtmosphereInteraction();
-}
-function setWorkspaceBackdrop(backdrop){
-  const u=currentUser();
-  const theme=normalizedBackdropTheme(u);
-  const allowed=(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
-  if(!allowed.includes(backdrop))return;
-  // Store Light and Dark choices independently so changing appearance never
-  // overwrites the other mode's wallpaper.
-  if(String(backdrop).endsWith('-light')) updateUser(user=>{user.workspaceBackdropLight=backdrop;});
-  else updateUser(user=>{user.workspaceBackdrop=backdrop;});
-}
-function setTranslucentSidebar(enabled){
-  updateUser(u=>{u.translucentSidebar=!!enabled;});
+  if(app){
+    app.setAttribute('data-theme',activeTheme);
+    app.setAttribute('data-color-theme',normalizedBackdropTheme(u));
+    app.removeAttribute('data-workspace-backdrop');
+    app.removeAttribute('data-workspace-background');
+  }
+  root.removeAttribute('data-glass-sidebar');
+  root.removeAttribute('data-interactive-atmosphere');
 }
 function setTheme(theme){
   if(lifeFlowThemeController) return lifeFlowThemeController.setTheme(theme);
@@ -3264,12 +3191,6 @@ function subCustomisation(themes,u,a){
       <label class="theme-sync-row"><span><strong>Auto theme sync</strong><small>Automatically match LifeFlow to your device's light or dark mode.</small></span><span class="switch"><input type="checkbox" ${u.autoTheme?"checked":""} data-lf-change="auto-theme-sync"><span class="slider"></span></span></label>
     </div>
 
-    <div class="card workspace-atmosphere-card background-settings-card">
-      <div class="custom-section-head"><div><h2>Background</h2><p>Choose one of the three wallpaper collections for your workspace. Your choice is saved automatically and adapts to Light and Dark mode.</p></div></div>
-      <div class="background-collection-gallery">${workspaceBackgroundOptions(u)}</div>
-      <label class="theme-sync-row"><span><strong>Translucent sidebar</strong><small>Let the selected wallpaper show through the navigation panel.</small></span><span class="switch"><input type="checkbox" ${u.translucentSidebar!==false?'checked':''} data-lf-change="translucent-sidebar"><span class="slider"></span></span></label>
-      <label class="theme-sync-row"><span><strong>Interactive atmosphere</strong><small>Let ambient light respond gently to your pointer. Respects reduced-motion settings.</small></span><span class="switch"><input type="checkbox" ${u.interactiveAtmosphere!==false?'checked':''} data-lf-change="interactive-atmosphere"><span class="slider"></span></span></label>
-    </div>
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']||'Sapphire'}</b></span></div>
       <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='amethyst'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" data-lf-action="set-color-theme" data-color-theme="${id}" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
