@@ -224,7 +224,7 @@
       if (notice) {
         notice.textContent = error && error.message === 'LifeFlow authentication did not become available.'
           ? 'LifeFlow could not finish loading. Check your connection and refresh the page.'
-          : 'Sign-in could not be completed. Please try again.';
+          : (error && error.message ? error.message : 'Sign-in could not be completed. Please try again.');
         notice.hidden = false;
       }
     }).finally(function() {
