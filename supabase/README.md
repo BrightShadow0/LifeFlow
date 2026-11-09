@@ -20,6 +20,7 @@ supabase db push
 
 ```sh
 supabase functions deploy calendar-invites
+supabase functions deploy notify-calendar-guests
 supabase functions deploy dispatch-calendar-reminders --no-verify-jwt
 ```
 
