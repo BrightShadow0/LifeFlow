@@ -246,6 +246,19 @@ function setLoginError(message,fieldId){
 }
 async function doLogin(){
   if(!lifeFlowCoreReady){setLoginError('LifeFlow is still initializing. Please try again in a moment.');return;}
+  const cloudMode=document.getElementById('useUniversalCloud')?.checked;
+  if(cloudMode){
+    const email=document.getElementById('loginEmail')?.value?.trim()||'';
+    const password=document.getElementById('loginPass')?.value||'';
+    const passphrase=document.getElementById('loginCloudSyncPassphrase')?.value||'';
+    if(!email||!password){setLoginError('Enter your cloud account email address and password.');return;}
+    if(!passphrase.trim()){setLoginError('Enter your workspace sync passphrase to unlock LifeFlow on this device.');return;}
+    const cloudEmail=document.getElementById('cloudAuthEmail'),cloudPassword=document.getElementById('cloudAuthPassword'),cloudPassphrase=document.getElementById('cloudWorkspacePassphrase');
+    if(cloudEmail)cloudEmail.value=email;if(cloudPassword)cloudPassword.value=password;if(cloudPassphrase)cloudPassphrase.value=passphrase;
+    const message=document.getElementById('cloudAuthMessage');if(message)message.textContent='';
+    await handleCloudLoginAction('signin');
+    return;
+  }
   return lifeFlowAuthController.doLogin();
 }
 function initTaskEventDelegation(){
@@ -539,8 +552,10 @@ document.addEventListener('click',event=>{
   document.addEventListener('input',event=>{
     if(event.target.matches('#authScreen [data-auth-input="signup-validation"]')) validateSignup1();
   });
+  const cloudMode=document.getElementById('useUniversalCloud'),cloudPassphraseWrap=document.getElementById('cloudSyncPassphraseWrap');
+  if(cloudMode&&cloudPassphraseWrap){cloudMode.addEventListener('change',()=>{cloudPassphraseWrap.hidden=!cloudMode.checked;if(cloudMode.checked)document.getElementById('loginCloudSyncPassphrase')?.focus();});}
   const form=document.getElementById('loginForm');
-  if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin();});
+  if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin().catch(error=>setLoginError(error.message||'Sign-in failed.'));});
   const password=document.getElementById('loginPass'),caps=document.getElementById('capsWarning');
   if(password&&caps){
     const check=event=>{caps.hidden=!(event.getModifierState&&event.getModifierState('CapsLock'));};
