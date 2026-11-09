@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":Deno.env.get("APP_ORIGIN")||"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
 const hex=(b:Uint8Array)=>Array.from(b).map(x=>x.toString(16).padStart(2,"0")).join("");
+const html=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 async function digest(v:string){return hex(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v))));}
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -26,7 +27,7 @@ Deno.serve(async req=>{
    let emailSent=false;
    const key=Deno.env.get("RESEND_API_KEY"),from=Deno.env.get("INVITE_FROM_EMAIL");
    if(key&&from){
-    const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({from,to:[email],subject:"LifeFlow calendar invitation",html:`<p>You have been invited to <strong>${calendar.name}</strong> with ${role==="read_write"?"read and write":"read-only"} access.</p><p><a href="${inviteUrl}">Accept invitation</a></p><p>This link expires in seven days. Only the calendar owner can manage access.</p>`})});
+    const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({from,to:[email],subject:"LifeFlow calendar invitation",html:`<p>You have been invited to <strong>${html(calendar.name)}</strong> with ${role==="read_write"?"read and write":"read-only"} access.</p><p><a href="${inviteUrl}">Accept invitation</a></p><p>This link expires in seven days. Only the calendar owner can manage access.</p>`})});
     emailSent=sent.ok;
    }
    return reply({ok:true,inviteUrl,emailSent,expiresAt});
