@@ -5266,3 +5266,16 @@ body::-webkit-scrollbar-corner{
 @media(max-width:620px){.live-calendar-columns{grid-template-columns:1fr}.live-notification-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.other-calendar-entry{grid-template-columns:1fr}.live-member-row{align-items:flex-start}.live-calendar-dialog footer>div{width:100%}}
 
 .live-in-app-feed{margin-top:14px;padding:13px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:12px}.live-in-app-feed h3{margin:0 0 8px}.live-in-app-feed .live-event-row small{white-space:pre-line;overflow-wrap:anywhere}
+
+
+/* Final theme-match guard: remove the legacy violet pointer/ambient wash.
+   The selected Background collection is the only workspace wallpaper layer. */
+#app[data-workspace-background]::before,
+#app[data-workspace-background]::after{
+  content:none!important;display:none!important;opacity:0!important;
+  background:none!important;filter:none!important;
+}
+#app[data-workspace-background]{
+  background-color:var(--bg)!important;
+  background-attachment:fixed!important;
+}
