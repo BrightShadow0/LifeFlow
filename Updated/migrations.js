@@ -2,7 +2,7 @@
  * Migrations are additive and preserve unknown fields. Never discard an
  * unrecognised property during an application upgrade.
  */
-export const CURRENT_WORKSPACE_SCHEMA_VERSION = 1;
+export const CURRENT_WORKSPACE_SCHEMA_VERSION = 2;
 
 function cloneValue(value) {
   if (value === undefined || value === null || typeof value !== 'object') return value;
@@ -40,6 +40,13 @@ export function migrateWorkspaceState(input, options = {}) {
       }
     });
     version = 1;
+    state.__lifeFlowSchemaVersion = version;
+  }
+
+  // Version 2 adds a separate calendar-events collection; existing task dates remain untouched.
+  if (version < 2) {
+    if (!Array.isArray(state.events)) state.events = [];
+    version = 2;
     state.__lifeFlowSchemaVersion = version;
   }
 
