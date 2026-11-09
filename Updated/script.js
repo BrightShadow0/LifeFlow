@@ -1277,6 +1277,31 @@ function applyTheme(theme){
   }
   document.documentElement.style.setProperty('--lf-theme-transition','1');
 }
+const WORKSPACE_BACKDROP_GROUPS={
+  sapphire:[
+    ['blue-hour','Blue Radial Glow','PatternCraft · Blue Radial Glow'],
+    ['sapphire-light','Soft Blue Radial','PatternCraft · Soft Blue Radial']
+  ],
+  emerald:[
+    ['green-hour','Emerald Depths Glow','PatternCraft · Emerald Depths Glow'],
+    ['emerald-light','Top Emerald Glow','PatternCraft · Top Emerald Glow']
+  ],
+  platinum:[
+    ['grey-hour','Pearl Mist Glow','PatternCraft · Pearl Mist Glow'],
+    ['platinum-light','Top Slate Radial','PatternCraft · Top Slate Radial']
+  ],
+  amethyst:[
+    ['purple-hour','Violet Storm Glow','PatternCraft · Violet Storm Glow'],
+    ['amethyst-light','Top Violet Radial','PatternCraft · Top Violet Radial']
+  ],
+  ruby:[
+    ['red-hour','Crimson Shadow Glow','PatternCraft · Crimson Shadow Glow'],
+    ['ruby-light','Top Pink Glow','PatternCraft · Top Pink Glow']
+  ]
+};
+function defaultBackdropForTheme(theme){
+  return (WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire)[0][0];
+}
 function normalizedBackdropTheme(u=currentUser()){
   const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
   let theme=allowed.includes(u?.colorTheme)?u.colorTheme:'platinum';
@@ -1293,9 +1318,16 @@ function applyWorkspaceAppearance(u=currentUser()){
     app.setAttribute('data-color-theme',normalizedBackdropTheme(u));
     app.removeAttribute('data-workspace-backdrop');
     app.removeAttribute('data-workspace-background');
+    app.style.removeProperty('--lf-pointer-x');
+    app.style.removeProperty('--lf-pointer-y');
+    app.style.removeProperty('--lf-depth-x');
+    app.style.removeProperty('--lf-depth-y');
   }
-  root.removeAttribute('data-glass-sidebar');
-  root.removeAttribute('data-interactive-atmosphere');
+  root.setAttribute('data-glass-sidebar','off');
+  root.setAttribute('data-interactive-atmosphere','off');
+}
+function initWorkspaceAtmosphereInteraction(){
+  if(lifeFlowThemeController) return lifeFlowThemeController.initWorkspaceAtmosphereInteraction();
 }
 function setTheme(theme){
   if(lifeFlowThemeController) return lifeFlowThemeController.setTheme(theme);
