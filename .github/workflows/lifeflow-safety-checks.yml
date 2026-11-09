@@ -33,7 +33,10 @@ jobs:
           node --check Updated/cloud-sync.js
           node --check Updated/calendar-events.js
           node --check Updated/supabase-auth.js
-          node --check Updated/supabase-auth.js
+          node --check Updated/live-calendar.js
+          node --check Updated/calendar-notifications.js
+          node --check Updated/push-config.js
+          node --check service-worker.js
       - name: Check ES modules
         run: |
           node --input-type=module --check < Updated/state.js
@@ -90,6 +93,8 @@ jobs:
 
       - name: Test calendar events, travel reminders and iCalendar export
         run: node --test tests/calendar-events.test.cjs
+      - name: Test live calendar and notification security contracts
+        run: node --test tests/live-calendar-reminders.test.cjs
       - name: Test encrypted cloud backup engine
         run: node --test tests/cloud-backup.test.cjs
       - name: Test cloud authentication and MFA flows

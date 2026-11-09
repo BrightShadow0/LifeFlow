@@ -5208,3 +5208,39 @@ body::-webkit-scrollbar-corner{
 .calendar-share-option strong{font-size:.9rem;color:var(--text,#edf4ff)}
 .calendar-share-option small{font-size:.8rem;line-height:1.45;color:var(--text-muted,#aabbd0)}
 @media(max-width:560px){.calendar-share-dialog footer>div{width:100%}.calendar-share-dialog footer button{flex:1}}
+
+/* Release 8 live calendar and reminder management */
+.other-calendars-panel{margin-top:18px;padding:18px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:16px;background:var(--panel,rgba(20,30,45,.35))}
+.other-calendars-panel>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.other-calendars-panel h3,.live-calendar-dialog h3{margin:0;font-size:1rem}
+.other-calendar-entry{display:grid;grid-template-columns:minmax(130px, .7fr) minmax(0,2fr);gap:14px;padding:12px 0;border-top:1px solid var(--panel-border,rgba(150,180,210,.16))}
+.other-calendar-name{display:grid;align-content:start;text-align:left;background:transparent;border:0;color:inherit;cursor:pointer}
+.other-calendar-name small,.other-calendar-event span,.other-calendar-event small{display:block;color:var(--text-muted,#aabbd0);font-size:.78rem;margin-top:3px}
+.other-calendar-event{padding:6px 0}
+.live-calendar-dialog{width:min(820px,calc(100vw - 24px));max-height:min(88vh,900px);overflow:auto}
+.live-calendar-dialog>p{line-height:1.5;color:var(--text-muted,#aabbd0)}
+.live-calendar-columns{display:grid;grid-template-columns:minmax(170px,.8fr) minmax(0,1.7fr);gap:16px}
+.live-calendar-columns aside,.live-calendar-detail,.live-notification-settings{min-width:0}
+.live-calendar-columns aside{display:grid;align-content:start;gap:8px}
+.live-calendar-columns h3{margin:8px 0 3px}
+.live-calendar-choice{display:grid;gap:3px;text-align:left;padding:10px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:10px;background:transparent;color:inherit;cursor:pointer}
+.live-calendar-choice.active{border-color:var(--accent,#53c9ec);background:rgba(83,201,236,.08)}
+.live-calendar-choice small,.live-event-row small{color:var(--text-muted,#aabbd0);font-size:.78rem}
+.live-create-row{display:grid;gap:7px;margin-top:8px}
+.live-calendar-detail{border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:12px;padding:12px}
+.live-calendar-detail h3{margin-top:0}
+.live-invite-form,.live-publish-box{margin:12px 0;padding:12px;border-radius:10px;background:rgba(120,150,180,.07);display:grid;gap:8px}
+.live-invite-form h4,.live-publish-box h4,.live-calendar-detail h4{margin:8px 0 2px}
+.live-member-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--panel-border,rgba(150,180,210,.14));font-size:.82rem}
+.live-member-row>span:first-child{font-variant-numeric:tabular-nums}
+.live-member-row button{font-size:.76rem;padding:6px 8px}
+.live-event-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--panel-border,rgba(150,180,210,.14))}
+.live-event-row>div{display:grid;gap:4px;min-width:0}
+.live-event-row a{color:var(--accent,#53c9ec);font-size:.8rem}
+.live-notification-settings{margin-top:14px;padding:13px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:12px}
+.live-notification-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.live-notification-grid label,.live-publish-box label{display:flex;align-items:center;gap:7px;font-size:.84rem}
+.live-notification-settings>.secondary,.live-notification-settings>.primary{margin:8px 8px 0 0}
+@media(max-width:620px){.live-calendar-columns{grid-template-columns:1fr}.live-notification-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.other-calendar-entry{grid-template-columns:1fr}.live-member-row{align-items:flex-start}.live-calendar-dialog footer>div{width:100%}}
+
+.live-in-app-feed{margin-top:14px;padding:13px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:12px}.live-in-app-feed h3{margin:0 0 8px}.live-in-app-feed .live-event-row small{white-space:pre-line;overflow-wrap:anywhere}
