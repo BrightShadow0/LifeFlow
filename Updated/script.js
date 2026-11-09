@@ -1231,24 +1231,24 @@ function applyTheme(theme){
 }
 const WORKSPACE_BACKDROP_GROUPS={
   sapphire:[
-    ['blue-hour','Sapphire Dark','Electric cobalt sculptural ribbon waves'],
-    ['sapphire-light','Sapphire Light','Airy blue gradients with luminous contour waves']
+    ['blue-hour','Blue Radial Glow','PatternCraft · Blue Radial Glow'],
+    ['sapphire-light','Soft Blue Radial','PatternCraft · Soft Blue Radial']
   ],
   emerald:[
-    ['green-hour','Emerald Dark','Luminous teal sculptural ribbon waves'],
-    ['emerald-light','Emerald Light','Fresh mint gradients with luminous contour waves']
+    ['green-hour','Emerald Depths Glow','PatternCraft · Emerald Depths Glow'],
+    ['emerald-light','Top Emerald Glow','PatternCraft · Top Emerald Glow']
   ],
   platinum:[
-    ['grey-hour','Platinum Dark','Brushed silver sculptural ribbon waves'],
-    ['platinum-light','Platinum Light','Soft pearl gradients with delicate silver waves']
+    ['grey-hour','Pearl Mist Glow','PatternCraft · Pearl Mist Glow'],
+    ['platinum-light','Top Slate Radial','PatternCraft · Top Slate Radial']
   ],
   amethyst:[
-    ['purple-hour','Amethyst Dark','Glossy violet sculptural ribbon waves'],
-    ['amethyst-light','Amethyst Light','Lavender gradients with luminous flowing waves']
+    ['purple-hour','Violet Storm Glow','PatternCraft · Violet Storm Glow'],
+    ['amethyst-light','Top Violet Radial','PatternCraft · Top Violet Radial']
   ],
   ruby:[
-    ['red-hour','Ruby Dark','Deep crimson sculptural ribbon waves'],
-    ['ruby-light','Ruby Light','Soft rose gradients with luminous contour waves']
+    ['red-hour','Crimson Shadow Glow','PatternCraft · Crimson Shadow Glow'],
+    ['ruby-light','Top Pink Glow','PatternCraft · Top Pink Glow']
   ]
 };
 function normalizedBackdropTheme(u=currentUser()){
