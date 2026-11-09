@@ -399,9 +399,9 @@ function initTaskEventDelegation(){
     else if(action==='markdown-task') toggleMarkdownTask(Number(control.dataset.lineIndex),control.checked);
     else if(action==='note-move-folder') {lifeFlowNoteController?.moveToFolder(control.dataset.noteId,control.value);renderApp();}
     else if(action==='avatar-change') onAvatarChange(event);
-    else if(action==='profile-timezone'){saveLocalizationField('timezone',control.value);lfSecretAction(control.value==='-'?'timezoneDash':'timezoneOther');}
-    else if(action==='profile-language'){saveLocalizationField('language',control.value);lfSecretAction(control.value==='Cobalt'?'languageCobalt':'languageOther');}
-    else if(action==='profile-week'){saveLocalizationField('weekStart',control.value);lfSecretAction(control.value==='Monday'?'weekMonday':'weekOther');}
+    else if(action==='profile-timezone'){const value=control.value;lfSecretAction(value==='-'?'timezoneDash':'timezoneOther');saveLocalizationField('timezone',value);}
+    else if(action==='profile-language'){const value=control.value;lfSecretAction(value==='Cobalt'?'languageCobalt':'languageOther');saveLocalizationField('language',value);}
+    else if(action==='profile-week'){const value=control.value;lfSecretAction(value==='Monday'?'weekMonday':'weekOther');saveLocalizationField('weekStart',value);}
     else if(action==='auto-theme-sync') setAutoThemeSync(control.checked);
     else if(action==='translucent-sidebar') setTranslucentSidebar(control.checked);
     else if(action==='interactive-atmosphere') setInteractiveAtmosphere(control.checked);
