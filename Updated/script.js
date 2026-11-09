@@ -18,7 +18,7 @@ function togglePasswordVisibility(inputId, button){
 }
 
 function defaultProfileState(email){
-  return {tasks:[], events:[], currentUser:email||null};
+  return {tasks:[], events:[], morningIntent:null, morningIntentDismissedDate:null, onboarding:null, currentUser:email||null};
 }
 function profileStateKey(email){
   return 'lifeflow2_state_'+encodeURIComponent(String(email||''));
@@ -343,6 +343,11 @@ function initTaskEventDelegation(){
       const title=String(control.dataset.captureTitle||'').trim();
       if(title&&hasPremiumAccess(currentUser())&&lifeFlowNoteController){closeCommandPalette();const note=lifeFlowNoteController.newNote('regular');lifeFlowNoteController.updateFields('regular',note.id,{title:title.slice(0,80)});window.lfSelectedNote=note.id;window.lfNoteMode='regular';window.lfNoteView='edit';view='notes';renderApp();requestAnimationFrame(()=>document.getElementById('kn_content')?.focus());showToast('Note captured');}
     }
+    else if(action==='onboarding-seed') seedStarterWorkspace();
+    else if(action==='onboarding-blank') completeFirstRunExperience('blank-workspace');
+    else if(action==='morning-intent-save') saveMorningIntent();
+    else if(action==='morning-intent-dismiss'){updateWorkspaceState({morningIntentDismissedDate:dateToIsoDay(new Date())});window.lfMorningIntentEditing=false;renderApp();}
+    else if(action==='morning-intent-edit'){window.lfMorningIntentEditing=true;renderApp();requestAnimationFrame(()=>document.getElementById('morningIntentInput')?.focus());}
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-panel-toggle'){const panel=control.dataset.notesPanel;window.lfNotesPanelOpen=!(window.lfNotesPanelOpen&&window.lfNotesPanel===panel);window.lfNotesPanel=panel;renderApp();}
     else if(action==='note-panel-close'){window.lfNotesPanelOpen=false;renderApp();}
@@ -992,6 +997,7 @@ function enterApp(){
     lifeFlowTaskStateManager.switchUser(state.currentUser || null);
     state = lifeFlowTaskStateManager.getState();
   }
+  initializeFirstRunExperience();
   if(lifeFlowProfileManager) lifeFlowProfileManager.switchUser(state.currentUser || null);
   document.body.dataset.stage='workspace';
   document.title='LifeFlow';
@@ -1160,7 +1166,7 @@ async function initializeTaskArchitecture() {
       }
     }
   }));
-  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery'].forEach(key=>{
+  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery','onboarding','morningIntent','morningIntentDismissedDate'].forEach(key=>{
     lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key,()=>{
       if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||lifeFlowCloudSyncConflict||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
       const snapshot=lifeFlowTaskStateManager.getState();
@@ -1847,6 +1853,55 @@ function dashboardEventRow(event){
   const start=new Date(event.startAt),end=new Date(event.endAt),dateLabel=start.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),timeLabel=start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(event.endAt?' – '+end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''),location=event.location?'<span class="meta">'+esc(event.location)+'</span>':'';
   return '<article class="dashboard-event-row"><span class="dashboard-event-marker">EVENT</span><div class="dashboard-event-main"><strong>'+esc(event.title)+'</strong><span class="meta">'+esc(dateLabel)+' · '+esc(timeLabel)+'</span>'+location+'</div><button type="button" class="linklike" data-lf-action="edit-calendar-event" data-event-id="'+esc(event.id)+'">View / edit</button></article>';
 }
+function initializeFirstRunExperience(){
+  if(state?.onboarding?.version===1)return;
+  const hasExistingContent=['tasks','notes','codeNotes','events'].some(key=>Array.isArray(state?.[key])&&state[key].length>0);
+  updateWorkspaceState({onboarding:{version:1,status:hasExistingContent?'complete':'pending',completedAt:hasExistingContent?Date.now():null,source:hasExistingContent?'existing-workspace':'first-run'}});
+}
+function renderDailyFocus(now){
+  const today=dateToIsoDay(now);
+  const onboarding=state.onboarding||{};
+  if(onboarding.status==='pending'){
+    return '<section class="card lf-onboarding-card"><div class="lf-onboarding-copy"><span class="lf-onboarding-eyebrow">A QUICK START</span><h2>Make this workspace yours.</h2><p>Tasks hold the work. Notes hold the thinking. Today brings the important pieces together without duplicating your other views.</p><div class="lf-onboarding-steps"><span><b>01</b> Capture what needs doing</span><span><b>02</b> Keep useful ideas in Notes</span><span><b>03</b> Review your day in Today</span></div></div><div class="lf-onboarding-actions"><button type="button" class="primary" data-lf-action="onboarding-seed">Explore with examples</button><button type="button" class="secondary" data-lf-action="onboarding-blank">Start with a blank workspace</button></div></section>';
+  }
+  const saved=state.morningIntent&&state.morningIntent.date===today?String(state.morningIntent.text||'').trim():'';
+  if(saved&&!window.lfMorningIntentEditing){
+    return '<section class="card morning-intent-card is-saved"><div class="morning-intent-copy"><span class="morning-intent-eyebrow">TODAY’S INTENTION</span><p>'+esc(saved)+'</p></div><button type="button" class="linklike" data-lf-action="morning-intent-edit">Edit</button></section>';
+  }
+  if(state.morningIntentDismissedDate===today&&!window.lfMorningIntentEditing)return '';
+  const value=window.lfMorningIntentEditing?saved:'';
+  return '<section class="card morning-intent-card"><div class="morning-intent-copy"><span class="morning-intent-eyebrow">MORNING INTENT</span><h2>What is the one thing that makes today a success?</h2><p>Choose a direction, not another task list.</p></div><div class="morning-intent-entry"><input id="morningIntentInput" type="text" maxlength="140" value="'+esc(value)+'" placeholder="Today will feel successful when…" aria-label="Your intention for today"><div class="morning-intent-actions"><button type="button" class="primary" data-lf-action="morning-intent-save">Save intention</button><button type="button" class="linklike" data-lf-action="morning-intent-dismiss">Not now</button></div></div></section>';
+}
+function saveMorningIntent(){
+  const input=document.getElementById('morningIntentInput'),value=String(input?.value||'').trim();
+  if(!value){input?.focus();showToast('Add a short intention first.');return;}
+  updateWorkspaceState({morningIntent:{date:dateToIsoDay(new Date()),text:value.slice(0,140),savedAt:Date.now()},morningIntentDismissedDate:null});
+  window.lfMorningIntentEditing=false;renderApp();showToast('Today’s intention saved.');
+}
+function completeFirstRunExperience(source){
+  updateWorkspaceState({onboarding:{version:1,status:'complete',completedAt:Date.now(),source:source||'blank'}});
+  renderApp();
+}
+function seedStarterWorkspace(){
+  const hasContent=['tasks','notes','codeNotes','events'].some(key=>Array.isArray(state?.[key])&&state[key].length>0);
+  if(hasContent){completeFirstRunExperience('existing-workspace');showToast('Your existing workspace is ready.');return;}
+  const today=dateToIsoDay(new Date()),tomorrowDate=new Date();tomorrowDate.setDate(tomorrowDate.getDate()+1);
+  const tomorrow=dateToIsoDay(tomorrowDate);
+  const examples=[
+    {id:uid(),title:'Choose one priority for today',tags:['Getting started'],priority:'high',due:today,startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]},
+    {id:uid(),title:'Capture an idea worth keeping',tags:['Getting started'],priority:'medium',due:tomorrow,startTime:null,endTime:null,recur:'none',status:'todo',done:false,subtasks:[]}
+  ];
+  lifeFlowTaskController?.addMany(examples);
+  let noteAdded=false;
+  if(hasPremiumAccess(currentUser())&&lifeFlowNoteController){
+    const note=lifeFlowNoteController.newNote('regular');
+    lifeFlowNoteController.updateFields('regular',note.id,{title:'A note worth keeping',folderId:'folder-personal',folder:'Personal'});
+    lifeFlowNoteController.updateContent('regular',note.id,'# A note worth keeping\n\nUse Notes to capture ideas, decisions, and reference material that you may want to connect later.\n\n## A useful next step\n\nAdd a link to another note when two ideas belong together.');
+    noteAdded=true;
+  }
+  updateWorkspaceState({onboarding:{version:1,status:'complete',completedAt:Date.now(),source:'sample-workspace'}});
+  renderApp();showToast(noteAdded?'Sample tasks and note added.':'Sample tasks added. You can start building from here.');
+}
 function renderToday(){
   const now=new Date(), todayStr=now.toDateString();
   const dueToday=state.tasks.filter(t=>t.due && todayKey(t.due)===todayStr);
@@ -1877,6 +1932,7 @@ function renderToday(){
         <div class="hero-ring progress-pct-${percent}"><span>${percent}%</span></div>
       </div>
     </section>
+    ${renderDailyFocus(now)}
     ${overloaded?`<div class="workload-warning"><div class="load-icon">!</div><div><strong>Your day is getting full</strong><span>${esc(loadReasons.join(' · '))}. Consider protecting some space before adding more.</span></div></div>`:''}<div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${activeDueToday.length? 'Stay focused on what needs your attention.':dueToday.length?'You are all caught up for today.':'You have a clear slate.'}</p></div><span class="section-count">${activeDueToday.length}</span></div>${activeDueToday.length?'<div class="task-scroll">'+activeDueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">'+(dueToday.length?'All today’s tasks are done.':'Nothing due today. Add a task to get started.')+'</div>'}</div>
     ${eventsToday.length?`<div class="card"><div class="section-heading"><div><h2>Today's events</h2><p>Calendar events scheduled for today.</p></div><span class="section-count">${eventsToday.length}</span></div><div class="dashboard-event-list">${eventsToday.map(dashboardEventRow).join('')}</div></div>`:''}${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2><div class="task-scroll">${overdue.map(taskRow).join('')}</div></div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?'<div class="task-scroll">'+upcoming.map(taskRow).join('')+'</div>':'<div class="empty">Nothing upcoming.</div>'}</div>${upcomingEvents.length?`<div class="card"><h2>Upcoming events</h2><div class="dashboard-event-list">${upcomingEvents.map(dashboardEventRow).join('')}</div></div>`:''}</div>
     <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill progress-pct-${percent}"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
