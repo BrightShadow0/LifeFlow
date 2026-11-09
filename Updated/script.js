@@ -1692,13 +1692,32 @@ function exportData(fmt){
 }
 
 function hasPremiumAccess(u){ return !!u && (u.tier==='Premium' || u.tier==='Team Admin'); }
+function suppressWorkspaceTitleTooltips(){
+  const app=document.getElementById('app');
+  if(!app)return;
+  const stripTitles=node=>{
+    if(node.nodeType!==1)return;
+    if(node.hasAttribute('title'))node.removeAttribute('title');
+    node.querySelectorAll?.('[title]').forEach(el=>el.removeAttribute('title'));
+  };
+  stripTitles(app);
+  if(app.dataset.nativeTooltipsDisabled==='true')return;
+  app.dataset.nativeTooltipsDisabled='true';
+  new MutationObserver(records=>{
+    records.forEach(record=>{
+      if(record.type==='attributes'&&record.attributeName==='title')record.target.removeAttribute('title');
+      record.addedNodes.forEach(stripTitles);
+    });
+  }).observe(app,{subtree:true,childList:true,attributes:true,attributeFilter:['title']});
+}
 function renderNav(){
+  suppressWorkspaceTitleTooltips();
   const sidebar=document.querySelector('.app-sidebar'); if(!sidebar)return;
   sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
   if(hasPremiumAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
   tabs.push(['account','Profile & settings','◎'],['releases','Releases','◷']);
-  document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" title="'+x[1]+'" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
+  document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
 function setView(v){const u=currentUser();if((v==='branches'||v==='notes')&&!hasPremiumAccess(u)){toast('This feature is available to Premium and Team Admin accounts.');return;}view=v;clearNewTimes();renderApp();}
 function taskFormHtml(){
