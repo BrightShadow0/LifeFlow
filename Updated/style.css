@@ -5073,3 +5073,50 @@ body::-webkit-scrollbar-corner{
 .backdrop-sapphire-light .backdrop-preview i,.backdrop-emerald-light .backdrop-preview i,.backdrop-platinum-light .backdrop-preview i,.backdrop-amethyst-light .backdrop-preview i,.backdrop-ruby-light .backdrop-preview i{background:rgba(255,255,255,.72)}
 .backdrop-sapphire-light .backdrop-preview b,.backdrop-emerald-light .backdrop-preview b,.backdrop-platinum-light .backdrop-preview b,.backdrop-amethyst-light .backdrop-preview b,.backdrop-ruby-light .backdrop-preview b{background:rgba(255,255,255,.35)}
 .backdrop-sapphire-light .backdrop-preview em,.backdrop-emerald-light .backdrop-preview em,.backdrop-platinum-light .backdrop-preview em,.backdrop-amethyst-light .backdrop-preview em,.backdrop-ruby-light .backdrop-preview em{background:rgba(255,255,255,.18)}
+
+
+/* LifeFlow Dark wallpaper refresh — sculptural ribbon artwork direction.
+   Only the five existing Dark IDs are targeted. Light wallpapers are untouched. */
+#app[data-workspace-backdrop="blue-hour"],
+#app[data-workspace-backdrop="green-hour"],
+#app[data-workspace-backdrop="grey-hour"],
+#app[data-workspace-backdrop="purple-hour"],
+#app[data-workspace-backdrop="red-hour"]{
+  position:relative;
+  isolation:isolate;
+  background-color:#030713!important;
+  background-image:
+    radial-gradient(ellipse at 78% 54%,var(--lf-ribbon-glow,rgba(0,100,255,.2)),transparent 48%),
+    linear-gradient(112deg,#030713 0%,#07101f 54%,#030713 100%)!important;
+}
+#app[data-workspace-backdrop="blue-hour"]{--lf-ribbon:#087dff;--lf-ribbon-hi:#38caff;--lf-ribbon-glow:rgba(0,91,255,.25)}
+#app[data-workspace-backdrop="green-hour"]{--lf-ribbon:#00bfa9;--lf-ribbon-hi:#55f1d9;--lf-ribbon-glow:rgba(0,190,164,.2);background-image:radial-gradient(ellipse at 78% 54%,rgba(0,190,164,.2),transparent 48%),linear-gradient(112deg,#020c0e,#031c20 56%,#02090c)!important}
+#app[data-workspace-backdrop="grey-hour"]{--lf-ribbon:#aab8d1;--lf-ribbon-hi:#f1f5ff;--lf-ribbon-glow:rgba(150,170,205,.18);background-image:radial-gradient(ellipse at 78% 54%,rgba(140,157,190,.18),transparent 48%),linear-gradient(112deg,#05070d,#171b27 56%,#05070d)!important}
+#app[data-workspace-backdrop="purple-hour"]{--lf-ribbon:#8d35ff;--lf-ribbon-hi:#d58aff;--lf-ribbon-glow:rgba(143,38,255,.22);background-image:radial-gradient(ellipse at 78% 54%,rgba(130,35,255,.22),transparent 48%),linear-gradient(112deg,#080411,#160922 56%,#06030e)!important}
+#app[data-workspace-backdrop="red-hour"]{--lf-ribbon:#ef1746;--lf-ribbon-hi:#ff596e;--lf-ribbon-glow:rgba(225,0,54,.22);background-image:radial-gradient(ellipse at 78% 54%,rgba(220,0,48,.22),transparent 48%),linear-gradient(112deg,#0b0308,#210711 56%,#080207)!important}
+#app[data-workspace-backdrop="blue-hour"]::before,
+#app[data-workspace-backdrop="green-hour"]::before,
+#app[data-workspace-backdrop="grey-hour"]::before,
+#app[data-workspace-backdrop="purple-hour"]::before,
+#app[data-workspace-backdrop="red-hour"]::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  opacity:.98;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='r' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23ffffff' stop-opacity='.04'/%3E%3Cstop offset='.45' stop-color='%23ffffff' stop-opacity='.8'/%3E%3Cstop offset='1' stop-color='%23ffffff' stop-opacity='.08'/%3E%3C/linearGradient%3E%3Cfilter id='g'%3E%3CfeGaussianBlur stdDeviation='3'/%3E%3C/filter%3E%3C/defs%3E%3Cg fill='none' stroke='var(--lf-ribbon)' stroke-linecap='round'%3E%3Cpath d='M520 -80 C410 120 720 170 890 290 S1160 470 980 610 S1160 800 1510 980' stroke-width='36' opacity='.16' filter='url(%23g)'/%3E%3Cpath d='M540 -90 C430 110 730 180 900 300 S1170 470 995 610 S1170 810 1530 970' stroke-width='18' opacity='.52'/%3E%3Cpath d='M555 -90 C445 110 745 180 915 300 S1185 470 1010 610 S1185 810 1545 970' stroke-width='5' opacity='.95'/%3E%3Cpath d='M570 -90 C460 110 760 180 930 300 S1200 470 1025 610 S1200 810 1560 970' stroke-width='2' opacity='.8'/%3E%3Cpath d='M505 -90 C395 110 695 180 865 300 S1135 470 960 610 S1135 810 1495 970' stroke-width='2' opacity='.58'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat,
+    repeating-linear-gradient(132deg,transparent 0 19px,rgba(255,255,255,.025) 20px,transparent 22px);
+  filter:drop-shadow(0 0 12px var(--lf-ribbon));
+  mix-blend-mode:screen;
+}
+.backdrop-blue-hour .backdrop-preview,
+.backdrop-green-hour .backdrop-preview,
+.backdrop-grey-hour .backdrop-preview,
+.backdrop-purple-hour .backdrop-preview,
+.backdrop-red-hour .backdrop-preview{
+  background-color:#050914;
+  background-image:linear-gradient(115deg,transparent 34%,var(--lf-preview-glow,rgba(0,130,255,.2)) 55%,transparent 78%),linear-gradient(110deg,#020713,#071a30 60%,#020713);
+}
+.backdrop-blue-hour .backdrop-preview{--lf-preview-glow:rgba(0,120,255,.45)}
+.backdrop-green-hour .backdrop-preview{--lf-preview-glow:rgba(0,195,168,.4);background-image:linear-gradient(110deg,#020d10,#032a2b 60%,#020b0d)}
+.backdrop-grey-hour .backdrop-preview{--lf-preview-glow:rgba(190,200,220,.35);background-image:linear-gradient(110deg,#05070d,#242a38 60%,#05070d)}
+.backdrop-purple-hour .backdrop-preview{--lf-preview-glow:rgba(160,50,255,.4);background-image:linear-gradient(110deg,#080411,#210c31 60%,#06030d)}
+.backdrop-red-hour .backdrop-preview{--lf-preview-glow:rgba(255,25,70,.4);background-image:linear-gradient(110deg,#0b0308,#2b0714 60%,#080207)}
