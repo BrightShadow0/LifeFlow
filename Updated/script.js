@@ -3251,7 +3251,10 @@ function lfSecretAction(action){
   }else if(action==='timezoneOther' && s.step>=2){
     s.step=0; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false);
   }else if(action==='languageOther' && (s.step===2 || s.step===3)){
-    s.step=0; s.languageRevealed=false; updateSecretSequence(s); revealCobaltLanguage(false);
+    // Changing the language must not clear the timezone cue or hide its
+    // manually selected dash option. Keep the sequence at the language step
+    // so Cobalt must be selected again before the final weekday cue counts.
+    s.step=2; s.languageRevealed=true; updateSecretSequence(s);
   }else if(action==='weekOther' && (s.step===3 || s.step===4)){
     s.step=0; updateSecretSequence(s);
     document.getElementById('taskMasterHost')?.replaceChildren();
