@@ -55,7 +55,7 @@ create policy "Only owners can revoke members" on public.calendar_memberships fo
 
 create table if not exists public.calendar_events(
  id uuid primary key default gen_random_uuid(),calendar_id uuid not null references public.shared_calendars(id) on delete cascade,
- created_by uuid not null references auth.users(id),title text not null check(char_length(title) between 1 and 160),
+ created_by uuid not null references auth.users(id),source_local_event_id text,title text not null check(char_length(title) between 1 and 160),
  starts_at timestamptz not null,ends_at timestamptz not null,all_day boolean not null default false,
  location text not null default '' check(char_length(location)<=500),location_lat double precision,location_lng double precision,
  notes text not null default '' check(char_length(notes)<=4000),
@@ -66,6 +66,7 @@ create table if not exists public.calendar_events(
  check((location_lat is null and location_lng is null) or(location_lat between -90 and 90 and location_lng between -180 and 180))
 );
 create index if not exists calendar_events_calendar_start_idx on public.calendar_events(calendar_id,starts_at);
+create unique index if not exists calendar_events_local_source_idx on public.calendar_events(calendar_id,source_local_event_id);
 create or replace function public.set_calendar_event_updated_at() returns trigger
 language plpgsql set search_path='' as $$ begin new.updated_at=now();return new;end;$$;
 drop trigger if exists calendar_events_set_updated_at on public.calendar_events;
