@@ -24,10 +24,19 @@ test('iCalendar export preserves event details and includes departure alarm',()=
 });
 test('all-day task exports use an exclusive next-day end and preserve completion status',()=>{
   const api=load(),ics=api.toIcs([{id:'task-7',title:'Submit report',startAt:'2026-01-01T00:00:00.000Z',endAt:'2026-01-02T00:00:00.000Z',allDay:true,done:true}]);
-  assert.match(ics,/DTSTART;VALUE=DATE:20260101/);assert.match(ics,/DTEND;VALUE=DATE:20260102/);assert.match(ics,/STATUS:COMPLETED/);assert.match(ics,/PERCENT-COMPLETE:100/);
+  assert.match(ics,/DTSTART;VALUE=DATE:20260101/);assert.match(ics,/DTEND;VALUE=DATE:20260102/);assert.match(ics,/STATUS:CONFIRMED/);assert.match(ics,/X-LIFEFLOW-STATUS:COMPLETED/);
 });
 test('empty or malformed calendar rows are skipped safely',()=>{
   const api=load(),ics=api.toIcs([null,{}, {title:'No dates'}]);
   assert.equal((ics.match(/BEGIN:VEVENT/g)||[]).length,0);
   assert.match(ics,/BEGIN:VCALENDAR/);assert.match(ics,/END:VCALENDAR/);
+});
+
+test('scheduled tasks become all-day entries or timed entries without changing their due date',()=>{
+  const api=load();
+  const allDay=api.createTaskEntry({id:7,title:'Submit report',due:'2026-01-01T00:00:00.000Z',done:true});
+  assert.equal(allDay.allDay,true);assert.equal(allDay.id,'task-7');assert.equal(allDay.done,true);
+  const timed=api.createTaskEntry({id:8,title:'Review',due:'2026-01-01T00:00:00.000Z',startTime:'09:30',endTime:'10:15'});
+  assert.equal(timed.allDay,undefined);assert.equal(new Date(timed.startAt).getHours(),9);assert.equal(new Date(timed.endAt).getMinutes(),15);
+  assert.equal(api.createTaskEntry({title:'No due date'}),null);
 });
