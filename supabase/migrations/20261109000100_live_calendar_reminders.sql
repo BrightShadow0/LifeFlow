@@ -60,7 +60,7 @@ create table if not exists public.calendar_events(
  location text not null default '' check(char_length(location)<=500),location_lat double precision,location_lng double precision,
  notes text not null default '' check(char_length(notes)<=4000),
  travel_minutes integer not null default 0 check(travel_minutes between 0 and 600),
- leave_alert_minutes integer not null default 0 check(leave_alert_minutes between 0 and 180),
+ leave_alert_minutes integer default null check(leave_alert_minutes is null or leave_alert_minutes between 0 and 180),
  created_at timestamptz not null default now(),updated_at timestamptz not null default now(),
  check(ends_at>starts_at),
  check((location_lat is null and location_lng is null) or(location_lat between -90 and 90 and location_lng between -180 and 180))
@@ -111,7 +111,50 @@ create table if not exists public.calendar_notification_preferences(
  default_lead_minutes integer not null default 15 check(default_lead_minutes between 0 and 10080),
  updated_at timestamptz not null default now(),
  check(email_address is null or char_length(email_address)<=320),
- check(phone_e164 is null or phone_e164 ~ '^\\+[1-9][0-9]{7,14}$'),
+ check(phone_e164 is null or phone_e164 ~ '^[+][1-9][0-9]{7,14}),
+ check(whatsapp_e164 is null or whatsapp_e164 ~ '^[+][1-9][0-9]{7,14})
+);
+alter table public.calendar_notification_preferences enable row level security;
+drop policy if exists "Users manage their notification preferences" on public.calendar_notification_preferences;
+create policy "Users manage their notification preferences" on public.calendar_notification_preferences for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_push_subscriptions(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ endpoint text not null,p256dh text not null,auth_secret text not null,
+ created_at timestamptz not null default now(),updated_at timestamptz not null default now(),unique(user_id,endpoint)
+);
+alter table public.calendar_push_subscriptions enable row level security;
+drop policy if exists "Users manage their own push subscriptions" on public.calendar_push_subscriptions;
+create policy "Users manage their own push subscriptions" on public.calendar_push_subscriptions for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_in_app_notifications(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ event_id uuid references public.calendar_events(id) on delete cascade,title text not null,body text not null,
+ action_url text,read_at timestamptz,created_at timestamptz not null default now()
+);
+create index if not exists calendar_in_app_notifications_user_created_idx on public.calendar_in_app_notifications(user_id,created_at desc);
+alter table public.calendar_in_app_notifications enable row level security;
+drop policy if exists "Users read their in app notifications" on public.calendar_in_app_notifications;
+create policy "Users read their in app notifications" on public.calendar_in_app_notifications for select to authenticated using(user_id=(select auth.uid()));
+drop policy if exists "Users update their notification read state" on public.calendar_in_app_notifications;
+create policy "Users update their notification read state" on public.calendar_in_app_notifications for update to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_notification_deliveries(
+ id uuid primary key default gen_random_uuid(),event_id uuid not null references public.calendar_events(id) on delete cascade,
+ user_id uuid references auth.users(id) on delete cascade,recipient_key text not null default '',
+ event_updated_at timestamptz not null,channel text not null check(channel in('in_app','web_push','email','whatsapp','sms','guest_email')),
+ status text not null default 'queued' check(status in('queued','sent','failed','skipped')),
+ provider_message_id text,error_code text,created_at timestamptz not null default now(),sent_at timestamptz
+);
+create unique index if not exists calendar_notification_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,user_id,event_updated_at,channel) where user_id is not null;
+create unique index if not exists calendar_guest_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,recipient_key,event_updated_at,channel) where user_id is null;
+alter table public.calendar_notification_deliveries enable row level security;
+-- No client policies for invitations or delivery ledgers. Edge Functions use service role.
+),
  check(whatsapp_e164 is null or whatsapp_e164 ~ '^\\+[1-9][0-9]{7,14}$')
 );
 alter table public.calendar_notification_preferences enable row level security;
@@ -154,3 +197,98 @@ create unique index if not exists calendar_guest_delivery_once_idx
 on public.calendar_notification_deliveries(event_id,recipient_key,event_updated_at,channel) where user_id is null;
 alter table public.calendar_notification_deliveries enable row level security;
 -- No client policies for invitations or delivery ledgers. Edge Functions use service role.
+)
+);
+alter table public.calendar_notification_preferences enable row level security;
+drop policy if exists "Users manage their notification preferences" on public.calendar_notification_preferences;
+create policy "Users manage their notification preferences" on public.calendar_notification_preferences for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_push_subscriptions(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ endpoint text not null,p256dh text not null,auth_secret text not null,
+ created_at timestamptz not null default now(),updated_at timestamptz not null default now(),unique(user_id,endpoint)
+);
+alter table public.calendar_push_subscriptions enable row level security;
+drop policy if exists "Users manage their own push subscriptions" on public.calendar_push_subscriptions;
+create policy "Users manage their own push subscriptions" on public.calendar_push_subscriptions for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_in_app_notifications(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ event_id uuid references public.calendar_events(id) on delete cascade,title text not null,body text not null,
+ action_url text,read_at timestamptz,created_at timestamptz not null default now()
+);
+create index if not exists calendar_in_app_notifications_user_created_idx on public.calendar_in_app_notifications(user_id,created_at desc);
+alter table public.calendar_in_app_notifications enable row level security;
+drop policy if exists "Users read their in app notifications" on public.calendar_in_app_notifications;
+create policy "Users read their in app notifications" on public.calendar_in_app_notifications for select to authenticated using(user_id=(select auth.uid()));
+drop policy if exists "Users update their notification read state" on public.calendar_in_app_notifications;
+create policy "Users update their notification read state" on public.calendar_in_app_notifications for update to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_notification_deliveries(
+ id uuid primary key default gen_random_uuid(),event_id uuid not null references public.calendar_events(id) on delete cascade,
+ user_id uuid references auth.users(id) on delete cascade,recipient_key text not null default '',
+ event_updated_at timestamptz not null,channel text not null check(channel in('in_app','web_push','email','whatsapp','sms','guest_email')),
+ status text not null default 'queued' check(status in('queued','sent','failed','skipped')),
+ provider_message_id text,error_code text,created_at timestamptz not null default now(),sent_at timestamptz
+);
+create unique index if not exists calendar_notification_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,user_id,event_updated_at,channel) where user_id is not null;
+create unique index if not exists calendar_guest_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,recipient_key,event_updated_at,channel) where user_id is null;
+alter table public.calendar_notification_deliveries enable row level security;
+-- No client policies for invitations or delivery ledgers. Edge Functions use service role.
+),
+ check(whatsapp_e164 is null or whatsapp_e164 ~ '^\\+[1-9][0-9]{7,14}$')
+);
+alter table public.calendar_notification_preferences enable row level security;
+drop policy if exists "Users manage their notification preferences" on public.calendar_notification_preferences;
+create policy "Users manage their notification preferences" on public.calendar_notification_preferences for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_push_subscriptions(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ endpoint text not null,p256dh text not null,auth_secret text not null,
+ created_at timestamptz not null default now(),updated_at timestamptz not null default now(),unique(user_id,endpoint)
+);
+alter table public.calendar_push_subscriptions enable row level security;
+drop policy if exists "Users manage their own push subscriptions" on public.calendar_push_subscriptions;
+create policy "Users manage their own push subscriptions" on public.calendar_push_subscriptions for all to authenticated
+using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_in_app_notifications(
+ id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id) on delete cascade,
+ event_id uuid references public.calendar_events(id) on delete cascade,title text not null,body text not null,
+ action_url text,read_at timestamptz,created_at timestamptz not null default now()
+);
+create index if not exists calendar_in_app_notifications_user_created_idx on public.calendar_in_app_notifications(user_id,created_at desc);
+alter table public.calendar_in_app_notifications enable row level security;
+drop policy if exists "Users read their in app notifications" on public.calendar_in_app_notifications;
+create policy "Users read their in app notifications" on public.calendar_in_app_notifications for select to authenticated using(user_id=(select auth.uid()));
+drop policy if exists "Users update their notification read state" on public.calendar_in_app_notifications;
+create policy "Users update their notification read state" on public.calendar_in_app_notifications for update to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+
+create table if not exists public.calendar_notification_deliveries(
+ id uuid primary key default gen_random_uuid(),event_id uuid not null references public.calendar_events(id) on delete cascade,
+ user_id uuid references auth.users(id) on delete cascade,recipient_key text not null default '',
+ event_updated_at timestamptz not null,channel text not null check(channel in('in_app','web_push','email','whatsapp','sms','guest_email')),
+ status text not null default 'queued' check(status in('queued','sent','failed','skipped')),
+ provider_message_id text,error_code text,created_at timestamptz not null default now(),sent_at timestamptz
+);
+create unique index if not exists calendar_notification_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,user_id,event_updated_at,channel) where user_id is not null;
+create unique index if not exists calendar_guest_delivery_once_idx
+on public.calendar_notification_deliveries(event_id,recipient_key,event_updated_at,channel) where user_id is null;
+alter table public.calendar_notification_deliveries enable row level security;
+-- No client policies for invitations or delivery ledgers. Edge Functions use service role.
+
+-- Enable realtime change delivery for live shared calendar updates where the
+-- standard Supabase realtime publication is present.
+do $$
+begin
+ if exists(select 1 from pg_publication where pubname='supabase_realtime')
+ and not exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='calendar_events') then
+  alter publication supabase_realtime add table public.calendar_events;
+ end if;
+end $$;
