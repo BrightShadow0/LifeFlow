@@ -5139,8 +5139,9 @@ body::-webkit-scrollbar-corner{
 
 /* Calendar events, locations and departure reminders */
 .cal-calendar-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin:0 0 16px}
-.cal-event-chip{display:flex;flex-direction:column;align-items:flex-start;width:100%;gap:2px;text-align:left;border:1px solid color-mix(in srgb,var(--lf-accent,#42d9e8) 42%,transparent);background:color-mix(in srgb,var(--lf-accent,#42d9e8) 12%,transparent);color:inherit;border-radius:8px;padding:5px;cursor:pointer;min-width:0}
-.cal-event-chip .cal-item-kind{font-size:9px;letter-spacing:.1em;font-weight:800;color:var(--lf-accent,#42d9e8)}
+.cal-event-chip{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-start;width:100%;gap:6px;text-align:left;border:1px solid color-mix(in srgb,var(--lf-accent,#42d9e8) 42%,transparent);background:color-mix(in srgb,var(--lf-accent,#42d9e8) 12%,transparent);color:inherit;border-radius:8px;padding:5px;cursor:pointer;min-width:0}
+.cal-event-chip .cal-item-kind{flex:0 0 auto;font-size:8px;letter-spacing:.09em;font-weight:800;color:var(--lf-accent,#42d9e8)}
+.cal-event-chip .cal-task-title{min-width:0;font-size:11px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-agenda-event{display:grid;grid-template-columns:minmax(72px,auto) minmax(0,1fr) auto;gap:7px 12px;align-items:center}
 .cal-agenda-event .cal-agenda-title{border:0;background:none;color:inherit;text-align:left;font:inherit;font-weight:700;cursor:pointer;min-width:0;overflow-wrap:anywhere}
 .cal-map-link{font-size:.82em;color:var(--lf-accent,#42d9e8);text-decoration:none}
