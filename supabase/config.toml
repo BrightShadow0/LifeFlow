@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.dispatch-calendar-reminders]
 verify_jwt = false
+
+[functions.notify-calendar-guests]
+verify_jwt = true
