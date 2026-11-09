@@ -18,7 +18,7 @@ function togglePasswordVisibility(inputId, button){
 }
 
 function defaultProfileState(email){
-  return {tasks:[], currentUser:email||null};
+  return {tasks:[], events:[], currentUser:email||null};
 }
 function profileStateKey(email){
   return 'lifeflow2_state_'+encodeURIComponent(String(email||''));
@@ -272,6 +272,13 @@ function initTaskEventDelegation(){
     else if(action==='clear-completed') clearCompletedTasks();
     else if(action==='shift-month') shiftMonth(Number(control.dataset.monthDelta));
     else if(action==='calendar-mode'){calendarMode=control.dataset.calendarMode==='agenda'?'agenda':'month';renderApp();}
+    else if(action==='new-calendar-event') openCalendarEventEditor();
+    else if(action==='edit-calendar-event') openCalendarEventEditor(control.dataset.eventId);
+    else if(action==='close-calendar-event') closeCalendarEventEditor();
+    else if(action==='save-calendar-event') saveCalendarEvent();
+    else if(action==='delete-calendar-event') deleteCalendarEvent();
+    else if(action==='enable-calendar-notifications') enableCalendarNotifications();
+    else if(action==='export-calendar-ics') exportCalendarIcs();
     else if(action==='open-edit-start') openClock('edit','start');
     else if(action==='open-edit-end') openClock('edit','end');
     else if(action==='clear-task-times') clearTaskTimes();
@@ -1070,7 +1077,7 @@ async function initializeTaskArchitecture() {
       }
     }
   }));
-  ['tasks','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery'].forEach(key=>{
+  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery'].forEach(key=>{
     lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key,()=>{
       if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||lifeFlowCloudSyncConflict||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
       const snapshot=lifeFlowTaskStateManager.getState();
@@ -1882,69 +1889,60 @@ function dropCol(e,col){
 }
 
 function renderCalendar(){
-  const first=new Date(calYear,calMonth,1);
-  const u=currentUser();
-  const weekStartsMonday=u?.weekStart==='Monday';
-  const startDow=weekStartsMonday?(first.getDay()+6)%7:first.getDay();
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  const monthTasks=state.tasks.filter(t=>{
-    if(!t.due)return false;
-    const date=new Date(t.due);
-    return !Number.isNaN(date.getTime())&&date.getFullYear()===calYear&&date.getMonth()===calMonth;
-  });
-  const isDone=t=>!!(t.done||t.status==='done');
-  const scheduledDays=new Set(monthTasks.map(t=>new Date(t.due).getDate()));
-  const busiestDay=Math.max(0,...Array.from({length:daysInMonth},(_,i)=>monthTasks.filter(t=>new Date(t.due).getDate()===i+1).length));
-  const modeToggle=`<div class="cal-mode-switch" role="group" aria-label="Calendar view">
-    <button type="button" class="cal-mode ${calendarMode==='month'?'active':''}" data-lf-action="calendar-mode" data-calendar-mode="month" aria-pressed="${calendarMode==='month'}"><span>▦</span> Month</button>
-    <button type="button" class="cal-mode ${calendarMode==='agenda'?'active':''}" data-lf-action="calendar-mode" data-calendar-mode="agenda" aria-pressed="${calendarMode==='agenda'}"><span>☷</span> Agenda</button>
-  </div>`;
-  let body='';
-  if(calendarMode==='month'){
-    let cells='';
-    for(let i=0;i<startDow;i++)cells+='<div class="cal-empty" aria-hidden="true"></div>';
-    for(let d=1;d<=daysInMonth;d++){
-      const cellDate=new Date(calYear,calMonth,d);
-      const dayTasks=monthTasks.filter(t=>new Date(t.due).getDate()===d);
-      const dayOpen=dayTasks.filter(t=>!isDone(t)).length;
-      const dayDone=dayTasks.length-dayOpen;
-      const isToday=cellDate.toDateString()===new Date().toDateString();
-      const workload=!dayTasks.length?'is-clear':dayOpen===0?'is-complete':dayOpen>=4?'is-busy':'has-open';
-      const shown=dayTasks.slice(0,2);
-      cells+=`<div class="cal-day ${isToday?'today':''} ${workload}" data-lf-dragover="calendar-day" data-lf-drop-day="${calYear},${calMonth},${d}" aria-label="${cellDate.toLocaleDateString(undefined,{dateStyle:'full'})}: ${dayTasks.length} scheduled tasks, ${dayOpen} open, ${dayDone} completed">
-        <div class="cal-date-row"><div class="dnum">${d}</div>${dayTasks.length?'<span class="cal-day-count">'+dayTasks.length+'</span>':''}</div>
-        <div class="cal-tasks">${shown.map(t=>`<div class="citem ${isDone(t)?'is-done':''}" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}"><span class="cal-task-title">${esc(t.title)}</span>${intervalHtml(t)?`<div>${intervalHtml(t)}</div>`:''}</div>`).join('')}${dayTasks.length>2?'<span class="cal-more">+'+(dayTasks.length-2)+' more</span>':''}</div>
-        ${dayTasks.length?'<div class="cal-day-load"><span style="width:'+Math.min(100,dayTasks.length/Math.max(1,busiestDay)*100)+'%"></span></div>':''}
-      </div>`;
-    }
-    const trailing=(7-((startDow+daysInMonth)%7))%7;
-    for(let i=0;i<trailing;i++)cells+='<div class="cal-empty" aria-hidden="true"></div>';
-    body=`<div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['MON','TUE','WED','THU','FRI','SAT','SUN']:['SUN','MON','TUE','WED','THU','FRI','SAT']).map((d,i)=>`<div class="dow" role="columnheader" aria-label="${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(i+(weekStartsMonday?1:0))%7]}">${d}</div>`).join('')}${cells}</div></div>`;
-  }else{
-    const grouped=[];
-    const sorted=monthTasks.slice().sort((a,b)=>new Date(a.due)-new Date(b.due));
-    sorted.forEach(task=>{
-      const date=new Date(task.due),key=date.getDate();
-      let group=grouped.find(g=>g.day===key);
-      if(!group){group={day:key,date,tasks:[]};grouped.push(group);}
-      group.tasks.push(task);
-    });
-    body=grouped.length?`<div class="cal-agenda">${grouped.map(group=>`<section class="cal-agenda-day"><div class="cal-agenda-date"><strong>${group.date.toLocaleDateString(undefined,{weekday:'short'})}</strong><span>${group.day}</span><small>${group.date.toLocaleDateString(undefined,{month:'short'})}</small></div><div class="cal-agenda-items">${group.tasks.map(t=>`<div class="cal-agenda-item ${isDone(t)?'is-done':''}" draggable="true" data-lf-dragstart="task" data-task-id="${t.id}"><span class="cal-agenda-time">${validTime(t.startTime)?t.startTime:'All day'}${validTime(t.endTime)?' – '+t.endTime:''}</span><span class="cal-agenda-title">${esc(t.title)}</span><span class="cal-agenda-status">${isDone(t)?'Completed':'Scheduled'}</span></div>`).join('')}</div></section>`).join('')}</div>`:'<div class="cal-agenda-empty"><strong>No scheduled items this month</strong><span>Tasks with due dates will appear here.</span></div>';
+ const first=new Date(calYear,calMonth,1),u=currentUser(),weekStartsMonday=u?.weekStart==='Monday',startDow=weekStartsMonday?(first.getDay()+6)%7:first.getDay(),daysInMonth=new Date(calYear,calMonth+1,0).getDate(),monthName=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+ const monthTasks=state.tasks.filter(t=>{if(!t.due)return false;const d=new Date(t.due);return !Number.isNaN(d.getTime())&&d.getFullYear()===calYear&&d.getMonth()===calMonth;});
+ const monthEvents=(Array.isArray(state.events)?state.events:[]).filter(e=>{const d=new Date(e.startAt);return e.startAt&&!Number.isNaN(d.getTime())&&d.getFullYear()===calYear&&d.getMonth()===calMonth;});
+ const done=t=>!!(t.done||t.status==='done'),days=new Set([...monthTasks.map(t=>new Date(t.due).getDate()),...monthEvents.map(e=>new Date(e.startAt).getDate())]);
+ const busiest=Math.max(0,...Array.from({length:daysInMonth},(_,i)=>monthTasks.filter(t=>new Date(t.due).getDate()===i+1).length+monthEvents.filter(e=>new Date(e.startAt).getDate()===i+1).length));
+ const toggle=`<div class="cal-mode-switch" role="group" aria-label="Calendar view"><button type="button" class="cal-mode ${calendarMode==='month'?'active':''}" data-lf-action="calendar-mode" data-calendar-mode="month" aria-pressed="${calendarMode==='month'}"><span>▦</span> Month</button><button type="button" class="cal-mode ${calendarMode==='agenda'?'active':''}" data-lf-action="calendar-mode" data-calendar-mode="agenda" aria-pressed="${calendarMode==='agenda'}"><span>☷</span> Agenda</button></div>`;
+ let body='';
+ if(calendarMode==='month'){
+  let cells='';
+  for(let i=0;i<startDow;i++)cells+='<div class="cal-empty" aria-hidden="true"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+   const cell=new Date(calYear,calMonth,d),tasks=monthTasks.filter(t=>new Date(t.due).getDate()===d),events=monthEvents.filter(e=>new Date(e.startAt).getDate()===d),total=tasks.length+events.length,open=tasks.filter(t=>!done(t)).length,work=!total?'is-clear':open===0?'is-complete':open>=4?'is-busy':'has-open';
+   const items=[...tasks.map(t=>({kind:'task',id:t.id,title:t.title,time:t.startTime||'',done:done(t)})),...events.map(e=>({kind:'event',id:e.id,title:e.title,time:new Date(e.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),done:false}))].sort((a,b)=>a.time.localeCompare(b.time));
+   cells+=`<div class="cal-day ${cell.toDateString()===new Date().toDateString()?'today':''} ${work}" data-lf-dragover="calendar-day" data-lf-drop-day="${calYear},${calMonth},${d}" aria-label="${cell.toLocaleDateString(undefined,{dateStyle:'full'})}: ${total} scheduled items"><div class="cal-date-row"><div class="dnum">${d}</div>${total?'<span class="cal-day-count">'+total+'</span>':''}</div><div class="cal-tasks">${items.slice(0,2).map(x=>x.kind==='event'?'<button type="button" class="citem cal-event-chip" data-lf-action="edit-calendar-event" data-event-id="'+esc(x.id)+'"><span class="cal-item-kind">EVENT</span><span class="cal-task-title">'+esc(x.title)+'</span></button>':'<div class="citem '+(x.done?'is-done':'')+'" draggable="true" data-lf-dragstart="task" data-task-id="'+x.id+'"><span class="cal-task-title">'+esc(x.title)+'</span></div>').join('')}${total>2?'<span class="cal-more">+'+(total-2)+' more</span>':''}</div>${total?'<div class="cal-day-load"><span style="width:'+Math.min(100,total/Math.max(1,busiest)*100)+'%"></span></div>':''}</div>`;
   }
-  return `<div class="card calendar-card">
-    <div class="cal-topbar"><div class="cal-head"><button class="hbtn" data-lf-action="shift-month" data-month-delta="-1" aria-label="Previous month">‹</button><strong>${monthName}</strong><button class="hbtn" data-lf-action="shift-month" data-month-delta="1" aria-label="Next month">›</button></div>${modeToggle}</div>
-    <div class="cal-context-strip"><span><strong>${monthTasks.length}</strong> scheduled</span><span><strong>${scheduledDays.size}</strong> active days</span><span><strong>${busiestDay}</strong> peak daily load</span></div>
-    ${body}
-    ${calendarMode==='month'?'<div class="cal-legend"><span><i class="open-dot"></i> Open commitments</span><span><i class="done-dot"></i> Completed</span><span><i class="clear-dot"></i> No scheduled tasks</span></div>':''}
-    <div class="notice">Calendar shows when your dated tasks happen. Manage task details and workflow in Today, Tasks and Kanban.</div>
-  </div>`;
+  const trailing=(7-((startDow+daysInMonth)%7))%7;for(let i=0;i<trailing;i++)cells+='<div class="cal-empty" aria-hidden="true"></div>';
+  body=`<div class="calendar-wrap"><div class="cal-grid">${(weekStartsMonday?['MON','TUE','WED','THU','FRI','SAT','SUN']:['SUN','MON','TUE','WED','THU','FRI','SAT']).map((d,i)=>`<div class="dow" role="columnheader" aria-label="${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][(i+(weekStartsMonday?1:0))%7]}">${d}</div>`).join('')}${cells}</div></div>`;
+ }else{
+  const entries=[...monthTasks.map(t=>({kind:'task',id:t.id,title:t.title,startAt:t.due,startTime:t.startTime,endTime:t.endTime,done:done(t)})),...monthEvents.map(e=>({kind:'event',id:e.id,title:e.title,startAt:e.startAt,startTime:new Date(e.startAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),endTime:new Date(e.endAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),event:e}))].sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));
+  const groups=[];entries.forEach(x=>{const date=new Date(x.startAt);let g=groups.find(y=>y.day===date.getDate());if(!g){g={day:date.getDate(),date,items:[]};groups.push(g);}g.items.push(x);});
+  body=groups.length?`<div class="cal-agenda">${groups.map(g=>`<section class="cal-agenda-day"><div class="cal-agenda-date"><strong>${g.date.toLocaleDateString(undefined,{weekday:'short'})}</strong><span>${g.day}</span><small>${g.date.toLocaleDateString(undefined,{month:'short'})}</small></div><div class="cal-agenda-items">${g.items.map(x=>x.kind==='event'?'<article class="cal-agenda-item cal-agenda-event"><span class="cal-agenda-time">'+esc(x.startTime)+' – '+esc(x.endTime)+'</span><button type="button" class="cal-agenda-title" data-lf-action="edit-calendar-event" data-event-id="'+esc(x.id)+'">'+esc(x.title)+'</button><span class="cal-agenda-status">Event</span>'+(x.event.location?'<a class="cal-map-link" href="'+esc(window.LifeFlowCalendarEvents.mapsUrl(x.event.location))+'" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>':'')+(Number(x.event.travelMinutes)>0?'<small class="cal-travel-note">Estimated travel: '+Number(x.event.travelMinutes)+' min</small>':'')+'</article>':'<div class="cal-agenda-item '+(x.done?'is-done':'')+'"><span class="cal-agenda-time">'+esc(validTime(x.startTime)?x.startTime:'All day')+(validTime(x.endTime)?' – '+esc(x.endTime):'')+'</span><span class="cal-agenda-title">'+esc(x.title)+'</span><span class="cal-agenda-status">'+(x.done?'Completed':'Scheduled')+'</span></div>').join('')}</div></section>').join('')}</div>`:'<div class="cal-agenda-empty"><strong>No scheduled items this month</strong><span>Add an event or schedule a task to see it here.</span></div>';
+ }
+ const total=monthTasks.length+monthEvents.length;
+ return `<div class="card calendar-card"><div class="cal-topbar"><div class="cal-head"><button class="hbtn" data-lf-action="shift-month" data-month-delta="-1" aria-label="Previous month">‹</button><strong>${monthName}</strong><button class="hbtn" data-lf-action="shift-month" data-month-delta="1" aria-label="Next month">›</button></div>${toggle}</div><div class="cal-calendar-actions"><button type="button" class="primary" data-lf-action="new-calendar-event">+ New event</button><button type="button" class="secondary" data-lf-action="open-calendar-share">Share calendar</button><button type="button" class="secondary" data-lf-action="export-calendar-ics">Export .ics</button></div><div class="cal-context-strip"><span><strong>${total}</strong> scheduled</span><span><strong>${days.size}</strong> active days</span><span><strong>${busiest}</strong> peak daily load</span></div>${body}${calendarMode==='month'?'<div class="cal-legend"><span><i class="open-dot"></i> Open tasks</span><span><i class="done-dot"></i> Completed</span><span><i class="clear-dot"></i> No scheduled items</span><span><i class="cal-event-dot"></i> Events</span></div>':''}<div class="notice">Tasks and events share this calendar. Locations open in Maps. Departure reminders use your estimated travel time.</div></div>`;
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){
   const id=+e.dataTransfer.getData('id');
   if(lifeFlowTaskController && lifeFlowTaskController.update(id,{due:new Date(y,m,d).toISOString()})) renderApp();
 }
+
+let calendarEventEditingId=null;
+function localDateTime(value){const date=new Date(value);if(Number.isNaN(date.getTime()))return '';return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);}
+function openCalendarEventEditor(id){
+ const event=(state.events||[]).find(x=>String(x.id)===String(id));calendarEventEditingId=event?.id??null;
+ const start=event?.startAt?localDateTime(event.startAt):localDateTime(new Date(Date.now()+3600000)),end=event?.endAt?localDateTime(event.endAt):localDateTime(new Date(Date.now()+7200000)),host=document.getElementById('calendarEventHost');if(!host)return;
+ host.innerHTML=`<div class="calendar-event-overlay" data-lf-overlay="close-calendar-event"><section class="calendar-event-dialog" role="dialog" aria-modal="true" aria-labelledby="calendarEventTitle"><header><div><span class="custom-kicker">CALENDAR EVENT</span><h2 id="calendarEventTitle">${event?'Edit event':'Create event'}</h2></div><button type="button" class="hbtn" data-lf-action="close-calendar-event">×</button></header><label for="calendarEventName">Event name</label><input id="calendarEventName" maxlength="160" value="${esc(event?.title||'')}" placeholder="e.g. Client meeting"><div class="calendar-event-grid"><div><label for="calendarEventStart">Starts</label><input id="calendarEventStart" type="datetime-local" value="${start}"></div><div><label for="calendarEventEnd">Ends</label><input id="calendarEventEnd" type="datetime-local" value="${end}"></div></div><label for="calendarEventLocation">Location / address</label><input id="calendarEventLocation" maxlength="500" value="${esc(event?.location||'')}" placeholder="Venue, street, area, city"><small class="muted">Maps will open directions/search for this location.</small><label for="calendarEventDescription">Notes</label><textarea id="calendarEventDescription" rows="2" maxlength="2000" placeholder="Optional details">${esc(event?.description||'')}</textarea><div class="calendar-event-grid"><div><label for="calendarTravelMinutes">Estimated travel time</label><div class="calendar-number-field"><input id="calendarTravelMinutes" type="number" min="0" max="600" step="5" value="${Number(event?.travelMinutes)||0}"><span>minutes</span></div></div><div><label for="calendarLeaveAlert">Alert before departure</label><select id="calendarLeaveAlert"><option value="0" ${Number(event?.leaveAlertMinutes)===0?'selected':''}>At departure</option><option value="5" ${Number(event?.leaveAlertMinutes)===5?'selected':''}>5 minutes</option><option value="10" ${Number(event?.leaveAlertMinutes??10)===10?'selected':''}>10 minutes</option><option value="15" ${Number(event?.leaveAlertMinutes)===15?'selected':''}>15 minutes</option><option value="30" ${Number(event?.leaveAlertMinutes)===30?'selected':''}>30 minutes</option><option value="60" ${Number(event?.leaveAlertMinutes)===60?'selected':''}>60 minutes</option></select></div></div><div class="calendar-reminder-hint">LifeFlow alerts you before your planned departure. Travel time is your own estimate, not live traffic.</div><div class="calendar-event-error" id="calendarEventError" role="alert"></div><footer><div>${event?'<button type="button" class="danger" data-lf-action="delete-calendar-event">Delete event</button>':''}<button type="button" class="secondary" data-lf-action="enable-calendar-notifications">Enable notifications</button></div><div><button type="button" class="secondary" data-lf-action="close-calendar-event">Cancel</button><button type="button" class="primary" data-lf-action="save-calendar-event">Save event</button></div></footer></section></div>`;
+}
+function closeCalendarEventEditor(){calendarEventEditingId=null;const host=document.getElementById('calendarEventHost');if(host)host.innerHTML='';}
+function saveCalendarEvent(){
+ const title=document.getElementById('calendarEventName')?.value.trim()||'',startValue=document.getElementById('calendarEventStart')?.value||'',endValue=document.getElementById('calendarEventEnd')?.value||'',start=new Date(startValue),end=new Date(endValue),error=document.getElementById('calendarEventError'),fail=m=>{if(error)error.textContent=m;};
+ if(!title)return fail('Enter an event name.');if(!startValue||!endValue||Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start)return fail('Choose a valid start and end time.');const travel=Number(document.getElementById('calendarTravelMinutes')?.value||0);if(!Number.isFinite(travel)||travel<0||travel>600)return fail('Travel time must be between 0 and 600 minutes.');
+ const events=Array.isArray(state.events)?state.events.slice():[],old=events.find(x=>String(x.id)===String(calendarEventEditingId)),event={...(old||{}),id:old?.id||uid(),title,startAt:start.toISOString(),endAt:end.toISOString(),location:document.getElementById('calendarEventLocation')?.value.trim()||'',description:document.getElementById('calendarEventDescription')?.value.trim()||'',travelMinutes:travel,leaveAlertMinutes:Number(document.getElementById('calendarLeaveAlert')?.value||0),reminderSentAt:null,updatedAt:new Date().toISOString()};
+ updateWorkspaceState({events:old?events.map(x=>String(x.id)===String(event.id)?event:x):[...events,event]});closeCalendarEventEditor();renderApp();showToast(old?'Event updated.':'Event added to calendar.');
+}
+function deleteCalendarEvent(){if(!calendarEventEditingId||!confirm('Delete this calendar event?'))return;updateWorkspaceState({events:(state.events||[]).filter(x=>String(x.id)!==String(calendarEventEditingId))});closeCalendarEventEditor();renderApp();showToast('Event deleted.');}
+async function enableCalendarNotifications(){if(!('Notification'in window)){showToast('This browser does not support notifications.');return;}try{const p=await Notification.requestPermission();showToast(p==='granted'?'Calendar notifications enabled.':'Notifications were not enabled. Check browser settings.');}catch(_){showToast('Could not request notification permission.');}}
+function checkCalendarTravelReminders(){
+ if(!getSession()||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;const now=Date.now();let changed=false;
+ const events=(state.events||[]).map(e=>{const start=Date.parse(e.startAt),travel=Math.max(0,Number(e.travelMinutes)||0),alert=Math.max(0,Number(e.leaveAlertMinutes)||0);if(!Number.isFinite(start)||!travel||e.reminderSentAt||start<=now)return e;const trigger=start-(travel+alert)*60000;if(now<trigger||now-trigger>30*60000)return e;changed=true;const body='Time to leave for '+e.title+(e.location?' · '+e.location:'')+'. Estimated travel: '+travel+' min.';if('Notification'in window&&Notification.permission==='granted'){try{new Notification('LifeFlow · Departure reminder',{body,tag:'lifeflow-event-'+e.id});}catch(_){showToast(body);}}else showToast(body);return {...e,reminderSentAt:new Date().toISOString()};});
+ if(changed)updateWorkspaceState({events});
+}
+let calendarReminderTicker=null;function startCalendarReminderChecks(){if(calendarReminderTicker)return;checkCalendarTravelReminders();calendarReminderTicker=setInterval(checkCalendarTravelReminders,30000);document.addEventListener('visibilitychange',checkCalendarTravelReminders);}startCalendarReminderChecks();
+function exportCalendarIcs(){const events=(state.events||[]);if(!events.length){showToast('Add an event before exporting your calendar.');return;}const content=window.LifeFlowCalendarEvents.toIcs(events,'LifeFlow calendar'),blob=new Blob([content],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='lifeflow-calendar.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Calendar export created.');}
 
 let densityMode=localStorage.getItem('lifeflow2_density')||'comfortable';
 function setDensity(mode){
