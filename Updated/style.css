@@ -5171,3 +5171,28 @@ body::-webkit-scrollbar-corner{
 .background-check{color:var(--muted);font-size:15px;}
 .background-collection.active .background-check{color:var(--accent);}
 @media(max-width:700px){.background-collection-gallery{grid-template-columns:1fr;gap:9px}.background-collection{grid-template-columns:84px minmax(0,1fr) auto;gap:11px;padding:9px}.background-swatch{grid-column:1;grid-row:1;height:62px}.background-collection-copy{grid-column:2;grid-row:1}.background-check{grid-column:3;grid-row:1}}
+
+/* Calendar events, locations and departure reminders */
+.cal-calendar-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.cal-event-chip{display:flex;flex-direction:column;align-items:flex-start;width:100%;gap:2px;text-align:left;border:1px solid color-mix(in srgb,var(--lf-accent,#42d9e8) 42%,transparent);background:color-mix(in srgb,var(--lf-accent,#42d9e8) 12%,transparent);color:inherit;border-radius:8px;padding:5px;cursor:pointer;min-width:0}
+.cal-event-chip .cal-item-kind{font-size:9px;letter-spacing:.1em;font-weight:800;color:var(--lf-accent,#42d9e8)}
+.cal-agenda-event{display:grid;grid-template-columns:minmax(72px,auto) minmax(0,1fr) auto;gap:7px 12px;align-items:center}
+.cal-agenda-event .cal-agenda-title{border:0;background:none;color:inherit;text-align:left;font:inherit;font-weight:700;cursor:pointer;min-width:0;overflow-wrap:anywhere}
+.cal-map-link{font-size:.82em;color:var(--lf-accent,#42d9e8);text-decoration:none}
+.cal-travel-note{grid-column:2/-1;color:var(--text-muted,#9aa8b8)}
+.cal-event-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lf-accent,#42d9e8);margin-right:5px}
+.calendar-event-overlay{position:fixed;inset:0;z-index:1200;background:rgba(3,8,16,.76);backdrop-filter:blur(10px);display:grid;place-items:center;padding:18px}
+.calendar-event-dialog{width:min(680px,100%);max-height:min(90dvh,900px);overflow:auto;border:1px solid var(--panel-border,rgba(150,180,210,.22));border-radius:22px;background:var(--panel-bg,#101b2a);color:var(--text,#edf4ff);padding:clamp(18px,4vw,28px);box-shadow:0 24px 80px rgba(0,0,0,.38);display:grid;gap:11px}
+.calendar-event-dialog header,.calendar-event-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.calendar-event-dialog h2{margin:4px 0 8px}
+.calendar-event-dialog label{font-size:.84rem;font-weight:700;color:var(--text-muted,#aabbd0)}
+.calendar-event-dialog input,.calendar-event-dialog select,.calendar-event-dialog textarea{width:100%;min-width:0;border:1px solid var(--input-border,var(--panel-border,rgba(150,180,210,.3)));border-radius:11px;background:var(--input-bg,rgba(4,12,23,.56));color:inherit;padding:12px 13px;font:inherit}
+.calendar-event-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.calendar-event-grid>div{display:grid;gap:7px;min-width:0}
+.calendar-number-field{display:flex;align-items:center;gap:8px}
+.calendar-number-field input{min-width:0}
+.calendar-number-field span,.calendar-reminder-hint,.calendar-event-dialog .muted{font-size:.82rem;color:var(--text-muted,#9aa8b8)}
+.calendar-reminder-hint{border:1px solid var(--panel-border,rgba(150,180,210,.22));border-radius:10px;padding:11px 13px;line-height:1.5}
+.calendar-event-error{min-height:1.2em;color:#ff8998;font-size:.88rem}
+.calendar-event-dialog footer>div{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:560px){.calendar-event-grid{grid-template-columns:1fr}.cal-calendar-actions{justify-content:stretch}.cal-calendar-actions button{flex:1}.cal-agenda-event{grid-template-columns:1fr auto}.cal-agenda-event .cal-agenda-time{grid-column:1/-1}}
