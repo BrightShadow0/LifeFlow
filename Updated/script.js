@@ -335,6 +335,14 @@ function initTaskEventDelegation(){
     else if(action==='command-view'){view=control.dataset.view;closeCommandPalette();renderApp();}
     else if(action==='command-task'){view='list';closeCommandPalette();renderApp();requestAnimationFrame(()=>document.querySelector('[data-task-id="'+control.dataset.taskId+'"]')?.focus());}
     else if(action==='command-note'){closeCommandPalette();view='notes';selectKnowledgeNote(control.dataset.noteId,'regular','edit');}
+    else if(action==='quick-capture-task'){
+      const title=String(control.dataset.captureTitle||'').trim();
+      if(title){closeCommandPalette();const today=dateToIsoDay(new Date());addTask({title,startDate:today,due:null,priority:'medium',recur:'none',status:'todo',done:false,tags:[],subtasks:[]});view='list';renderApp();showToast('Task captured');}
+    }
+    else if(action==='quick-capture-note'){
+      const title=String(control.dataset.captureTitle||'').trim();
+      if(title&&hasPremiumAccess(currentUser())&&lifeFlowNoteController){closeCommandPalette();const note=lifeFlowNoteController.newNote('regular');lifeFlowNoteController.updateFields('regular',note.id,{title:title.slice(0,80)});window.lfSelectedNote=note.id;window.lfNoteMode='regular';window.lfNoteView='edit';view='notes';renderApp();requestAnimationFrame(()=>document.getElementById('kn_content')?.focus());showToast('Note captured');}
+    }
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-panel-toggle'){const panel=control.dataset.notesPanel;window.lfNotesPanelOpen=!(window.lfNotesPanelOpen&&window.lfNotesPanel===panel);window.lfNotesPanel=panel;renderApp();}
     else if(action==='note-panel-close'){window.lfNotesPanelOpen=false;renderApp();}
@@ -2311,12 +2319,19 @@ function renderCommandResults(){
   const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,folderIcon:note.folderIcon,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
   const otherResults=(matches.concat(tasks)).slice(0,5).join('');
-  const output=heading+noteHtml.join('')+otherResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
+  const captureResults=q?'<div class="command-section-label">Quick Capture</div><button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-task" data-capture-title="'+esc(input.value.trim())+'"><b>＋ Create task</b><span>'+esc(input.value.trim())+'</span></button>'+(hasPremiumAccess(currentUser())?'<button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-note" data-capture-title="'+esc(input.value.trim())+'"><b>▤ Create note</b><span>'+esc(input.value.trim())+'</span></button>':''):'';
+  const output=heading+noteHtml.join('')+otherResults+captureResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
   const template=host.ownerDocument.createElement('template');
   template.innerHTML=output;
   host.replaceChildren(template.content);
 }
 window.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'&&!e.shiftKey){
+    const target=e.target;
+    if(!target?.closest?.('input,textarea,select,[contenteditable="true"]')){
+      e.preventDefault();openCommandPalette();return;
+    }
+  }
   if(e.key==='Escape'){closeCommandPalette();closeNoteContextMenu();}
   if((e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))&&e.target?.closest?.('[data-lf-folder-context]')){
     e.preventDefault();const item=e.target.closest('[data-lf-folder-context]'),rect=item.getBoundingClientRect();
