@@ -5032,3 +5032,44 @@ body::-webkit-scrollbar-corner{
 .cloud-mfa-factor:last-child{border-bottom:0}
 .cloud-mfa-factor span{font-size:13px;color:var(--text)}
 @media(max-width:560px){.cloud-security-actions>*{flex:1 1 100%}.cloud-mfa-factor{align-items:flex-start;flex-direction:column}}
+
+
+/* LifeFlow Light wallpaper collection: luminous contour waves.
+   These selectors are intentionally limited to the five Light variants;
+   all existing Dark wallpaper rules above remain unchanged. */
+#app[data-workspace-backdrop="sapphire-light"]{
+  background:radial-gradient(ellipse at 78% 18%,rgba(255,255,255,.95),transparent 34%),linear-gradient(145deg,#dff3ff 0%,#91caff 48%,#4c9ff0 100%)!important;
+}
+#app[data-workspace-backdrop="emerald-light"]{
+  background:radial-gradient(ellipse at 78% 18%,rgba(255,255,255,.92),transparent 34%),linear-gradient(145deg,#e4fff7 0%,#a7eee0 48%,#59cdb8 100%)!important;
+}
+#app[data-workspace-backdrop="platinum-light"]{
+  background:radial-gradient(ellipse at 78% 18%,rgba(255,255,255,.98),transparent 34%),linear-gradient(145deg,#fbfcff 0%,#e0e7f4 52%,#b8c6dd 100%)!important;
+}
+#app[data-workspace-backdrop="amethyst-light"]{
+  background:radial-gradient(ellipse at 78% 18%,rgba(255,255,255,.94),transparent 34%),linear-gradient(145deg,#f7efff 0%,#d9c2ff 50%,#ad8be9 100%)!important;
+}
+#app[data-workspace-backdrop="ruby-light"]{
+  background:radial-gradient(ellipse at 78% 18%,rgba(255,255,255,.94),transparent 34%),linear-gradient(145deg,#fff0f5 0%,#f7bfd2 50%,#e78eae 100%)!important;
+}
+#app[data-workspace-backdrop$="-light"]::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.72;
+  background:
+    repeating-radial-gradient(ellipse 72% 48% at 18% 108%,transparent 0 15px,rgba(255,255,255,.62) 16px 17px,transparent 18px 27px),
+    repeating-radial-gradient(ellipse 68% 52% at 82% -8%,transparent 0 17px,rgba(255,255,255,.4) 18px 19px,transparent 20px 31px),
+    linear-gradient(160deg,transparent 0 45%,rgba(255,255,255,.12) 45.2% 46%,transparent 46.2%);
+  mix-blend-mode:screen;
+}
+#app[data-workspace-backdrop="sapphire-light"]::before{filter:drop-shadow(0 0 7px rgba(0,126,255,.22))}
+#app[data-workspace-backdrop="emerald-light"]::before{filter:drop-shadow(0 0 7px rgba(0,174,143,.2))}
+#app[data-workspace-backdrop="platinum-light"]::before{filter:drop-shadow(0 0 7px rgba(111,133,165,.18))}
+#app[data-workspace-backdrop="amethyst-light"]::before{filter:drop-shadow(0 0 7px rgba(142,77,225,.2))}
+#app[data-workspace-backdrop="ruby-light"]::before{filter:drop-shadow(0 0 7px rgba(218,54,107,.2))}
+.backdrop-sapphire-light .backdrop-preview{background:linear-gradient(145deg,#dff3ff,#91caff 55%,#4c9ff0)}
+.backdrop-emerald-light .backdrop-preview{background:linear-gradient(145deg,#e4fff7,#a7eee0 55%,#59cdb8)}
+.backdrop-platinum-light .backdrop-preview{background:linear-gradient(145deg,#fbfcff,#e0e7f4 55%,#b8c6dd)}
+.backdrop-amethyst-light .backdrop-preview{background:linear-gradient(145deg,#f7efff,#d9c2ff 55%,#ad8be9)}
+.backdrop-ruby-light .backdrop-preview{background:linear-gradient(145deg,#fff0f5,#f7bfd2 55%,#e78eae)}
+.backdrop-sapphire-light .backdrop-preview i,.backdrop-emerald-light .backdrop-preview i,.backdrop-platinum-light .backdrop-preview i,.backdrop-amethyst-light .backdrop-preview i,.backdrop-ruby-light .backdrop-preview i{background:rgba(255,255,255,.72)}
+.backdrop-sapphire-light .backdrop-preview b,.backdrop-emerald-light .backdrop-preview b,.backdrop-platinum-light .backdrop-preview b,.backdrop-amethyst-light .backdrop-preview b,.backdrop-ruby-light .backdrop-preview b{background:rgba(255,255,255,.35)}
+.backdrop-sapphire-light .backdrop-preview em,.backdrop-emerald-light .backdrop-preview em,.backdrop-platinum-light .backdrop-preview em,.backdrop-amethyst-light .backdrop-preview em,.backdrop-ruby-light .backdrop-preview em{background:rgba(255,255,255,.18)}
