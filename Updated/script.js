@@ -1800,10 +1800,14 @@ function taskRow(t){
 }
 
 function todayKey(d){return new Date(d).toDateString();}
+function dashboardEventRow(event){
+  const start=new Date(event.startAt),end=new Date(event.endAt),dateLabel=start.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),timeLabel=start.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(event.endAt?' – '+end.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''),location=event.location?'<span class="meta">'+esc(event.location)+'</span>':'';
+  return '<article class="dashboard-event-row"><span class="dashboard-event-marker">EVENT</span><div class="dashboard-event-main"><strong>'+esc(event.title)+'</strong><span class="meta">'+esc(dateLabel)+' · '+esc(timeLabel)+'</span>'+location+'</div><button type="button" class="linklike" data-lf-action="edit-calendar-event" data-event-id="'+esc(event.id)+'">View / edit</button></article>';
+}
 function renderToday(){
   const now=new Date(), todayStr=now.toDateString();
   const dueToday=state.tasks.filter(t=>t.due && todayKey(t.due)===todayStr);
-  const activeDueToday=dueToday.filter(t=>!t.done);
+  const activeDueToday=dueToday.filter(t=>!t.done);\n  const events=Array.isArray(state.events)?state.events:[];\n  const eventsToday=events.filter(e=>e.startAt&&new Date(e.startAt).toDateString()===todayStr).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));\n  const upcomingEvents=events.filter(e=>e.startAt&&new Date(e.startAt).toDateString()!==todayStr&&new Date(e.endAt||e.startAt)>=new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt)).slice(0,5);
   const overdue=state.tasks.filter(t=>t.due && new Date(t.due)<now && todayKey(t.due)!==todayStr && !t.done);
   const upcoming=state.tasks.filter(t=>t.due && new Date(t.due)>now && todayKey(t.due)!==todayStr && !t.done).sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,5);
   const completed=dueToday.filter(t=>t.done).length;
@@ -1828,7 +1832,7 @@ function renderToday(){
       </div>
     </section>
     ${overloaded?`<div class="workload-warning"><div class="load-icon">!</div><div><strong>Your day is getting full</strong><span>${esc(loadReasons.join(' · '))}. Consider protecting some space before adding more.</span></div></div>`:''}<div class="today-grid"><div>${taskFormHtml()}<div class="card"><div class="section-heading"><div><h2>Today's tasks</h2><p>${activeDueToday.length? 'Stay focused on what needs your attention.':dueToday.length?'You are all caught up for today.':'You have a clear slate.'}</p></div><span class="section-count">${activeDueToday.length}</span></div>${activeDueToday.length?'<div class="task-scroll">'+activeDueToday.map(taskRow).join('')+'</div>':'<div class="empty empty-soft">'+(dueToday.length?'All today’s tasks are done.':'Nothing due today. Add a task to get started.')+'</div>'}</div>
-    ${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2><div class="task-scroll">${overdue.map(taskRow).join('')}</div></div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?'<div class="task-scroll">'+upcoming.map(taskRow).join('')+'</div>':'<div class="empty">Nothing upcoming.</div>'}</div></div>
+    ${eventsToday.length?`<div class="card"><div class="section-heading"><div><h2>Today's events</h2><p>Calendar events scheduled for today.</p></div><span class="section-count">${eventsToday.length}</span></div><div class="dashboard-event-list">${eventsToday.map(dashboardEventRow).join('')}</div></div>`:''}${overdue.length?`<div class="card"><h2>Overdue (${overdue.length})</h2><div class="task-scroll">${overdue.map(taskRow).join('')}</div></div>`:''}<div class="card"><h2>Upcoming</h2>${upcoming.length?'<div class="task-scroll">'+upcoming.map(taskRow).join('')+'</div>':'<div class="empty">Nothing upcoming.</div>'}</div>${upcomingEvents.length?`<div class="card"><h2>Upcoming events</h2><div class="dashboard-event-list">${upcomingEvents.map(dashboardEventRow).join('')}</div></div>`:''}</div>
     <div><div class="card"><h2>Daily progress</h2><div class="statgrid"><div class="stat"><b>${dueToday.length}</b><small>Due today</small></div><div class="stat"><b>${completed}</b><small>Done</small></div><div class="stat"><b>${Math.round(minutes/60*10)/10}h</b><small>Scheduled</small></div></div><div class="progress-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill progress-pct-${percent}"></span></div><small class="meta">${percent}% of today's tasks complete</small></div>
     <div class="card"><h2>Schedule</h2>${scheduled.length?'<div class="schedule-scroll">'+scheduled.map(t=>'<div class="event"><b>'+esc(t.title)+'</b><small>'+esc(t.startTime)+'–'+esc(t.endTime)+'</small></div>').join('')+'</div>':'<div class="empty">No time intervals today.</div>'}</div></div></div>`;
 }
@@ -1849,8 +1853,7 @@ function renderList(){
   const list = state.tasks
     .filter(t=>Array.isArray(t.tags)&&t.tags.includes('Task Master') || !t.due || new Date(t.due)>=today)
     .sort((a,b)=>(a.done-b.done)||((a.due?new Date(a.due):Infinity)-(b.due?new Date(b.due):Infinity)));
-  const completedCount=state.tasks.filter(t=>t.done).length;
-  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><div class="task-toolbar-actions"><button type="button" class="complete-all-button" data-lf-action="complete-all" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" data-lf-action="clear-completed" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>`;
+  const completedCount=state.tasks.filter(t=>t.done).length;\n  const events=(Array.isArray(state.events)?state.events:[]).filter(e=>e.startAt&&new Date(e.endAt||e.startAt)>=today).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));\n  return `<div class="card"><div class="section-heading"><div><h2>All Tasks (${list.length})</h2></div><div class="task-toolbar-actions"><button type="button" class="complete-all-button" data-lf-action="complete-all" ${list.some(t=>!t.done)?'':'disabled'}>Complete all</button><button type="button" class="clear-completed-button" data-lf-action="clear-completed" ${completedCount?'':'disabled'}>Clear completed tasks${completedCount?' ('+completedCount+')':''}</button></div></div>${list.length?list.map(taskRow).join(''):'<div class="empty">No current or upcoming tasks.</div>'}</div>${events.length?`<div class="card"><div class="section-heading"><div><h2>Upcoming events</h2><p>Calendar events are shown here, separately from tasks.</p></div><span class="section-count">${events.length}</span></div><div class="dashboard-event-list">${events.map(dashboardEventRow).join('')}</div></div>`:''}`;
 }
 
 function renderBoard(){
