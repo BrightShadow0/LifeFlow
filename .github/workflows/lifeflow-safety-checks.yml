@@ -31,6 +31,7 @@ jobs:
           node --check Updated/ui.js
           node --check Updated/cloud-backup.js
           node --check Updated/cloud-sync.js
+          node --check Updated/calendar-events.js
           node --check Updated/supabase-auth.js
           node --check Updated/supabase-auth.js
       - name: Check ES modules
@@ -66,6 +67,8 @@ jobs:
           assert "enable row level security" in migration.lower(), "Cloud sync table must enable RLS"
           assert '"Users can read their encrypted workspace"' in migration, "Cloud sync table must scope reads to owner"
           assert '"Users can update their encrypted workspace"' in migration, "Cloud sync table must scope updates to owner"
+          assert "events" in sync and "calendar" not in sync.lower() or "events" in sync, "Workspace sync must preserve event collections"
+          print("Calendar events and workspace sync contracts verified.")
           print("Release 11 encrypted workspace sync contracts verified.")
           print("Release 9 encrypted backup management and restore contracts verified.")
           print("LifeFlow storage and recovery contracts verified.")
@@ -79,11 +82,14 @@ jobs:
           const result = migrateWorkspaceState(original, { currentUser: "person@example.com", defaults: { tasks: [], notes: [], codeNotes: [], folders: [], noteLinks: [] } });
           assert.deepEqual(result.state.tasks, original.tasks);
           assert.deepEqual(result.state.customField, original.customField);
-          assert.equal(result.state.__lifeFlowSchemaVersion, 1);
+          assert.equal(result.state.__lifeFlowSchemaVersion, 2);
+          assert.deepEqual(result.state.events, []);
           assert.equal(result.migrated, true);
           console.log("Migration preserves existing content and adds schema metadata only.");
           JS
 
+      - name: Test calendar events, travel reminders and iCalendar export
+        run: node --test tests/calendar-events.test.cjs
       - name: Test encrypted cloud backup engine
         run: node --test tests/cloud-backup.test.cjs
       - name: Test cloud authentication and MFA flows
