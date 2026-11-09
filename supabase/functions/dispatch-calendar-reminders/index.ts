@@ -25,38 +25,39 @@ Deno.serve(async req=>{
  }
  async function mark(id:string,status:string,code?:string){await db.from("calendar_notification_deliveries").update({status,error_code:code||null,sent_at:status==="sent"?new Date().toISOString():null}).eq("id",id);}
  for(const event of events||[]){
-  const start=Date.parse(event.starts_at),departureAt=start-(Number(event.travel_minutes||0)+Number(event.leave_alert_minutes||0))*60000;
+  const start=Date.parse(event.starts_at),travel=Number(event.travel_minutes||0);
   const location=event.location_lat!=null&&event.location_lng!=null?event.location_lat+","+event.location_lng:event.location;
   const maps=location?"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(location):"";
-  const details=[event.title,new Date(start).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}),event.location||"",maps].filter(Boolean).join("\n");
-  if(departureAt>=from.getTime()&&departureAt<=to.getTime()){
-   const {data:members}=await db.from("calendar_memberships").select("user_id").eq("calendar_id",event.calendar_id);
-   const recipients=new Set([event.shared_calendars.owner_id,...(members||[]).map((m:any)=>m.user_id)]);
-   for(const userId of recipients){
-    const {data:prefs}=await db.from("calendar_notification_preferences").select("*").eq("user_id",userId).maybeSingle();
-    if(prefs?.departure_reminders_enabled===false)continue;
-    const channels=["in_app","web_push","email","whatsapp","sms"].filter(ch=>ch==="in_app"?prefs?.in_app_enabled!==false:!!prefs?.[ch+"_enabled"]);
-    for(const channel of channels){
-     const recipientKey=userId,delivery=await claim(event,userId,recipientKey,channel);if(!delivery)continue;processed++;
-     try{
-      if(channel==="in_app"){
-       const {error:e}=await db.from("calendar_in_app_notifications").insert({user_id:userId,event_id:event.id,title:"Time to leave: "+event.title,body:details,action_url:maps||"/Updated/workspace.html"});if(e)throw e;
-      }else if(channel==="web_push"){
-       const {data:subs}=await db.from("calendar_push_subscriptions").select("*").eq("user_id",userId);if(!subs?.length)throw Error("no_push_subscription");
-       for(const sub of subs){try{await push(sub,{title:"LifeFlow · Time to leave",body:event.title+(event.location?" · "+event.location:""),url:maps||"/Updated/workspace.html",tag:"lifeflow-"+event.id});}catch(e){if((e as any)?.statusCode===404||(e as any)?.statusCode===410)await db.from("calendar_push_subscriptions").delete().eq("id",sub.id);throw e;}}
-      }else if(channel==="email"){if(!prefs?.email_address)throw Error("email_address_missing");await email(prefs.email_address,"Time to leave: "+event.title,"<h2>"+esc(event.title)+"</h2><p>"+esc(details).replace(/\n/g,"<br>")+"</p>"+(maps?'<p><a href="'+maps+'">Open Google Maps directions</a></p>':""));}
-      else if(channel==="whatsapp"){if(!prefs?.whatsapp_e164)throw Error("whatsapp_number_missing");await whatsapp(prefs.whatsapp_e164,"Time to leave: "+details);}
-      else if(channel==="sms"){if(!prefs?.phone_e164)throw Error("phone_number_missing");await sms(prefs.phone_e164,"Time to leave: "+event.title+(maps?" "+maps:""));}
-      await mark(delivery.id,"sent");delivered++;
-     }catch(e){await mark(delivery.id,"failed",String((e as any)?.message||"delivery_failed").slice(0,80));failed++;}
-    }
+  const details=[event.title,new Date(start).toLocaleString("en-IN",{timeZone:"Asia/Kolkata"}),event.location||"",maps].filter(Boolean).join("\\n");
+  const {data:members}=await db.from("calendar_memberships").select("user_id").eq("calendar_id",event.calendar_id);
+  const recipients=new Set([event.shared_calendars.owner_id,...(members||[]).map((m:any)=>m.user_id)]);
+  for(const userId of recipients){
+   const {data:prefs}=await db.from("calendar_notification_preferences").select("*").eq("user_id",userId).maybeSingle();
+   if(prefs?.departure_reminders_enabled===false)continue;
+   const lead=event.leave_alert_minutes==null?Number(prefs?.default_lead_minutes??15):Number(event.leave_alert_minutes);
+   const departureAt=start-(travel+lead)*60000;
+   if(departureAt<from.getTime()||departureAt>to.getTime())continue;
+   const channels=["in_app","web_push","email","whatsapp","sms"].filter(ch=>ch==="in_app"?prefs?.in_app_enabled!==false:!!prefs?.[ch+"_enabled"]);
+   for(const channel of channels){
+    const recipientKey=userId,delivery=await claim(event,userId,recipientKey,channel);if(!delivery)continue;processed++;
+    try{
+     if(channel==="in_app"){
+      const {error:e}=await db.from("calendar_in_app_notifications").insert({user_id:userId,event_id:event.id,title:"Time to leave: "+event.title,body:details,action_url:maps||"/Updated/workspace.html"});if(e)throw e;
+     }else if(channel==="web_push"){
+      const {data:subs}=await db.from("calendar_push_subscriptions").select("*").eq("user_id",userId);if(!subs?.length)throw Error("no_push_subscription");
+      for(const sub of subs){try{await push(sub,{title:"LifeFlow · Time to leave",body:event.title+(event.location?" · "+event.location:""),url:maps||"/Updated/workspace.html",tag:"lifeflow-"+event.id});}catch(e){if((e as any)?.statusCode===404||(e as any)?.statusCode===410)await db.from("calendar_push_subscriptions").delete().eq("id",sub.id);throw e;}}
+     }else if(channel==="email"){if(!prefs?.email_address)throw Error("email_address_missing");await email(prefs.email_address,"Time to leave: "+event.title,"<h2>"+esc(event.title)+"</h2><p>"+esc(details).replace(/\\n/g,"<br>")+"</p>"+(maps?'<p><a href="'+maps+'">Open Google Maps directions</a></p>':""));}
+     else if(channel==="whatsapp"){if(!prefs?.whatsapp_e164)throw Error("whatsapp_number_missing");await whatsapp(prefs.whatsapp_e164,"Time to leave: "+details);}
+     else if(channel==="sms"){if(!prefs?.phone_e164)throw Error("phone_number_missing");await sms(prefs.phone_e164,"Time to leave: "+event.title+(maps?" "+maps:""));}
+     await mark(delivery.id,"sent");delivered++;
+    }catch(e){await mark(delivery.id,"failed",String((e as any)?.message||"delivery_failed").slice(0,80));failed++;}
    }
   }
   const {data:guests}=await db.from("calendar_event_guests").select("*").eq("event_id",event.id).eq("reminder_enabled",true);
   for(const guest of guests||[]){
    const guestAt=start-Number(guest.reminder_minutes||60)*60000;if(guestAt<from.getTime()||guestAt>to.getTime())continue;
    const key=String(guest.email).toLowerCase(),delivery=await claim(event,null,key,"guest_email");if(!delivery)continue;processed++;
-   try{await email(guest.email,"Event reminder: "+event.title,"<h2>"+esc(event.title)+"</h2><p>"+esc(details).replace(/\n/g,"<br>")+"</p>"+(maps?'<p><a href="'+maps+'">Open Google Maps directions</a></p>':""));await mark(delivery.id,"sent");delivered++;}
+   try{await email(guest.email,"Event reminder: "+event.title,"<h2>"+esc(event.title)+"</h2><p>"+esc(details).replace(/\\n/g,"<br>")+"</p>"+(maps?'<p><a href="'+maps+'">Open Google Maps directions</a></p>':""));await mark(delivery.id,"sent");delivered++;}
    catch(e){await mark(delivery.id,"failed",String((e as any)?.message||"guest_email_failed").slice(0,80));failed++;}
   }
  }
