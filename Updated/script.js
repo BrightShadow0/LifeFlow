@@ -580,7 +580,7 @@ document.addEventListener('click',event=>{
 
 function cloudWorkspaceHasContent(snapshot){
   if(!snapshot)return false;
-  return ['tasks','notes','codeNotes','noteLinks'].some(key=>Array.isArray(snapshot[key])&&snapshot[key].length>0);
+  return ['tasks','notes','codeNotes','noteLinks','events'].some(key=>Array.isArray(snapshot[key])&&snapshot[key].length>0) || !!String(snapshot.morningIntent?.text||'').trim();
 }
 function cloudWorkspacePayload(snapshot,email){
   const users=getUsers(),profile=users[email]||{};
@@ -1106,7 +1106,7 @@ function readAppearancePreferences(user) {
   return preferences;
 }
 async function initializeThemeArchitecture() {
-  const { StateManager } = await import('./state.js?v=20261109-calendar-events1');
+  const { StateManager } = await import('./state.js?v=20261109-onboarding-intent1');
   lifeFlowProfileManager = new StateManager({
     currentUser: null,
     defaults: email => ({ currentUser: email || null, profile: {} }),
@@ -1140,7 +1140,7 @@ function syncAppearanceStateFromUser(user) {
 
 async function initializeTaskArchitecture() {
   await window.LifeFlowRecovery?.initialise?.();
-  const { StateManager } = await import('./state.js?v=20261109-calendar-events1');
+  const { StateManager } = await import('./state.js?v=20261109-onboarding-intent1');
   lifeFlowTaskStateManager = new StateManager({
     currentUser: null,
     defaults: defaultProfileState,
@@ -1528,8 +1528,8 @@ async function restoreMasterArchiveFile(file){
   if(file.size>25*1024*1024)throw new Error('The archive exceeds the 25 MB safety limit.');
   const raw=await new Promise((resolve,reject)=>{const r=new FileReader();r.onerror=()=>reject(new Error('The selected file could not be read.'));r.onload=()=>resolve(String(r.result||''));r.readAsText(file);});
   let parsed;try{parsed=JSON.parse(raw);}catch(_){throw new Error('Invalid backup file. The file may be corrupted or from an incompatible version of LifeFlow.');}
-  const {validateMasterArchive,normalizeMasterArchive}=await import('./state.js?v=20261109-calendar-events1');
-  const {isEncryptedMasterArchive,decryptMasterArchive}=await import('./state.js?v=20261109-calendar-events1');
+  const {validateMasterArchive,normalizeMasterArchive}=await import('./state.js?v=20261109-onboarding-intent1');
+  const {isEncryptedMasterArchive,decryptMasterArchive}=await import('./state.js?v=20261109-onboarding-intent1');
   if(isEncryptedMasterArchive(parsed)){const password=window.prompt('This backup is encrypted. Enter its backup password to continue:');if(password===null)throw new Error('Restore cancelled.');try{parsed=await decryptMasterArchive(parsed,password);}catch(error){throw error;}}
   const result=validateMasterArchive(parsed);if(!result.valid)throw new Error('Invalid backup file. '+result.errors.slice(0,4).join(' '));
   const archive=normalizeMasterArchive(parsed),d=archive.data;
@@ -1659,7 +1659,7 @@ async function backupMasterArchive(){
   try{
     if(!state?.currentUser || !getSession()){showToast('Please sign in again before creating an archive.');return;}
     save(); lifeFlowTaskStateManager?.flush?.(); lifeFlowProfileManager?.flush?.();
-    const { exportMasterArchive } = await import('./state.js?v=20261109-calendar-events1');
+    const { exportMasterArchive } = await import('./state.js?v=20261109-onboarding-intent1');
     const user=currentUser()||{};
     const profile={name:user.name||'',bio:user.bio||'',avatar:user.avatar||null,timezone:user.timezone||'UTC',language:user.language||'en',weekStart:user.weekStart||'Sunday',workspace:user.workspace||'My Workspace',...(lifeFlowProfileManager?.getState?.().profile||{}),...readAppearancePreferences(user)};
     const options={workspaceState:lifeFlowTaskStateManager?.getState?.()||state,profile,appVersion:document.documentElement.dataset.appVersion||'1.0.0'};
