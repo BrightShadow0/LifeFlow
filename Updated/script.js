@@ -258,6 +258,7 @@ function initTaskEventDelegation(){
       if(event.target===control){
         if(control.dataset.lfOverlay==='close-time-editor') closeTimeEditor();
         else if(control.dataset.lfOverlay==='close-clock') closeClock();
+        else if(control.dataset.lfOverlay==='close-calendar-share') closeCalendarShareDialog();
       }
       return;
     }
@@ -273,6 +274,10 @@ function initTaskEventDelegation(){
     else if(action==='shift-month') shiftMonth(Number(control.dataset.monthDelta));
     else if(action==='calendar-mode'){calendarMode=control.dataset.calendarMode==='agenda'?'agenda':'month';renderApp();}
     else if(action==='new-calendar-event') openCalendarEventEditor();
+    else if(action==='open-calendar-share') openCalendarShareDialog();
+    else if(action==='share-calendar-file') shareCalendarFile();
+    else if(action==='download-shared-calendar') downloadSharedCalendar();
+    else if(action==='close-calendar-share') closeCalendarShareDialog();
     else if(action==='edit-calendar-event') openCalendarEventEditor(control.dataset.eventId);
     else if(action==='close-calendar-event') closeCalendarEventEditor();
     else if(action==='save-calendar-event') saveCalendarEvent();
@@ -1953,7 +1958,46 @@ function checkCalendarTravelReminders(){
  if(changed)updateWorkspaceState({events});
 }
 let calendarReminderTicker=null;function startCalendarReminderChecks(){if(calendarReminderTicker)return;checkCalendarTravelReminders();calendarReminderTicker=setInterval(checkCalendarTravelReminders,30000);document.addEventListener('visibilitychange',checkCalendarTravelReminders);}startCalendarReminderChecks();
-function exportCalendarIcs(){const events=(state.events||[]);if(!events.length){showToast('Add an event before exporting your calendar.');return;}const content=window.LifeFlowCalendarEvents.toIcs(events,'LifeFlow calendar'),blob=new Blob([content],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='lifeflow-calendar.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Calendar export created.');}
+function calendarTaskForIcs(task){return window.LifeFlowCalendarEvents.createTaskEntry(task);}
+function calendarShareItems(includeTasks=true,includeDetails=false){
+ const events=(Array.isArray(state.events)?state.events:[]).map(event=>includeDetails?{...event}:{...event,location:'',description:'',travelMinutes:0,leaveAlertMinutes:0});
+ const tasks=includeTasks?(Array.isArray(state.tasks)?state.tasks:[]).map(calendarTaskForIcs).filter(Boolean):[];
+ return [...events,...tasks];
+}
+function downloadCalendarFile(items){
+ const content=window.LifeFlowCalendarEvents.toIcs(items,'LifeFlow calendar'),blob=new Blob([content],{type:'text/calendar;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='lifeflow-calendar.ics';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function openCalendarShareDialog(){
+ const host=document.getElementById('calendarEventHost');if(!host)return;
+ calendarEventEditingId=null;
+ const eventCount=(state.events||[]).length,taskCount=(state.tasks||[]).filter(task=>task.due&&task.title).length;
+ if(!eventCount&&!taskCount){showToast('Add an event or schedule a task before sharing your calendar.');return;}
+ host.innerHTML=`<div class="calendar-event-overlay" data-lf-overlay="close-calendar-share"><section class="calendar-event-dialog calendar-share-dialog" role="dialog" aria-modal="true" aria-labelledby="calendarShareTitle"><header><div><span class="custom-kicker">CALENDAR SHARING</span><h2 id="calendarShareTitle">Share your calendar</h2></div><button type="button" class="hbtn" data-lf-action="close-calendar-share" aria-label="Close">×</button></header><p>Send a calendar snapshot that recipients can import into their calendar app.</p><div class="calendar-share-counts"><span><strong>${eventCount}</strong> events</span><span><strong>${taskCount}</strong> scheduled tasks</span></div><label class="calendar-share-option"><input id="calendarShareIncludeTasks" type="checkbox" checked> <span><strong>Include scheduled tasks</strong><small>Shares task titles and due dates. Timed tasks retain their start and end times.</small></span></label><label class="calendar-share-option"><input id="calendarShareIncludeDetails" type="checkbox"> <span><strong>Include event details</strong><small>Shares venue addresses, notes and estimated departure alerts. Off by default for privacy.</small></span></label><div class="calendar-reminder-hint">This is a one-time .ics snapshot, not a live public link. Future edits will not update the copy you share. Review the included details before sending it.</div><footer><div><button type="button" class="secondary" data-lf-action="close-calendar-share">Cancel</button></div><div><button type="button" class="secondary" data-lf-action="download-shared-calendar">Download .ics</button><button type="button" class="primary" data-lf-action="share-calendar-file">Share file</button></div></footer></section></div>`;
+}
+function closeCalendarShareDialog(){const host=document.getElementById('calendarEventHost');if(host)host.innerHTML='';}
+function selectedCalendarShareItems(){
+ const includeTasks=document.getElementById('calendarShareIncludeTasks')?.checked!==false,includeDetails=document.getElementById('calendarShareIncludeDetails')?.checked===true;
+ return calendarShareItems(includeTasks,includeDetails);
+}
+function downloadSharedCalendar(){
+ const items=selectedCalendarShareItems();if(!items.length){showToast('Choose at least one event or scheduled task to share.');return;}
+ downloadCalendarFile(items);closeCalendarShareDialog();showToast('Calendar snapshot downloaded. You can now attach the .ics file to a message.');
+}
+async function shareCalendarFile(){
+ const items=selectedCalendarShareItems();if(!items.length){showToast('Choose at least one event or scheduled task to share.');return;}
+ const content=window.LifeFlowCalendarEvents.toIcs(items,'LifeFlow calendar'),filename='lifeflow-calendar.ics';
+ if(typeof File==='function'&&typeof navigator.share==='function'){
+  const file=new File([content],filename,{type:'text/calendar;charset=utf-8'});
+  const supportsFiles=typeof navigator.canShare!=='function'||navigator.canShare({files:[file]});
+  if(supportsFiles){
+   try{await navigator.share({files:[file],title:'LifeFlow calendar',text:'Calendar snapshot from LifeFlow'});closeCalendarShareDialog();return;}
+   catch(error){if(error?.name==='AbortError')return;showToast('The share sheet is unavailable here. Downloading the calendar file instead.');}
+  }
+ }
+ downloadCalendarFile(items);closeCalendarShareDialog();showToast('Calendar snapshot downloaded. Attach the .ics file to a message to share it.');
+}
+function exportCalendarIcs(){const items=calendarShareItems(true,true);if(!items.length){showToast('Add an event or schedule a task before exporting your calendar.');return;}downloadCalendarFile(items);showToast('Calendar export created.');}
 
 let densityMode=localStorage.getItem('lifeflow2_density')||'comfortable';
 function setDensity(mode){

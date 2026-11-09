@@ -5196,3 +5196,15 @@ body::-webkit-scrollbar-corner{
 .calendar-event-error{min-height:1.2em;color:#ff8998;font-size:.88rem}
 .calendar-event-dialog footer>div{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:560px){.calendar-event-grid{grid-template-columns:1fr}.cal-calendar-actions{justify-content:stretch}.cal-calendar-actions button{flex:1}.cal-agenda-event{grid-template-columns:1fr auto}.cal-agenda-event .cal-agenda-time{grid-column:1/-1}}
+
+/* Calendar sharing: readable, privacy-first snapshot controls. */
+.calendar-share-dialog>p{margin:0;color:var(--text-muted,#aabbd0);line-height:1.55}
+.calendar-share-counts{display:flex;gap:10px;flex-wrap:wrap}
+.calendar-share-counts>span{padding:9px 12px;border:1px solid var(--panel-border,rgba(150,180,210,.22));border-radius:10px;font-size:.88rem;color:var(--text-muted,#aabbd0)}
+.calendar-share-counts strong{color:var(--text,#edf4ff);font-variant-numeric:tabular-nums}
+.calendar-share-option{display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid var(--panel-border,rgba(150,180,210,.22));border-radius:12px;cursor:pointer}
+.calendar-share-option input{flex:0 0 auto;width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent,#53c9ec)}
+.calendar-share-option>span{display:grid;gap:4px;min-width:0}
+.calendar-share-option strong{font-size:.9rem;color:var(--text,#edf4ff)}
+.calendar-share-option small{font-size:.8rem;line-height:1.45;color:var(--text-muted,#aabbd0)}
+@media(max-width:560px){.calendar-share-dialog footer>div{width:100%}.calendar-share-dialog footer button{flex:1}}
