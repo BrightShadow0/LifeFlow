@@ -5256,28 +5256,3 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="dark"] #app #main #lfOtherCalendars button.secondary{
   background:color-mix(in srgb,var(--accent) 13%,var(--card))!important;
 }
-
-
-/* LifeFlow wallpapers are automatic: checker texture in Light mode,
-   restrained midnight grain in Dark mode. No user-facing wallpaper controls. */
-#app{
-  background-color:var(--bg)!important;
-  background-image:none!important;
-  background-attachment:fixed!important;
-  transition:background-color .25s ease,background-image .25s ease;
-}
-#app[data-theme="light"]{
-  background-color:#f8f9fc!important;
-  background-image:
-    radial-gradient(ellipse 72% 65% at 50% 48%,transparent 0 48%,rgba(255,255,255,.42) 100%),
-    repeating-conic-gradient(from 0deg at 50% 50%,color-mix(in srgb,var(--accent) 62%,#ffffff) 0% 25%,#f8f9fc 0% 50%) 0 0/12px 12px!important;
-}
-#app[data-theme="dark"]{
-  background-color:#080b0f!important;
-  background-image:
-    radial-gradient(ellipse 80% 75% at 50% 0%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 78%),
-    radial-gradient(circle,color-mix(in srgb,var(--accent) 18%,#ffffff) .55px,transparent .9px),
-    radial-gradient(circle,rgba(255,255,255,.10) .45px,transparent .85px)!important;
-  background-size:auto,5px 5px,9px 9px!important;
-  background-position:center,0 0,3px 4px!important;
-}
