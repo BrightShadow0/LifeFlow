@@ -147,7 +147,6 @@
     try { parsed = JSON.parse(decoder.decode(plain)); } catch (_) { throw new Error('Decrypted cloud workspace is not valid JSON.'); }
     const checked = validateWorkspace(parsed);
     if (checked.schema !== schema) throw new Error('Cloud workspace schema metadata does not match its contents.');
-    revision = rev;
     return checked.workspace;
   }
   async function unlock(passphrase) {
@@ -235,8 +234,7 @@
     const row = await readRemote();
     if (!row) return { ok: false, missing: true, reason: 'No cloud workspace is available.' };
     const workspace = await decryptRow(row);
-    dirty = false;
-    return { ok: true, workspace, revision, updatedAt: row.updated_at, account: user.email || user.id };
+    return { ok: true, workspace, revision: Number(row.revision), updatedAt: row.updated_at, account: user.email || user.id };
   }
   async function forcePush(workspace) {
     if (!user || !key) throw new Error('Cloud workspace sync is locked.');
@@ -258,7 +256,18 @@
     if (remoteRevision <= revision) return { ok: true, changed: false, revision };
     if (dirty) return { ok: false, conflict: true, remoteRevision, localRevision: revision, reason: 'Another device has updated this workspace while you have local edits. Choose which copy to keep.' };
     const workspace = await decryptRow(row);
-    return { ok: true, changed: true, workspace, revision, updatedAt: row.updated_at };
+    return { ok: true, changed: true, workspace, revision: remoteRevision, updatedAt: row.updated_at };
+  }
+  function acceptRemoteRevision(nextRevision, discardLocalChanges) {
+    const next = Number(nextRevision);
+    if (!Number.isSafeInteger(next) || next < 1) throw new Error('The cloud workspace revision is invalid.');
+    if (next < revision) throw new Error('The cloud workspace revision moved backwards. Refresh before continuing.');
+    if (dirty && discardLocalChanges !== true) {
+      return { ok: false, conflict: true, reason: 'Local changes appeared while the cloud update was being applied. Review the workspace copies before continuing.' };
+    }
+    revision = next;
+    dirty = false;
+    return { ok: true, revision };
   }
   function schedulePush(workspace) {
     if (!user || !key) return;
@@ -281,7 +290,7 @@
     timer = null; user = null; key = null; salt = null; revision = 0; dirty = false;
   }
   global.LifeFlowCloudSync = Object.freeze({
-    unlock, resume, create, push, pull, poll, forcePush, schedulePush, setStatusHandler, getStatus,
+    unlock, resume, create, push, pull, poll, acceptRemoteRevision, forcePush, schedulePush, setStatusHandler, getStatus,
     forgetDeviceKey, stop, version: VERSION
   });
 })(window);
