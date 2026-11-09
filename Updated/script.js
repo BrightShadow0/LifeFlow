@@ -524,7 +524,7 @@ function cloudWorkspaceHasContent(snapshot){
 }
 function cloudWorkspacePayload(snapshot,email){
   const users=getUsers(),profile=users[email]||{};
-  const fields=['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'];
+  const fields=['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere','workspaceBackdropLight'];
   const accountProfile={};
   fields.forEach(key=>{if(Object.prototype.hasOwnProperty.call(profile,key))accountProfile[key]=profile[key];});
   return {...snapshot,currentUser:email,__lifeFlowAccountProfile:accountProfile};
@@ -536,7 +536,7 @@ function cloudWorkspaceLocalState(payload,email,applyProfile=true){
   if(applyProfile){
     const users=getUsers(),profile=users[email]||newUserRecord(email);
     Object.keys(accountProfile).forEach(key=>{
-      if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere'].includes(key))profile[key]=accountProfile[key];
+      if(['name','bio','avatar','timezone','language','weekStart','workspace','theme','autoTheme','colorTheme','ambient','workspaceBackdrop','translucentSidebar','interactiveAtmosphere','workspaceBackdropLight'].includes(key))profile[key]=accountProfile[key];
     });
     profile.cloudWorkspaceLinked=true;
     users[email]=profile;
@@ -994,7 +994,7 @@ function disposeWorkspaceSubscriptions(){
   lifeFlowThemeController?.destroy?.();
 }
 const LIFE_FLOW_APPEARANCE_KEYS = [
-  'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop',
+  'theme', 'autoTheme', 'colorTheme', 'ambient', 'workspaceBackdrop', 'workspaceBackdropLight',
   'translucentSidebar', 'interactiveAtmosphere'
 ];
 function readAppearancePreferences(user) {
@@ -1289,7 +1289,8 @@ function applyWorkspaceAppearance(u=currentUser()){
   }
   const activeTheme=u?.autoTheme?systemTheme():(u?.theme||'dark');
   const lightBackdropId=theme+'-light';
-  const displayedBackdrop=activeTheme==='light'?lightBackdropId:backdrop;
+  const savedLightBackdrop=u?.workspaceBackdropLight;
+  const displayedBackdrop=activeTheme==='light'?(validIds.includes(savedLightBackdrop)&&String(savedLightBackdrop).endsWith('-light')?savedLightBackdrop:lightBackdropId):backdrop;
   if(app) app.setAttribute('data-workspace-backdrop',displayedBackdrop);
   root.setAttribute('data-glass-sidebar',u?.translucentSidebar===false?'off':'on');
   root.setAttribute('data-interactive-atmosphere',u?.interactiveAtmosphere===false?'off':'on');
@@ -1305,10 +1306,10 @@ function setWorkspaceBackdrop(backdrop){
   const theme=normalizedBackdropTheme(u);
   const allowed=(WORKSPACE_BACKDROP_GROUPS[theme]||WORKSPACE_BACKDROP_GROUPS.sapphire).map(option=>option[0]);
   if(!allowed.includes(backdrop))return;
-  // Dark choices remain the stored legacy IDs; Light is selected automatically
-  // for the active light theme and never overwrites the user's dark wallpaper.
-  if(String(backdrop).endsWith('-light')) return;
-  updateUser(user=>{user.workspaceBackdrop=backdrop;});
+  // Store Light and Dark choices independently so changing appearance never
+  // overwrites the other mode's wallpaper.
+  if(String(backdrop).endsWith('-light')) updateUser(user=>{user.workspaceBackdropLight=backdrop;});
+  else updateUser(user=>{user.workspaceBackdrop=backdrop;});
 }
 function setTranslucentSidebar(enabled){
   updateUser(u=>{u.translucentSidebar=!!enabled;});
