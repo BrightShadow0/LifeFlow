@@ -112,8 +112,8 @@ create table if not exists public.calendar_notification_preferences(
  default_lead_minutes integer not null default 15 check(default_lead_minutes between 0 and 10080),
  updated_at timestamptz not null default now(),
  check(email_address is null or char_length(email_address)<=320),
- check(phone_e164 is null or phone_e164 ~ '^[+][1-9][0-9]{7,14}),
- check(whatsapp_e164 is null or whatsapp_e164 ~ '^[+][1-9][0-9]{7,14})
+ check(phone_e164 is null or phone_e164 ~ '^[+][1-9][0-9]{7,14}$'),
+ check(whatsapp_e164 is null or whatsapp_e164 ~ '^[+][1-9][0-9]{7,14}$')
 );
 alter table public.calendar_notification_preferences enable row level security;
 drop policy if exists "Users manage their notification preferences" on public.calendar_notification_preferences;
