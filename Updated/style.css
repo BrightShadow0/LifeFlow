@@ -5242,3 +5242,5 @@ body::-webkit-scrollbar-corner{
 .live-notification-grid label,.live-publish-box label{display:flex;align-items:center;gap:7px;font-size:.84rem}
 .live-notification-settings>.secondary,.live-notification-settings>.primary{margin:8px 8px 0 0}
 @media(max-width:620px){.live-calendar-columns{grid-template-columns:1fr}.live-notification-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.other-calendar-entry{grid-template-columns:1fr}.live-member-row{align-items:flex-start}.live-calendar-dialog footer>div{width:100%}}
+
+.live-in-app-feed{margin-top:14px;padding:13px;border:1px solid var(--panel-border,rgba(150,180,210,.2));border-radius:12px}.live-in-app-feed h3{margin:0 0 8px}.live-in-app-feed .live-event-row small{white-space:pre-line;overflow-wrap:anywhere}
