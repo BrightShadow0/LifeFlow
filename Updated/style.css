@@ -5225,6 +5225,27 @@ body::-webkit-scrollbar-corner{
 }
 
 
+/* Background continuity: keep one uninterrupted theme canvas across the full workspace.
+   Disable legacy fixed wallpaper layers that were leaving visible repeat/seam boundaries. */
+#app,
+#app[data-workspace-background],
+#app[data-workspace-backdrop]{
+  background:var(--bg)!important;
+  background-image:none!important;
+  background-attachment:initial!important;
+}
+#app::before,
+#app::after,
+#app[data-workspace-background]::before,
+#app[data-workspace-background]::after,
+#app[data-workspace-backdrop]::before,
+#app[data-workspace-backdrop]::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  opacity:0!important;
+}
+
 /* Calendar secondary actions: use the active LifeFlow accent in every theme. */
 #app #main .cal-calendar-actions button.secondary,
 #app #main #lfOtherCalendars button.secondary{
