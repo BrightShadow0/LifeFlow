@@ -42,10 +42,10 @@ Deno.serve(async req=>{
     const recipientKey=userId,delivery=await claim(event,userId,recipientKey,channel);if(!delivery)continue;processed++;
     try{
      if(channel==="in_app"){
-      const {error:e}=await db.from("calendar_in_app_notifications").insert({user_id:userId,event_id:event.id,title:"Time to leave: "+event.title,body:details,action_url:maps||"/Updated/workspace.html"});if(e)throw e;
+      const {error:e}=await db.from("calendar_in_app_notifications").insert({user_id:userId,event_id:event.id,title:"Time to leave: "+event.title,body:details,action_url:maps||"Updated/workspace.html"});if(e)throw e;
      }else if(channel==="web_push"){
       const {data:subs}=await db.from("calendar_push_subscriptions").select("*").eq("user_id",userId);if(!subs?.length)throw Error("no_push_subscription");
-      for(const sub of subs){try{await push(sub,{title:"LifeFlow · Time to leave",body:event.title+(event.location?" · "+event.location:""),url:maps||"/Updated/workspace.html",tag:"lifeflow-"+event.id});}catch(e){if((e as any)?.statusCode===404||(e as any)?.statusCode===410)await db.from("calendar_push_subscriptions").delete().eq("id",sub.id);throw e;}}
+      for(const sub of subs){try{await push(sub,{title:"LifeFlow · Time to leave",body:event.title+(event.location?" · "+event.location:""),url:maps||"Updated/workspace.html",tag:"lifeflow-"+event.id});}catch(e){if((e as any)?.statusCode===404||(e as any)?.statusCode===410)await db.from("calendar_push_subscriptions").delete().eq("id",sub.id);throw e;}}
      }else if(channel==="email"){if(!prefs?.email_address)throw Error("email_address_missing");await email(prefs.email_address,"Time to leave: "+event.title,"<h2>"+esc(event.title)+"</h2><p>"+esc(details).replace(/\\n/g,"<br>")+"</p>"+(maps?'<p><a href="'+maps+'">Open Google Maps directions</a></p>':""));}
      else if(channel==="whatsapp"){if(!prefs?.whatsapp_e164)throw Error("whatsapp_number_missing");await whatsapp(prefs.whatsapp_e164,event.title,new Date(start).toISOString(),event.location||"",maps);}
      else if(channel==="sms"){if(!prefs?.phone_e164)throw Error("phone_number_missing");await sms(prefs.phone_e164,"Time to leave: "+event.title+(maps?" "+maps:""));}
