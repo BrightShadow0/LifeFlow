@@ -1958,13 +1958,7 @@ function checkCalendarTravelReminders(){
  if(changed)updateWorkspaceState({events});
 }
 let calendarReminderTicker=null;function startCalendarReminderChecks(){if(calendarReminderTicker)return;checkCalendarTravelReminders();calendarReminderTicker=setInterval(checkCalendarTravelReminders,30000);document.addEventListener('visibilitychange',checkCalendarTravelReminders);}startCalendarReminderChecks();
-function calendarTaskForIcs(task){
- const due=new Date(task?.due);if(!task?.title||!task.due||Number.isNaN(due.getTime()))return null;
- const start=new Date(due),end=new Date(due),timed=validInterval(task.startTime,task.endTime);
- if(timed){const [sh,sm]=task.startTime.split(':').map(Number),[eh,em]=task.endTime.split(':').map(Number);start.setHours(sh,sm,0,0);end.setHours(eh,em,0,0);return {id:'task-'+task.id,title:task.title,startAt:start.toISOString(),endAt:end.toISOString(),done:!!(task.done||task.status==='done')};}
- start.setHours(0,0,0,0);end.setTime(start.getTime());end.setDate(end.getDate()+1);
- return {id:'task-'+task.id,title:task.title,startAt:start.toISOString(),endAt:end.toISOString(),allDay:true,done:!!(task.done||task.status==='done')};
-}
+function calendarTaskForIcs(task){return window.LifeFlowCalendarEvents.createTaskEntry(task);}
 function calendarShareItems(includeTasks=true,includeDetails=false){
  const events=(Array.isArray(state.events)?state.events:[]).map(event=>includeDetails?{...event}:{...event,location:'',description:'',travelMinutes:0,leaveAlertMinutes:0});
  const tasks=includeTasks?(Array.isArray(state.tasks)?state.tasks:[]).map(calendarTaskForIcs).filter(Boolean):[];
