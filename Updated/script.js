@@ -523,10 +523,10 @@ function initLoginAccessibility(){
     if(!control)return;
     const action=control.dataset.cloudAuth;
     if(action==='toggle'){const panel=document.getElementById('cloudAuthPanel');if(panel)panel.hidden=!panel.hidden;return;}
-    handleCloudLoginAction(action).catch(error=>setCloudAuthMessage(error.message||'Cloud account action failed.',true));
+    handleCloudLoginAction(action).catch(reportCloudAuthActionError);
   });
   document.addEventListener('keydown',event=>{
-    if(event.key==='Enter'&&event.target.closest('#cloudAuthPanel')&&event.target.matches('input')){event.preventDefault();handleCloudLoginAction('signin').catch(error=>setCloudAuthMessage(error.message,true));}
+    if(event.key==='Enter'&&event.target.closest('#cloudAuthPanel')&&event.target.matches('input')){event.preventDefault();handleCloudLoginAction('signin').catch(reportCloudAuthActionError);}
   });
 document.addEventListener('click',event=>{
       const control=event.target.closest('[data-auth-action]');
@@ -812,6 +812,27 @@ function setCloudAuthMessage(message,isError=false){
   const host=document.getElementById('cloudAuthMessage');if(!host)return;
   host.textContent=message;host.classList.toggle('is-error',!!isError);host.setAttribute('role',isError?'alert':'status');
 }
+function reportCloudAuthActionError(error){
+  const message=error?.message||'Cloud account action failed.';
+  const integrated=document.getElementById('useUniversalCloud')?.checked;
+  const mfaHost=document.getElementById('cloudLoginMfaHost');
+  if(integrated&&mfaHost&&!mfaHost.hidden){
+    let notice=document.getElementById('cloudLoginMfaError');
+    if(!notice){
+      notice=document.createElement('div');
+      notice.id='cloudLoginMfaError';
+      notice.className='notice auth-error';
+      notice.setAttribute('role','alert');
+      notice.setAttribute('aria-live','assertive');
+      mfaHost.appendChild(notice);
+    }
+    notice.textContent=message;
+    notice.hidden=false;
+    setLoginError(message);
+    return;
+  }
+  setCloudAuthMessage(message,true);
+}
 function cloudAuthCredentials(){
   return {email:document.getElementById('cloudAuthEmail')?.value?.trim()||'',password:document.getElementById('cloudAuthPassword')?.value||'',displayName:document.getElementById('cloudAuthName')?.value?.trim()||''};
 }
@@ -831,6 +852,8 @@ async function handleCloudLoginAction(action){
     }
     await finishCloudWorkspaceLogin(result.user);
   }else if(action==='verify-mfa'){
+    const previousError=document.getElementById('cloudLoginMfaError');if(previousError){previousError.hidden=true;previousError.textContent='';}
+    setLoginError('');
     const code=document.getElementById('cloudLoginMfaCode')?.value||'';
     const factorId=document.querySelector('#cloudLoginMfaHost [data-cloud-auth="verify-mfa"],#cloudAuthMessage [data-cloud-auth="verify-mfa"]')?.dataset.factorId||'';
     const result=await api.verifyAuthenticator(factorId,code);
