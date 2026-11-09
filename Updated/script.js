@@ -403,8 +403,6 @@ function initTaskEventDelegation(){
     else if(action==='profile-language'){const value=control.value;lfSecretAction(value==='Cobalt'?'languageCobalt':'languageOther');saveLocalizationField('language',value);}
     else if(action==='profile-week'){const value=control.value;lfSecretAction(value==='Monday'?'weekMonday':'weekOther');saveLocalizationField('weekStart',value);}
     else if(action==='auto-theme-sync') setAutoThemeSync(control.checked);
-    else if(action==='translucent-sidebar') setTranslucentSidebar(control.checked);
-    else if(action==='interactive-atmosphere') setInteractiveAtmosphere(control.checked);
     else if(action==='ambient-mode') updateAmbientMode(control.checked);
     else if(action==='toggle-connected') toggleConnected(control.dataset.provider);
     else if(action==='auto-logout') saveAutoLogoutPreference(control.value);
@@ -509,7 +507,6 @@ function initLoginAccessibility(){
       else if(control.dataset.appAction==='export-json') exportData('json');
       else if(control.dataset.appAction==='logout') doLogout();
       else if(control.dataset.appAction==='set-view') setView(control.dataset.view);
-      else if(control.dataset.appAction==='set-backdrop') setWorkspaceBackdrop(control.dataset.backdropId);
       else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
