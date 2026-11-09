@@ -6,11 +6,15 @@ test('notification settings and idempotent per-recipient delivery ledger exist',
 test('event location and travel data have database constraints',()=>{assert.match(sql,/location_lat between -90 and 90/);assert.match(sql,/travel_minutes between 0 and 600/);assert.match(sql,/leave_alert_minutes is null or leave_alert_minutes between 0 and 180/);assert.match(sql,/calendar_events_local_source_idx/);});
 
 test('migration is complete and does not contain the previous duplicated tail',()=>{
-  assert.equal((sql.match(/create table if not exists public\\.calendar_notification_preferences/g)||[]).length,1);
-  assert.equal((sql.match(/create table if not exists public\\.calendar_push_subscriptions/g)||[]).length,1);
-  assert.equal((sql.match(/create table if not exists public\\.calendar_in_app_notifications/g)||[]).length,1);
-  assert.equal((sql.match(/create table if not exists public\\.calendar_notification_deliveries/g)||[]).length,1);
+  for (const table of [
+    'calendar_notification_preferences',
+    'calendar_push_subscriptions',
+    'calendar_in_app_notifications',
+    'calendar_notification_deliveries'
+  ]) {
+    assert.equal(sql.split('create table if not exists public.' + table).length - 1, 1, table);
+  }
   assert.equal(sql.includes('check(whatsapp_e164 is null or'),false);
-  assert.match(sql,/grant select, insert, update, delete on table/);
-  assert.match(sql,/alter publication supabase_realtime add table public\\.calendar_events/);
+  assert.ok(sql.includes('grant select, insert, update, delete on table'));
+  assert.ok(sql.includes('alter publication supabase_realtime add table public.calendar_events;'));
 });
