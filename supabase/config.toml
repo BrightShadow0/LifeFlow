@@ -2,3 +2,9 @@
 # Link this local project with: supabase link --project-ref <project-ref>
 # Never put API keys, database passwords, or service-role secrets here.
 project_id = "lifeflow"
+
+[functions.calendar-invites]
+verify_jwt = true
+
+[functions.dispatch-calendar-reminders]
+verify_jwt = false
