@@ -495,3 +495,9 @@ body.auth-embed #authScreen .auth-brand-panel{
 #cloudSyncPassphraseWrap label{display:block;margin:8px 0 5px;color:var(--muted);font-size:10px;letter-spacing:.08em}
 #cloudSyncPassphraseWrap input{margin:0!important}
 #cloudSyncPassphraseWrap small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}
+
+/* Theme-aware authentication checkboxes */
+.authstep input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:0 0 18px;margin:0;border:1.5px solid var(--muted);border-radius:5px;background:var(--bg);accent-color:var(--accent);display:inline-grid;place-content:center;cursor:pointer;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+.authstep input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.authstep input[type="checkbox"]:checked::before{content:"";width:8px;height:4px;border:2px solid var(--bg);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.authstep input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
