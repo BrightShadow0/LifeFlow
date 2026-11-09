@@ -5257,3 +5257,14 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="dark"] #app #main #lfOtherCalendars button.secondary{
   background:color-mix(in srgb,var(--accent) 13%,var(--card))!important;
 }
+
+
+/* Calendar events appear in Today and Tasks, but remain outside Kanban task lanes. */
+.dashboard-event-list{display:grid;gap:8px}
+.dashboard-event-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--card);min-width:0}
+.dashboard-event-marker{flex:none;padding:4px 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.06em}
+.dashboard-event-main{display:grid;gap:3px;min-width:0;flex:1}
+.dashboard-event-main strong{overflow-wrap:anywhere}
+.dashboard-event-main .meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.dashboard-event-row>.linklike{flex:none}
+@media(max-width:520px){.dashboard-event-row{align-items:flex-start;flex-wrap:wrap}.dashboard-event-row>.linklike{margin-left:auto}}
