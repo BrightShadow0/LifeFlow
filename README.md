@@ -1,158 +1,117 @@
 # LifeFlow
+**Make room for what matters.**
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A personal productivity workspace for tasks, planning, notes, and everyday organisation.
+LifeFlow is a professional-grade, local-first productivity ecosystem designed to reduce digital noise and foster a state of "flow." By integrating task management, strategic planning, and a connected knowledge base into a single, calm workspace, LifeFlow helps you manage your attention, not just your to-do list.
 
-**© 2026 BrightShadow0**
-
-LifeFlow is free and open source under the MIT License.
+**© 2026 BrightShadow0** | Free and Open Source under the MIT License.
 
 ---
 
-## Overview
+## 🌿 The Philosophy: Calm Productivity
 
-LifeFlow brings tasks, schedules, calendar events, notes, and personal preferences into one browser-based workspace. It is private by default, with optional cloud services and selective calendar sharing for people who want to collaborate.
+Most productivity tools are designed for "capture"—they are loud, notification-driven, and demanding. LifeFlow is designed for **clarity**. 
 
-## Features
-
-### Planning and productivity
-- **Today dashboard:** Daily priorities, overdue and upcoming work, scheduled tasks, daily progress, and a separate view of today's and upcoming calendar events.
-- **Task Manager:** Create and manage tasks with start and due dates, priorities, time intervals, tags, subtasks, recurring schedules, and completion status. Includes complete-all and clear-completed actions.
-- **Calendar:** Month and agenda views for events and task deadlines. Create and edit events with dates, times, locations, and event details.
-- **Kanban Board:** Move tasks through To Do, Doing, and Done. Calendar events are intentionally kept out of Kanban.
-- **Event locations and travel planning:** Store venue details, open map directions, and add estimated travel duration and departure lead times. Travel estimates are user-entered; live traffic routing depends on a future routing integration.
-- **Calendar reminders:** Configure event and guest reminder preferences. Email, push, SMS, and WhatsApp delivery depend on the corresponding provider credentials and deployed reminder services.
-
-### Notes and knowledge
-- **Notes Manager:** Markdown writing and preview, checklists, tables, links, images, and Mermaid diagrams.
-- **Code highlighting:** Syntax-highlighted code blocks.
-- **Your Branches:** Visualise relationships between linked notes, with backlinks and knowledge navigation.
-- **Search:** Find notes and knowledge content.
-
-### Personalisation and workspace controls
-- **Themes:** Sapphire, Emerald, Platinum, Amethyst, and Ruby. Some themes and workspace capabilities are tier-restricted.
-- **Appearance:** Light and dark modes, theme accents, ambient settings, and visual intensity controls.
-- **Profile & Settings:** Profile identity, avatar, localisation, account preferences, and automatic logout.
-- **Task Master:** Optional sample-task generator for exploring the task workflow.
-- **Data management:** Workspace health indicators, local recovery points, portable workspace exports, and restore safeguards.
-- **Data export:** Export supported task data as CSV or workspace data as JSON.
-
-### Optional cloud and collaboration
-- **Cloud account:** Optional Supabase-backed email/password authentication and authenticator-based two-factor verification.
-- **Encrypted cloud backups:** Manually create, list, restore, and delete client-side encrypted workspace backups. The backup passphrase is separate from the cloud account password.
-- **Encrypted multi-device workspace sync:** A separate encrypted workspace-sync service designed to unlock the same workspace on multiple devices using a user-held sync passphrase. Cross-device sign-in and sync should be treated as deployment-dependent until verified end to end.
-- **Shared calendars:** Invite specific people to selected calendars, manage read-only or read-write access, and revoke access. Only events explicitly published to a shared calendar are shared; the rest of the workspace remains private.
-- **Calendar notifications:** In-app notifications and configurable guest reminder channels. External delivery requires the relevant services and credentials to be configured.
+It operates on the principle that your digital workspace should be a sanctuary, not another source of stress. By combining a minimalist aesthetic with powerful architectural foundations, LifeFlow allows you to move seamlessly between the immediate (Today), the structural (Planning), and the conceptual (Thinking).
 
 ---
 
-## Brand Identity
+## 💎 The Three Pillars
 
-LifeFlow's identity is built around a distinctive geometric symbol and a clean wordmark.
+### 1. The Workspace (Action)
+A high-fidelity environment for managing the movement of your day.
+- **Dynamic Dashboard:** A focused view of daily priorities and progress.
+- **Intelligent Tasking:** Advanced priority levels, subtask nesting, and a powerful recurrence engine (Daily, Weekly, Monthly).
+- **Multi-Dimensional Planning:** Switch between a **Monthly Calendar** for deadlines and a **Kanban Board** for workflow management.
+- **Task Master:** A built-in "seed" generator to instantly populate your workspace for testing and layout.
 
-- **Symbol:** Three ascending, softly rounded, slanted bars. Their rising heights suggest momentum, progress, and ideas taking shape.
-- **Colour:** A coordinated cyan, electric-blue, and violet gradient gives the mark its recognisable energy. The colours transition from cool cyan through blue to violet.
-- **Wordmark:** The name **LifeFlow** uses a bold, tightly tracked sans-serif treatment. The wordmark pairs with the symbol as one unified lockup.
-- **Tagline:** The primary logo lockup is intentionally kept clean, without secondary side text or a tagline.
-- **Use:** Keep the symbol and wordmark proportions, spacing, and gradient consistent across the public website, Login Terminal, workspace, and browser identity. The logo should remain legible against both dark and light surfaces.
+### 2. The Second Brain (Intelligence)
+A connected knowledge base that evolves as you think.
+- **Virtual Folders:** Organize notes into custom categories to prevent information overload.
+- **Weighted Global Search:** A high-performance engine that indexes titles, folder names, and content with relevance-based ranking.
+- **Bidirectional Linking:** Use `[[Wiki-Links]]` to connect ideas. The **Back-link Panel** automatically tracks every note that references the current one.
+- **The Branch Graph:** A live, interactive visual map of your knowledge. Navigate your thoughts spatially and discover hidden connections.
 
-The primary vector symbol is `Updated/compass-mark.svg`. The filename is retained for compatibility; the artwork is the three-bar LifeFlow mark, not a compass icon. Shared wordmark styling is defined in `Updated/brand.css`.
+### 3. The Data Fortress (Ownership)
+Your life is private. LifeFlow ensures it stays that way.
+- **Local-First Architecture:** All data is stored directly in your browser. No accounts, no cloud syncing, and no third-party tracking.
+- **The Master Archive:** A one-click snapshot of your entire existence—tasks, notes, folders, and preferences—exported as a single portable file.
+- **The Validation Gate:** A secure import pipeline that verifies archive integrity and versioning before restoration.
+- **AES-256 Encryption:** Option to protect your backups with military-grade encryption via the Web Crypto API, ensuring your archives are readable only by you.
 
 ---
 
-## Three-Stage Experience
+## 🏗️ Technical Architecture
 
-LifeFlow is organised into three distinct stages. Each stage owns its layout and visual identity, and theme preferences must not leak between stages.
+LifeFlow has evolved from a monolithic prototype into a decoupled, modular ecosystem.
 
-1. **Why LifeFlow** — the public-facing product website, with its own page and stylesheet.
-2. **Login Terminal** — the authentication experience, with its own saved appearance preference.
-3. **LifeFlow Workspace** — the signed-in application. Workspace appearance is stored with the user's profile and applies only to the workspace.
+- **State Management:** A centralized `StateManager` using the Store pattern. It handles deep-cloned state access, debounced persistence, and a subscription-based update system to ensure surgical DOM re-renders.
+- **Modular Design:** Business logic is split into dedicated modules (`auth.js`, `tasks.js`, `notes.js`, `theme.js`, `ui.js`), preventing regressions and enabling rapid feature extension.
+- **Rendering Pipeline:** A modular orchestrator that manages view transitions and implements section-level error boundaries to prevent total application failure.
 
-The Login Terminal and authenticated workspace are separate application stages. Successful sign-in switches the page title to **LifeFlow**; logging out restores **LifeFlow Login Terminal**. Workspace ambient settings are cleared when returning to the login stage.
-
-Keep future design and theme changes scoped to their owning stage. Do not use a workspace theme change to restyle the public website or Login Terminal.
-
-## Tech Stack
-
+### Tech Stack
 | Area | Technology |
 | :--- | :--- |
-| Frontend | HTML, CSS, JavaScript |
-| Motion | CSS transitions |
-| Markdown | Marked.js |
-| Sanitisation | DOMPurify |
-| Diagrams | Mermaid |
-| Local workspace storage | Browser Local Storage and IndexedDB recovery |
-| Optional cloud services | Supabase Auth, PostgreSQL, Row Level Security, Realtime, Edge Functions |
-| Encryption | Web Crypto API (AES-GCM; passphrase-derived keys) |
-| Hosting / CI | GitHub Pages, GitHub Actions |
+| **Frontend** | HTML5, CSS3 (Custom Properties, Grid, Flexbox), Modular JavaScript (ES6+) |
+| **Markdown** | Marked.js (Parsing), DOMPurify (Sanitization) |
+| **Visualization** | Mermaid.js (Diagrams), Custom SVG Graph Engine |
+| **Security** | Web Crypto API (AES-256-GCM, PBKDF2), DOMPurify |
+| **Storage** | Browser Local Storage / IndexedDB |
+| **Hosting / CI** | GitHub Pages, GitHub Actions |
 
 ---
 
-## Demos
+## 🧭 Brand Identity
 
-- [LifeFlow Workspace](https://brightshadow0.github.io/LifeFlow/Updated/index.html)
+LifeFlow is represented by the **Compass Mark**: a four-point cyan-teal compass star inside a segmented circular ring. It symbolizes direction, clarity, balance, and purposeful progress. This mark is consistently applied across the landing page, login terminal, and workspace.
+
+The primary vector asset is located at `Updated/compass-mark.svg`.
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Requirements
-
-- Git
-- A modern web browser
-- Internet connection for CDN-hosted libraries and fonts
+- A modern web browser (Chrome, Firefox, Safari, or Edge).
+- An internet connection for CDN-hosted libraries (Fonts, Marked, Mermaid).
 
 ### Run Locally
-
-From the repository root, run:
-
-```bash
-python -m http.server 8000
-```
-
-Open:
-
-- [http://localhost:8000/Updated/](http://localhost:8000/Updated/)
-
-No Node.js setup, package manager, database, or environment file is required for the standard preview.
+1. Clone the repository.
+2. From the root directory, start a local server:
+   ```bash
+   python -m http.server 8000
+   ```
+3. Open your browser to: `http://localhost:8000/Updated/`
 
 ---
 
-## Privacy, Sharing & Data Control
+## 🛡️ Data & Privacy
 
-LifeFlow is **private by default, with optional sharing when the user chooses it**. Collaboration does not make the whole workspace public.
-
-- **Local-first workspace:** Core workspace data is stored in the user's browser. Local data is not automatically visible to other LifeFlow users.
-- **Optional cloud account:** Users may choose to connect a cloud account. Cloud authentication is separate from the local workspace profile.
-- **Encrypted cloud backups:** Backups are opt-in and manually created. Workspace content is encrypted in the browser before upload; the cloud service stores encrypted backup data. The user must retain the backup passphrase because it cannot be reset by LifeFlow.
-- **Multi-device sync:** The separate workspace-sync feature is designed to encrypt workspace data in the browser before synchronisation. It requires the same sync passphrase on each device. Do not assume that cloud backup and live workspace sync are the same feature.
-- **Selective calendar sharing:** A user can invite named people to a specific shared calendar and assign read-only or read-write access. Only events the owner explicitly publishes to that shared calendar are shared with its members. The owner's tasks, private notes, profile, and other calendars are not automatically shared.
-- **Sharing permissions:** Calendar owners manage membership, roles, and revocation. Invited members cannot invite additional people. Invitation links are time-limited and are accepted by the signed-in account matching the invited email.
-- **Important sharing distinction:** Shared-calendar event records are stored in dedicated Supabase tables and are not currently described as end-to-end encrypted. Share only event details that are appropriate for the invited members to see.
-- **Local recovery:** Browser recovery points protect against some local data mistakes but are not cloud backups. They do not protect against losing the device, uninstalling the browser, or clearing browser site data.
-- **User control:** Users decide whether to connect cloud services, create backups, or publish events to a shared calendar. Keep a separate export or backup of important information.
-
-### Service and deployment requirements
-
-The local workspace can be previewed without a Supabase project. Optional cloud features require the Supabase schema migrations and relevant Edge Functions to be deployed. Calendar email, push, SMS, and WhatsApp reminders also require their provider credentials and a configured scheduler. A successful frontend build does not by itself confirm that these external services are active. See [Supabase service setup](supabase/README.md) and the [cloud security architecture](Updated/CLOUD-SECURITY-ARCHITECTURE.md) for implementation and deployment details.
+LifeFlow is designed for absolute privacy. 
+- **No Servers:** Your data never leaves your device.
+- **No Tracking:** No analytics or telemetry are implemented.
+- **Ownership:** You own your data. Use the **Master Archive** feature to keep regular backups, as clearing browser site data will remove your local information.
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-Report bugs and suggest improvements through GitHub Issues or Pull Requests. Make application changes in `Updated/`.
-
----
-
-## License
-
-LifeFlow is distributed under the [MIT License](https://opensource.org/licenses/MIT). Retain the copyright and licence notice in copies or substantial portions of the project.
+LifeFlow is an open-source project. Bug reports and feature suggestions are welcome via GitHub Issues. When contributing:
+1. Make all application changes in the `Updated/` directory.
+2. Ensure new features are integrated into the modular state system.
+3. Verify that no regressions are introduced to the core "Flow" experience.
 
 ---
 
-## Contact
+## 📜 License
 
-- GitHub: [@BrightShadow0](https://github.com/BrightShadow0)
-- Email: turingtestdummy1@gmail.com
-- Repository: [BrightShadow0/LifeFlow](https://github.com/BrightShadow0/LifeFlow)
+LifeFlow is distributed under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+## ✉️ Contact
+
+- **GitHub:** [@BrightShadow0](https://github.com/BrightShadow0)
+- **Email:** turingtestdummy1@gmail.com
+- **Repository:** [BrightShadow0/LifeFlow](https://github.com/BrightShadow0/LifeFlow)
