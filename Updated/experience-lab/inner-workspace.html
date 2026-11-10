@@ -31,6 +31,11 @@
 .board{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.board-col{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px}.board-col h3{font-size:11px;color:var(--muted);margin:0 0 12px}.board-item{padding:11px;margin-bottom:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:11px}
 .note-preview{padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--panel);max-width:720px}.note-preview h2{font-size:20px;margin:7px 0}.note-preview p{font-size:12px;color:var(--muted)}
 .lab-stamp{position:fixed;right:17px;bottom:15px;z-index:5;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font:9px DM Mono,monospace;letter-spacing:1px;color:var(--soft);box-shadow:var(--shadow)}
+
+.event-tools{display:flex;gap:9px;flex-wrap:wrap}.event-tools button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:9px 12px;font-size:11px}.event-tools button.primary{background:var(--accent);color:#08202a;border-color:var(--accent)}
+.event-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.event-form label{display:grid;gap:6px;color:var(--muted);font-size:10px}.event-form input,.event-form select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);outline:0;font-size:11px}.event-form .wide{grid-column:1/-1}.weekday-picks{display:flex;gap:6px;flex-wrap:wrap}.weekday-picks label{display:flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);font-size:10px}.weekday-picks input{width:auto;accent-color:var(--accent)}.toggle-line{display:flex!important;align-items:center;gap:9px!important;padding:10px 0}.toggle-line input{width:auto;accent-color:var(--accent)}.event-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.event-item:first-child{border-top:0}.event-item .event-time{font:10px DM Mono,monospace;color:var(--accent);min-width:54px}.event-item strong{display:block;font-size:11px}.event-item small{display:block;color:var(--soft);font-size:10px}.event-item .event-badges{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}.event-badge{font-size:9px;color:var(--accent);background:var(--accentwash);border-radius:6px;padding:4px 6px}.modal-backdrop{position:fixed;inset:0;background:rgba(2,8,14,.68);backdrop-filter:blur(8px);z-index:20;display:grid;place-items:center;padding:16px}.modal{width:min(540px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}.modal-head h2{font-size:17px;margin:0}.modal-head button{border:0;background:transparent;color:var(--muted);font-size:20px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}.quiet-note{font-size:10px;color:var(--soft);line-height:1.5;margin:12px 0 0}
+@media(max-width:700px){.event-form{grid-template-columns:1fr}.event-form .wide{grid-column:auto}}
+
 @media(max-width:1050px){.app{grid-template-columns:210px minmax(0,1fr)}.today-grid{grid-template-columns:1fr}.hero{min-height:180px}}
 @media(max-width:700px){.app{display:block}.sidebar{position:sticky;top:0;height:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line);display:block;background:var(--panel)}.brand{padding:0 5px 10px}.brand-name{font-size:17px}.workspace-label,.nav-label,.sidebar-bottom{display:none}.nav-group{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}.nav-btn{white-space:nowrap;padding:8px 10px;font-size:11px}.nav-btn .ico{width:auto}.topbar{height:58px;padding:0 16px}.search{width:min(190px,55vw)}.content{padding:25px 15px 70px}.page-head{align-items:flex-start;flex-direction:column;margin-bottom:19px}.hero{padding:21px;min-height:175px}.hero h2{font-size:22px}.ring{width:72px;height:72px}.hero-stats{gap:15px}.card{padding:16px}.simple-grid,.board{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(3,1fr)}.quick{padding:10px 8px}.date-chip{display:none}}
 </style>
@@ -76,6 +81,7 @@
      </div>
      <div class="stack">
       <section class="card"><div class="card-head"><div><div class="card-title">Coming up</div><div class="card-note">Your next moments, at a glance.</div></div><button class="text-btn" data-goto="calendar">Calendar ↗</button></div><div class="agenda"><div class="agenda-row"><span class="agenda-time">10:30</span><i class="agenda-dot"></i><div><strong>Weekly planning</strong><small>Focus block · 45 min</small></div></div><div class="agenda-row"><span class="agenda-time">12:00</span><i class="agenda-dot"></i><div><strong>Lunch break</strong><small>Personal time · 1 hour</small></div></div><div class="agenda-row"><span class="agenda-time">14:30</span><i class="agenda-dot"></i><div><strong>Project check-in</strong><small>Meeting · 30 min</small></div></div></div></section>
+      <section class="card"><div class="card-head"><div><div class="card-title">Events & reminders</div><div class="card-note">Recurring plans and alarms that follow your schedule.</div></div><button class="text-btn" id="newEvent">＋ Add event</button></div><div id="eventList"><div class="event-item"><span class="event-time">15:30</span><div><strong>Weekly project review</strong><small>Every Tuesday · Meeting room</small></div><div class="event-badges"><span class="event-badge">↻ Weekly</span><span class="event-badge">◷ Alarm</span></div></div></div><p class="quiet-note" id="notificationStatus">Desktop notifications are optional. Allow permission to receive reminders while LifeFlow is open in another tab.</p></section>
       <section class="card"><div class="card-head"><div><div class="card-title">A thought to return to</div><div class="card-note">From your personal notes</div></div><button class="text-btn" data-goto="notes">Open notes ↗</button></div><div class="focus-card"><div class="micro">SAVED IDEA · PERSONAL</div><h3>Progress comes from making the next step clear.</h3><p>Last updated yesterday · 2 linked notes</p><div class="progress"><i></i></div></div></section>
      </div>
     </div>
@@ -89,7 +95,7 @@
  </main>
 </div>
 </div>
-<div class="lab-stamp">EXPERIENCE LAB · CONCEPT 01</div>
+<div class="modal-backdrop" id="eventModal" hidden><form class="modal" id="eventForm"><div class="modal-head"><div><div class="eyebrow">CALENDAR · REMINDER</div><h2>Create an event</h2></div><button type="button" id="closeEvent" aria-label="Close">×</button></div><div class="event-form"><label class="wide">Event name<input id="eventName" required maxlength="90" placeholder="e.g. Weekly project review"></label><label>Date<input id="eventDate" type="date" required value="2026-11-10"></label><label>Time<input id="eventTime" type="time" required value="15:30"></label><label>Repeat<select id="eventRepeat"><option value="none">Does not repeat</option><option value="weekly">Every week</option><option value="monthly">Every month</option></select></label><label>Reminder<select id="eventAlarm"><option value="0">At event time</option><option value="5">5 minutes before</option><option value="10" selected>10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option></select></label><div class="wide" id="weekdayWrap"><label>Repeat on</label><div class="weekday-picks"><label><input type="checkbox" value="0" class="weekday" >Sun</label><label><input type="checkbox" value="1" class="weekday" >Mon</label><label><input type="checkbox" value="2" class="weekday" checked>Tue</label><label><input type="checkbox" value="3" class="weekday" >Wed</label><label><input type="checkbox" value="4" class="weekday" >Thu</label><label><input type="checkbox" value="5" class="weekday" >Fri</label><label><input type="checkbox" value="6" class="weekday" >Sat</label></div></div><label class="toggle-line wide"><input type="checkbox" id="eventNotify" checked> Send an attention notification for this alarm</label></div><p class="quiet-note">Notifications can appear while you are using another browser tab, provided this workspace remains open and your browser allows notifications. Reliable reminders after the browser is closed need push notifications and a configured service worker.</p><div class="modal-actions"><button type="button" class="text-btn" id="cancelEvent">Cancel</button><button class="primary" type="submit">Save event</button></div></form></div><div class="lab-stamp">EXPERIENCE LAB · CONCEPT 01</div>
 <script>
 const nav=[...document.querySelectorAll('[data-view]')];
 function showView(name){document.querySelectorAll('.view-panel').forEach(p=>p.classList.toggle('active',p.id==='view-'+name));nav.forEach(b=>b.classList.toggle('active',b.dataset.view===name));document.getElementById('crumbTitle').textContent=name[0].toUpperCase()+name.slice(1);window.scrollTo({top:0,behavior:'smooth'});}
@@ -101,6 +107,63 @@ document.getElementById('addTask').addEventListener('submit',e=>{e.preventDefaul
 document.querySelectorAll('[data-capture]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.capture;if(type==='task'){showView('tasks');document.getElementById('newTask').focus();}else if(type==='note')showView('notes');else showView('calendar');}));
 document.getElementById('themeToggle').addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';});
 document.getElementById('editIntent').addEventListener('click',()=>{const old=document.getElementById('intentText').textContent;const next=prompt('What would make today a success?',old);if(next!==null&&next.trim())document.getElementById('intentText').textContent=next.trim();});
+
+// Recurring events and attention notifications (interactive concept).
+const eventModal=document.getElementById('eventModal'), eventForm=document.getElementById('eventForm');
+const events=[{title:'Weekly project review',date:'2026-11-10',time:'15:30',repeat:'weekly',days:[2],alarm:10,notify:true}];
+const scheduledTimers=new Map();
+function openEvent(){eventModal.hidden=false;document.getElementById('eventName').focus();}
+function closeEvent(){eventModal.hidden=true;}
+document.getElementById('newEvent').addEventListener('click',openEvent);
+document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',openEvent));
+document.getElementById('closeEvent').addEventListener('click',closeEvent);
+document.getElementById('cancelEvent').addEventListener('click',closeEvent);
+document.getElementById('eventRepeat').addEventListener('change',e=>{document.getElementById('weekdayWrap').hidden=e.target.value!=='weekly';});
+async function ensureNotificationPermission(){
+ if(!('Notification' in window)){document.getElementById('notificationStatus').textContent='This browser does not support desktop notifications.';return false;}
+ if(Notification.permission==='granted')return true;
+ if(Notification.permission==='denied'){document.getElementById('notificationStatus').textContent='Notifications are blocked in browser settings. Enable them for LifeFlow to receive attention reminders.';return false;}
+ const permission=await Notification.requestPermission();
+ document.getElementById('notificationStatus').textContent=permission==='granted'?'Notifications enabled. Reminders can reach you while you work in another tab.':'Notifications were not enabled. You can still see reminders inside LifeFlow.';
+ return permission==='granted';
+}
+function nextOccurrence(ev){
+ const base=new Date(ev.date+'T'+ev.time+':00');
+ if(ev.repeat==='weekly'){
+  const days=ev.days?.length?ev.days:[base.getDay()];
+  for(let offset=0;offset<=7;offset++){const candidate=new Date(base);candidate.setDate(base.getDate()+offset);if(days.includes(candidate.getDay())&&candidate.getTime()>Date.now())return candidate;}
+  const candidate=new Date(base);candidate.setDate(base.getDate()+7);return candidate;
+ }
+ if(ev.repeat==='monthly'){let candidate=new Date(base);while(candidate.getTime()<=Date.now())candidate.setMonth(candidate.getMonth()+1);return candidate;}
+ return base.getTime()>Date.now()?base:null;
+}
+async function scheduleEvent(ev,index){
+ if(!ev.notify)return;
+ const ok=await ensureNotificationPermission();if(!ok)return;
+ const when=nextOccurrence(ev);if(!when)return;
+ const fireAt=when.getTime()-Number(ev.alarm||0)*60000,delay=fireAt-Date.now();
+ if(delay<=0||delay>2147480000)return;
+ const timer=setTimeout(()=>{
+  const n=new Notification('LifeFlow reminder',{body:ev.title+' · '+when.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),tag:'lifeflow-event-'+index,requireInteraction:true});
+  n.onclick=()=>{window.focus();showView('calendar');n.close();};
+  if(ev.repeat!=='none')scheduleEvent(ev,index);
+ },delay);
+ scheduledTimers.set(index,timer);
+}
+function renderEvents(){
+ const host=document.getElementById('eventList');host.replaceChildren();
+ events.forEach(ev=>{const row=document.createElement('div');row.className='event-item';const time=document.createElement('span');time.className='event-time';time.textContent=ev.time;const details=document.createElement('div');const title=document.createElement('strong');title.textContent=ev.title;const meta=document.createElement('small');meta.textContent=ev.repeat==='weekly'?'Every '+(ev.days||[]).map(d=>['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d]).join(', '):ev.repeat==='monthly'?'Monthly':new Date(ev.date+'T00:00:00').toLocaleDateString();details.append(title,meta);const badges=document.createElement('div');badges.className='event-badges';if(ev.repeat!=='none'){const repeat=document.createElement('span');repeat.className='event-badge';repeat.textContent='↻ '+ev.repeat;badges.append(repeat);}if(ev.notify){const alarm=document.createElement('span');alarm.className='event-badge';alarm.textContent='◷ Alarm';badges.append(alarm);}row.append(time,details,badges);host.append(row);});
+}
+eventForm.addEventListener('submit',async e=>{
+ e.preventDefault();const repeat=document.getElementById('eventRepeat').value;
+ const ev={title:document.getElementById('eventName').value.trim(),date:document.getElementById('eventDate').value,time:document.getElementById('eventTime').value,repeat,days:[...document.querySelectorAll('.weekday:checked')].map(x=>Number(x.value)),alarm:Number(document.getElementById('eventAlarm').value),notify:document.getElementById('eventNotify').checked};
+ if(repeat==='weekly'&&!ev.days.length){alert('Choose at least one weekday for this recurring event.');return;}
+ if(ev.notify)await ensureNotificationPermission();
+ events.push(ev);renderEvents();scheduleEvent(ev,events.length-1);closeEvent();eventForm.reset();document.getElementById('eventDate').value='2026-11-10';document.getElementById('eventTime').value='15:30';document.getElementById('weekdayWrap').hidden=false;
+});
+renderEvents();
+events.forEach((ev,i)=>scheduleEvent(ev,i));
+
 const month=document.getElementById('monthView');['M','T','W','T','F','S','S',...Array.from({length:30},(_,i)=>String(i+1))].forEach((d,i)=>{const el=document.createElement('span');el.textContent=d;if(i===16)el.classList.add('today');month.append(el);});
 document.getElementById('monthMode').addEventListener('click',()=>{month.hidden=false;document.getElementById('agendaView').hidden=true;});
 document.getElementById('agendaMode').addEventListener('click',()=>{month.hidden=true;document.getElementById('agendaView').hidden=false;});
