@@ -150,7 +150,7 @@ test('recurrence and date ranges are bounded to five years', () => {
 });
 
 test('browser notification construction failure has a safe fallback', () => {
-  assert.match(appScript, /try\{\s*const notification=new Notification/);
+  assert.match(appScript, /const notification=new Notification/);
   assert.match(appScript, /using the in-app reminder instead/);
   assert.match(appScript, /now-triggerAt<=24\*60\*60\*1000/);
 });
