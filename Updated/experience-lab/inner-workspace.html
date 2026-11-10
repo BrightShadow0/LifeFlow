@@ -204,7 +204,7 @@ function loadEvents(){
 }
 let events=loadEvents();
 if(!events.length){
- events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
+ events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'recurring',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
 }
 const scheduledTimers=new Map();
 const alarmDeliveriesInFlight=new Set();
@@ -257,7 +257,7 @@ function syncRepeatFields(){
 function syncAlarmFields(){document.getElementById('alarmOptions').hidden=!document.getElementById('eventAlarmEnabled').checked;}
 function setEventError(message){const el=document.getElementById('eventError');el.textContent=message;el.hidden=!message;}
 document.getElementById('newEvent').addEventListener('click',()=>openEvent());
-document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
+
 document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
 document.getElementById('closeEvent').addEventListener('click',closeEvent);
 document.getElementById('cancelEvent').addEventListener('click',event=>{event.preventDefault();event.stopPropagation();closeEvent();});
