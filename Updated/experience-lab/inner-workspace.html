@@ -330,7 +330,8 @@ function occurrenceDates(ev){
    const year=cursor.getFullYear(),month=cursor.getMonth();
    const lastDay=new Date(year,month+1,0).getDate();
    const candidate=new Date(year,month,Math.min(day,lastDay));
-   if(candidate>=start&&candidate<=last)out.push(localDateKey(candidate));
+   const candidateKey=localDateKey(candidate);
+   if(candidateKey>=ev.repeatStart&&candidateKey<=ev.repeatEnd)out.push(candidateKey);
    cursor.setDate(1);cursor.setMonth(cursor.getMonth()+1);
   }
  }
