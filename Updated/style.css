@@ -5366,3 +5366,41 @@ body::-webkit-scrollbar-corner{
   .morning-intent-entry{max-width:none;flex-direction:column;align-items:stretch}
   .morning-intent-actions{justify-content:flex-start}
 }
+
+
+/* Physical rocker switch theme control */
+#app .top-theme-pull.rocker-theme-switch{
+  width:58px!important;height:48px!important;min-width:58px!important;
+  padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  position:relative!important;left:auto!important;top:auto!important;transform:none!important;
+  overflow:visible!important;filter:none!important;background:transparent!important;border:0!important;
+  box-shadow:none!important;cursor:pointer!important;touch-action:manipulation!important;
+}
+#app .rocker-switch-track{
+  width:48px;height:42px;padding:4px;display:block;position:relative;
+  border-radius:7px;background:linear-gradient(145deg,#d8d7d1,#aaa9a3);
+  border:1px solid #85847f;box-shadow:inset 0 1px 2px rgba(255,255,255,.85),0 2px 4px rgba(0,0,0,.22);
+  transition:background .22s ease,border-color .22s ease;
+}
+#app .rocker-switch-plate{
+  position:absolute;inset:4px;border-radius:4px;background:linear-gradient(145deg,#f7f6f0,#d8d7d0);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.95),inset 0 -1px 2px rgba(0,0,0,.12);
+  overflow:hidden;
+}
+#app .rocker-switch-lever{
+  position:absolute;left:2px;right:2px;top:2px;height:calc(50% - 3px);border-radius:3px;
+  background:linear-gradient(180deg,#fffefa,#deddd6);border:1px solid rgba(90,90,82,.28);
+  box-shadow:0 2px 3px rgba(0,0,0,.22),inset 0 1px 1px rgba(255,255,255,.95);
+  transform:translateY(0);transition:transform .2s cubic-bezier(.2,.8,.25,1),background .2s ease;
+}
+#app .rocker-switch-lever:after{
+  content:'';position:absolute;left:3px;right:3px;top:3px;height:1px;
+  background:rgba(255,255,255,.85);box-shadow:0 1px 1px rgba(0,0,0,.08);
+}
+:root[data-theme="light"] #app .rocker-switch-lever{transform:translateY(calc(100% + 2px));}
+#app .rocker-theme-switch:hover .rocker-switch-track{filter:brightness(1.035)}
+#app .rocker-theme-switch:active .rocker-switch-lever{filter:brightness(.97)}
+#app .rocker-theme-switch:focus-visible{outline:2px solid var(--accent)!important;outline-offset:4px}
+#app .rocker-theme-switch.snap .rocker-switch-lever{transition-duration:.14s}
+@media(max-width:600px){#app .top-theme-pull.rocker-theme-switch{width:52px!important;height:44px!important;min-width:52px!important}}
+@media(prefers-reduced-motion:reduce){#app .rocker-switch-lever,#app .rocker-switch-track{transition:none!important}}
