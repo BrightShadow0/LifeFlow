@@ -1460,6 +1460,8 @@ function initThemePull(){
     const user=currentUser();
     const next=(user?.theme||document.documentElement.dataset.theme||'dark')==='dark'?'light':'dark';
     button.classList.add('snap');
+    button.setAttribute('aria-checked',String(next==='light'));
+    button.setAttribute('aria-label',next==='light'?'Switch to dark mode':'Switch to light mode');
     if(user)updateUser(profile=>{profile.theme=next;profile.autoTheme=false;});
     else applyTheme(next);
     window.setTimeout(()=>button.classList.remove('snap'),300);
