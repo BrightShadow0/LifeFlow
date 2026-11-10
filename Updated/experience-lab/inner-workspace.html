@@ -200,7 +200,7 @@ function escapeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':
 function loadEvents(){try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed:[];}catch(_){return [];}}
 let events=loadEvents();
 if(!events.length){
- events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:'2026-12-31',days:[new Date().getDay()],time:'15:30',alarmEnabled:true,alarmTime:'15:20',lead:0,notify:true,notifiedDates:[]}];
+ events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
 }
 const scheduledTimers=new Map();
 function persistEvents(){try{localStorage.setItem(eventStorageKey,JSON.stringify(events));}catch(_){document.getElementById('notificationStatus').textContent='This browser could not save the prototype items locally.';}}
