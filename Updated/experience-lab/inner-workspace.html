@@ -61,6 +61,13 @@
 .event-badge.type{color:var(--muted);background:var(--panel3)}
 @media(max-width:700px){.event-form .date-range-grid{grid-template-columns:1fr}}
 
+
+.month .month-day{position:relative;min-height:48px;padding:9px 5px;text-align:center;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--muted);font:inherit;font-size:11px;cursor:pointer}
+.month .month-day.outside{opacity:.35}
+.month .month-day.today{background:var(--accentwash);border-color:var(--accent);color:var(--accent);font-weight:800}
+.month .month-day.has-items:after{content:'';position:absolute;bottom:5px;left:50%;width:5px;height:5px;transform:translateX(-50%);border-radius:50%;background:var(--accent)}
+.month .month-weekday{padding:5px;text-align:center;color:var(--soft);font:9px DM Mono,monospace}
+.month .month-day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -111,7 +118,7 @@
    </div>
   </section>
   <section class="view-panel" id="view-tasks"><div class="page-head"><div><div class="eyebrow">YOUR WORK, CLEARLY</div><h1>Tasks</h1><p class="subhead">A focused list of actions, without the calendar noise.</p></div></div><div class="card"><div class="card-head"><div><div class="card-title">All active tasks</div><div class="card-note">Organise by priority and due date.</div></div><button class="primary" data-capture="task">＋ New task</button></div><div class="task-list" id="allTasks"><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Prepare the weekly plan</strong><small>Today · High priority</small></div></div><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Send the follow-up email</strong><small>Today · Medium priority</small></div></div><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Read through saved notes</strong><small>Today · Low priority</small></div></div></div></div></section>
-  <section class="view-panel" id="view-calendar"><div class="page-head"><div><div class="eyebrow">TIME, WITH ROOM TO BREATHE</div><h1>Calendar</h1><p class="subhead">See the shape of your month, or switch to your agenda.</p></div><div class="date-chip">NOVEMBER 2026</div></div><div class="card"><div class="card-head"><div class="card-title">November 2026</div><div><button class="text-btn" id="monthMode">Month</button><button class="text-btn" id="agendaMode">Agenda</button></div></div><div id="monthView" class="month"></div><div id="agendaView" class="agenda" hidden><div class="agenda-row"><span class="agenda-time">Today</span><i class="agenda-dot"></i><div><strong>Weekly planning</strong><small>10:30 · Focus block</small></div></div><div class="agenda-row"><span class="agenda-time">12 Nov</span><i class="agenda-dot"></i><div><strong>Project review</strong><small>14:00 · Meeting</small></div></div></div></div></section>
+  <section class="view-panel" id="view-calendar"><div class="page-head"><div><div class="eyebrow">TIME, WITH ROOM TO BREATHE</div><h1>Calendar</h1><p class="subhead">See the shape of your month, or switch to your agenda.</p></div><div class="date-chip" id="calendarMonthLabel"></div></div><div class="card"><div class="card-head"><div class="card-title" id="calendarCardMonth"></div><div><button class="text-btn" id="monthMode">Month</button><button class="text-btn" id="agendaMode">Agenda</button></div></div><div id="monthView" class="month"></div><div id="agendaView" class="agenda" hidden></div></div></section>
   <section class="view-panel" id="view-board"><div class="page-head"><div><div class="eyebrow">MOVE WORK FORWARD</div><h1>Board</h1><p class="subhead">Only actionable tasks belong here. Events stay in Calendar and Today.</p></div></div><div class="board"><div class="board-col"><h3>TO DO · 2</h3><div class="board-item">Prepare the weekly plan</div><div class="board-item">Read through saved notes</div></div><div class="board-col"><h3>IN PROGRESS · 1</h3><div class="board-item">Send the follow-up email</div></div><div class="board-col"><h3>DONE · 1</h3><div class="board-item">Review the project brief</div></div></div></section>
   <section class="view-panel" id="view-notes"><div class="page-head"><div><div class="eyebrow">THINK, COLLECT, CONNECT</div><h1>Notes</h1><p class="subhead">A home for the ideas and context behind your work.</p></div><button class="primary">＋ New note</button></div><div class="note-preview"><div class="micro">PERSONAL · UPDATED YESTERDAY</div><h2>Progress comes from making the next step clear.</h2><p>Keep the thinking behind your projects here. Link related notes as your ideas evolve, and return to the context whenever you need it.</p><div class="micro">2 BACKLINKS · 1 FOLDER</div></div></section>
   <section class="view-panel" id="view-branches"><div class="page-head"><div><div class="eyebrow">SEE THE CONNECTIONS</div><h1>Your Branches</h1><p class="subhead">Ideas become more useful when you can see how they relate.</p></div></div><div class="card"><svg viewBox="0 0 760 300" role="img" aria-label="Example connected notes graph" style="width:100%;height:auto"><g stroke="var(--line)" stroke-width="2" fill="none"><path d="M380 150 190 70M380 150 570 70M380 150 190 240M380 150 570 240"/></g><g fill="var(--panel2)" stroke="var(--accent)" stroke-width="2"><rect x="300" y="120" width="160" height="60" rx="13"/><rect x="120" y="40" width="140" height="55" rx="12"/><rect x="500" y="40" width="140" height="55" rx="12"/><rect x="120" y="215" width="140" height="55" rx="12"/><rect x="500" y="215" width="140" height="55" rx="12"/></g><g fill="var(--text)" font-family="Manrope" font-size="12" text-anchor="middle"><text x="380" y="155">A clear next step</text><text x="190" y="72">Project context</text><text x="570" y="72">Useful ideas</text><text x="190" y="247">Weekly planning</text><text x="570" y="247">Personal notes</text></g></svg></div></section>
@@ -195,9 +202,35 @@ const eventStorageKey='lifeflow-lab-events-v2';
 const weekdayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const todayKey=localDateKey(new Date());
 function localDateKey(date){const d=new Date(date);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dateFromKey(key,time='09:00'){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||'')))return null;const [y,m,d]=key.split('-').map(Number),[hh,mm]=String(time||'09:00').split(':').map(Number);const out=new Date(y,m-1,d,hh||0,mm||0,0,0);return Number.isNaN(out.getTime())?null:out;}
+function dateFromKey(key,time='09:00'){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||'')))return null;
+ const [y,m,d]=key.split('-').map(Number),[hh,mm]=String(time||'09:00').split(':').map(Number);
+ if(m<1||m>12||d<1||hh<0||hh>23||mm<0||mm>59)return null;
+ const out=new Date(y,m-1,d,hh,mm,0,0);
+ return out.getFullYear()===y&&out.getMonth()===m-1&&out.getDate()===d?out:null;
+}
 function escapeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function loadEvents(){try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed:[];}catch(_){return [];}}
+function normaliseStoredEvent(raw){
+ if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim())return null;
+ const nature=['general','birthday','anniversary','meeting','assignment'].includes(raw.nature)?raw.nature:'general';
+ const repeat=nature==='general'&&['weekly','monthly'].includes(raw.repeat)?raw.repeat:'none';
+ const dateFields=['singleDate','dueDate','startDate','endDate','repeatStart','repeatEnd'];
+ for(const field of dateFields)if(raw[field]&&!dateFromKey(raw[field]))return null;
+ const event={...raw,id:String(raw.id||'item-'+Math.random().toString(36).slice(2)),title:raw.title.trim().slice(0,90),nature,repeat,alarmEnabled:raw.alarmEnabled===true,notify:raw.notify===true,alarmTime:/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.alarmTime||'')?raw.alarmTime:'09:00',lead:[0,5,10,15,30,60,1440].includes(Number(raw.lead))?Number(raw.lead):0,notifiedDates:Array.isArray(raw.notifiedDates)?raw.notifiedDates.filter(date=>dateFromKey(date)).slice(-365):[],done:raw.done===true};
+ if(repeat!=='none'){
+  if(!dateFromKey(event.repeatStart)||!dateFromKey(event.repeatEnd)||event.repeatEnd<event.repeatStart)return null;
+  const span=dateFromKey(event.repeatEnd)-dateFromKey(event.repeatStart);
+  if(span>366*5*24*60*60*1000)return null;
+  if(repeat==='weekly'){event.days=Array.isArray(raw.days)?[...new Set(raw.days.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6))]:[];if(!event.days.length)return null;}
+  if(repeat==='monthly'){event.monthDay=Number.isInteger(Number(raw.monthDay))?Math.max(1,Math.min(31,Number(raw.monthDay))):dateFromKey(event.repeatStart).getDate();}
+ }else if(nature==='general'){if(!dateFromKey(event.singleDate))return null;}
+ else if(nature==='assignment'){if(!dateFromKey(event.dueDate))return null;}
+ else if(!dateFromKey(event.startDate)||!dateFromKey(event.endDate)||event.endDate<event.startDate)return null;
+ return event;
+}
+function loadEvents(){
+ try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed.map(normaliseStoredEvent).filter(Boolean):[];}catch(_){return [];}
+}
 let events=loadEvents();
 if(!events.length){
  events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
@@ -295,8 +328,10 @@ function occurrenceDates(ev){
   const day=Math.max(1,Math.min(31,Number(ev.monthDay)||start.getDate()));
   while(cursor<=last){
    const year=cursor.getFullYear(),month=cursor.getMonth();
-   const candidate=new Date(year,month,day);
-   if(candidate.getMonth()===month&&candidate>=start&&candidate<=last)out.push(localDateKey(candidate));
+   const lastDay=new Date(year,month+1,0).getDate();
+   const candidate=new Date(year,month,Math.min(day,lastDay));
+   const candidateKey=localDateKey(candidate);
+   if(candidateKey>=ev.repeatStart&&candidateKey<=ev.repeatEnd)out.push(candidateKey);
    cursor.setDate(1);cursor.setMonth(cursor.getMonth()+1);
   }
  }
@@ -316,7 +351,7 @@ function nextOccurrence(ev){
   if(done.has(date))continue;
   const at=dateFromKey(date,time);if(!at)continue;
   const triggerAt=at.getTime()-lead*60000;
-  if(triggerAt>now||now-triggerAt<=60*60*1000)return {date,at,triggerAt};
+  if(triggerAt>now||now-triggerAt<=24*60*60*1000)return {date,at,triggerAt};
  }
  return null;
 }
@@ -324,9 +359,11 @@ function fireEventAlarm(ev,occurrence){
  const message=ev.title+' · '+occurrence.at.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
  let shown=false;
  if('Notification'in window&&Notification.permission==='granted'){
-  const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
-  notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
-  shown=true;
+  try{
+   const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
+   notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
+   shown=true;
+  }catch(error){console.warn('LifeFlow browser notification failed; using the in-app reminder instead.',error);}
  }
  if(!shown){
   document.title='Reminder · LifeFlow';
@@ -364,7 +401,7 @@ function renderCalendarItems(){
  events.forEach(ev=>{
   occurrenceDates(ev).filter(date=>date>=todayKey).slice(0,3).forEach(date=>{
    const row=document.createElement('div');row.className='agenda-row';row.dataset.labAgenda=ev.id;
-   const time=document.createElement('span');time.className='agenda-time';time.textContent=date.slice(5);
+   const time=document.createElement('span');time.className='agenda-time';time.textContent=date.slice(5);row.dataset.date=date;
    const dot=document.createElement('i');dot.className='agenda-dot';
    const details=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');
    title.textContent=ev.title;
@@ -372,6 +409,33 @@ function renderCalendarItems(){
    details.append(title,meta);row.append(time,dot,details);host.append(row);
   });
  });
+}
+function renderMonthCalendar(){
+ const host=document.getElementById('monthView');if(!host)return;
+ const now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1),daysInMonth=new Date(year,month+1,0).getDate();
+ const monthLabel=now.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+ document.getElementById('calendarMonthLabel').textContent=monthLabel.toUpperCase();
+ document.getElementById('calendarCardMonth').textContent=monthLabel;
+ host.replaceChildren();
+ ['S','M','T','W','T','F','S'].forEach(label=>{const el=document.createElement('span');el.className='month-weekday';el.textContent=label;host.append(el);});
+ const offset=first.getDay(),total=Math.ceil((offset+daysInMonth)/7)*7;
+ const today=localDateKey(now);
+ const marked=new Set();
+ events.forEach(ev=>{
+  if(ev.repeat!=='none')occurrenceDates(ev).forEach(date=>marked.add(date));
+  else if(ev.nature==='birthday'||ev.nature==='anniversary'||ev.nature==='meeting'){
+   const start=dateFromKey(ev.startDate),end=dateFromKey(ev.endDate);
+   if(start&&end){const cursor=new Date(Math.max(start.getTime(),new Date(year,month,1).getTime()));const last=new Date(Math.min(end.getTime(),new Date(year,month+1,0,23,59,59).getTime()));while(cursor<=last){marked.add(localDateKey(cursor));cursor.setDate(cursor.getDate()+1);}}
+  }else{const date=ev.nature==='assignment'?ev.dueDate:ev.singleDate;if(date)marked.add(date);}
+ });
+ for(let cell=0;cell<total;cell++){
+  const day=cell-offset+1,date=new Date(year,month,day),key=localDateKey(date),outside=day<1||day>daysInMonth;
+  const button=document.createElement('button');button.type='button';button.className='month-day'+(outside?' outside':'')+(key===today?' today':'')+(marked.has(key)?' has-items':'');
+  button.textContent=String(date.getDate());button.setAttribute('aria-label',date.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})+(marked.has(key)?', has items':''));
+  button.disabled=outside;
+  button.addEventListener('click',()=>{showView('calendar');document.getElementById('agendaMode').click();const rows=[...document.querySelectorAll('[data-lab-agenda]')];rows.forEach(row=>row.hidden=!row.dataset.date||row.dataset.date!==key);});
+  host.append(button);
+ }
 }
 function renderEvents(){
  const host=document.getElementById('eventList');host.replaceChildren();
@@ -390,7 +454,7 @@ function renderEvents(){
   if(ev.done){row.style.opacity='.55';title.style.textDecoration='line-through';}
   row.append(time,details,badges);host.append(row);
  });
- renderItemRows('taskList');renderItemRows('allTasks');renderCalendarItems();
+ renderItemRows('taskList');renderItemRows('allTasks');renderCalendarItems();renderMonthCalendar();
 }
 function validateAndReadEvent(){
  const title=document.getElementById('eventName').value.trim(),nature=document.getElementById('eventNature').value;
@@ -402,7 +466,9 @@ function validateAndReadEvent(){
    item.repeatStart=document.getElementById('eventRepeatStart').value;
    item.repeatEnd=document.getElementById('eventRepeatEnd').value;
    if(!item.repeatStart||!item.repeatEnd)throw new Error('Choose both a repeat start and end date.');
+   if(!dateFromKey(item.repeatStart)||!dateFromKey(item.repeatEnd))throw new Error('Choose valid repeat dates.');
    if(item.repeatEnd<item.repeatStart)throw new Error('The repeat end date must be on or after its start date.');
+   if(dateFromKey(item.repeatEnd)-dateFromKey(item.repeatStart)>366*5*24*60*60*1000)throw new Error('Please keep a repeat range within five years.');
    if(item.repeat==='weekly'){
     item.days=[...document.querySelectorAll('.weekday:checked')].map(box=>Number(box.value));
     if(!item.days.length)throw new Error('Choose at least one weekday for a weekly repeat.');
@@ -412,16 +478,18 @@ function validateAndReadEvent(){
    }
   }else{
    item.singleDate=document.getElementById('eventSingleDate').value;
-   if(!item.singleDate)throw new Error('Choose a day for this item.');
+   if(!item.singleDate||!dateFromKey(item.singleDate))throw new Error('Choose a valid day for this item.');
   }
  }else if(nature==='assignment'){
   item.dueDate=document.getElementById('eventDueDate').value;
-  if(!item.dueDate)throw new Error('Choose an assignment due date.');
+  if(!item.dueDate||!dateFromKey(item.dueDate))throw new Error('Choose a valid assignment due date.');
  }else{
   item.startDate=document.getElementById('eventRangeStart').value;
   item.endDate=document.getElementById('eventRangeEnd').value;
   if(!item.startDate||!item.endDate)throw new Error('Choose both a start and end date.');
+  if(!dateFromKey(item.startDate)||!dateFromKey(item.endDate))throw new Error('Choose valid start and end dates.');
   if(item.endDate<item.startDate)throw new Error('The end date must be on or after the start date.');
+  if(dateFromKey(item.endDate)-dateFromKey(item.startDate)>366*5*24*60*60*1000)throw new Error('Please keep an item date range within five years.');
  }
  if(item.alarmEnabled&&!item.alarmTime)throw new Error('Choose an alarm time.');
  return item;
