@@ -183,9 +183,9 @@ function dateFromKey(key,time='09:00'){
 function escapeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function normaliseStoredEvent(raw){
  if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim())return null;
- const nature=['general','birthday','anniversary','meeting','assignment'].includes(raw.nature)?raw.nature:'general';
- const repeat=nature==='general'&&['weekly','monthly'].includes(raw.repeat)?raw.repeat:'none';
- const dateFields=['singleDate','dueDate','startDate','endDate','repeatStart','repeatEnd'];
+ const nature=raw.nature==='recurring'||(raw.nature==='general'&&['weekly','monthly'].includes(raw.repeat))?'recurring':'single';
+ const repeat=nature==='recurring'&&['weekly','monthly'].includes(raw.repeat)?raw.repeat:'none';
+ const dateFields=['singleDate','repeatStart','repeatEnd'];
  for(const field of dateFields)if(raw[field]&&!dateFromKey(raw[field]))return null;
  const event={...raw,id:String(raw.id||'item-'+Math.random().toString(36).slice(2)),title:raw.title.trim().slice(0,90),nature,repeat,alarmEnabled:raw.alarmEnabled===true,notify:raw.notify===true,alarmTime:/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.alarmTime||'')?raw.alarmTime:'09:00',lead:[0,5,10,15,30,60,1440].includes(Number(raw.lead))?Number(raw.lead):0,notifiedDates:Array.isArray(raw.notifiedDates)?raw.notifiedDates.filter(date=>dateFromKey(date)).slice(-365):[],done:raw.done===true};
  if(repeat!=='none'){
@@ -194,9 +194,7 @@ function normaliseStoredEvent(raw){
   if(span>366*5*24*60*60*1000)return null;
   if(repeat==='weekly'){event.days=Array.isArray(raw.days)?[...new Set(raw.days.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6))]:[];if(!event.days.length)return null;}
   if(repeat==='monthly'){event.monthDay=Number.isInteger(Number(raw.monthDay))?Math.max(1,Math.min(31,Number(raw.monthDay))):dateFromKey(event.repeatStart).getDate();}
- }else if(nature==='general'){if(!dateFromKey(event.singleDate))return null;}
- else if(nature==='assignment'){if(!dateFromKey(event.dueDate))return null;}
- else if(!dateFromKey(event.startDate)||!dateFromKey(event.endDate)||event.endDate<event.startDate)return null;
+ }else if(!dateFromKey(event.singleDate))return null;
  return event;
 }
 function loadEvents(){
