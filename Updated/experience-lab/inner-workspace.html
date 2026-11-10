@@ -144,7 +144,6 @@
    <div id="repeatPanel" class="wide repeat-panel" hidden>
     <div class="date-range-grid">
      <label>Repeat every<select id="eventFrequency"><option value="weekly">One week</option><option value="monthly">One month</option></select></label>
-     <label>Repeat on<input id="eventRepeatTime" type="time" value="09:00"></label>
     </div>
     <div class="date-range-grid">
      <label>Start range<input id="eventRepeatStart" type="date"></label>
@@ -316,7 +315,7 @@ function nextOccurrence(ev){
   if(done.has(date))continue;
   const at=dateFromKey(date,time);if(!at)continue;
   const triggerAt=at.getTime()-lead*60000;
-  if(triggerAt>now)return {date,at,triggerAt};
+  if(triggerAt>now||now-triggerAt<=60*60*1000)return {date,at,triggerAt};
  }
  return null;
 }
@@ -334,14 +333,15 @@ function fireEventAlarm(ev,occurrence){
   if(document.visibilityState==='visible')window.alert('LifeFlow reminder\n\n'+message);
  }
  ev.notifiedDates=Array.from(new Set([...(ev.notifiedDates||[]),occurrence.date]));
- persistEvents();renderEvents();scheduleEvent(ev);
+ persistEvents();renderEvents();scheduledTimers.delete(ev.id);scheduleEvent(ev);
 }
 async function scheduleEvent(ev){
  const old=scheduledTimers.get(ev.id);if(old)clearTimeout(old);scheduledTimers.delete(ev.id);
  const next=nextOccurrence(ev);if(!next)return;
  const delay=next.triggerAt-Date.now();
- if(delay<=0||delay>2147480000)return;
- const timer=setTimeout(()=>fireEventAlarm(ev,next),delay);
+ if(delay<=0){const timer=setTimeout(()=>checkDueAlarms(),250);scheduledTimers.set(ev.id,timer);return;}
+ if(delay>2147480000)return;
+ const timer=setTimeout(()=>checkDueAlarms(),delay);
  scheduledTimers.set(ev.id,timer);
 }
 function renderEvents(){
