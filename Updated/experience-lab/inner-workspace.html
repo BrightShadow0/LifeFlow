@@ -104,7 +104,7 @@
      </div>
      <div class="stack">
       <section class="card"><div class="card-head"><div><div class="card-title">Coming up</div><div class="card-note">Your next moments, at a glance.</div></div><button class="text-btn" data-goto="calendar">Calendar ↗</button></div><div class="agenda"><div class="agenda-row"><span class="agenda-time">10:30</span><i class="agenda-dot"></i><div><strong>Weekly planning</strong><small>Focus block · 45 min</small></div></div><div class="agenda-row"><span class="agenda-time">12:00</span><i class="agenda-dot"></i><div><strong>Lunch break</strong><small>Personal time · 1 hour</small></div></div><div class="agenda-row"><span class="agenda-time">14:30</span><i class="agenda-dot"></i><div><strong>Project check-in</strong><small>Meeting · 30 min</small></div></div></div></section>
-      <section class="card"><div class="card-head"><div><div class="card-title">Events & reminders</div><div class="card-note">Recurring plans and alarms that follow your schedule.</div></div><button class="text-btn" id="newEvent">＋ Add event</button></div><div id="eventList"><div class="event-item"><span class="event-time">15:30</span><div><strong>Weekly project review</strong><small>Every Tuesday · Meeting room</small></div><div class="event-badges"><span class="event-badge">↻ Weekly</span><span class="event-badge">◷ Alarm</span></div></div></div><p class="quiet-note" id="notificationStatus">Desktop notifications are optional. Allow permission to receive reminders while LifeFlow is open in another tab.</p></section>
+      <section class="card"><div class="card-head"><div><div class="card-title">Events & reminders</div><div class="card-note">Recurring plans and alarms that follow your schedule.</div></div><button class="text-btn" id="newEvent">＋ Add event</button></div><div id="eventList"></div><p class="quiet-note" id="notificationStatus">Desktop notifications are optional. Allow permission to receive reminders while LifeFlow is open in another tab.</p></section>
       <section class="card"><div class="card-head"><div><div class="card-title">A thought to return to</div><div class="card-note">From your personal notes</div></div><button class="text-btn" data-goto="notes">Open notes ↗</button></div><div class="focus-card"><div class="micro">SAVED IDEA · PERSONAL</div><h3>Progress comes from making the next step clear.</h3><p>Last updated yesterday · 2 linked notes</p><div class="progress"><i></i></div></div></section>
      </div>
     </div>
@@ -216,7 +216,7 @@ function openEvent(options={}){
  const nextWeek=new Date();nextWeek.setDate(nextWeek.getDate()+28);
  document.getElementById('eventRepeatEnd').value=localDateKey(nextWeek);
  document.getElementById('eventMonthDay').value=String(new Date().getDate());
- document.getElementById('eventRepeatTime').value='09:00';
+ document.querySelectorAll('.weekday').forEach(box=>box.checked=Number(box.value)===new Date().getDay());
  document.getElementById('eventAlarmTime').value='09:00';
  document.getElementById('eventNature').value=options.nature||'general';
  document.getElementById('eventName').value=options.title||'';
@@ -248,6 +248,7 @@ function syncRepeatFields(){
  const enabled=document.getElementById('eventRepeating').checked&&document.getElementById('eventNature').value==='general';
  document.getElementById('repeatPanel').hidden=!enabled;
  document.getElementById('singleDayWrap').hidden=enabled||document.getElementById('eventNature').value!=='general';
+ document.getElementById('eventSingleDate').required=!enabled&&document.getElementById('eventNature').value==='general';
  const weekly=document.getElementById('eventFrequency').value==='weekly';
  document.getElementById('weeklyRepeatWrap').hidden=!weekly;
  document.getElementById('monthlyRepeatWrap').hidden=weekly;
@@ -344,9 +345,37 @@ async function scheduleEvent(ev){
  const timer=setTimeout(()=>checkDueAlarms(),delay);
  scheduledTimers.set(ev.id,timer);
 }
+function renderItemRows(hostId){
+ const host=document.getElementById(hostId);if(!host)return;
+ host.querySelectorAll('[data-lab-item]').forEach(row=>row.remove());
+ events.forEach(ev=>{
+  const row=document.createElement('div');row.className='task-row'+(ev.done?' completed':'');row.dataset.labItem=ev.id;
+  const check=document.createElement('button');check.className='check'+(ev.done?' done':'');check.textContent=ev.done?'✓':'';check.setAttribute('aria-label',ev.done?'Mark item incomplete':'Mark item complete');
+  check.addEventListener('click',()=>{ev.done=!ev.done;persistEvents();renderEvents();updateProgress();});
+  const info=document.createElement('div');info.className='task-info';
+  const title=document.createElement('strong');title.textContent=ev.title;
+  const meta=document.createElement('small');meta.textContent=(ev.nature==='assignment'?'Assignment':ev.nature[0].toUpperCase()+ev.nature.slice(1))+' · '+eventDateSummary(ev);
+  info.append(title,meta);row.append(check,info);host.append(row);
+ });
+}
+function renderCalendarItems(){
+ const host=document.getElementById('agendaView');if(!host)return;
+ host.querySelectorAll('[data-lab-agenda]').forEach(row=>row.remove());
+ events.forEach(ev=>{
+  occurrenceDates(ev).filter(date=>date>=todayKey).slice(0,3).forEach(date=>{
+   const row=document.createElement('div');row.className='agenda-row';row.dataset.labAgenda=ev.id;
+   const time=document.createElement('span');time.className='agenda-time';time.textContent=date.slice(5);
+   const dot=document.createElement('i');dot.className='agenda-dot';
+   const details=document.createElement('div'),title=document.createElement('strong'),meta=document.createElement('small');
+   title.textContent=ev.title;
+   meta.textContent=(ev.alarmEnabled?ev.alarmTime+' · ':'')+(ev.nature==='assignment'?'Assignment':ev.nature[0].toUpperCase()+ev.nature.slice(1))+(ev.repeat!=='none'?' · Repeating':'');
+   details.append(title,meta);row.append(time,dot,details);host.append(row);
+  });
+ });
+}
 function renderEvents(){
  const host=document.getElementById('eventList');host.replaceChildren();
- if(!events.length){const empty=document.createElement('p');empty.className='quiet-note';empty.textContent='No events or reminders yet. Add one to try the date and alarm controls.';host.append(empty);return;}
+ if(!events.length){const empty=document.createElement('p');empty.className='quiet-note';empty.textContent='No items or reminders yet. Add one to try the date and alarm controls.';host.append(empty);}
  events.forEach(ev=>{
   const row=document.createElement('div');row.className='event-item';
   const time=document.createElement('span');time.className='event-time';time.textContent=ev.alarmEnabled?(ev.alarmTime||'09:00'):'ALL DAY';
@@ -358,13 +387,15 @@ function renderEvents(){
   const type=document.createElement('span');type.className='event-badge type';type.textContent=ev.nature==='assignment'?'Assignment':ev.nature[0].toUpperCase()+ev.nature.slice(1);badges.append(type);
   if(ev.repeat!=='none'){const repeat=document.createElement('span');repeat.className='event-badge';repeat.textContent=ev.repeat==='weekly'?'↻ Weekly':'↻ Monthly';badges.append(repeat);}
   if(ev.alarmEnabled){const alarm=document.createElement('span');alarm.className='event-badge';alarm.textContent='◷ Alarm';badges.append(alarm);}
+  if(ev.done){row.style.opacity='.55';title.style.textDecoration='line-through';}
   row.append(time,details,badges);host.append(row);
  });
+ renderItemRows('taskList');renderItemRows('allTasks');renderCalendarItems();
 }
 function validateAndReadEvent(){
  const title=document.getElementById('eventName').value.trim(),nature=document.getElementById('eventNature').value;
  if(!title)throw new Error('Add a title for this item.');
- const item={id:'item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,nature,repeat:'none',alarmEnabled:document.getElementById('eventAlarmEnabled').checked,alarmTime:document.getElementById('eventAlarmTime').value||'09:00',lead:Number(document.getElementById('eventAlarmLead').value)||0,notify:document.getElementById('eventNotify').checked,notifiedDates:[]};
+ const item={id:'item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,nature,repeat:'none',alarmEnabled:document.getElementById('eventAlarmEnabled').checked,alarmTime:document.getElementById('eventAlarmTime').value||'09:00',lead:Number(document.getElementById('eventAlarmLead').value)||0,notify:document.getElementById('eventNotify').checked,notifiedDates:[],done:false};
  if(nature==='general'){
   if(document.getElementById('eventRepeating').checked){
    item.repeat=document.getElementById('eventFrequency').value;
