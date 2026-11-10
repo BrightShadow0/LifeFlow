@@ -12,21 +12,19 @@ test('Experience Lab item editor script is valid JavaScript', () => {
   assert.doesNotThrow(() => new vm.Script(appScript, { filename: 'inner-workspace-inline.js' }));
 });
 
-test('item nature options and conditional date controls are present', () => {
-  for (const type of ['general', 'birthday', 'anniversary', 'meeting', 'assignment']) {
-    assert.match(html, new RegExp('<option value="' + type + '">'));
-  }
+test('calendar item editor offers a simple single-day or recurring nature selector', () => {
+  assert.match(html, /<option value="single">Single day<\/option>/);
+  assert.match(html, /<option value="recurring">Recurring<\/option>/);
   assert.match(html, /id="eventSingleDate"/);
-  assert.match(html, /id="eventDueDate"/);
-  assert.match(html, /id="eventRangeStart"/);
-  assert.match(html, /id="eventRangeEnd"/);
-  assert.match(appScript, /document\.getElementById\('repeatToggleWrap'\)\.hidden=!general/);
-  assert.match(appScript, /document\.getElementById\('assignmentDateWrap'\)\.hidden=!assignment/);
-  assert.match(appScript, /document\.getElementById\('rangeDateWrap'\)\.hidden=general\|\|assignment/);
+  assert.doesNotMatch(html, /id="eventDueDate"|id="eventRangeStart"|id="eventRangeEnd"/);
+  assert.match(appScript, /document\.getElementById\('singleDayWrap'\)\.hidden=recurring/);
+  assert.match(appScript, /document\.getElementById\('repeatPanel'\)\.hidden=!recurring/);
+  assert.match(html, /id="view-calendar"[\s\S]*?id="eventList"/);
+  assert.doesNotMatch(html, /id="view-today"[\s\S]*?Events & reminders/);
 });
 
-test('recurrence is restricted to General and supports weekly/monthly date ranges', () => {
-  assert.match(appScript, /document\.getElementById\('eventRepeating'\)\.checked&&document\.getElementById\('eventNature'\)\.value==='general'/);
+test('recurrence is shown only for recurring items and supports weekly/monthly date ranges', () => {
+  assert.match(appScript, /document\.getElementById\('eventNature'\)\.value==='recurring'/);
   assert.match(html, /id="eventRepeatStart"/);
   assert.match(html, /id="eventRepeatEnd"/);
   assert.match(html, /value="weekly"/);
@@ -153,4 +151,14 @@ test('browser notification construction failure has a safe fallback', () => {
   assert.match(appScript, /const notification=new Notification/);
   assert.match(appScript, /using the in-app reminder instead/);
   assert.match(appScript, /now-triggerAt<=24\*60\*60\*1000/);
+});
+
+test('Cancel closes the item dialog without submitting the form', () => {
+  assert.match(html, /<button type="button" class="text-btn" id="cancelEvent">Cancel<\/button>/);
+  assert.match(appScript, /document\.getElementById\('cancelEvent'\)\.addEventListener\('click',event=>\{event\.preventDefault\(\)/);
+});
+test('theme rocker position is inverted for dark and light themes', () => {
+  const css = fs.readFileSync('Updated/style.css', 'utf8');
+  assert.match(css, /:root\[data-theme="dark"\] #app \.rocker-switch-lever\{transform:translateY\(calc\(100% \+ 2px\)\)\}/);
+  assert.match(css, /:root\[data-theme="light"\] #app \.rocker-switch-lever\{transform:translateY\(0\)\}/);
 });
