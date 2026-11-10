@@ -64,7 +64,7 @@ function extractFunction(name) {
 function runPureFunctions(names, extraContext = {}) {
   const context = { Date, Math, Set, String, Number, Array, Object, ...extraContext };
   vm.createContext(context);
-  vm.runInContext(names.map(extractFunction).join('\\n'), context);
+  vm.runInContext(names.map(extractFunction).join('\n'), context);
   return context;
 }
 
