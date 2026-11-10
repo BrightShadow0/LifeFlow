@@ -38,6 +38,29 @@
 
 @media(max-width:1050px){.app{grid-template-columns:210px minmax(0,1fr)}.today-grid{grid-template-columns:1fr}.hero{min-height:180px}}
 @media(max-width:700px){.app{display:block}.sidebar{position:sticky;top:0;height:auto;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line);display:block;background:var(--panel)}.brand{padding:0 5px 10px}.brand-name{font-size:17px}.workspace-label,.nav-label,.sidebar-bottom{display:none}.nav-group{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}.nav-btn{white-space:nowrap;padding:8px 10px;font-size:11px}.nav-btn .ico{width:auto}.topbar{height:58px;padding:0 16px}.search{width:min(190px,55vw)}.content{padding:25px 15px 70px}.page-head{align-items:flex-start;flex-direction:column;margin-bottom:19px}.hero{padding:21px;min-height:175px}.hero h2{font-size:22px}.ring{width:72px;height:72px}.hero-stats{gap:15px}.card{padding:16px}.simple-grid,.board{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(3,1fr)}.quick{padding:10px 8px}.date-chip{display:none}}
+
+/* Conditional event fields, recurrence and alarm controls */
+.event-form .field-help{grid-column:1/-1;margin:5px 0 0;color:var(--soft);font-size:10px;line-height:1.45}
+.event-form [hidden]{display:none!important}
+.event-form .date-range-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.event-form .date-range-grid label{min-width:0}
+.event-form .repeat-toggle-wrap,.event-form .alarm-block,.event-form .repeat-panel{padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.event-form .toggle-line{display:flex!important;flex-direction:row;align-items:center;gap:10px!important;padding:0;color:var(--text)}
+.event-form .toggle-line>input{width:16px;height:16px;flex:none;accent-color:var(--accent)}
+.event-form .toggle-line span{display:grid;gap:2px}
+.event-form .toggle-line strong{font-size:11px;color:var(--text)}
+.event-form .toggle-line small{font-size:9px;color:var(--soft);font-weight:400}
+.event-form .field-caption{display:block;font-size:10px;color:var(--muted);margin:11px 0 7px}
+.event-form #monthlyRepeatWrap{margin-top:11px}
+.event-form #monthlyRepeatWrap input{margin-top:6px}
+.event-form .weekday-picks{display:flex;gap:6px;flex-wrap:wrap}
+.event-form .weekday-picks label{display:flex;align-items:center;gap:5px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:10px}
+.event-form .weekday-picks input{width:auto;accent-color:var(--accent)}
+.event-form .form-error,.form-error{font-size:10px;color:#ff9b9b;background:rgba(220,70,70,.1);border:1px solid rgba(220,70,70,.25);border-radius:9px;padding:9px 11px}
+.event-item .event-badges{max-width:45%;justify-content:flex-end}
+.event-badge.type{color:var(--muted);background:var(--panel3)}
+@media(max-width:700px){.event-form .date-range-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -95,7 +118,66 @@
  </main>
 </div>
 </div>
-<div class="modal-backdrop" id="eventModal" hidden><form class="modal" id="eventForm"><div class="modal-head"><div><div class="eyebrow">CALENDAR · REMINDER</div><h2>Create an event</h2></div><button type="button" id="closeEvent" aria-label="Close">×</button></div><div class="event-form"><label class="wide">Event name<input id="eventName" required maxlength="90" placeholder="e.g. Weekly project review"></label><label>Date<input id="eventDate" type="date" required value="2026-11-10"></label><label>Time<input id="eventTime" type="time" required value="15:30"></label><label>Repeat<select id="eventRepeat"><option value="none">Does not repeat</option><option value="weekly">Every week</option><option value="monthly">Every month</option></select></label><label>Reminder<select id="eventAlarm"><option value="0">At event time</option><option value="5">5 minutes before</option><option value="10" selected>10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option></select></label><div class="wide" id="weekdayWrap"><label>Repeat on</label><div class="weekday-picks"><label><input type="checkbox" value="0" class="weekday" >Sun</label><label><input type="checkbox" value="1" class="weekday" >Mon</label><label><input type="checkbox" value="2" class="weekday" checked>Tue</label><label><input type="checkbox" value="3" class="weekday" >Wed</label><label><input type="checkbox" value="4" class="weekday" >Thu</label><label><input type="checkbox" value="5" class="weekday" >Fri</label><label><input type="checkbox" value="6" class="weekday" >Sat</label></div></div><label class="toggle-line wide"><input type="checkbox" id="eventNotify" checked> Send an attention notification for this alarm</label></div><p class="quiet-note">Notifications can appear while you are using another browser tab, provided this workspace remains open and your browser allows notifications. Reliable reminders after the browser is closed need push notifications and a configured service worker.</p><div class="modal-actions"><button type="button" class="text-btn" id="cancelEvent">Cancel</button><button class="primary" type="submit">Save event</button></div></form></div><div class="lab-stamp">EXPERIENCE LAB · CONCEPT 01</div>
+<div class="modal-backdrop" id="eventModal" hidden>
+ <form class="modal" id="eventForm">
+  <div class="modal-head"><div><div class="eyebrow">WORKSPACE · NEW ITEM</div><h2 id="eventModalTitle">Create an item</h2></div><button type="button" id="closeEvent" aria-label="Close">×</button></div>
+  <div class="event-form">
+   <label class="wide">Title<input id="eventName" required maxlength="90" placeholder="What needs to be remembered?"></label>
+   <label class="wide">Nature of item
+    <select id="eventNature">
+     <option value="general">General</option>
+     <option value="birthday">Birthday</option>
+     <option value="anniversary">Anniversary</option>
+     <option value="meeting">Meeting</option>
+     <option value="assignment">Assignment</option>
+    </select>
+   </label>
+   <div id="singleDayWrap"><label>Day<input id="eventSingleDate" type="date" required></label><p class="field-help">A simple one-day item.</p></div>
+   <div id="assignmentDateWrap" hidden><label>Due date<input id="eventDueDate" type="date"></label><p class="field-help">Assignments use a due date, not a date range.</p></div>
+   <div id="rangeDateWrap" class="wide" hidden>
+    <div class="date-range-grid"><label>Start date<input id="eventRangeStart" type="date"></label><label>End date<input id="eventRangeEnd" type="date"></label></div>
+    <p class="field-help" id="rangeDateHelp">Use a date range for this kind of item.</p>
+   </div>
+   <div id="repeatToggleWrap" class="wide repeat-toggle-wrap">
+    <label class="toggle-line"><input type="checkbox" id="eventRepeating"> <span><strong>Repeating</strong><small>Repeat this general item on selected days.</small></span></label>
+   </div>
+   <div id="repeatPanel" class="wide repeat-panel" hidden>
+    <div class="date-range-grid">
+     <label>Repeat every<select id="eventFrequency"><option value="weekly">One week</option><option value="monthly">One month</option></select></label>
+     <label>Repeat on<input id="eventRepeatTime" type="time" value="09:00"></label>
+    </div>
+    <div class="date-range-grid">
+     <label>Start range<input id="eventRepeatStart" type="date"></label>
+     <label>End range<input id="eventRepeatEnd" type="date"></label>
+    </div>
+    <div id="weeklyRepeatWrap" class="wide">
+     <span class="field-caption">Repeat on these days</span>
+     <div class="weekday-picks">
+      <label><input type="checkbox" value="0" class="weekday"> Sun</label>
+      <label><input type="checkbox" value="1" class="weekday"> Mon</label>
+      <label><input type="checkbox" value="2" class="weekday"> Tue</label>
+      <label><input type="checkbox" value="3" class="weekday"> Wed</label>
+      <label><input type="checkbox" value="4" class="weekday"> Thu</label>
+      <label><input type="checkbox" value="5" class="weekday"> Fri</label>
+      <label><input type="checkbox" value="6" class="weekday"> Sat</label>
+     </div>
+    </div>
+    <label id="monthlyRepeatWrap" class="wide" hidden>Day of month<input id="eventMonthDay" type="number" min="1" max="31" value="10"></label>
+   </div>
+   <div class="wide alarm-block">
+    <label class="toggle-line"><input type="checkbox" id="eventAlarmEnabled"> <span><strong>Set an alarm</strong><small>Bring this item back to your attention.</small></span></label>
+    <div id="alarmOptions" class="date-range-grid" hidden>
+     <label>Alarm time<input id="eventAlarmTime" type="time" value="09:00"></label>
+     <label>Alert me<select id="eventAlarmLead"><option value="0">At this time</option><option value="5">5 minutes before</option><option value="10">10 minutes before</option><option value="15">15 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select></label>
+     <label class="toggle-line wide"><input type="checkbox" id="eventNotify" checked> <span><strong>Show a browser notification</strong><small>Keep LifeFlow open to receive reminders while you work in another tab.</small></span></label>
+    </div>
+   </div>
+  </div>
+  <p class="quiet-note" id="notificationStatus">Browser notifications need permission. They can alert you while this prototype is open in another tab. Reminders after the browser is closed need a configured push service.</p>
+  <p class="form-error" id="eventError" role="alert" hidden></p>
+  <div class="modal-actions"><button type="button" class="text-btn" id="cancelEvent">Cancel</button><button class="primary" type="submit">Save item</button></div>
+ </form>
+</div><div class="lab-stamp">EXPERIENCE LAB · CONCEPT 01</div>
 <script>
 const nav=[...document.querySelectorAll('[data-view]')];
 function showView(name){document.querySelectorAll('.view-panel').forEach(p=>p.classList.toggle('active',p.id==='view-'+name));nav.forEach(b=>b.classList.toggle('active',b.dataset.view===name));document.getElementById('crumbTitle').textContent=name[0].toUpperCase()+name.slice(1);window.scrollTo({top:0,behavior:'smooth'});}
@@ -103,66 +185,236 @@ nav.forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.goto)));
 document.querySelectorAll('.check').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('done');b.closest('.task-row').classList.toggle('completed');b.textContent=b.classList.contains('done')?'✓':'';updateProgress();}));
 function updateProgress(){const rows=[...document.querySelectorAll('#taskList .task-row')],done=rows.filter(r=>r.classList.contains('completed')).length,total=rows.length;document.getElementById('doneCount').textContent=done+2;document.getElementById('openCount').textContent=Math.max(0,total-done);const pct=Math.round((done+2)/(total+4)*100);document.getElementById('progressPct').textContent=pct;document.querySelector('.ring').style.background='conic-gradient(var(--accent) 0 '+pct+'%,var(--panel3) '+pct+'%)';}
-document.getElementById('addTask').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('newTask'),value=input.value.trim();if(!value)return;const row=document.createElement('div');row.className='task-row';const check=document.createElement('button');check.className='check';check.textContent='✓';check.setAttribute('aria-label','Complete task');check.addEventListener('click',()=>{check.classList.toggle('done');row.classList.toggle('completed');check.textContent=check.classList.contains('done')?'✓':'';updateProgress();});const info=document.createElement('div');info.className='task-info';const title=document.createElement('strong');title.textContent=value;const meta=document.createElement('small');meta.textContent='Inbox · Just captured';info.append(title,meta);row.append(check,info);document.getElementById('taskList').append(row);input.value='';updateProgress();});
-document.querySelectorAll('[data-capture]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.capture;if(type==='task'){showView('tasks');document.getElementById('newTask').focus();}else if(type==='note')showView('notes');else showView('calendar');}));
+document.getElementById('addTask').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('newTask'),value=input.value.trim();if(!value)return;openEvent({title:value,nature:'general'});input.value='';});
+document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));document.querySelectorAll('[data-capture="note"]').forEach(b=>b.addEventListener('click',()=>showView('notes')));document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
 document.getElementById('themeToggle').addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';});
 document.getElementById('editIntent').addEventListener('click',()=>{const old=document.getElementById('intentText').textContent;const next=prompt('What would make today a success?',old);if(next!==null&&next.trim())document.getElementById('intentText').textContent=next.trim();});
 
-// Recurring events and attention notifications (interactive concept).
+// Typed items, date-aware recurrence and browser attention reminders (Experience Lab).
 const eventModal=document.getElementById('eventModal'), eventForm=document.getElementById('eventForm');
-const events=[{title:'Weekly project review',date:'2026-11-10',time:'15:30',repeat:'weekly',days:[2],alarm:10,notify:true}];
+const eventStorageKey='lifeflow-lab-events-v2';
+const weekdayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const todayKey=localDateKey(new Date());
+function localDateKey(date){const d=new Date(date);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dateFromKey(key,time='09:00'){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||'')))return null;const [y,m,d]=key.split('-').map(Number),[hh,mm]=String(time||'09:00').split(':').map(Number);const out=new Date(y,m-1,d,hh||0,mm||0,0,0);return Number.isNaN(out.getTime())?null:out;}
+function escapeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function loadEvents(){try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed:[];}catch(_){return [];}}
+let events=loadEvents();
+if(!events.length){
+ events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:'2026-12-31',days:[new Date().getDay()],time:'15:30',alarmEnabled:true,alarmTime:'15:20',lead:0,notify:true,notifiedDates:[]}];
+}
 const scheduledTimers=new Map();
-function openEvent(){eventModal.hidden=false;document.getElementById('eventName').focus();}
+function persistEvents(){try{localStorage.setItem(eventStorageKey,JSON.stringify(events));}catch(_){document.getElementById('notificationStatus').textContent='This browser could not save the prototype items locally.';}}
+function openEvent(options={}){
+ eventModal.hidden=false;document.getElementById('eventError').hidden=true;
+ eventForm.reset();
+ const today=localDateKey(new Date());
+ document.getElementById('eventSingleDate').value=today;
+ document.getElementById('eventDueDate').value=today;
+ document.getElementById('eventRangeStart').value=today;
+ document.getElementById('eventRangeEnd').value=today;
+ document.getElementById('eventRepeatStart').value=today;
+ const nextWeek=new Date();nextWeek.setDate(nextWeek.getDate()+28);
+ document.getElementById('eventRepeatEnd').value=localDateKey(nextWeek);
+ document.getElementById('eventMonthDay').value=String(new Date().getDate());
+ document.getElementById('eventRepeatTime').value='09:00';
+ document.getElementById('eventAlarmTime').value='09:00';
+ document.getElementById('eventNature').value=options.nature||'general';
+ document.getElementById('eventName').value=options.title||'';
+ document.getElementById('eventModalTitle').textContent=options.title?'Complete item details':'Create an item';
+ syncNatureFields();
+ syncRepeatFields();
+ syncAlarmFields();
+ eventModal.hidden=false;document.getElementById('eventName').focus();
+}
 function closeEvent(){eventModal.hidden=true;}
-document.getElementById('newEvent').addEventListener('click',openEvent);
-document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',openEvent));
+function syncNatureFields(){
+ const nature=document.getElementById('eventNature').value;
+ const recurring=document.getElementById('eventRepeating');
+ const general=nature==='general',assignment=nature==='assignment';
+ document.getElementById('singleDayWrap').hidden=!general||recurring.checked;
+ document.getElementById('assignmentDateWrap').hidden=!assignment;
+ document.getElementById('rangeDateWrap').hidden=general||assignment;
+ document.getElementById('repeatToggleWrap').hidden=!general;
+ if(!general){recurring.checked=false;document.getElementById('repeatPanel').hidden=true;}
+ document.getElementById('eventSingleDate').required=general&&!recurring.checked;
+ document.getElementById('eventDueDate').required=assignment;
+ document.getElementById('eventRangeStart').required=!general&&!assignment;
+ document.getElementById('eventRangeEnd').required=!general&&!assignment;
+ if(nature==='birthday')document.getElementById('rangeDateHelp').textContent='Choose the day or period you want to remember.';
+ else if(nature==='anniversary')document.getElementById('rangeDateHelp').textContent='Choose the date range for this anniversary.';
+ else if(nature==='meeting')document.getElementById('rangeDateHelp').textContent='Use the meeting start and end dates. For a one-day meeting, choose the same date twice.';
+}
+function syncRepeatFields(){
+ const enabled=document.getElementById('eventRepeating').checked&&document.getElementById('eventNature').value==='general';
+ document.getElementById('repeatPanel').hidden=!enabled;
+ document.getElementById('singleDayWrap').hidden=enabled||document.getElementById('eventNature').value!=='general';
+ const weekly=document.getElementById('eventFrequency').value==='weekly';
+ document.getElementById('weeklyRepeatWrap').hidden=!weekly;
+ document.getElementById('monthlyRepeatWrap').hidden=weekly;
+}
+function syncAlarmFields(){document.getElementById('alarmOptions').hidden=!document.getElementById('eventAlarmEnabled').checked;}
+function setEventError(message){const el=document.getElementById('eventError');el.textContent=message;el.hidden=!message;}
+document.getElementById('newEvent').addEventListener('click',()=>openEvent());
+document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
+document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
 document.getElementById('closeEvent').addEventListener('click',closeEvent);
 document.getElementById('cancelEvent').addEventListener('click',closeEvent);
-document.getElementById('eventRepeat').addEventListener('change',e=>{document.getElementById('weekdayWrap').hidden=e.target.value!=='weekly';});
+eventModal.addEventListener('click',e=>{if(e.target===eventModal)closeEvent();});
+document.getElementById('eventNature').addEventListener('change',()=>{syncNatureFields();syncRepeatFields();});
+document.getElementById('eventRepeating').addEventListener('change',syncRepeatFields);
+document.getElementById('eventFrequency').addEventListener('change',syncRepeatFields);
+document.getElementById('eventAlarmEnabled').addEventListener('change',syncAlarmFields);
+document.getElementById('eventRepeatStart').addEventListener('change',()=>{
+ const start=document.getElementById('eventRepeatStart').value;
+ if(start){const date=dateFromKey(start);document.getElementById('eventMonthDay').value=date.getDate();document.querySelectorAll('.weekday').forEach(box=>box.checked=Number(box.value)===date.getDay());}
+});
 async function ensureNotificationPermission(){
- if(!('Notification' in window)){document.getElementById('notificationStatus').textContent='This browser does not support desktop notifications.';return false;}
- if(Notification.permission==='granted')return true;
- if(Notification.permission==='denied'){document.getElementById('notificationStatus').textContent='Notifications are blocked in browser settings. Enable them for LifeFlow to receive attention reminders.';return false;}
+ const status=document.getElementById('notificationStatus');
+ if(!('Notification' in window)){status.textContent='This browser does not support desktop notifications. In-app reminders are still shown while the page is visible.';return false;}
+ if(Notification.permission==='granted'){status.textContent='Browser notifications are enabled for this prototype.';return true;}
+ if(Notification.permission==='denied'){status.textContent='Notifications are blocked in browser settings. You can still use in-app reminders while this page is visible.';return false;}
  const permission=await Notification.requestPermission();
- document.getElementById('notificationStatus').textContent=permission==='granted'?'Notifications enabled. Reminders can reach you while you work in another tab.':'Notifications were not enabled. You can still see reminders inside LifeFlow.';
+ status.textContent=permission==='granted'?'Notifications enabled. Alarms can get your attention while you work in another tab.':'Notifications were not enabled. In-app reminders remain available while LifeFlow is visible.';
  return permission==='granted';
 }
-function nextOccurrence(ev){
- const base=new Date(ev.date+'T'+ev.time+':00');
- if(ev.repeat==='weekly'){
-  const days=ev.days?.length?ev.days:[base.getDay()];
-  for(let offset=0;offset<=7;offset++){const candidate=new Date(base);candidate.setDate(base.getDate()+offset);if(days.includes(candidate.getDay())&&candidate.getTime()>Date.now())return candidate;}
-  const candidate=new Date(base);candidate.setDate(base.getDate()+7);return candidate;
+function occurrenceDates(ev){
+ if(ev.repeat!=='weekly'&&ev.repeat!=='monthly'){
+  const date=ev.nature==='assignment'?ev.dueDate:(ev.nature==='general'?ev.singleDate:ev.startDate);
+  return date?[date]:[];
  }
- if(ev.repeat==='monthly'){let candidate=new Date(base);while(candidate.getTime()<=Date.now())candidate.setMonth(candidate.getMonth()+1);return candidate;}
- return base.getTime()>Date.now()?base:null;
+ const start=dateFromKey(ev.repeatStart),end=dateFromKey(ev.repeatEnd);
+ if(!start||!end||end<start)return [];
+ const out=[],cursor=new Date(start.getFullYear(),start.getMonth(),start.getDate());
+ const last=new Date(end.getFullYear(),end.getMonth(),end.getDate());
+ if(ev.repeat==='weekly'){
+  const days=Array.isArray(ev.days)?ev.days:[];
+  if(!days.length)return [];
+  while(cursor<=last){if(days.includes(cursor.getDay()))out.push(localDateKey(cursor));cursor.setDate(cursor.getDate()+1);}
+ }else{
+  const day=Math.max(1,Math.min(31,Number(ev.monthDay)||start.getDate()));
+  while(cursor<=last){
+   const year=cursor.getFullYear(),month=cursor.getMonth();
+   const candidate=new Date(year,month,day);
+   if(candidate.getMonth()===month&&candidate>=start&&candidate<=last)out.push(localDateKey(candidate));
+   cursor.setDate(1);cursor.setMonth(cursor.getMonth()+1);
+  }
+ }
+ return out;
 }
-async function scheduleEvent(ev,index){
- if(!ev.notify)return;
- const ok=await ensureNotificationPermission();if(!ok)return;
- const when=nextOccurrence(ev);if(!when)return;
- const fireAt=when.getTime()-Number(ev.alarm||0)*60000,delay=fireAt-Date.now();
+function eventDateSummary(ev){
+ if(ev.repeat==='weekly')return 'Every '+(ev.days||[]).map(d=>weekdayNames[d]).join(', ')+' · '+ev.repeatStart+' to '+ev.repeatEnd;
+ if(ev.repeat==='monthly')return 'Monthly on day '+ev.monthDay+' · '+ev.repeatStart+' to '+ev.repeatEnd;
+ if(ev.nature==='assignment')return 'Due '+ev.dueDate;
+ if(ev.nature==='general')return ev.singleDate;
+ return ev.startDate===ev.endDate?ev.startDate:ev.startDate+' to '+ev.endDate;
+}
+function nextOccurrence(ev){
+ if(!ev.alarmEnabled||!ev.notify)return null;
+ const now=Date.now(),dates=occurrenceDates(ev),time=ev.alarmTime||'09:00',lead=Math.max(0,Number(ev.lead)||0),done=new Set(ev.notifiedDates||[]);
+ for(const date of dates){
+  if(done.has(date))continue;
+  const at=dateFromKey(date,time);if(!at)continue;
+  const triggerAt=at.getTime()-lead*60000;
+  if(triggerAt>now)return {date,at,triggerAt};
+ }
+ return null;
+}
+function fireEventAlarm(ev,occurrence){
+ const message=ev.title+' · '+occurrence.at.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+ let shown=false;
+ if('Notification'in window&&Notification.permission==='granted'){
+  const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
+  notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
+  shown=true;
+ }
+ if(!shown){
+  document.title='Reminder · LifeFlow';
+  document.getElementById('notificationStatus').textContent='Reminder: '+message+' (browser notification is unavailable or permission is off).';
+  if(document.visibilityState==='visible')window.alert('LifeFlow reminder\n\n'+message);
+ }
+ ev.notifiedDates=Array.from(new Set([...(ev.notifiedDates||[]),occurrence.date]));
+ persistEvents();renderEvents();scheduleEvent(ev);
+}
+async function scheduleEvent(ev){
+ const old=scheduledTimers.get(ev.id);if(old)clearTimeout(old);scheduledTimers.delete(ev.id);
+ const next=nextOccurrence(ev);if(!next)return;
+ const delay=next.triggerAt-Date.now();
  if(delay<=0||delay>2147480000)return;
- const timer=setTimeout(()=>{
-  const n=new Notification('LifeFlow reminder',{body:ev.title+' · '+when.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),tag:'lifeflow-event-'+index,requireInteraction:true});
-  n.onclick=()=>{window.focus();showView('calendar');n.close();};
-  if(ev.repeat!=='none')scheduleEvent(ev,index);
- },delay);
- scheduledTimers.set(index,timer);
+ const timer=setTimeout(()=>fireEventAlarm(ev,next),delay);
+ scheduledTimers.set(ev.id,timer);
 }
 function renderEvents(){
  const host=document.getElementById('eventList');host.replaceChildren();
- events.forEach(ev=>{const row=document.createElement('div');row.className='event-item';const time=document.createElement('span');time.className='event-time';time.textContent=ev.time;const details=document.createElement('div');const title=document.createElement('strong');title.textContent=ev.title;const meta=document.createElement('small');meta.textContent=ev.repeat==='weekly'?'Every '+(ev.days||[]).map(d=>['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d]).join(', '):ev.repeat==='monthly'?'Monthly':new Date(ev.date+'T00:00:00').toLocaleDateString();details.append(title,meta);const badges=document.createElement('div');badges.className='event-badges';if(ev.repeat!=='none'){const repeat=document.createElement('span');repeat.className='event-badge';repeat.textContent='↻ '+ev.repeat;badges.append(repeat);}if(ev.notify){const alarm=document.createElement('span');alarm.className='event-badge';alarm.textContent='◷ Alarm';badges.append(alarm);}row.append(time,details,badges);host.append(row);});
+ if(!events.length){const empty=document.createElement('p');empty.className='quiet-note';empty.textContent='No events or reminders yet. Add one to try the date and alarm controls.';host.append(empty);return;}
+ events.forEach(ev=>{
+  const row=document.createElement('div');row.className='event-item';
+  const time=document.createElement('span');time.className='event-time';time.textContent=ev.alarmEnabled?(ev.alarmTime||'09:00'):'ALL DAY';
+  const details=document.createElement('div');details.style.minWidth='0';
+  const title=document.createElement('strong');title.textContent=ev.title;
+  const meta=document.createElement('small');meta.textContent=eventDateSummary(ev);
+  details.append(title,meta);
+  const badges=document.createElement('div');badges.className='event-badges';
+  const type=document.createElement('span');type.className='event-badge type';type.textContent=ev.nature==='assignment'?'Assignment':ev.nature[0].toUpperCase()+ev.nature.slice(1);badges.append(type);
+  if(ev.repeat!=='none'){const repeat=document.createElement('span');repeat.className='event-badge';repeat.textContent=ev.repeat==='weekly'?'↻ Weekly':'↻ Monthly';badges.append(repeat);}
+  if(ev.alarmEnabled){const alarm=document.createElement('span');alarm.className='event-badge';alarm.textContent='◷ Alarm';badges.append(alarm);}
+  row.append(time,details,badges);host.append(row);
+ });
+}
+function validateAndReadEvent(){
+ const title=document.getElementById('eventName').value.trim(),nature=document.getElementById('eventNature').value;
+ if(!title)throw new Error('Add a title for this item.');
+ const item={id:'item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,nature,repeat:'none',alarmEnabled:document.getElementById('eventAlarmEnabled').checked,alarmTime:document.getElementById('eventAlarmTime').value||'09:00',lead:Number(document.getElementById('eventAlarmLead').value)||0,notify:document.getElementById('eventNotify').checked,notifiedDates:[]};
+ if(nature==='general'){
+  if(document.getElementById('eventRepeating').checked){
+   item.repeat=document.getElementById('eventFrequency').value;
+   item.repeatStart=document.getElementById('eventRepeatStart').value;
+   item.repeatEnd=document.getElementById('eventRepeatEnd').value;
+   if(!item.repeatStart||!item.repeatEnd)throw new Error('Choose both a repeat start and end date.');
+   if(item.repeatEnd<item.repeatStart)throw new Error('The repeat end date must be on or after its start date.');
+   if(item.repeat==='weekly'){
+    item.days=[...document.querySelectorAll('.weekday:checked')].map(box=>Number(box.value));
+    if(!item.days.length)throw new Error('Choose at least one weekday for a weekly repeat.');
+   }else{
+    item.monthDay=Number(document.getElementById('eventMonthDay').value);
+    if(!Number.isInteger(item.monthDay)||item.monthDay<1||item.monthDay>31)throw new Error('Choose a day of the month between 1 and 31.');
+   }
+  }else{
+   item.singleDate=document.getElementById('eventSingleDate').value;
+   if(!item.singleDate)throw new Error('Choose a day for this item.');
+  }
+ }else if(nature==='assignment'){
+  item.dueDate=document.getElementById('eventDueDate').value;
+  if(!item.dueDate)throw new Error('Choose an assignment due date.');
+ }else{
+  item.startDate=document.getElementById('eventRangeStart').value;
+  item.endDate=document.getElementById('eventRangeEnd').value;
+  if(!item.startDate||!item.endDate)throw new Error('Choose both a start and end date.');
+  if(item.endDate<item.startDate)throw new Error('The end date must be on or after the start date.');
+ }
+ if(item.alarmEnabled&&!item.alarmTime)throw new Error('Choose an alarm time.');
+ return item;
 }
 eventForm.addEventListener('submit',async e=>{
- e.preventDefault();const repeat=document.getElementById('eventRepeat').value;
- const ev={title:document.getElementById('eventName').value.trim(),date:document.getElementById('eventDate').value,time:document.getElementById('eventTime').value,repeat,days:[...document.querySelectorAll('.weekday:checked')].map(x=>Number(x.value)),alarm:Number(document.getElementById('eventAlarm').value),notify:document.getElementById('eventNotify').checked};
- if(repeat==='weekly'&&!ev.days.length){alert('Choose at least one weekday for this recurring event.');return;}
- if(ev.notify)await ensureNotificationPermission();
- events.push(ev);renderEvents();scheduleEvent(ev,events.length-1);closeEvent();eventForm.reset();document.getElementById('eventDate').value='2026-11-10';document.getElementById('eventTime').value='15:30';document.getElementById('weekdayWrap').hidden=false;
+ e.preventDefault();setEventError('');
+ try{
+  const ev=validateAndReadEvent();
+  if(ev.alarmEnabled&&ev.notify)await ensureNotificationPermission();
+  events.push(ev);persistEvents();renderEvents();scheduleEvent(ev);closeEvent();
+  eventForm.reset();syncNatureFields();syncRepeatFields();syncAlarmFields();
+ }catch(error){setEventError(error.message||'The item could not be saved.');}
 });
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){document.title='LifeFlow · Inner Workspace Concept';checkDueAlarms();}});
+function checkDueAlarms(){
+ const now=Date.now();
+ events.forEach(ev=>{
+  const next=nextOccurrence(ev);
+  if(next&&next.triggerAt<=now)fireEventAlarm(ev,next);
+ });
+}
 renderEvents();
-events.forEach((ev,i)=>scheduleEvent(ev,i));
+events.forEach(ev=>scheduleEvent(ev));
+setInterval(checkDueAlarms,15000);
 
 const month=document.getElementById('monthView');['M','T','W','T','F','S','S',...Array.from({length:30},(_,i)=>String(i+1))].forEach((d,i)=>{const el=document.createElement('span');el.textContent=d;if(i===16)el.classList.add('today');month.append(el);});
 document.getElementById('monthMode').addEventListener('click',()=>{month.hidden=false;document.getElementById('agendaView').hidden=true;});
