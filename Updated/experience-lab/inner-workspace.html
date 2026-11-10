@@ -236,6 +236,13 @@ if(!events.length){
  events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
 }
 const scheduledTimers=new Map();
+const alarmDeliveriesInFlight=new Set();
+let reminderWorkerReady=null;
+if('serviceWorker'in navigator){
+ reminderWorkerReady=navigator.serviceWorker.register(new URL('./reminder-sw.js',location.href),{scope:'./'})
+  .then(registration=>{document.getElementById('notificationStatus').textContent='Reminder service ready. Keep this tab open and allow browser notifications for background alerts.';return registration;})
+  .catch(error=>{console.warn('LifeFlow reminder service worker could not be registered.',error);document.getElementById('notificationStatus').textContent='Background notification support could not start in this browser. In-app reminders remain available while this page is open.';return null;});
+}else{reminderWorkerReady=Promise.resolve(null);}
 function persistEvents(){try{localStorage.setItem(eventStorageKey,JSON.stringify(events));}catch(_){document.getElementById('notificationStatus').textContent='This browser could not save the prototype items locally.';}}
 function openEvent(options={}){
  eventModal.hidden=false;document.getElementById('eventError').hidden=true;
@@ -355,23 +362,37 @@ function nextOccurrence(ev){
  }
  return null;
 }
-function fireEventAlarm(ev,occurrence){
+async function fireEventAlarm(ev,occurrence){
+ const deliveryKey=ev.id+'|'+occurrence.date;
+ if(alarmDeliveriesInFlight.has(deliveryKey))return;
+ alarmDeliveriesInFlight.add(deliveryKey);
  const message=ev.title+' · '+occurrence.at.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
  let shown=false;
  if('Notification'in window&&Notification.permission==='granted'){
   try{
-   const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
-   notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
-   shown=true;
+   const registration=await reminderWorkerReady;
+   if(registration&&registration.showNotification){
+    await registration.showNotification('LifeFlow reminder',{
+     body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,
+     requireInteraction:true,renotify:true,
+     data:{url:new URL('./inner-workspace.html',location.href).href}
+    });
+    shown=true;
+   }else{
+    const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
+    notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
+    shown=true;
+   }
   }catch(error){console.warn('LifeFlow browser notification failed; using the in-app reminder instead.',error);}
  }
  if(!shown){
   document.title='Reminder · LifeFlow';
-  document.getElementById('notificationStatus').textContent='Reminder: '+message+' (browser notification is unavailable or permission is off).';
+  document.getElementById('notificationStatus').textContent='Reminder: '+message+' (browser notification could not be displayed). Allow notifications and keep this tab open for background alerts.';
   if(document.visibilityState==='visible')window.alert('LifeFlow reminder\n\n'+message);
  }
  ev.notifiedDates=Array.from(new Set([...(ev.notifiedDates||[]),occurrence.date]));
  persistEvents();renderEvents();scheduledTimers.delete(ev.id);scheduleEvent(ev);
+ alarmDeliveriesInFlight.delete(deliveryKey);
 }
 async function scheduleEvent(ev){
  const old=scheduledTimers.get(ev.id);if(old)clearTimeout(old);scheduledTimers.delete(ev.id);
@@ -504,11 +525,13 @@ eventForm.addEventListener('submit',async e=>{
  }catch(error){setEventError(error.message||'The item could not be saved.');}
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){document.title='LifeFlow · Inner Workspace Concept';checkDueAlarms();}});
+window.addEventListener('focus',checkDueAlarms);
+window.addEventListener('pageshow',checkDueAlarms);
 function checkDueAlarms(){
  const now=Date.now();
  events.forEach(ev=>{
   const next=nextOccurrence(ev);
-  if(next&&next.triggerAt<=now)fireEventAlarm(ev,next);
+  if(next&&next.triggerAt<=now)void fireEventAlarm(ev,next);
  });
 }
 renderEvents();
