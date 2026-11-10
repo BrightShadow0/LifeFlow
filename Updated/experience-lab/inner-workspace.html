@@ -405,10 +405,7 @@ function renderMonthCalendar(){
  const marked=new Set();
  events.forEach(ev=>{
   if(ev.repeat!=='none')occurrenceDates(ev).forEach(date=>marked.add(date));
-  else if(ev.nature==='birthday'||ev.nature==='anniversary'||ev.nature==='meeting'){
-   const start=dateFromKey(ev.startDate),end=dateFromKey(ev.endDate);
-   if(start&&end){const cursor=new Date(Math.max(start.getTime(),new Date(year,month,1).getTime()));const last=new Date(Math.min(end.getTime(),new Date(year,month+1,0,23,59,59).getTime()));while(cursor<=last){marked.add(localDateKey(cursor));cursor.setDate(cursor.getDate()+1);}}
-  }else{const date=ev.nature==='assignment'?ev.dueDate:ev.singleDate;if(date)marked.add(date);}
+  else if(ev.singleDate)marked.add(ev.singleDate);
  });
  for(let cell=0;cell<total;cell++){
   const day=cell-offset+1,date=new Date(year,month,day),key=localDateKey(date),outside=day<1||day>daysInMonth;
