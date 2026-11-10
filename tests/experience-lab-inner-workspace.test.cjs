@@ -134,3 +134,26 @@ test('saved item normalisation rejects invalid shapes and non-General recurrence
   });
   assert.equal(birthday.repeat, 'none');
 });
+
+test('calendar month grid is generated from the current month and marks item dates', () => {
+  assert.match(appScript, /function renderMonthCalendar\(\)/);
+  assert.match(appScript, /renderMonthCalendar\(\)/);
+  assert.match(appScript, /className='month-day'/);
+  assert.match(appScript, /classList\.add\('has-items'\)/);
+  assert.match(html, /id="calendarMonthLabel"/);
+  assert.match(html, /id="calendarCardMonth"/);
+  assert.doesNotMatch(html, /NOVEMBER 2026/);
+  assert.doesNotMatch(html, /Weekly planning<\/strong><small>10:30/);
+});
+
+test('recurrence and date ranges are bounded to five years', () => {
+  assert.match(appScript, /repeat range within five years/);
+  assert.match(appScript, /item date range within five years/);
+  assert.match(appScript, /span>366\*5\*24\*60\*60\*1000/);
+});
+
+test('browser notification construction failure has a safe fallback', () => {
+  assert.match(appScript, /try\{\s*const notification=new Notification/);
+  assert.match(appScript, /using the in-app reminder instead/);
+  assert.match(appScript, /now-triggerAt<=24\*60\*60\*1000/);
+});
