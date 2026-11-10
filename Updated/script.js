@@ -3141,7 +3141,7 @@ function activateCobaltSequence(){
     'Review project requirements','Prepare a progress update','Organise reference files',
     'Follow up on an open request','Review notes and action points','Prepare meeting material',
     'Check pending items','Update the project tracker','Draft a response','Review the next milestone',
-    '整理 project resources','Complete a focused work block','Check dependencies','Plan the next steps',
+    'Organise project resources','Complete a focused work block','Check dependencies','Plan the next steps',
     'Review outstanding feedback','Prepare a short summary','Organise workspace documents',
     'Check deliverables','Update project notes','Close an unfinished action','Review upcoming commitments',
     'Prepare a status report','Sort incoming requests','Check work in progress','Plan a follow-up',
