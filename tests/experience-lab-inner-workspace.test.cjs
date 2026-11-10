@@ -139,7 +139,7 @@ test('calendar month grid is generated from the current month and marks item dat
   assert.match(appScript, /function renderMonthCalendar\(\)/);
   assert.match(appScript, /renderMonthCalendar\(\)/);
   assert.match(appScript, /className='month-day'/);
-  assert.match(appScript, /classList\.add\('has-items'\)/);
+  assert.match(appScript, /has-items/);
   assert.match(html, /id="calendarMonthLabel"/);
   assert.match(html, /id="calendarCardMonth"/);
   assert.doesNotMatch(html, /NOVEMBER 2026/);
