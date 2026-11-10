@@ -120,17 +120,15 @@ test('alarms fire once when due, tolerate background delay, and skip stale remin
   assert.equal(ctx.nextOccurrence(stale), null);
 });
 
-test('saved item normalisation rejects invalid shapes and non-General recurrence', () => {
-  const ctx = runPureFunctions(['dateFromKey', 'normaliseStoredEvent']);
-  assert.equal(ctx.normaliseStoredEvent(null), null);
-  assert.equal(ctx.normaliseStoredEvent({ title: 'No date', nature: 'general', singleDate: '2026-02-31' }), null);
-  const birthday = ctx.normaliseStoredEvent({
-    id: 'b1', title: 'Birthday', nature: 'birthday', repeat: 'weekly',
-    startDate: '2026-11-10', endDate: '2026-11-10'
-  });
-  assert.equal(birthday.repeat, 'none');
+test('saved item normalisation rejects invalid shapes and recurrence on single-day items', () => {
+  const context = runPureFunctions(['dateFromKey', 'normaliseStoredEvent'], { Date, Math });
+  const base = { title: 'Reminder', nature: 'single', singleDate: '2026-11-10', alarmEnabled: false, notify: false };
+  assert.equal(context.normaliseStoredEvent(base).nature, 'single');
+  assert.equal(context.normaliseStoredEvent({ ...base, nature: 'recurring', repeat: 'weekly', repeatStart: '2026-11-10', repeatEnd: '2026-12-10', days: [1] }).repeat, 'weekly');
+  assert.equal(context.normaliseStoredEvent({ ...base, repeat: 'weekly' }).repeat, 'none');
+  assert.equal(context.normaliseStoredEvent({ ...base, singleDate: '2026-02-31' }), null);
+  assert.equal(context.normaliseStoredEvent({ title: '', nature: 'single' }), null);
 });
-
 test('calendar month grid is generated from the current month and marks item dates', () => {
   assert.match(appScript, /function renderMonthCalendar\(\)/);
   assert.match(appScript, /renderMonthCalendar\(\)/);
