@@ -5397,10 +5397,20 @@ body::-webkit-scrollbar-corner{
   content:'';position:absolute;left:3px;right:3px;top:3px;height:1px;
   background:rgba(255,255,255,.85);box-shadow:0 1px 1px rgba(0,0,0,.08);
 }
-:root[data-theme="light"] #app .rocker-switch-lever{transform:translateY(calc(100% + 2px));}
+:root[data-theme="dark"] #app .rocker-switch-lever{transform:translateY(calc(100% + 2px));}
+:root[data-theme="light"] #app .rocker-switch-lever{transform:translateY(0);}
 #app .rocker-theme-switch:hover .rocker-switch-track{filter:brightness(1.035)}
 #app .rocker-theme-switch:active .rocker-switch-lever{filter:brightness(.97)}
 #app .rocker-theme-switch:focus-visible{outline:2px solid var(--accent)!important;outline-offset:4px}
 #app .rocker-theme-switch.snap .rocker-switch-lever{transition-duration:.14s}
 @media(max-width:600px){#app .top-theme-pull.rocker-theme-switch{width:52px!important;height:44px!important;min-width:52px!important}}
 @media(prefers-reduced-motion:reduce){#app .rocker-switch-lever,#app .rocker-switch-track{transition:none!important}}
+
+/* Refined wall-mounted rocker: visible plate, recessed bezel and broad pivoting paddle. */
+#app .top-theme-pull.rocker-theme-switch{width:66px!important;height:62px!important;min-width:66px!important}
+#app .rocker-switch-track{width:54px;height:56px;padding:4px;border-radius:7px;background:linear-gradient(145deg,#f7f6f0 0%,#d8d7d0 62%,#c3c2bb 100%);border:1px solid #a4a39c;box-shadow:inset 0 1px 2px rgba(255,255,255,.98),inset 0 -1px 2px rgba(0,0,0,.12),0 3px 6px rgba(0,0,0,.28)}
+#app .rocker-switch-plate{inset:4px;border-radius:5px;background:linear-gradient(145deg,#e4e3dc,#f7f6f0 50%,#d6d5ce);border:1px solid rgba(105,104,96,.28);box-shadow:inset 0 2px 3px rgba(0,0,0,.14),inset 0 -1px 2px rgba(255,255,255,.9)}
+#app .rocker-switch-lever{left:3px;right:3px;top:3px;height:calc(50% - 4px);border-radius:4px;background:linear-gradient(180deg,#fffefa,#e7e6df 75%,#d2d1ca);border:1px solid rgba(104,103,95,.34);box-shadow:0 2px 4px rgba(0,0,0,.24),inset 0 1px 2px #fff}
+:root[data-theme="dark"] #app .rocker-switch-lever{transform:translateY(calc(100% + 2px))}
+:root[data-theme="light"] #app .rocker-switch-lever{transform:translateY(0)}
+@media(max-width:600px){#app .top-theme-pull.rocker-theme-switch{width:60px!important;height:56px!important;min-width:60px!important}}
