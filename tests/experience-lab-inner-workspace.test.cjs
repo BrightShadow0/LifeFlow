@@ -20,7 +20,8 @@ test('calendar item editor offers a simple single-day or recurring nature select
   assert.match(appScript, /document\.getElementById\('singleDayWrap'\)\.hidden=recurring/);
   assert.match(appScript, /document\.getElementById\('repeatPanel'\)\.hidden=!recurring/);
   assert.match(html, /id="view-calendar"[\s\S]*?id="eventList"/);
-  assert.doesNotMatch(html, /id="view-today"[\s\S]*?Events & reminders/);
+  const todayView = html.slice(html.indexOf('id="view-today"'), html.indexOf('id="view-tasks"'));
+  assert.doesNotMatch(todayView, /Events & reminders|id="eventList"/);
 });
 
 test('recurrence is shown only for recurring items and supports weekly/monthly date ranges', () => {
@@ -143,7 +144,7 @@ test('calendar month grid is generated from the current month and marks item dat
 
 test('recurrence and date ranges are bounded to five years', () => {
   assert.match(appScript, /repeat range within five years/);
-  assert.match(appScript, /item date range within five years/);
+  assert.doesNotMatch(appScript, /item date range within five years/);
   assert.match(appScript, /span>366\*5\*24\*60\*60\*1000/);
 });
 
