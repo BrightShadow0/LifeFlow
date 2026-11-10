@@ -47,6 +47,20 @@ test('alarms can request browser notifications and remain one-shot per occurrenc
   assert.match(appScript, /document\.addEventListener\('visibilitychange'/);
 });
 
+
+test('background reminders register a scoped service worker and use persistent browser notifications', () => {
+  assert.match(appScript, /navigator\.serviceWorker\.register\(new URL\('\.\/reminder-sw\.js',location\.href\)/);
+  assert.match(appScript, /registration\.showNotification\('LifeFlow reminder'/);
+  assert.match(appScript, /requireInteraction:true/);
+  assert.match(appScript, /window\.addEventListener\('focus',checkDueAlarms\)/);
+  assert.match(appScript, /window\.addEventListener\('pageshow',checkDueAlarms\)/);
+  const worker = fs.readFileSync('Updated/experience-lab/reminder-sw.js', 'utf8');
+  assert.match(worker, /self\.addEventListener\('notificationclick'/);
+  assert.match(worker, /self\.clients\.matchAll/);
+  assert.match(worker, /self\.clients\.openWindow/);
+  assert.doesNotThrow(() => new vm.Script(worker, { filename: 'reminder-sw.js' }));
+});
+
 test('created items are persisted and appear in Today, Tasks and Calendar', () => {
   assert.match(appScript, /lifeflow-lab-events-v2/);
   assert.match(appScript, /function persistEvents\(\)/);
