@@ -3137,24 +3137,18 @@ function activateCobaltSequence(){
     d.setDate(d.getDate()+offset);
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   };
-  const pools={
-    yesterday:[
-      'Review yesterday’s notes','Clear yesterday’s unfinished work','Organise yesterday’s files',
-      'Review completed work','Write yesterday’s follow-up','Archive old messages','Check yesterday’s priorities',
-      'Update yesterday’s records','Review what was missed','Sort yesterday’s tasks'
-    ],
-    today:[
-      'Plan today’s priorities','Finish the most important task','Review today’s schedule',
-      'Clear the task list','Complete a focused work block','Handle today’s follow-up','Review today’s notes',
-      'Organise today’s files','Finish an open item','Set today’s priorities'
-    ],
-    tomorrow:[
-      'Prepare for tomorrow','Set tomorrow’s priorities','Review upcoming work',
-      'Plan tomorrow’s schedule','Prepare the next steps','Organise tomorrow’s materials',
-      'Review tomorrow’s commitments','Prepare tomorrow’s notes','Set up tomorrow’s work',
-      'Plan the first task for tomorrow'
-    ]
-  };
+  const taskPool=[
+    'Review project requirements','Prepare a progress update','Organise reference files',
+    'Follow up on an open request','Review notes and action points','Prepare meeting material',
+    'Check pending items','Update the project tracker','Draft a response','Review the next milestone',
+    '整理 project resources','Complete a focused work block','Check dependencies','Plan the next steps',
+    'Review outstanding feedback','Prepare a short summary','Organise workspace documents',
+    'Check deliverables','Update project notes','Close an unfinished action','Review upcoming commitments',
+    'Prepare a status report','Sort incoming requests','Check work in progress','Plan a follow-up',
+    'Review completed work','Prepare supporting material','Update records','Check priority items',
+    'Outline the next deliverable','Revisit an open task','Prepare a handover note'
+  ];
+
   const pick=(items,count)=>{
     const copy=[...items];
     for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
@@ -3180,18 +3174,25 @@ function activateCobaltSequence(){
   };
 
   const generated=[];
-  [[-1,'yesterday'],[0,'today'],[1,'tomorrow']].forEach(([offset,key])=>{
-    const intervals=randomIntervals();
-    pick(pools[key],5).forEach((title,index)=>{
-      const interval=intervals[index];
-      generated.push({
-        id:uid(),title,tags:['Task Master'],
-        priority:['low','medium','high'][Math.floor(Math.random()*3)],
-        due:dateForOffset(offset),
-        startTime:interval.startTime,
-        endTime:interval.endTime,
-        recur:'none',status:'todo',done:false,subtasks:[]
-      });
+  // Spread a fresh batch across a rolling 30-day window, rather than
+  // clustering every generated task on yesterday, today and tomorrow.
+  const offsets=Array.from({length:30},(_,index)=>index-7);
+  for(let i=offsets.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [offsets[i],offsets[j]]=[offsets[j],offsets[i]];
+  }
+  const selectedTitles=pick(taskPool,15);
+  const selectedOffsets=offsets.slice(0,15);
+  const intervals=randomIntervals();
+  selectedTitles.forEach((title,index)=>{
+    const interval=intervals[index%intervals.length];
+    generated.push({
+      id:uid(),title,tags:['Task Master'],
+      priority:['low','medium','high'][Math.floor(Math.random()*3)],
+      due:dateForOffset(selectedOffsets[index]),
+      startTime:interval.startTime,
+      endTime:interval.endTime,
+      recur:'none',status:'todo',done:false,subtasks:[]
     });
   });
 
@@ -3230,7 +3231,7 @@ function activateCobaltSequence(){
   temporaryTheme=null;
   clearTimeout(temporaryThemeTimer);
   showTaskMasterActivation();
-  toast('Task Master created 15 tasks: 5 yesterday, 5 today, 5 tomorrow.');
+  toast('Task Master created 15 random tasks across a 30-day window.');
 }
 function showTaskMaster(){
   const host=document.getElementById('taskMasterHost');
