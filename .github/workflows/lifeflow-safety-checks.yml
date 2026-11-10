@@ -41,6 +41,8 @@ jobs:
         run: |
           node --input-type=module --check < Updated/state.js
           node --input-type=module --check < Updated/migrations.js
+      - name: Test Experience Lab inner workspace prototype
+        run: node --test tests/experience-lab-inner-workspace.test.cjs
       - name: Verify storage and asset contracts
         run: |
           python3 - <<'PY'
