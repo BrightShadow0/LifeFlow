@@ -195,9 +195,35 @@ const eventStorageKey='lifeflow-lab-events-v2';
 const weekdayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const todayKey=localDateKey(new Date());
 function localDateKey(date){const d=new Date(date);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function dateFromKey(key,time='09:00'){if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||'')))return null;const [y,m,d]=key.split('-').map(Number),[hh,mm]=String(time||'09:00').split(':').map(Number);const out=new Date(y,m-1,d,hh||0,mm||0,0,0);return Number.isNaN(out.getTime())?null:out;}
+function dateFromKey(key,time='09:00'){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(key||'')))return null;
+ const [y,m,d]=key.split('-').map(Number),[hh,mm]=String(time||'09:00').split(':').map(Number);
+ if(m<1||m>12||d<1||hh<0||hh>23||mm<0||mm>59)return null;
+ const out=new Date(y,m-1,d,hh,mm,0,0);
+ return out.getFullYear()===y&&out.getMonth()===m-1&&out.getDate()===d?out:null;
+}
 function escapeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function loadEvents(){try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed:[];}catch(_){return [];}}
+function normaliseStoredEvent(raw){
+ if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim())return null;
+ const nature=['general','birthday','anniversary','meeting','assignment'].includes(raw.nature)?raw.nature:'general';
+ const repeat=nature==='general'&&['weekly','monthly'].includes(raw.repeat)?raw.repeat:'none';
+ const dateFields=['singleDate','dueDate','startDate','endDate','repeatStart','repeatEnd'];
+ for(const field of dateFields)if(raw[field]&&!dateFromKey(raw[field]))return null;
+ const event={...raw,id:String(raw.id||'item-'+Math.random().toString(36).slice(2)),title:raw.title.trim().slice(0,90),nature,repeat,alarmEnabled:raw.alarmEnabled===true,notify:raw.notify===true,alarmTime:/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.alarmTime||'')?raw.alarmTime:'09:00',lead:[0,5,10,15,30,60,1440].includes(Number(raw.lead))?Number(raw.lead):0,notifiedDates:Array.isArray(raw.notifiedDates)?raw.notifiedDates.filter(date=>dateFromKey(date)).slice(-365):[],done:raw.done===true};
+ if(repeat!=='none'){
+  if(!dateFromKey(event.repeatStart)||!dateFromKey(event.repeatEnd)||event.repeatEnd<event.repeatStart)return null;
+  const span=dateFromKey(event.repeatEnd)-dateFromKey(event.repeatStart);
+  if(span>366*5*24*60*60*1000)return null;
+  if(repeat==='weekly'){event.days=Array.isArray(raw.days)?[...new Set(raw.days.map(Number).filter(day=>Number.isInteger(day)&&day>=0&&day<=6))]:[];if(!event.days.length)return null;}
+  if(repeat==='monthly'){event.monthDay=Number.isInteger(Number(raw.monthDay))?Math.max(1,Math.min(31,Number(raw.monthDay))):dateFromKey(event.repeatStart).getDate();}
+ }else if(nature==='general'){if(!dateFromKey(event.singleDate))return null;}
+ else if(nature==='assignment'){if(!dateFromKey(event.dueDate))return null;}
+ else if(!dateFromKey(event.startDate)||!dateFromKey(event.endDate)||event.endDate<event.startDate)return null;
+ return event;
+}
+function loadEvents(){
+ try{const parsed=JSON.parse(localStorage.getItem(eventStorageKey)||'null');return Array.isArray(parsed)?parsed.map(normaliseStoredEvent).filter(Boolean):[];}catch(_){return [];}
+}
 let events=loadEvents();
 if(!events.length){
  events=[{id:'sample-weekly-review',title:'Weekly project review',nature:'general',repeat:'weekly',repeatStart:todayKey,repeatEnd:localDateKey(new Date(new Date().getFullYear(),new Date().getMonth()+1,28)),days:[new Date().getDay()],alarmEnabled:false,alarmTime:'15:30',lead:10,notify:false,notifiedDates:[],done:false}];
@@ -295,8 +321,9 @@ function occurrenceDates(ev){
   const day=Math.max(1,Math.min(31,Number(ev.monthDay)||start.getDate()));
   while(cursor<=last){
    const year=cursor.getFullYear(),month=cursor.getMonth();
-   const candidate=new Date(year,month,day);
-   if(candidate.getMonth()===month&&candidate>=start&&candidate<=last)out.push(localDateKey(candidate));
+   const lastDay=new Date(year,month+1,0).getDate();
+   const candidate=new Date(year,month,Math.min(day,lastDay));
+   if(candidate>=start&&candidate<=last)out.push(localDateKey(candidate));
    cursor.setDate(1);cursor.setMonth(cursor.getMonth()+1);
   }
  }
@@ -316,7 +343,7 @@ function nextOccurrence(ev){
   if(done.has(date))continue;
   const at=dateFromKey(date,time);if(!at)continue;
   const triggerAt=at.getTime()-lead*60000;
-  if(triggerAt>now||now-triggerAt<=60*60*1000)return {date,at,triggerAt};
+  if(triggerAt>now||now-triggerAt<=24*60*60*1000)return {date,at,triggerAt};
  }
  return null;
 }
@@ -324,9 +351,11 @@ function fireEventAlarm(ev,occurrence){
  const message=ev.title+' · '+occurrence.at.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
  let shown=false;
  if('Notification'in window&&Notification.permission==='granted'){
-  const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
-  notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
-  shown=true;
+  try{
+   const notification=new Notification('LifeFlow reminder',{body:message,tag:'lifeflow-item-'+ev.id+'-'+occurrence.date,requireInteraction:true,renotify:true});
+   notification.onclick=()=>{window.focus();showView('calendar');notification.close();};
+   shown=true;
+  }catch(error){console.warn('LifeFlow browser notification failed; using the in-app reminder instead.',error);}
  }
  if(!shown){
   document.title='Reminder · LifeFlow';
@@ -402,7 +431,9 @@ function validateAndReadEvent(){
    item.repeatStart=document.getElementById('eventRepeatStart').value;
    item.repeatEnd=document.getElementById('eventRepeatEnd').value;
    if(!item.repeatStart||!item.repeatEnd)throw new Error('Choose both a repeat start and end date.');
+   if(!dateFromKey(item.repeatStart)||!dateFromKey(item.repeatEnd))throw new Error('Choose valid repeat dates.');
    if(item.repeatEnd<item.repeatStart)throw new Error('The repeat end date must be on or after its start date.');
+   if(dateFromKey(item.repeatEnd)-dateFromKey(item.repeatStart)>366*5*24*60*60*1000)throw new Error('Please keep a repeat range within five years.');
    if(item.repeat==='weekly'){
     item.days=[...document.querySelectorAll('.weekday:checked')].map(box=>Number(box.value));
     if(!item.days.length)throw new Error('Choose at least one weekday for a weekly repeat.');
@@ -412,16 +443,18 @@ function validateAndReadEvent(){
    }
   }else{
    item.singleDate=document.getElementById('eventSingleDate').value;
-   if(!item.singleDate)throw new Error('Choose a day for this item.');
+   if(!item.singleDate||!dateFromKey(item.singleDate))throw new Error('Choose a valid day for this item.');
   }
  }else if(nature==='assignment'){
   item.dueDate=document.getElementById('eventDueDate').value;
-  if(!item.dueDate)throw new Error('Choose an assignment due date.');
+  if(!item.dueDate||!dateFromKey(item.dueDate))throw new Error('Choose a valid assignment due date.');
  }else{
   item.startDate=document.getElementById('eventRangeStart').value;
   item.endDate=document.getElementById('eventRangeEnd').value;
   if(!item.startDate||!item.endDate)throw new Error('Choose both a start and end date.');
+  if(!dateFromKey(item.startDate)||!dateFromKey(item.endDate))throw new Error('Choose valid start and end dates.');
   if(item.endDate<item.startDate)throw new Error('The end date must be on or after the start date.');
+  if(dateFromKey(item.endDate)-dateFromKey(item.startDate)>366*5*24*60*60*1000)throw new Error('Please keep an item date range within five years.');
  }
  if(item.alarmEnabled&&!item.alarmTime)throw new Error('Choose an alarm time.');
  return item;
