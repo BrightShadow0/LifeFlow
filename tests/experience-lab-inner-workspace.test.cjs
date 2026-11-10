@@ -58,25 +58,8 @@ test('created items are persisted and appear in Today, Tasks and Calendar', () =
 function extractFunction(name) {
   const start = appScript.indexOf('function ' + name + '(');
   assert.notEqual(start, -1, 'missing function ' + name);
-  const brace = appScript.indexOf('{', start);
-  let depth = 0, quote = null, escaped = false, lineComment = false, blockComment = false;
-  for (let i = brace; i < appScript.length; i++) {
-    const ch = appScript[i], next = appScript[i + 1];
-    if (lineComment) { if (ch === '\\n') lineComment = false; continue; }
-    if (blockComment) { if (ch === '*' && next === '/') { blockComment = false; i++; } continue; }
-    if (quote) {
-      if (escaped) { escaped = false; continue; }
-      if (ch === '\\\\') { escaped = true; continue; }
-      if (ch === quote) quote = null;
-      continue;
-    }
-    if (ch === '/' && next === '/') { lineComment = true; i++; continue; }
-    if (ch === '/' && next === '*') { blockComment = true; i++; continue; }
-    if (ch === "'" || ch === '"' || ch === '`') { quote = ch; continue; }
-    if (ch === '{') depth++;
-    if (ch === '}' && --depth === 0) return appScript.slice(start, i + 1);
-  }
-  throw new Error('unterminated function ' + name);
+  const next = appScript.slice(start + 1).search(/\n(?:async )?function [A-Za-z_$][\w$]*\(/);
+  return next < 0 ? appScript.slice(start) : appScript.slice(start, start + 1 + next);
 }
 function runPureFunctions(names, extraContext = {}) {
   const context = { Date, Math, Set, String, Number, Array, Object, ...extraContext };
