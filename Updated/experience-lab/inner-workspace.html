@@ -107,18 +107,17 @@
        <div class="task-row"><button class="check" aria-label="Complete task">✓</button><div class="task-info"><strong>Send the follow-up email</strong><small>Work · Medium priority</small></div><span class="task-time">13:00</span><i class="priority"></i></div>
        <div class="task-row"><button class="check" aria-label="Complete task">✓</button><div class="task-info"><strong>Read through saved notes</strong><small>Personal · Low priority</small></div><span class="task-time">16:00</span><i class="priority low"></i></div>
       </div><form class="add-task" id="addTask"><input id="newTask" placeholder="Capture a task…" maxlength="100"><button class="primary">＋ Add task</button></form></section>
-      <section class="card"><div class="card-head"><div><div class="card-title">Quick capture</div><div class="card-note">Get it out of your head and into the right place.</div></div></div><div class="quick-grid"><button class="quick" data-capture="task"><span>＋</span><b>New task</b><small>Something to do</small></button><button class="quick" data-capture="note"><span>▤</span><b>New note</b><small>An idea to keep</small></button><button class="quick" data-capture="event"><span>◷</span><b>New event</b><small>Time to protect</small></button></div></section>
+      <section class="card"><div class="card-head"><div><div class="card-title">Quick capture</div><div class="card-note">Get it out of your head and into the right place.</div></div></div><div class="quick-grid"><button class="quick" data-capture="task"><span>＋</span><b>New task</b><small>Something to do</small></button><button class="quick" data-capture="note"><span>▤</span><b>New note</b><small>An idea to keep</small></button></div></section>
      </div>
      <div class="stack">
       <section class="card"><div class="card-head"><div><div class="card-title">Coming up</div><div class="card-note">Your next moments, at a glance.</div></div><button class="text-btn" data-goto="calendar">Calendar ↗</button></div><div class="agenda"><div class="agenda-row"><span class="agenda-time">10:30</span><i class="agenda-dot"></i><div><strong>Weekly planning</strong><small>Focus block · 45 min</small></div></div><div class="agenda-row"><span class="agenda-time">12:00</span><i class="agenda-dot"></i><div><strong>Lunch break</strong><small>Personal time · 1 hour</small></div></div><div class="agenda-row"><span class="agenda-time">14:30</span><i class="agenda-dot"></i><div><strong>Project check-in</strong><small>Meeting · 30 min</small></div></div></div></section>
-      <section class="card"><div class="card-head"><div><div class="card-title">Events & reminders</div><div class="card-note">Recurring plans and alarms that follow your schedule.</div></div><button class="text-btn" id="newEvent">＋ Add event</button></div><div id="eventList"></div><p class="quiet-note" id="notificationStatus">Desktop notifications are optional. Allow permission to receive reminders while LifeFlow is open in another tab.</p></section>
       <section class="card"><div class="card-head"><div><div class="card-title">A thought to return to</div><div class="card-note">From your personal notes</div></div><button class="text-btn" data-goto="notes">Open notes ↗</button></div><div class="focus-card"><div class="micro">SAVED IDEA · PERSONAL</div><h3>Progress comes from making the next step clear.</h3><p>Last updated yesterday · 2 linked notes</p><div class="progress"><i></i></div></div></section>
      </div>
     </div>
    </div>
   </section>
   <section class="view-panel" id="view-tasks"><div class="page-head"><div><div class="eyebrow">YOUR WORK, CLEARLY</div><h1>Tasks</h1><p class="subhead">A focused list of actions, without the calendar noise.</p></div></div><div class="card"><div class="card-head"><div><div class="card-title">All active tasks</div><div class="card-note">Organise by priority and due date.</div></div><button class="primary" data-capture="task">＋ New task</button></div><div class="task-list" id="allTasks"><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Prepare the weekly plan</strong><small>Today · High priority</small></div></div><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Send the follow-up email</strong><small>Today · Medium priority</small></div></div><div class="task-row"><button class="check">✓</button><div class="task-info"><strong>Read through saved notes</strong><small>Today · Low priority</small></div></div></div></div></section>
-  <section class="view-panel" id="view-calendar"><div class="page-head"><div><div class="eyebrow">TIME, WITH ROOM TO BREATHE</div><h1>Calendar</h1><p class="subhead">See the shape of your month, or switch to your agenda.</p></div><div class="date-chip" id="calendarMonthLabel"></div></div><div class="card"><div class="card-head"><div class="card-title" id="calendarCardMonth"></div><div><button class="text-btn" id="monthMode">Month</button><button class="text-btn" id="agendaMode">Agenda</button></div></div><div id="monthView" class="month"></div><div id="agendaView" class="agenda" hidden></div></div></section>
+  <section class="view-panel" id="view-calendar"><div class="page-head"><div><div class="eyebrow">TIME, WITH ROOM TO BREATHE</div><h1>Calendar</h1><p class="subhead">See the shape of your month, or switch to your agenda.</p></div><div class="date-chip" id="calendarMonthLabel"></div></div><div class="card"><div class="card-head"><div class="card-title" id="calendarCardMonth"></div><div class="calendar-actions"><button class="text-btn" id="monthMode">Month</button><button class="text-btn" id="agendaMode">Agenda</button><button class="primary" id="newEvent" type="button">＋ Add event</button></div></div><div id="monthView" class="month"></div><div id="agendaView" class="agenda" hidden></div><div class="calendar-items"><div class="card-head"><div><div class="card-title">Events & reminders</div><div class="card-note">Single-day plans, recurring reminders and alarms.</div></div></div><div id="eventList"></div><p class="quiet-note" id="notificationStatus">Allow browser notifications to receive reminders while LifeFlow is open in another tab.</p></div></div></section>
   <section class="view-panel" id="view-board"><div class="page-head"><div><div class="eyebrow">MOVE WORK FORWARD</div><h1>Board</h1><p class="subhead">Only actionable tasks belong here. Events stay in Calendar and Today.</p></div></div><div class="board"><div class="board-col"><h3>TO DO · 2</h3><div class="board-item">Prepare the weekly plan</div><div class="board-item">Read through saved notes</div></div><div class="board-col"><h3>IN PROGRESS · 1</h3><div class="board-item">Send the follow-up email</div></div><div class="board-col"><h3>DONE · 1</h3><div class="board-item">Review the project brief</div></div></div></section>
   <section class="view-panel" id="view-notes"><div class="page-head"><div><div class="eyebrow">THINK, COLLECT, CONNECT</div><h1>Notes</h1><p class="subhead">A home for the ideas and context behind your work.</p></div><button class="primary">＋ New note</button></div><div class="note-preview"><div class="micro">PERSONAL · UPDATED YESTERDAY</div><h2>Progress comes from making the next step clear.</h2><p>Keep the thinking behind your projects here. Link related notes as your ideas evolve, and return to the context whenever you need it.</p><div class="micro">2 BACKLINKS · 1 FOLDER</div></div></section>
   <section class="view-panel" id="view-branches"><div class="page-head"><div><div class="eyebrow">SEE THE CONNECTIONS</div><h1>Your Branches</h1><p class="subhead">Ideas become more useful when you can see how they relate.</p></div></div><div class="card"><svg viewBox="0 0 760 300" role="img" aria-label="Example connected notes graph" style="width:100%;height:auto"><g stroke="var(--line)" stroke-width="2" fill="none"><path d="M380 150 190 70M380 150 570 70M380 150 190 240M380 150 570 240"/></g><g fill="var(--panel2)" stroke="var(--accent)" stroke-width="2"><rect x="300" y="120" width="160" height="60" rx="13"/><rect x="120" y="40" width="140" height="55" rx="12"/><rect x="500" y="40" width="140" height="55" rx="12"/><rect x="120" y="215" width="140" height="55" rx="12"/><rect x="500" y="215" width="140" height="55" rx="12"/></g><g fill="var(--text)" font-family="Manrope" font-size="12" text-anchor="middle"><text x="380" y="155">A clear next step</text><text x="190" y="72">Project context</text><text x="570" y="72">Useful ideas</text><text x="190" y="247">Weekly planning</text><text x="570" y="247">Personal notes</text></g></svg></div></section>
@@ -130,44 +129,16 @@
   <div class="modal-head"><div><div class="eyebrow">WORKSPACE · NEW ITEM</div><h2 id="eventModalTitle">Create an item</h2></div><button type="button" id="closeEvent" aria-label="Close">×</button></div>
   <div class="event-form">
    <label class="wide">Title<input id="eventName" required maxlength="90" placeholder="What needs to be remembered?"></label>
-   <label class="wide">Nature of item
-    <select id="eventNature">
-     <option value="general">General</option>
-     <option value="birthday">Birthday</option>
-     <option value="anniversary">Anniversary</option>
-     <option value="meeting">Meeting</option>
-     <option value="assignment">Assignment</option>
-    </select>
+   <label class="wide">Nature of task
+    <select id="eventNature"><option value="single">Single day</option><option value="recurring">Recurring</option></select>
    </label>
-   <div id="singleDayWrap"><label>Day<input id="eventSingleDate" type="date" required></label><p class="field-help">A simple one-day item.</p></div>
-   <div id="assignmentDateWrap" hidden><label>Due date<input id="eventDueDate" type="date"></label><p class="field-help">Assignments use a due date, not a date range.</p></div>
-   <div id="rangeDateWrap" class="wide" hidden>
-    <div class="date-range-grid"><label>Start date<input id="eventRangeStart" type="date"></label><label>End date<input id="eventRangeEnd" type="date"></label></div>
-    <p class="field-help" id="rangeDateHelp">Use a date range for this kind of item.</p>
-   </div>
-   <div id="repeatToggleWrap" class="wide repeat-toggle-wrap">
-    <label class="toggle-line"><input type="checkbox" id="eventRepeating"> <span><strong>Repeating</strong><small>Repeat this general item on selected days.</small></span></label>
-   </div>
+   <div id="singleDayWrap"><label>Day<input id="eventSingleDate" type="date" required></label><p class="field-help">A single-day item.</p></div>
    <div id="repeatPanel" class="wide repeat-panel" hidden>
-    <div class="date-range-grid">
-     <label>Repeat every<select id="eventFrequency"><option value="weekly">One week</option><option value="monthly">One month</option></select></label>
-    </div>
-    <div class="date-range-grid">
-     <label>Start range<input id="eventRepeatStart" type="date"></label>
-     <label>End range<input id="eventRepeatEnd" type="date"></label>
-    </div>
-    <div id="weeklyRepeatWrap" class="wide">
-     <span class="field-caption">Repeat on these days</span>
-     <div class="weekday-picks">
-      <label><input type="checkbox" value="0" class="weekday"> Sun</label>
-      <label><input type="checkbox" value="1" class="weekday"> Mon</label>
-      <label><input type="checkbox" value="2" class="weekday"> Tue</label>
-      <label><input type="checkbox" value="3" class="weekday"> Wed</label>
-      <label><input type="checkbox" value="4" class="weekday"> Thu</label>
-      <label><input type="checkbox" value="5" class="weekday"> Fri</label>
-      <label><input type="checkbox" value="6" class="weekday"> Sat</label>
-     </div>
-    </div>
+    <div class="date-range-grid"><label>Repeat every<select id="eventFrequency"><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label></div>
+    <div class="date-range-grid"><label>Start range<input id="eventRepeatStart" type="date"></label><label>End range<input id="eventRepeatEnd" type="date"></label></div>
+    <div id="weeklyRepeatWrap" class="wide"><span class="field-caption">Repeat on these days</span><div class="weekday-picks">
+     <label><input type="checkbox" value="0" class="weekday"> Sun</label><label><input type="checkbox" value="1" class="weekday"> Mon</label><label><input type="checkbox" value="2" class="weekday"> Tue</label><label><input type="checkbox" value="3" class="weekday"> Wed</label><label><input type="checkbox" value="4" class="weekday"> Thu</label><label><input type="checkbox" value="5" class="weekday"> Fri</label><label><input type="checkbox" value="6" class="weekday"> Sat</label>
+    </div></div>
     <label id="monthlyRepeatWrap" class="wide" hidden>Day of month<input id="eventMonthDay" type="number" min="1" max="31" value="10"></label>
    </div>
    <div class="wide alarm-block">
@@ -192,7 +163,7 @@ document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('.check').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('done');b.closest('.task-row').classList.toggle('completed');b.textContent=b.classList.contains('done')?'✓':'';updateProgress();}));
 function updateProgress(){const rows=[...document.querySelectorAll('#taskList .task-row')],done=rows.filter(r=>r.classList.contains('completed')).length,total=rows.length;document.getElementById('doneCount').textContent=done+2;document.getElementById('openCount').textContent=Math.max(0,total-done);const pct=Math.round((done+2)/(total+4)*100);document.getElementById('progressPct').textContent=pct;document.querySelector('.ring').style.background='conic-gradient(var(--accent) 0 '+pct+'%,var(--panel3) '+pct+'%)';}
 document.getElementById('addTask').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('newTask'),value=input.value.trim();if(!value)return;openEvent({title:value,nature:'general'});input.value='';});
-document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));document.querySelectorAll('[data-capture="note"]').forEach(b=>b.addEventListener('click',()=>showView('notes')));document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
+document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));document.querySelectorAll('[data-capture="note"]').forEach(b=>b.addEventListener('click',()=>showView('notes')));
 document.getElementById('themeToggle').addEventListener('click',()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';});
 document.getElementById('editIntent').addEventListener('click',()=>{const old=document.getElementById('intentText').textContent;const next=prompt('What would make today a success?',old);if(next!==null&&next.trim())document.getElementById('intentText').textContent=next.trim();});
 
@@ -258,7 +229,7 @@ function openEvent(options={}){
  document.getElementById('eventMonthDay').value=String(new Date().getDate());
  document.querySelectorAll('.weekday').forEach(box=>box.checked=Number(box.value)===new Date().getDay());
  document.getElementById('eventAlarmTime').value='09:00';
- document.getElementById('eventNature').value=options.nature||'general';
+ document.getElementById('eventNature').value=options.nature==='recurring'?'recurring':'single';
  document.getElementById('eventName').value=options.title||'';
  document.getElementById('eventModalTitle').textContent=options.title?'Complete item details':'Create an item';
  syncNatureFields();
@@ -268,27 +239,17 @@ function openEvent(options={}){
 }
 function closeEvent(){eventModal.hidden=true;}
 function syncNatureFields(){
- const nature=document.getElementById('eventNature').value;
- const recurring=document.getElementById('eventRepeating');
- const general=nature==='general',assignment=nature==='assignment';
- document.getElementById('singleDayWrap').hidden=!general||recurring.checked;
- document.getElementById('assignmentDateWrap').hidden=!assignment;
- document.getElementById('rangeDateWrap').hidden=general||assignment;
- document.getElementById('repeatToggleWrap').hidden=!general;
- if(!general){recurring.checked=false;document.getElementById('repeatPanel').hidden=true;}
- document.getElementById('eventSingleDate').required=general&&!recurring.checked;
- document.getElementById('eventDueDate').required=assignment;
- document.getElementById('eventRangeStart').required=!general&&!assignment;
- document.getElementById('eventRangeEnd').required=!general&&!assignment;
- if(nature==='birthday')document.getElementById('rangeDateHelp').textContent='Choose the day or period you want to remember.';
- else if(nature==='anniversary')document.getElementById('rangeDateHelp').textContent='Choose the date range for this anniversary.';
- else if(nature==='meeting')document.getElementById('rangeDateHelp').textContent='Use the meeting start and end dates. For a one-day meeting, choose the same date twice.';
+ const recurring=document.getElementById('eventNature').value==='recurring';
+ document.getElementById('singleDayWrap').hidden=recurring;
+ document.getElementById('eventSingleDate').required=!recurring;
+ document.getElementById('repeatPanel').hidden=!recurring;
 }
+
 function syncRepeatFields(){
- const enabled=document.getElementById('eventRepeating').checked&&document.getElementById('eventNature').value==='general';
+ const enabled=document.getElementById('eventNature').value==='recurring';
  document.getElementById('repeatPanel').hidden=!enabled;
- document.getElementById('singleDayWrap').hidden=enabled||document.getElementById('eventNature').value!=='general';
- document.getElementById('eventSingleDate').required=!enabled&&document.getElementById('eventNature').value==='general';
+ document.getElementById('singleDayWrap').hidden=enabled;
+ document.getElementById('eventSingleDate').required=!enabled;
  const weekly=document.getElementById('eventFrequency').value==='weekly';
  document.getElementById('weeklyRepeatWrap').hidden=!weekly;
  document.getElementById('monthlyRepeatWrap').hidden=weekly;
@@ -299,10 +260,10 @@ document.getElementById('newEvent').addEventListener('click',()=>openEvent());
 document.querySelectorAll('[data-capture="event"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
 document.querySelectorAll('[data-capture="task"]').forEach(b=>b.addEventListener('click',()=>openEvent()));
 document.getElementById('closeEvent').addEventListener('click',closeEvent);
-document.getElementById('cancelEvent').addEventListener('click',closeEvent);
+document.getElementById('cancelEvent').addEventListener('click',event=>{event.preventDefault();event.stopPropagation();closeEvent();});
 eventModal.addEventListener('click',e=>{if(e.target===eventModal)closeEvent();});
 document.getElementById('eventNature').addEventListener('change',()=>{syncNatureFields();syncRepeatFields();});
-document.getElementById('eventRepeating').addEventListener('change',syncRepeatFields);
+
 document.getElementById('eventFrequency').addEventListener('change',syncRepeatFields);
 document.getElementById('eventAlarmEnabled').addEventListener('change',syncAlarmFields);
 document.getElementById('eventRepeatStart').addEventListener('change',()=>{
@@ -320,7 +281,7 @@ async function ensureNotificationPermission(){
 }
 function occurrenceDates(ev){
  if(ev.repeat!=='weekly'&&ev.repeat!=='monthly'){
-  const date=ev.nature==='assignment'?ev.dueDate:(ev.nature==='general'?ev.singleDate:ev.startDate);
+  const date=ev.singleDate;
   return date?[date]:[];
  }
  const start=dateFromKey(ev.repeatStart),end=dateFromKey(ev.repeatEnd);
@@ -481,40 +442,18 @@ function validateAndReadEvent(){
  const title=document.getElementById('eventName').value.trim(),nature=document.getElementById('eventNature').value;
  if(!title)throw new Error('Add a title for this item.');
  const item={id:'item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,nature,repeat:'none',alarmEnabled:document.getElementById('eventAlarmEnabled').checked,alarmTime:document.getElementById('eventAlarmTime').value||'09:00',lead:Number(document.getElementById('eventAlarmLead').value)||0,notify:document.getElementById('eventNotify').checked,notifiedDates:[],done:false};
- if(nature==='general'){
-  if(document.getElementById('eventRepeating').checked){
-   item.repeat=document.getElementById('eventFrequency').value;
-   item.repeatStart=document.getElementById('eventRepeatStart').value;
-   item.repeatEnd=document.getElementById('eventRepeatEnd').value;
-   if(!item.repeatStart||!item.repeatEnd)throw new Error('Choose both a repeat start and end date.');
-   if(!dateFromKey(item.repeatStart)||!dateFromKey(item.repeatEnd))throw new Error('Choose valid repeat dates.');
-   if(item.repeatEnd<item.repeatStart)throw new Error('The repeat end date must be on or after its start date.');
-   if(dateFromKey(item.repeatEnd)-dateFromKey(item.repeatStart)>366*5*24*60*60*1000)throw new Error('Please keep a repeat range within five years.');
-   if(item.repeat==='weekly'){
-    item.days=[...document.querySelectorAll('.weekday:checked')].map(box=>Number(box.value));
-    if(!item.days.length)throw new Error('Choose at least one weekday for a weekly repeat.');
-   }else{
-    item.monthDay=Number(document.getElementById('eventMonthDay').value);
-    if(!Number.isInteger(item.monthDay)||item.monthDay<1||item.monthDay>31)throw new Error('Choose a day of the month between 1 and 31.');
-   }
-  }else{
-   item.singleDate=document.getElementById('eventSingleDate').value;
-   if(!item.singleDate||!dateFromKey(item.singleDate))throw new Error('Choose a valid day for this item.');
-  }
- }else if(nature==='assignment'){
-  item.dueDate=document.getElementById('eventDueDate').value;
-  if(!item.dueDate||!dateFromKey(item.dueDate))throw new Error('Choose a valid assignment due date.');
- }else{
-  item.startDate=document.getElementById('eventRangeStart').value;
-  item.endDate=document.getElementById('eventRangeEnd').value;
-  if(!item.startDate||!item.endDate)throw new Error('Choose both a start and end date.');
-  if(!dateFromKey(item.startDate)||!dateFromKey(item.endDate))throw new Error('Choose valid start and end dates.');
-  if(item.endDate<item.startDate)throw new Error('The end date must be on or after the start date.');
-  if(dateFromKey(item.endDate)-dateFromKey(item.startDate)>366*5*24*60*60*1000)throw new Error('Please keep an item date range within five years.');
- }
+ if(nature==='recurring'){
+  item.repeat=document.getElementById('eventFrequency').value;item.repeatStart=document.getElementById('eventRepeatStart').value;item.repeatEnd=document.getElementById('eventRepeatEnd').value;
+  if(!dateFromKey(item.repeatStart)||!dateFromKey(item.repeatEnd))throw new Error('Choose valid repeat start and end dates.');
+  if(item.repeatEnd<item.repeatStart)throw new Error('The repeat end date must be on or after its start date.');
+  if(dateFromKey(item.repeatEnd)-dateFromKey(item.repeatStart)>366*5*24*60*60*1000)throw new Error('Please keep a repeat range within five years.');
+  if(item.repeat==='weekly'){item.days=[...document.querySelectorAll('.weekday:checked')].map(box=>Number(box.value));if(!item.days.length)throw new Error('Choose at least one weekday for a weekly repeat.');}
+  else{item.monthDay=Number(document.getElementById('eventMonthDay').value);if(!Number.isInteger(item.monthDay)||item.monthDay<1||item.monthDay>31)throw new Error('Choose a day of the month between 1 and 31.');}
+ }else{item.singleDate=document.getElementById('eventSingleDate').value;if(!dateFromKey(item.singleDate))throw new Error('Choose a valid day for this item.');}
  if(item.alarmEnabled&&!item.alarmTime)throw new Error('Choose an alarm time.');
  return item;
 }
+
 eventForm.addEventListener('submit',async e=>{
  e.preventDefault();setEventError('');
  try{
