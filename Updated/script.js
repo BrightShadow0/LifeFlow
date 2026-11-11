@@ -341,7 +341,7 @@ function initTaskEventDelegation(){
     }
     else if(action==='quick-capture-note'){
       const title=String(control.dataset.captureTitle||'').trim();
-      if(title&&hasPremiumAccess(currentUser())&&lifeFlowNoteController){closeCommandPalette();const note=lifeFlowNoteController.newNote('regular');lifeFlowNoteController.updateFields('regular',note.id,{title:title.slice(0,80)});window.lfSelectedNote=note.id;window.lfNoteMode='regular';window.lfNoteView='edit';view='notes';renderApp();requestAnimationFrame(()=>document.getElementById('kn_content')?.focus());showToast('Note captured');}
+      if(title&&hasFullAccess(currentUser())&&lifeFlowNoteController){closeCommandPalette();const note=lifeFlowNoteController.newNote('regular');lifeFlowNoteController.updateFields('regular',note.id,{title:title.slice(0,80)});window.lfSelectedNote=note.id;window.lfNoteMode='regular';window.lfNoteView='edit';view='notes';renderApp();requestAnimationFrame(()=>document.getElementById('kn_content')?.focus());showToast('Note captured');}
     }
     else if(action==='onboarding-seed') seedStarterWorkspace();
     else if(action==='onboarding-blank') completeFirstRunExperience('blank-workspace');
@@ -390,7 +390,7 @@ function initTaskEventDelegation(){
     else if(action==='choose-master-archive') document.getElementById('masterArchiveFile')?.click();
     else if(action==='cancel-master-restore') closeMasterRestorePreview();
     else if(action==='confirm-master-restore') restoreMasterArchiveNow();
-    else if(action==='save-tier') saveTier();
+    
     else if(action==='toggle-change-password') toggleChangePasswordPanel();
     else if(action==='close-change-password') toggleChangePasswordPanel(false);
     else if(action==='change-password') changePassword();
@@ -1315,7 +1315,7 @@ function applyTheme(theme){
   const entitledColors=['sapphire','emerald','platinum','amethyst','ruby'];
   let color=u?.colorTheme||'platinum';
   if(color==='gold') color='sapphire';
-  if(color==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) color='sapphire';
+  
   document.documentElement.setAttribute('data-color-theme',entitledColors.includes(color)?color:'platinum');
   // Keep an explicit theme snapshot on the workspace stage. The public site and
   // login terminal use their own documents/stage state and never read this value.
@@ -1355,7 +1355,7 @@ function normalizedBackdropTheme(u=currentUser()){
   const allowed=['sapphire','emerald','platinum','amethyst','ruby'];
   let theme=allowed.includes(u?.colorTheme)?u.colorTheme:'platinum';
   if(theme==='gold') theme='sapphire';
-  if(theme==='amethyst' && u && !['Premium','Team Admin'].includes(u.tier)) theme='sapphire';
+  
   return theme;
 }
 function applyWorkspaceAppearance(u=currentUser()){
@@ -1687,7 +1687,7 @@ function exportData(fmt){
   a.href = URL.createObjectURL(blob); a.download = 'lifeflow_tasks.'+ext; a.click();
 }
 
-function hasPremiumAccess(u){ return !!u && (u.tier==='Premium' || u.tier==='Team Admin'); }
+function hasFullAccess(u){ return !!u; }
 function suppressWorkspaceTitleTooltips(){
   const app=document.getElementById('app');
   if(!app)return;
@@ -1711,11 +1711,11 @@ function renderNav(){
   const sidebar=document.querySelector('.app-sidebar'); if(!sidebar)return;
   sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
-  if(hasPremiumAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
+  if(hasFullAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
   tabs.push(['account','Profile & settings','◎'],['releases','Releases','◷']);
   document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
-function setView(v){const u=currentUser();if((v==='branches'||v==='notes')&&!hasPremiumAccess(u)){toast('This feature is available to Premium and Team Admin accounts.');return;}view=v;clearNewTimes();renderApp();}
+function setView(v){const u=currentUser();view=v;clearNewTimes();renderApp();}
 function taskFormHtml(){
   return `<div class="card new-task-card"><h2>New Task</h2>
     <div class="new-task-fields">
@@ -1895,7 +1895,7 @@ function seedStarterWorkspace(){
   ];
   lifeFlowTaskController?.addMany(examples);
   let noteAdded=false;
-  if(hasPremiumAccess(currentUser())&&lifeFlowNoteController){
+  if(hasFullAccess(currentUser())&&lifeFlowNoteController){
     const note=lifeFlowNoteController.newNote('regular');
     lifeFlowNoteController.updateFields('regular',note.id,{title:'A note worth keeping',folderId:'folder-personal',folder:'Personal'});
     lifeFlowNoteController.updateContent('regular',note.id,'# A note worth keeping\n\nUse Notes to capture ideas, decisions, and reference material that you may want to connect later.\n\n## A useful next step\n\nAdd a link to another note when two ideas belong together.');
@@ -2404,7 +2404,7 @@ function renderCommandResults(){
   const noteHtml=noteResults.slice(0,8).map(note=>'<button type="button" class="command-result command-note-result" data-lf-action="command-note" data-note-id="'+esc(note.id)+'"><b>'+esc(note.title||'Untitled note')+'</b>'+window.LifeFlowUIModule.renderSearchSnippet({folder:note.folder,folderIcon:note.folderIcon,snippet:note.snippet,terms:note.terms})+'</button>');
   const heading=noteHtml.length?'<div class="command-section-label">Search Results</div>':'';
   const otherResults=(matches.concat(tasks)).slice(0,5).join('');
-  const captureResults=q?'<div class="command-section-label">Quick Capture</div><button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-task" data-capture-title="'+esc(input.value.trim())+'"><b>＋ Create task</b><span>'+esc(input.value.trim())+'</span></button>'+(hasPremiumAccess(currentUser())?'<button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-note" data-capture-title="'+esc(input.value.trim())+'"><b>▤ Create note</b><span>'+esc(input.value.trim())+'</span></button>':''):'';
+  const captureResults=q?'<div class="command-section-label">Quick Capture</div><button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-task" data-capture-title="'+esc(input.value.trim())+'"><b>＋ Create task</b><span>'+esc(input.value.trim())+'</span></button>'+(hasFullAccess(currentUser())?'<button type="button" class="command-result command-capture-result" data-lf-action="quick-capture-note" data-capture-title="'+esc(input.value.trim())+'"><b>▤ Create note</b><span>'+esc(input.value.trim())+'</span></button>':''):'';
   const output=heading+noteHtml.join('')+otherResults+captureResults||'<div class="command-empty">No matching pages, tasks or notes.</div>';
   const template=host.ownerDocument.createElement('template');
   template.innerHTML=output;
@@ -2653,7 +2653,6 @@ function openKnowledgeBacklink(id,lineIndex){
 }
 function renderNotesManager(){
   const u=currentUser();
-  if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Notes Manager is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
   const kind='regular',items=noteStore(kind);
   const selectedId=lifeFlowNoteController?.selectedId() ?? window.lfSelectedNote;
@@ -2717,7 +2716,6 @@ function updateKnowledgeTitle(kind,id,value){lifeFlowNoteController?.updateField
 function updateKnowledgeLanguage(id,value){if(lifeFlowNoteController?.updateFields('code',id,{language:value}))renderApp();}
 function renderBranches(){
   const u=currentUser();
-  if(!hasPremiumAccess(u))return '<div class="card"><h2>Premium feature</h2><p>Your Branches is available to Premium and Team Admin accounts.</p></div>';
   ensureKnowledgeState();
   const items=state.notes, count=items.length, positions={};
   const edges=lifeFlowNoteController?.getGraphLinks()||[];
@@ -2783,7 +2781,7 @@ function renderBranches(){
     svg+='<g class="branch-node branch-ghost-node interactive-branch-node" data-ghost-title="'+esc(node.title)+'" data-note-id="'+esc(node.id)+'" transform="translate('+p.x+' '+p.y+')" tabindex="0" role="button" aria-label="Create note '+label+'"><circle r="17"></circle><text y="39" text-anchor="middle">'+label+'</text></g>';
   });
   if(!count)svg='<text x="600" y="410" text-anchor="middle" class="branch-empty">Create notes to grow your branches.</text>';
-  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">PREMIUM WORKSPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-focus-toggle" aria-pressed="false">Focus Mode</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
+  return '<div class="card branches-card"><div class="knowledge-header"><div><span class="custom-kicker">YOUR KNOWLEDGE SPACE</span><h2>Your Branches</h2><p>A living map of your notes. Drag to arrange, scroll to zoom, and click a node to open it.</p></div><span class="theme-current-pill">'+count+' nodes · '+edges.length+' links</span></div><div class="branch-graph interactive-branch-graph"><svg id="branchesSvg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="Interactive map of your notes"><g id="branchesViewport">'+svg+'</g></svg><div class="branch-graph-controls"><button type="button" data-lf-action="branches-focus-toggle" aria-pressed="false">Focus Mode</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor="1.2" aria-label="Zoom in">+</button><button type="button" data-lf-action="branches-zoom" data-zoom-factor=".8333" aria-label="Zoom out">−</button><button type="button" data-lf-action="branches-reset">Reset view</button></div></div></div>';
 }
 function toggleBranchesFocusMode(){
   window.lfBranchesFocusMode=!window.lfBranchesFocusMode;
@@ -3295,12 +3293,10 @@ function renderProfileTab(u){
     </div>
     <select id="prof_week" class="profile-select" data-lf-change="profile-week">${[['Sunday','Sunday start'],['Monday','Monday start']].map(([v,label])=>`<option value="${v}" ${u.weekStart===v?'selected':''}>${label}</option>`).join('')}</select>
   </div>
-  <div class="card">
-    <h2>Account Tier</h2>
-    <span class="badge ${u.tier.replace(' ','')}">${u.tier}</span>
-    <select id="prof_tier" class="profile-tier-select">${['Free','Premium','Team Admin'].map(t=>`<option ${u.tier===t?'selected':''}>${t}</option>`).join('')}</select>
-    <button class="primary account-action-spaced" data-lf-action="save-tier">Update settings</button>
-    <div id="taskMasterHost" class="task-master-host">${s.step>=4&&!taskMasterActivationActive?'<button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button>':''}</div>
+  <div class="card account-access-card">
+    <h2>LifeFlow access</h2>
+    <p>All LifeFlow features are included. Your workspace has no paid tiers or feature restrictions.</p>
+    <div id="taskMasterHost" class="task-master-host"><button type="button" class="task-master-button" data-lf-action="task-master-activate"><span class="task-master-flame" aria-hidden="true"><i></i><b></b><em></em></span><span>TASK MASTER</span></button></div>
   </div>
   <div class="card change-password-launcher">
     <button type="button" class="primary" id="toggleChangePassword" aria-expanded="false" aria-controls="changePasswordPanel" data-lf-action="toggle-change-password">Change password</button>
@@ -3330,7 +3326,7 @@ function subCustomisation(themes,u,a){
     </div>
 
     <div class="card color-combinations-card"><div class="custom-section-head"><div><h2>Color combinations</h2><p>Choose the colour personality for your LifeFlow. It changes the full environment, not just the accents.</p></div><span class="theme-current-pill">Currently using <b>${({sapphire:'Sapphire',emerald:'Emerald',platinum:'Platinum',amethyst:'Amethyst',ruby:'Ruby'})[u.colorTheme||'sapphire']||'Sapphire'}</b></span></div>
-      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].filter(([id])=>id!=='amethyst'||['Premium','Team Admin'].includes(u.tier)).map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" data-lf-action="set-color-theme" data-color-theme="${id}" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
+      <div class="color-combinations">${[['sapphire','Sapphire','Blue based'],['emerald','Emerald','Green based'],['platinum','Platinum','Black & silver'],['amethyst','Amethyst','Purple based'],['ruby','Ruby','Red based']].map(([id,name,desc])=>`<button type="button" class="color-combination color-${id} ${(u.colorTheme||'sapphire')===id?'active':''}" data-lf-action="set-color-theme" data-color-theme="${id}" aria-pressed="${(u.colorTheme||'sapphire')===id}"><span class="color-swatch"></span><span><strong>${name}</strong><small>${desc}</small></span><b>${(u.colorTheme||'sapphire')===id?'✓':'○'}</b></button>`).join('')}</div>
     </div>
 <div class="card"><div class="custom-section-head"><div><h2>Ambient environment</h2><p>Let LifeFlow subtly respond to workload and time of day.</p></div><label class="ambient-toggle"><span>Ambient response</span><span class="switch"><input type="checkbox" ${a.ambientMode?'checked':''} data-lf-change="ambient-mode"><span class="slider"></span></span><strong>${a.ambientMode?'ON':'OFF'}</strong></label></div>
       <div class="ambient-preview" data-load="medium"><span class="ambient-orb"></span><div><strong>Adaptive atmosphere</strong><small>Background lighting becomes calmer with lighter workloads and more energetic as activity rises.</small></div></div>
@@ -3395,17 +3391,6 @@ async function changePassword(){
   toast('Password changed successfully.');
 }
 
-function saveTier(){
-  const tier=document.getElementById('prof_tier')?.value;
-  updateUser(u=>{
-    u.tier=tier||u.tier;
-    if(!['Premium','Team Admin'].includes(u.tier) && ['gold','amethyst'].includes(u.colorTheme)) u.colorTheme='sapphire';
-    if(u.tier!=='Team Admin') u.secretSequence={step:0,languageRevealed:false,used:false,pendingTeamAdmin:false};
-  });
-  const saved=currentUser();
-  if(saved?.tier==='Team Admin') lfSecretAction('tierTeamAdmin');
-  else lfSecretAction('tierOther');
-}
 function renderConnectedTab(u){
   return `<div class="card"><h2>Identity Providers</h2>
     ${['Google','Apple','GitHub'].map(p=>`<div class="row-between">
