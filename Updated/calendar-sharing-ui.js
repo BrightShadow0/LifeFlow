@@ -100,4 +100,22 @@ window.addEventListener('load',function(){
 g.openCalendarShareDialog=openCalendarShareDialog;
 g.openLiveCalendarDialog=openLiveCalendarDialog;
 g.renderOtherCalendarsPanel=renderOtherCalendarsPanel;
+async function syncOwnedFeeds(){
+ const owners=JSON.parse(localStorage.getItem('lifeflow_calendar_share_owners')||'{}');
+ for(const id of Object.keys(owners)){
+  try{await window.LifeFlowCalendarSharing.updateLiveShare(id,(state.events||[]).map(e=>({id:e.id,title:e.title,startAt:e.startAt,endAt:e.endAt,allDay:!!e.allDay})),'LifeFlow shared calendar');}
+  catch(error){console.warn('LifeFlow shared calendar update failed:',error.message);}
+ }
+}
+['saveCalendarEvent','deleteCalendarEvent'].forEach(name=>{
+ const original=g[name];if(typeof original!=='function'||original.__lfShareWrapped)return;
+ const wrapped=async function(){const result=await original.apply(this,arguments);syncOwnedFeeds();return result;};
+ wrapped.__lfShareWrapped=true;g[name]=wrapped;
+});
+async function refreshAllSubscriptions(){
+ const subs=window.LifeFlowCalendarSharing.listSubscriptions();
+ for(const sub of subs){try{cache[sub.id]=await window.LifeFlowCalendarSharing.refreshSubscription(sub.id);}catch(error){if(!cache[sub.id])cache[sub.id]={title:sub.title,events:[],error:error.message};}}
+ const main=document.getElementById('main');if(main)renderOtherCalendarsPanel(main);
+}
+window.addEventListener('load',function(){window.setInterval(refreshAllSubscriptions,60000);});
 })(window);
