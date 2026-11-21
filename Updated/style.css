@@ -5447,3 +5447,61 @@ body::-webkit-scrollbar-corner{
   #app .workspace-wordmark:before{content:"LF";font-size:18px;font-weight:900;color:var(--accent)}
   #app .sidebar-collapse{display:none}
 }
+
+
+/* Slide-over navigation drawer: content remains full-width beneath it. */
+#app .app-content{
+  width:100%!important;
+  margin-left:0!important;
+  max-width:none!important;
+  min-height:100dvh;
+  transition:filter .24s ease;
+}
+#app .app-sidebar{
+  position:fixed!important;
+  inset:0 auto 0 0!important;
+  width:min(290px,86vw)!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  padding:24px 17px!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  transform:translateX(-105%);
+  visibility:hidden;
+  opacity:0;
+  pointer-events:none;
+  box-shadow:0 18px 55px rgba(0,0,0,0);
+  transition:transform .28s cubic-bezier(.2,.75,.25,1),opacity .22s ease,visibility .28s,box-shadow .28s ease!important;
+  z-index:1002!important;
+}
+#app.sidebar-open .app-sidebar{
+  transform:translateX(0);
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto;
+  box-shadow:18px 0 55px rgba(0,0,0,.38);
+}
+#app .sidebar-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}
+#app .sidebar-topline .workspace-wordmark{min-width:0}
+#app .sidebar-collapse-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;flex:none;
+  border:1px solid var(--border);border-radius:9px;
+  background:var(--surface-2,var(--card));color:var(--text);
+  font-size:23px;line-height:1;cursor:pointer;
+}
+#app .sidebar-collapse-toggle:hover{border-color:var(--accent);color:var(--accent)}
+#app .navlabel,#app .nav-text{display:initial!important}
+#app #nav button,#app .sidebar-action{justify-content:flex-start!important;padding:11px 12px!important}
+#app .sidebar-backdrop{
+  position:fixed;inset:0;z-index:1001;
+  background:rgba(3,7,13,.48);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .24s ease,visibility .24s ease;
+  border:0;padding:0;margin:0;cursor:pointer;
+  backdrop-filter:blur(2px);
+}
+#app.sidebar-open .sidebar-backdrop{opacity:1;visibility:visible;pointer-events:auto}
+@media(prefers-reduced-motion:reduce){
+ #app .app-sidebar,#app .sidebar-backdrop,#app .app-content{transition:none!important}
+}
