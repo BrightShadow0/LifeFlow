@@ -461,6 +461,7 @@ document.addEventListener('contextmenu',event=>{
   event.preventDefault();openNoteContextMenu(event,item.dataset.noteId);
 });
 document.addEventListener('DOMContentLoaded',initTaskEventDelegation);
+document.addEventListener('DOMContentLoaded',initLoginAccessibility);
 
 function initLoginAccessibility(){
   const appRoot=document.getElementById('app');
