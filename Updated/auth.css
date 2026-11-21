@@ -472,33 +472,3 @@ body.auth-embed #authScreen .auth-brand-panel{
 /* Shared provider button baseline, scoped to the login terminal. */
 #authScreen .oauth-row button{background:var(--bg);border-color:var(--border)}
 
-/* Universal cloud login is integrated into the primary sign-in form. */
-.auth-cloud-mode{margin:10px 0 14px;padding:12px 14px;border:1px solid var(--accent);border-radius:10px;background:var(--accent-soft);color:var(--text);text-align:left;box-shadow:0 4px 16px var(--lf-glow)}
-.auth-cloud-mode>label{display:flex!important;align-items:center;gap:10px;margin:0!important;color:var(--text)!important;font-size:13px!important;letter-spacing:0!important;font-weight:650;cursor:pointer}
-.auth-cloud-mode input[type=checkbox]{width:17px!important;height:17px;margin:0!important;accent-color:var(--accent);flex:none}
-.auth-cloud-mode:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--lf-glow)}
-#cloudSyncPassphraseWrap{margin-top:11px}
-#cloudSyncPassphraseWrap[hidden]{display:none!important}
-#cloudSyncPassphraseWrap label{display:block;margin:8px 0 5px;color:var(--muted);font-size:10px;letter-spacing:.08em}
-#cloudSyncPassphraseWrap input{margin:0!important}
-#cloudSyncPassphraseWrap small{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}
-
-/* Compact, theme-aware authentication checkboxes. Override auth form field sizing explicitly. */
-#authScreen .authstep input[type="checkbox"]{
-  -webkit-appearance:none!important;appearance:none!important;box-sizing:border-box!important;
-  display:inline-grid!important;place-content:center!important;
-  width:18px!important;min-width:18px!important;max-width:18px!important;
-  height:18px!important;min-height:18px!important;max-height:18px!important;
-  flex:0 0 18px!important;padding:0!important;margin:0!important;
-  border:1.5px solid var(--muted)!important;border-radius:5px!important;
-  background:var(--bg)!important;box-shadow:none;cursor:pointer;vertical-align:middle;
-}
-#authScreen .authstep input[type="checkbox"]:checked{
-  background:var(--accent)!important;border-color:var(--accent)!important;
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent);
-}
-#authScreen .authstep input[type="checkbox"]:checked::before{
-  content:"";width:8px;height:4px;border:2px solid var(--bg);
-  border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px);
-}
-#authScreen .authstep input[type="checkbox"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
