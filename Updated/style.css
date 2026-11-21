@@ -5410,3 +5410,40 @@ body::-webkit-scrollbar-corner{
   #app .app-sidebar{width:68px!important}
   #app .app-content{margin-left:68px!important;width:calc(100% - 68px)!important}
 }
+
+
+/* User-controlled collapsible workspace sidebar. The content, including Calendar,
+   reflows into the reclaimed width rather than leaving an empty gutter. */
+#app .workspace-brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px;margin-bottom:2px}
+#app .workspace-wordmark{margin:0;min-width:0}
+#app .sidebar-collapse{
+  flex:none;width:30px;height:30px;display:grid;place-items:center;
+  border:1px solid var(--border);border-radius:8px;
+  background:color-mix(in srgb,var(--accent) 9%,var(--card));
+  color:var(--text);font-size:22px;line-height:1;cursor:pointer;
+  transition:background .18s ease,border-color .18s ease,transform .18s ease;
+}
+#app .sidebar-collapse:hover{background:color-mix(in srgb,var(--accent) 18%,var(--card));border-color:var(--accent)}
+#app .sidebar-collapse:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(min-width:901px){
+  #app{--lf-sidebar-width:238px}
+  #app .app-sidebar{width:var(--lf-sidebar-width)!important;transition:width .24s ease,padding .24s ease}
+  #app .app-content{width:calc(100% - var(--lf-sidebar-width))!important;margin-left:var(--lf-sidebar-width)!important;transition:width .24s ease,margin-left .24s ease;padding-right:clamp(24px,3vw,44px)}
+  #app.sidebar-collapsed{--lf-sidebar-width:78px}
+  #app.sidebar-collapsed .app-sidebar{padding-left:10px!important;padding-right:10px!important}
+  #app.sidebar-collapsed .workspace-brand-row{justify-content:center;flex-direction:column;gap:9px}
+  #app.sidebar-collapsed .workspace-wordmark{font-size:0;line-height:1}
+  #app.sidebar-collapsed .workspace-wordmark:before{content:"LF";font-size:18px;font-weight:900;letter-spacing:-.06em;color:var(--accent)}
+  #app.sidebar-collapsed .navlabel,
+  #app.sidebar-collapsed #nav .nav-text,
+  #app.sidebar-collapsed .sidebottom .nav-text{display:none!important}
+  #app.sidebar-collapsed #nav button,
+  #app.sidebar-collapsed .sidebar-action{justify-content:center;padding-left:6px;padding-right:6px}
+  #app.sidebar-collapsed .sidebar-collapse{transform:rotate(180deg)}
+}
+@media(max-width:900px){
+  #app .workspace-brand-row{justify-content:center;flex-direction:column;gap:9px}
+  #app .workspace-wordmark{font-size:0;line-height:1}
+  #app .workspace-wordmark:before{content:"LF";font-size:18px;font-weight:900;color:var(--accent)}
+  #app .sidebar-collapse{display:none}
+}
