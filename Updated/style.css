@@ -5371,3 +5371,20 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="dark"] #app .rocker-switch-lever{transform:translateY(calc(100% + 2px))}
 :root[data-theme="light"] #app .rocker-switch-lever{transform:translateY(0)}
 @media(max-width:600px){#app .top-theme-pull.rocker-theme-switch{width:60px!important;height:56px!important;min-width:60px!important}}
+
+/* Compact light/dark theme switch */
+.app-top-actions{align-items:center;height:56px;min-width:0}
+.theme-toggle{--toggle-width:78px;position:relative;display:flex;align-items:center;justify-content:space-between;gap:5px;width:var(--toggle-width);height:38px;padding:4px 7px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2,var(--card));color:var(--muted);cursor:pointer;flex:none;box-shadow:inset 0 1px 3px rgba(0,0,0,.12);transition:background .2s ease,border-color .2s ease,box-shadow .2s ease}
+.theme-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.theme-toggle-icon{position:relative;z-index:1;width:20px;text-align:center;font-size:19px;line-height:1;transition:color .2s ease}
+.theme-toggle-sun{color:#e5a52d}
+.theme-toggle-moon{color:#aab6cc}
+.theme-toggle-track{position:absolute;inset:4px 5px;border-radius:999px;pointer-events:none}
+.theme-toggle-thumb{position:absolute;left:0;top:0;width:29px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.24);transition:transform .22s cubic-bezier(.2,.8,.2,1),background .2s ease}
+.theme-toggle[aria-checked="true"] .theme-toggle-thumb{transform:translateX(39px);background:#39465a}
+.theme-toggle[aria-checked="false"] .theme-toggle-sun{color:#f0ad32}
+.theme-toggle[aria-checked="true"] .theme-toggle-moon{color:#e2e9f5}
+:root[data-theme="light"] .theme-toggle{background:#f7f9fc;border-color:#d8deea}
+:root[data-theme="light"] .theme-toggle-thumb{background:#fff}
+:root[data-theme="light"] .theme-toggle[aria-checked="true"] .theme-toggle-thumb{background:#43516a}
+@media(max-width:600px){.app-top-actions{height:48px;min-width:0}.theme-toggle{--toggle-width:72px;width:72px;height:35px;padding:3px 6px}.theme-toggle-thumb{width:27px;height:27px}.theme-toggle[aria-checked="true"] .theme-toggle-thumb{transform:translateX(35px)}.theme-toggle-icon{font-size:17px}}
