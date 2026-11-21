@@ -49,5 +49,5 @@ async function refreshSubscription(calendarId){
 }
 async function hash(value){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function removeSubscription(calendarId){saveSubscriptions(subscriptions().filter(x=>x.id!==calendarId));}
-g.LifeFlowCalendarSharing=Object.freeze({setEndpoint:value=>localStorage.setItem(ENDPOINT_KEY,String(value||'').trim().replace(/\\/$/,'')),getEndpoint:endpoint,createLiveShare,updateLiveShare,revokeLiveShare,subscribe,refreshSubscription,listSubscriptions:subscriptions,removeSubscription});
+g.LifeFlowCalendarSharing=Object.freeze({setEndpoint:value=>localStorage.setItem(ENDPOINT_KEY,String(value||'').trim().replace(/\/$/,'')),getEndpoint:endpoint,createLiveShare,updateLiveShare,revokeLiveShare,subscribe,refreshSubscription,listSubscriptions:subscriptions,removeSubscription});
 })(window);
