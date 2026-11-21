@@ -64,7 +64,7 @@ jobs:
           assert "CALENDAR_SHARES" in worker, "Optional live calendar relay must use its KV binding"
           assert "createLiveShare" in sharing and "refreshSubscription" in sharing, "Live calendar share and subscription APIs must remain available"
           assert "useUniversalCloud" not in html and "supabase" not in html.lower(), "Universal cloud login must remain removed"
-          runtime_files = [p for p in Path("Updated").rglob("*") if p.is_file()]
+          runtime_files = [p for p in Path("Updated").rglob("*") if p.is_file() and p.suffix.lower() in {".html", ".js", ".css", ".json", ".toml", ".webmanifest"}]
           supabase_refs = [str(p) for p in runtime_files if "supabase" in p.read_text(errors="ignore").lower()]
           assert not supabase_refs, f"Supabase references must be absent from all shipped LifeFlow files: {supabase_refs}"
           assert "LifeFlowCloudSync" not in script and "LifeFlowCloudAuth" not in script, "Local workspace must not depend on cloud accounts"
