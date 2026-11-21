@@ -1451,24 +1451,22 @@ function initAuthTheme(){
 }
 function initThemePull(){
   const button=document.getElementById('themePull');
-  if(!button||button.dataset.clickReady==='true')return;
+  if(!button)return;
+  const syncToggle=()=>{
+    const isLight=document.documentElement.dataset.theme==='light';
+    button.setAttribute('aria-checked',String(isLight));
+    button.setAttribute('aria-label',isLight?'Switch to dark mode':'Switch to light mode');
+  };
+  syncToggle();
+  if(button.dataset.clickReady==='true')return;
   button.dataset.clickReady='true';
-  const switchTheme=()=>{
+  button.addEventListener('click',()=>{
     const user=currentUser();
-    const next=(user?.theme||document.documentElement.dataset.theme||'dark')==='dark'?'light':'dark';
-    button.classList.add('snap');
-    button.setAttribute('aria-checked',String(next==='light'));
-    button.setAttribute('aria-label',next==='light'?'Switch to dark mode':'Switch to light mode');
+    const current=document.documentElement.dataset.theme||user?.theme||'dark';
+    const next=current==='dark'?'light':'dark';
     if(user)updateUser(profile=>{profile.theme=next;profile.autoTheme=false;});
     else applyTheme(next);
-    window.setTimeout(()=>button.classList.remove('snap'),300);
-  };
-  button.addEventListener('click',switchTheme);
-  button.addEventListener('keydown',event=>{
-    if(event.key==='Enter'||event.key===' '){
-      event.preventDefault();
-      button.click();
-    }
+    syncToggle();
   });
 }
 
