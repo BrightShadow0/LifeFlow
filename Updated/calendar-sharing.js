@@ -22,8 +22,8 @@ async function createLiveShare(title,events,includeDetails=false){
  const base=endpoint();if(!base)throw new Error('Set the Live Sharing relay URL first.');
  const calendarId=id(),ownerKey=token(),readKey=token(),clean=(events||[]).map(e=>({id:e.id,title:e.title,startAt:e.startAt,endAt:e.endAt,allDay:!!e.allDay,location:includeDetails?e.location||'':'',description:includeDetails?e.description||'':''}));
  await request(base+'/calendar/'+calendarId,'PUT',ownerKey,{create:true,ownerHash:await hash(ownerKey),readHash:await hash(readKey),title,events:clean});
- const all=owners();all[calendarId]={ownerKey,title,updatedAt:new Date().toISOString()};saveOwners(all);
- return {id:calendarId,url:shareUrl(calendarId,readKey),eventCount:clean.length};
+ const all=owners();const url=shareUrl(calendarId,readKey);all[calendarId]={ownerKey,title,url,updatedAt:new Date().toISOString()};saveOwners(all);
+ return {id:calendarId,url,eventCount:clean.length};
 }
 async function updateLiveShare(calendarId,events,title,includeDetails=false){
  const base=endpoint(),record=owners()[calendarId];if(!base||!record)throw new Error('This browser does not hold the owner key for that shared calendar.');
