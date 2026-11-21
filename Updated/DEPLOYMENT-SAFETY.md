@@ -4,7 +4,7 @@
 
 Release 6 strengthens the current local-first website with a separate IndexedDB recovery vault, non-destructive workspace schema tagging, safer restore operations and deployment checks.
 
-The current application does not yet have a server-side database or a cloud backup service. The recovery vault is stored in the same browser profile and on the same device. It is intended to help with accidental local-save damage or an incorrect restore, not device loss.
+The current application is browser-local and does not connect to Supabase or use a server-side workspace database or cloud backup service. The recovery vault is stored in the same browser profile and on the same device. It is intended to help with accidental local-save damage or an incorrect restore, not device loss.
 
 ## Storage boundaries
 
@@ -57,7 +57,7 @@ The current application does not yet have a server-side database or a cloud back
 - IndexedDB recovery points are local to the same browser profile and device.
 - Clearing site data, deleting the browser profile, uninstalling a browser or losing the device can remove both primary data and the recovery vault.
 - A persistent-storage grant can reduce automatic browser eviction but cannot protect against deliberate clearing, device failure or physical loss.
-- For device-loss protection, users must keep a separate encrypted Master Archive until cloud backup is implemented in a later release.
+- For device-loss protection, users must keep a separate encrypted Master Archive outside the browser profile.
 
 ## CI checks
 
