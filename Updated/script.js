@@ -1300,6 +1300,8 @@ function setSidebarOpen(open){
   let backdrop=app.querySelector('.sidebar-backdrop');
   if(!backdrop){backdrop=document.createElement('button');backdrop.type='button';backdrop.className='sidebar-backdrop';backdrop.setAttribute('aria-label','Close navigation');backdrop.dataset.appAction='toggle-sidebar';app.insertBefore(backdrop,sidebar);}
   app.classList.toggle('sidebar-open',lifeFlowSidebarOpen);
+  const externalToggle=document.getElementById('sidebarOpen');
+  if(externalToggle){externalToggle.setAttribute('aria-expanded',String(lifeFlowSidebarOpen));externalToggle.setAttribute('aria-label',lifeFlowSidebarOpen?'Close navigation':'Open navigation');externalToggle.innerHTML='<span aria-hidden="true">'+(lifeFlowSidebarOpen?'×':'☰')+'</span>';}
   const toggle=sidebar.querySelector('.sidebar-collapse-toggle');
   if(toggle){
     toggle.setAttribute('aria-expanded',String(lifeFlowSidebarOpen));
