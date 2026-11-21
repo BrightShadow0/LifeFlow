@@ -5388,3 +5388,25 @@ body::-webkit-scrollbar-corner{
 :root[data-theme="light"] .theme-toggle-thumb{background:#fff}
 :root[data-theme="light"] .theme-toggle[aria-checked="true"] .theme-toggle-thumb{background:#43516a}
 @media(max-width:600px){.app-top-actions{height:48px;min-width:0}.theme-toggle{--toggle-width:72px;width:72px;height:35px;padding:3px 6px}.theme-toggle-thumb{width:27px;height:27px}.theme-toggle[aria-checked="true"] .theme-toggle-thumb{transform:translateX(35px)}.theme-toggle-icon{font-size:17px}}
+
+
+/* Keep the desktop navigation anchored while the workspace content scrolls. */
+@media (min-width:601px){
+  #app .app-sidebar{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    z-index:20!important;
+  }
+  #app .app-content{
+    margin-left:238px!important;
+    min-width:0;
+  }
+}
+@media (min-width:601px) and (max-width:900px){
+  #app .app-sidebar{width:68px!important}
+  #app .app-content{margin-left:68px!important;width:calc(100% - 68px)!important}
+}
