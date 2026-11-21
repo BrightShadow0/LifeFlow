@@ -1,0 +1,7 @@
+name = "lifeflow-calendar-share"
+main = "./calendar-share-worker.js"
+compatibility_date = "2026-11-21"
+
+[[kv_namespaces]]
+binding = "CALENDAR_SHARES"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
