@@ -17,7 +17,7 @@ function owners(){try{return JSON.parse(localStorage.getItem(OWNER_KEY)||'{}');}
 function saveOwners(v){localStorage.setItem(OWNER_KEY,JSON.stringify(v));}
 function subscriptions(){try{return JSON.parse(localStorage.getItem(SUBS_KEY)||'[]');}catch(_){return [];}}
 function saveSubscriptions(v){localStorage.setItem(SUBS_KEY,JSON.stringify(v));}
-function shareUrl(calendarId,readKey){const u=new URL(location.href);u.search='?calendarShare='+encodeURIComponent(calendarId);u.hash=readKey;return u.href;}
+function shareUrl(calendarId,readKey){const u=new URL(location.href);u.search='?calendarShare='+encodeURIComponent(calendarId)+'&relay='+encodeURIComponent(endpoint());u.hash=readKey;return u.href;}
 async function createLiveShare(title,events,includeDetails=false){
  const base=endpoint();if(!base)throw new Error('Set the Live Sharing relay URL first.');
  const calendarId=id(),ownerKey=token(),readKey=token(),clean=(events||[]).map(e=>({id:e.id,title:e.title,startAt:e.startAt,endAt:e.endAt,allDay:!!e.allDay,location:includeDetails?e.location||'':'',description:includeDetails?e.description||'':''}));
@@ -38,7 +38,7 @@ async function revokeLiveShare(calendarId){
 async function subscribe(link){
  const u=new URL(String(link||''),location.href),calendarId=u.searchParams.get('calendarShare'),readKey=u.hash.replace(/^#/,'');
  if(!calendarId||!readKey)throw new Error('Paste the complete LifeFlow shared calendar link.');
- const base=endpoint();if(!base)throw new Error('Set the Live Sharing relay URL first.');
+ const relay=u.searchParams.get('relay');if(relay)localStorage.setItem(ENDPOINT_KEY,relay.replace(/\/$/,''));const base=endpoint();if(!base)throw new Error('Set the Live Sharing relay URL first.');
  const feed=await request(base+'/calendar/'+calendarId,'GET',readKey);
  const all=subscriptions().filter(x=>x.id!==calendarId);all.push({id:calendarId,readKey,title:feed.title,addedAt:new Date().toISOString(),lastUpdated:feed.updatedAt});saveSubscriptions(all);
  return feed;
