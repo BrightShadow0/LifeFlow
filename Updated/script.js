@@ -3034,7 +3034,6 @@ window.handleOAuthCallback = handleOAuthCallback;
   if(session && document.getElementById('app').classList.contains('lifeflow-stage-hidden')){
     normalizeDemoProfile(session.email);
     state.currentUser = session.email;
-    sessionStorage.removeItem('lifeflow_cloud_workspace_session');
     enterApp();
   }
 })();
