@@ -3,8 +3,8 @@
 const ENDPOINT_KEY='lifeflow_calendar_share_endpoint';
 const OWNER_KEY='lifeflow_calendar_share_owners';
 const SUBS_KEY='lifeflow_calendar_subscriptions';
-const endpoint=()=>String(localStorage.getItem(ENDPOINT_KEY)||'').trim().replace(/\\/$/,'');
-function token(){const b=crypto.getRandomValues(new Uint8Array(32));return btoa(String.fromCharCode(...b)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');}
+const endpoint=()=>String(localStorage.getItem(ENDPOINT_KEY)||'').trim().replace(/\/$/,'');
+function token(){const b=crypto.getRandomValues(new Uint8Array(32));return btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function id(){return 'lfc_'+token().slice(0,24);}
 async function request(url,method,key,body){
  const headers={'authorization':'Bearer '+key};if(body)headers['content-type']='application/json';
