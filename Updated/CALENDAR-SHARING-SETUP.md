@@ -28,8 +28,9 @@ Live shared calendars use a small Cloudflare Worker with a KV namespace. Neither
 
 - The owner creates a live link from LifeFlow and sends it to the recipient.
 - When the recipient opens the link, LifeFlow automatically adds the shared calendar as read-only.
-- The recipient can refresh it from the Other Calendars panel.
-- The owner can publish updates from the device that holds the owner key, or revoke the link.
+- The owner's browser republishes changes after a local event is saved or deleted.
+- Subscribers refresh automatically about once a minute while LifeFlow is open, and can also refresh manually.
+- The owner can also update or revoke the link from the live-sharing panel.
 - Snapshot sharing remains available without Cloudflare.
 
 ## Privacy and limitations
