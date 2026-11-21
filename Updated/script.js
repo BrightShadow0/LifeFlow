@@ -500,23 +500,14 @@ function initLoginAccessibility(){
     appRoot.addEventListener('click',event=>{
       const control=event.target.closest('[data-app-action]');
       if(!control || !appRoot.contains(control)) return;
-      if(control.dataset.appAction==='toggle-sidebar'){toggleLifeFlowSidebar();return;}\n      if(control.dataset.appAction==='export-csv') exportData('csv');
+      if(control.dataset.appAction==='toggle-sidebar'){toggleLifeFlowSidebar();return;}
+      if(control.dataset.appAction==='export-csv') exportData('csv');
       else if(control.dataset.appAction==='export-json') exportData('json');
       else if(control.dataset.appAction==='logout') doLogout();
       else if(control.dataset.appAction==='set-view') setView(control.dataset.view);
       else if(control.dataset.appAction==='undo-delete') undoDelete();
     });
   }
-    document.addEventListener('click',event=>{
-    const control=event.target.closest('[data-cloud-auth]');
-    if(!control)return;
-    const action=control.dataset.cloudAuth;
-    if(action==='toggle'){const panel=document.getElementById('cloudAuthPanel');if(panel)panel.hidden=!panel.hidden;return;}
-    handleCloudLoginAction(action).catch(reportCloudAuthActionError);
-  });
-  document.addEventListener('keydown',event=>{
-    if(event.key==='Enter'&&event.target.closest('#cloudAuthPanel')&&event.target.matches('input')){event.preventDefault();handleCloudLoginAction('signin').catch(reportCloudAuthActionError);}
-  });
 document.addEventListener('click',event=>{
       const control=event.target.closest('[data-auth-action]');
       if(!control || !control.closest('#authScreen')) return;
