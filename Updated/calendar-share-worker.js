@@ -18,10 +18,10 @@ export default {
  async fetch(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (!env.CALENDAR_SHARES) return response({ error: "KV binding CALENDAR_SHARES is not configured." }, 503);
-  const url = new URL(request.url), match = url.pathname.match(/^\\/calendar\\/([a-zA-Z0-9_-]{12,80})$/);
+  const url = new URL(request.url), match = url.pathname.match(/^\/calendar\/([a-zA-Z0-9_-]{12,80})$/);
   if (!match) return response({ error: "Not found." }, 404);
   const id = match[1], key = "calendar:" + id;
-  const auth = (request.headers.get("authorization") || "").replace(/^Bearer\\s+/i, "");
+  const auth = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   if (!auth || auth.length < 24 || auth.length > 200) return response({ error: "A valid share key is required." }, 401);
   const tokenHash = await digest(auth);
   if (request.method === "PUT") {
