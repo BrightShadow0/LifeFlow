@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>LifeFlow Login Terminal</title>
 <link rel="icon" type="image/svg+xml" href="compass-mark.svg"><meta name="theme-color" content="#07111d">
-<link rel="stylesheet" href="style.css?v=20261121-sticky-sidebar1">
+<link rel="stylesheet" href="style.css?v=20261121-collapsible-sidebar1">
 <link rel="stylesheet" href="auth.css?v=20261109-checkbox-sizing-fix1">
 <link rel="stylesheet" href="brand.css?v=20261107-clean-lockup1">
 <link rel="stylesheet" href="notes-search.css?v=20261108-search-roomier1">
@@ -95,7 +95,7 @@
 
 <div id="app" data-stage="workspace" class="lifeflow-stage-hidden">
   <aside class="app-sidebar" aria-label="Main navigation">
-    <div class="workspace-wordmark">LIFEFLOW</div>
+    <div class="workspace-brand-row"><div class="workspace-wordmark">LIFEFLOW</div><button id="sidebarCollapse" class="sidebar-collapse" type="button" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar"><span aria-hidden="true">‹</span></button></div>
     <div class="navlabel">Workspace</div><nav id="nav"></nav>
     <div class="sidebottom"><div class="navlabel">Data & account</div>
       <button class="sidebar-action" data-app-action="export-csv" title="Export CSV"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button>
@@ -248,5 +248,29 @@
     button.classList.toggle('is-visible', visible);
   }, true);
 </script>
+
+<script>
+(function(){
+  const app=document.getElementById('app');
+  const toggle=document.getElementById('sidebarCollapse');
+  if(!app||!toggle)return;
+  let collapsed=false;
+  try{collapsed=localStorage.getItem('lifeflow-sidebar-collapsed')==='true';}catch(_){}
+  function apply(){
+    app.classList.toggle('sidebar-collapsed',collapsed);
+    toggle.setAttribute('aria-expanded',String(!collapsed));
+    toggle.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
+    toggle.title=collapsed?'Expand sidebar':'Collapse sidebar';
+    toggle.querySelector('span').textContent=collapsed?'›':'‹';
+  }
+  toggle.addEventListener('click',function(){
+    collapsed=!collapsed;
+    try{localStorage.setItem('lifeflow-sidebar-collapsed',String(collapsed));}catch(_){}
+    apply();
+  });
+  apply();
+})();
+</script>
+
 </body>
 </html>
