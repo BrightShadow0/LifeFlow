@@ -246,19 +246,6 @@ function setLoginError(message,fieldId){
 }
 async function doLogin(){
   if(!lifeFlowCoreReady){setLoginError('LifeFlow is still initializing. Please try again in a moment.');return;}
-  const cloudMode=document.getElementById('useUniversalCloud')?.checked;
-  if(cloudMode){
-    const email=document.getElementById('loginEmail')?.value?.trim()||'';
-    const password=document.getElementById('loginPass')?.value||'';
-    const passphrase=document.getElementById('loginCloudSyncPassphrase')?.value||'';
-    if(!email||!password){setLoginError('Enter your cloud account email address and password.');return;}
-    if(!passphrase.trim()){setLoginError('Enter your workspace sync passphrase to unlock LifeFlow on this device.');return;}
-    const cloudEmail=document.getElementById('cloudAuthEmail'),cloudPassword=document.getElementById('cloudAuthPassword'),cloudPassphrase=document.getElementById('cloudWorkspacePassphrase');
-    if(cloudEmail)cloudEmail.value=email;if(cloudPassword)cloudPassword.value=password;if(cloudPassphrase)cloudPassphrase.value=passphrase;
-    const message=document.getElementById('cloudAuthMessage');if(message)message.textContent='';
-    await handleCloudLoginAction('signin');
-    return;
-  }
   return lifeFlowAuthController.doLogin();
 }
 function initTaskEventDelegation(){
