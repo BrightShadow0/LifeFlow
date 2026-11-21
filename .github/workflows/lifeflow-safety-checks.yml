@@ -29,13 +29,10 @@ jobs:
           node --check Updated/notes.js
           node --check Updated/theme.js
           node --check Updated/ui.js
-          node --check Updated/cloud-backup.js
-          node --check Updated/cloud-sync.js
           node --check Updated/calendar-events.js
-          node --check Updated/supabase-auth.js
-          node --check Updated/live-calendar.js
-          node --check Updated/calendar-notifications.js
-          node --check Updated/push-config.js
+          node --check Updated/calendar-sharing.js
+          node --check Updated/calendar-sharing-ui.js
+          node --input-type=module --check < Updated/calendar-share-worker.js
           node --check service-worker.js
       - name: Check ES modules
         run: |
@@ -59,23 +56,16 @@ jobs:
           assert "MAX_SNAPSHOTS_PER_USER" in recovery, "Recovery retention limit must remain enabled"
           assert "clearAll" in recovery, "Explicit reset must be able to clear the recovery vault"
           assert "clearUser" in recovery, "Account deletion must remove that account's recovery points"
-          backup = Path("Updated/cloud-backup.js").read_text()
-          assert "AES-GCM" in backup and "PBKDF2" in backup, "Cloud backups must use authenticated client-side encryption"
-          assert "deleteBackup" in backup and "listBackups" in backup, "Cloud backup history must support listing and deletion"
-          assert "data-cloud-delete" in html and "data-cloud-restore" in html, "Cloud backup UI must expose management and restore"
-          assert "before-cloud-restore" in html and "checkpoint?.saved" in html, "Restore must require a successful local recovery checkpoint"
-          assert "Cloud account:" in html, "Backup history must identify its owning cloud account"
-          sync = Path("Updated/cloud-sync.js").read_text()
-          migration = Path("supabase/migrations/20261108000200_encrypted_workspace_sync.sql").read_text()
-          assert "AES-GCM" in sync and "PBKDF2" in sync, "Cloud workspace sync must encrypt in the browser"
-          assert "encrypted_workspace_sync" in sync and "revision" in sync, "Cloud sync must use a revisioned remote record"
-          assert "enable row level security" in migration.lower(), "Cloud sync table must enable RLS"
-          assert '"Users can read their encrypted workspace"' in migration, "Cloud sync table must scope reads to owner"
-          assert '"Users can update their encrypted workspace"' in migration, "Cloud sync table must scope updates to owner"
-          assert "events" in sync and "calendar" not in sync.lower() or "events" in sync, "Workspace sync must preserve event collections"
-          print("Calendar events and workspace sync contracts verified.")
-          print("Release 11 encrypted workspace sync contracts verified.")
-          print("Release 9 encrypted backup management and restore contracts verified.")
+          sharing = Path("Updated/calendar-sharing.js").read_text()
+          sharing_ui = Path("Updated/calendar-sharing-ui.js").read_text()
+          worker = Path("Updated/calendar-share-worker.js").read_text()
+          assert "calendar-sharing.js?" in html and "calendar-sharing-ui.js?" in html, "Local calendar sharing assets must load"
+          assert "lifeflow-calendar-snapshot" in sharing_ui, "Calendar snapshots must support direct import and export"
+          assert "CALENDAR_SHARES" in worker, "Optional live calendar relay must use its KV binding"
+          assert "createLiveShare" in sharing and "refreshSubscription" in sharing, "Live calendar share and subscription APIs must remain available"
+          assert "useUniversalCloud" not in html and "supabase" not in html.lower(), "Universal cloud login must remain removed"
+          assert "LifeFlowCloudSync" not in script and "LifeFlowCloudAuth" not in script, "Local workspace must not depend on cloud accounts"
+          print("Local calendar snapshot and optional live sharing contracts verified.")
           print("LifeFlow storage and recovery contracts verified.")
           PY
       - name: Verify migrations preserve existing workspace content
@@ -95,13 +85,3 @@ jobs:
 
       - name: Test calendar events, travel reminders and iCalendar export
         run: node --test tests/calendar-events.test.cjs
-      - name: Test live calendar and notification security contracts
-        run: node --test tests/live-calendar-reminders.test.cjs
-      - name: Test encrypted cloud backup engine
-        run: node --test tests/cloud-backup.test.cjs
-      - name: Test cloud authentication and MFA flows
-        run: node --test tests/supabase-auth.test.cjs
-      - name: Test encrypted multi-device workspace sync
-        run: node --test tests/cloud-sync.test.cjs
-      - name: Test cloud authentication and MFA
-        run: node --test tests/supabase-auth.test.cjs
