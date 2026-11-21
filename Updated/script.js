@@ -1707,6 +1707,8 @@ function setSidebarOpen(open){
   const app=document.getElementById('app');
   const sidebar=app?.querySelector('.app-sidebar');
   if(!app||!sidebar)return;
+  let backdrop=app.querySelector('.sidebar-backdrop');
+  if(!backdrop){backdrop=document.createElement('button');backdrop.type='button';backdrop.className='sidebar-backdrop';backdrop.setAttribute('aria-label','Close navigation');backdrop.dataset.appAction='toggle-sidebar';app.insertBefore(backdrop,sidebar);}
   app.classList.toggle('sidebar-open',lifeFlowSidebarOpen);
   const toggle=sidebar.querySelector('.sidebar-collapse-toggle');
   if(toggle){
@@ -1717,6 +1719,7 @@ function setSidebarOpen(open){
   }
 }
 function toggleLifeFlowSidebar(){setSidebarOpen(!lifeFlowSidebarOpen);}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&lifeFlowSidebarOpen)setSidebarOpen(false);});
 function renderNav(){
   suppressWorkspaceTitleTooltips();
   const sidebar=document.querySelector('.app-sidebar'); if(!sidebar)return;
