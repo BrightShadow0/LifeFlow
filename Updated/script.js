@@ -18,7 +18,7 @@ function togglePasswordVisibility(inputId, button){
 }
 
 function defaultProfileState(email){
-  return {tasks:[], events:[], morningIntent:null, morningIntentDismissedDate:null, onboarding:null, currentUser:email||null};
+  return {tasks:[], events:[], onboarding:null, currentUser:email||null};
 }
 function profileStateKey(email){
   return 'lifeflow2_state_'+encodeURIComponent(String(email||''));
@@ -345,9 +345,6 @@ function initTaskEventDelegation(){
     }
     else if(action==='onboarding-seed') seedStarterWorkspace();
     else if(action==='onboarding-blank') completeFirstRunExperience('blank-workspace');
-    else if(action==='morning-intent-save') saveMorningIntent();
-    else if(action==='morning-intent-dismiss'){updateWorkspaceState({morningIntentDismissedDate:dateToIsoDay(new Date())});window.lfMorningIntentEditing=false;renderApp();}
-    else if(action==='morning-intent-edit'){window.lfMorningIntentEditing=true;renderApp();requestAnimationFrame(()=>document.getElementById('morningIntentInput')?.focus());}
     else if(action==='choose-note-link') chooseNoteLink(Number(control.dataset.noteLinkIndex));
     else if(action==='note-panel-toggle'){const panel=control.dataset.notesPanel;window.lfNotesPanelOpen=!(window.lfNotesPanelOpen&&window.lfNotesPanel===panel);window.lfNotesPanel=panel;renderApp();}
     else if(action==='note-panel-close'){window.lfNotesPanelOpen=false;renderApp();}
@@ -580,7 +577,7 @@ document.addEventListener('click',event=>{
 
 function cloudWorkspaceHasContent(snapshot){
   if(!snapshot)return false;
-  return ['tasks','notes','codeNotes','noteLinks','events'].some(key=>Array.isArray(snapshot[key])&&snapshot[key].length>0) || !!String(snapshot.morningIntent?.text||'').trim();
+  return ['tasks','notes','codeNotes','noteLinks','events'].some(key=>Array.isArray(snapshot[key])&&snapshot[key].length>0);
 }
 function cloudWorkspacePayload(snapshot,email){
   const users=getUsers(),profile=users[email]||{};
@@ -1166,7 +1163,7 @@ async function initializeTaskArchitecture() {
       }
     }
   }));
-  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery','onboarding','morningIntent','morningIntentDismissedDate'].forEach(key=>{
+  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery','onboarding'].forEach(key=>{
     lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key,()=>{
       if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||lifeFlowCloudSyncConflict||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
       const snapshot=lifeFlowTaskStateManager.getState();
@@ -1866,19 +1863,7 @@ function renderDailyFocus(now){
   if(onboarding.status==='pending'){
     return '<section class="card lf-onboarding-card"><div class="lf-onboarding-copy"><span class="lf-onboarding-eyebrow">A QUICK START</span><h2>Make this workspace yours.</h2><p>Tasks hold the work. Notes hold the thinking. Today brings the important pieces together without duplicating your other views.</p><div class="lf-onboarding-steps"><span><b>01</b> Capture what needs doing</span><span><b>02</b> Keep useful ideas in Notes</span><span><b>03</b> Review your day in Today</span></div></div><div class="lf-onboarding-actions"><button type="button" class="primary" data-lf-action="onboarding-seed">Explore with examples</button><button type="button" class="secondary" data-lf-action="onboarding-blank">Start with a blank workspace</button></div></section>';
   }
-  const saved=state.morningIntent&&state.morningIntent.date===today?String(state.morningIntent.text||'').trim():'';
-  if(saved&&!window.lfMorningIntentEditing){
-    return '<section class="card morning-intent-card is-saved"><div class="morning-intent-copy"><span class="morning-intent-eyebrow">TODAY’S INTENTION</span><p>'+esc(saved)+'</p></div><button type="button" class="linklike" data-lf-action="morning-intent-edit">Edit</button></section>';
-  }
-  if(state.morningIntentDismissedDate===today&&!window.lfMorningIntentEditing)return '';
-  const value=window.lfMorningIntentEditing?saved:'';
-  return '<section class="card morning-intent-card"><div class="morning-intent-copy"><span class="morning-intent-eyebrow">MORNING INTENT</span><h2>What is the one thing that makes today a success?</h2><p>Choose a direction, not another task list.</p></div><div class="morning-intent-entry"><input id="morningIntentInput" type="text" maxlength="140" value="'+esc(value)+'" placeholder="Today will feel successful when…" aria-label="Your intention for today"><div class="morning-intent-actions"><button type="button" class="primary" data-lf-action="morning-intent-save">Save intention</button><button type="button" class="linklike" data-lf-action="morning-intent-dismiss">Not now</button></div></div></section>';
-}
-function saveMorningIntent(){
-  const input=document.getElementById('morningIntentInput'),value=String(input?.value||'').trim();
-  if(!value){input?.focus();showToast('Add a short intention first.');return;}
-  updateWorkspaceState({morningIntent:{date:dateToIsoDay(new Date()),text:value.slice(0,140),savedAt:Date.now()},morningIntentDismissedDate:null});
-  window.lfMorningIntentEditing=false;renderApp();showToast('Today’s intention saved.');
+  return '';
 }
 function completeFirstRunExperience(source){
   updateWorkspaceState({onboarding:{version:1,status:'complete',completedAt:Date.now(),source:source||'blank'}});
