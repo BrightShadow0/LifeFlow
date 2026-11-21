@@ -91,7 +91,7 @@ document.addEventListener('change',function(event){if(event.target?.id==='calend
 window.addEventListener('load',function(){
  const url=new URL(location.href);if(!url.searchParams.has('calendarShare'))return;
  window.LifeFlowCalendarSharing.subscribe(location.href).then(function(feed){
-  cache[feed.id]=feed;const clean=new URL(location.href);clean.searchParams.delete('calendarShare');clean.hash='';history.replaceState({},'',clean.pathname+clean.search);
+  cache[feed.id]=feed;const clean=new URL(location.href);clean.searchParams.delete('calendarShare');clean.searchParams.delete('relay');clean.hash='';history.replaceState({},'',clean.pathname+clean.search);
   const main=document.getElementById('main');if(main)renderOtherCalendarsPanel(main);
   if(typeof showToast==='function')showToast('Shared calendar added: '+feed.title);
  }).catch(function(error){if(typeof showToast==='function')showToast('Could not add shared calendar: '+error.message);});
