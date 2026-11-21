@@ -1453,9 +1453,9 @@ function initThemePull(){
   const button=document.getElementById('themePull');
   if(!button)return;
   const syncToggle=()=>{
-    const isLight=document.documentElement.dataset.theme==='light';
-    button.setAttribute('aria-checked',String(isLight));
-    button.setAttribute('aria-label',isLight?'Switch to dark mode':'Switch to light mode');
+    const isDark=document.documentElement.dataset.theme!=='light';
+    button.setAttribute('aria-checked',String(isDark));
+    button.setAttribute('aria-label',isDark?'Switch to light mode':'Switch to dark mode');
   };
   syncToggle();
   if(button.dataset.clickReady==='true')return;
