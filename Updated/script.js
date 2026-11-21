@@ -271,28 +271,6 @@ function initTaskEventDelegation(){
     else if(action==='new-calendar-event') openCalendarEventEditor();
     else if(action==='open-calendar-share') openCalendarShareDialog();
     else if(action==='open-live-calendar') openLiveCalendarDialog();
-    else if(action==='live-cloud-signin') liveCloudSignIn();
-    else if(action==='live-cloud-signup') liveCloudSignUp();
-    else if(action==='live-cloud-mfa') liveCloudVerifyMfa();
-    else if(action==='live-create-calendar') liveCreateCalendar();
-    else if(action==='live-select-calendar') {liveCalendarSelectedId=control.dataset.calendarId;renderLiveCalendarDialog();}
-    else if(action==='live-send-invite') liveSendInvite();
-    else if(action==='live-new-event') liveEditEvent(null);
-    else if(action==='live-edit-event') liveEditEvent(control.dataset.eventId);
-    else if(action==='live-save-event') liveSaveEvent();
-    else if(action==='live-add-guest') liveAddGuest();
-    else if(action==='live-remove-guest') liveRemoveGuest(control.dataset.guestId);
-    else if(action==='live-cancel-event') {liveCalendarEditingEvent=null;renderLiveCalendarDialog();}
-    else if(action==='live-delete-event') liveDeleteEvent();
-    else if(action==='live-set-role') liveSetMemberRole(control.dataset.userId,control.dataset.role);
-    else if(action==='live-revoke-member') liveRevokeMember(control.dataset.userId);
-    else if(action==='live-delete-calendar') liveDeleteCalendar();
-    else if(action==='live-publish-events') livePublishEvents();
-    else if(action==='live-save-notifications') liveSaveNotifications();
-    else if(action==='live-mark-notification-read') liveMarkNotificationRead(control.dataset.notificationId);
-    else if(action==='live-enable-push') liveEnablePush();
-    else if(action==='live-disable-push') liveDisablePush();
-    else if(action==='live-signout') liveCloudSignOut();
     else if(action==='share-calendar-file') shareCalendarFile();
     else if(action==='download-shared-calendar') downloadSharedCalendar();
     else if(action==='close-calendar-share') closeCalendarShareDialog();
@@ -353,11 +331,6 @@ function initTaskEventDelegation(){
     else if(action==='branches-reset') branchesResetView();
     else if(action==='branches-focus-toggle') toggleBranchesFocusMode();
     else if(action==='account-tab') setAccountTab(control.dataset.accountTab);
-    else if(action==='check-cloud-connection') checkLifeFlowCloudConnection(control);
-    else if(action==='refresh-cloud-security') refreshLifeFlowCloudSecurity().catch(error=>showToast(error.message));
-    else if(action==='cloud-signout') window.LifeFlowCloudAuth?.signOut().then(result=>{if(!result.ok)showToast(result.error);else{showToast('Cloud account signed out');refreshLifeFlowCloudSecurity();}});
-    else if(action.startsWith('cloud-sync-')) resolveCloudWorkspaceConflict(action).catch(error=>{setCloudWorkspaceStatus(error.message||'Cloud sync action failed.',true);showToast(error.message||'Cloud sync action failed.');});
-    else if(action.startsWith('mfa-')) handleLifeFlowMfaAction(action,control).catch(error=>{const out=document.getElementById('cloudMfaStatus');if(out)out.textContent=error.message||'Authenticator operation failed.';});
     else if(action==='task-master-activate') activateCobaltSequence();
     else if(action==='save-profile') saveProfile();
     else if(action==='backup-master-archive') backupMasterArchive();
@@ -531,8 +504,6 @@ document.addEventListener('click',event=>{
   document.addEventListener('input',event=>{
     if(event.target.matches('#authScreen [data-auth-input="signup-validation"]')) validateSignup1();
   });
-  const cloudMode=document.getElementById('useUniversalCloud'),cloudPassphraseWrap=document.getElementById('cloudSyncPassphraseWrap');
-  if(cloudMode&&cloudPassphraseWrap){cloudMode.addEventListener('change',()=>{cloudPassphraseWrap.hidden=!cloudMode.checked;if(cloudMode.checked)document.getElementById('loginCloudSyncPassphrase')?.focus();});}
   const form=document.getElementById('loginForm');
   if(form)form.addEventListener('submit',event=>{event.preventDefault();doLogin().catch(error=>setLoginError(error.message||'Sign-in failed.'));});
   const password=document.getElementById('loginPass'),caps=document.getElementById('capsWarning');
@@ -648,13 +619,6 @@ function resetAuthViewport(){
   document.body.scrollTop=0;
 }
 function doLogout(){
-  const wasCloudWorkspace=lifeFlowCloudWorkspaceActive||!!sessionStorage.getItem('lifeflow_cloud_workspace_session');
-  try{save();lifeFlowTaskStateManager?.flush?.();lifeFlowProfileManager?.flush?.();}catch(error){console.warn('LifeFlow could not flush all pending changes before logout:',error);}
-  if(wasCloudWorkspace){
-    stopCloudWorkspaceSync();
-    sessionStorage.removeItem('lifeflow_cloud_workspace_session');
-    window.LifeFlowCloudAuth?.signOut?.().catch(error=>console.warn('Cloud sign-out failed:',error));
-  }
   stopAutoLogoutMonitor();
   if(lifeFlowAuthController) lifeFlowAuthController.doLogout();
   else destroySession();
@@ -795,13 +759,6 @@ async function initializeTaskArchitecture() {
       }
     }
   }));
-  ['tasks','events','notes','codeNotes','folders','noteLinks','collapsedFolders','searchQuery','onboarding'].forEach(key=>{
-    lifeFlowWorkspaceUnsubscribers.push(lifeFlowTaskStateManager.subscribe(key,()=>{
-      if(!lifeFlowCloudWorkspaceActive||lifeFlowCloudSyncApplying||lifeFlowCloudSyncConflict||document.getElementById('app')?.classList.contains('lifeflow-stage-hidden'))return;
-      const snapshot=lifeFlowTaskStateManager.getState();
-      window.LifeFlowCloudSync?.schedulePush?.(cloudWorkspacePayload(snapshot,snapshot.currentUser));
-    }));
-  });
   const session = getSession();
   if (session?.email) {
     lifeFlowTaskStateManager.switchUser(session.email);
@@ -1675,7 +1632,7 @@ function renderCalendar(){
    body=groups.length?'<div class="cal-agenda">'+groupHtml+'</div>':'<div class="cal-agenda-empty"><strong>No scheduled items this month</strong><span>Add an event or schedule a task to see it here.</span></div>';
  }
  const total=monthTasks.length+monthEvents.length;
- return `<div class="card calendar-card"><div class="cal-topbar"><div class="cal-head"><button class="hbtn" data-lf-action="shift-month" data-month-delta="-1" aria-label="Previous month">‹</button><strong>${monthName}</strong><button class="hbtn" data-lf-action="shift-month" data-month-delta="1" aria-label="Next month">›</button></div>${toggle}</div><div class="cal-calendar-actions"><button type="button" class="primary" data-lf-action="new-calendar-event">+ New event</button><button type="button" class="secondary" data-lf-action="open-calendar-share">Share calendar</button><button type="button" class="secondary" data-lf-action="export-calendar-ics">Export .ics</button></div><div class="cal-context-strip"><span><strong>${total}</strong> scheduled</span><span><strong>${days.size}</strong> active days</span><span><strong>${busiest}</strong> peak daily load</span></div>${body}${calendarMode==='month'?'<div class="cal-legend"><span><i class="open-dot"></i> Open tasks</span><span><i class="done-dot"></i> Completed</span><span><i class="clear-dot"></i> No scheduled items</span><span><i class="cal-event-dot"></i> Events</span></div>':''}<div class="notice">Tasks and events share this calendar. Locations open in Maps. Departure reminders use your estimated travel time.</div></div><section class="card other-calendars-panel" id="lfOtherCalendars"><header><div><span class="custom-kicker">SHARED WORKSPACE</span><h3>Other Calendars</h3></div><button type="button" class="secondary" data-lf-action="open-live-calendar">Manage</button></header><div class="other-calendars-content"><p class="muted">Connect your cloud account to see calendars shared with you.</p><button type="button" class="secondary" data-lf-action="open-live-calendar">Connect cloud account</button></div></section>`;
+ return `<div class="card calendar-card"><div class="cal-topbar"><div class="cal-head"><button class="hbtn" data-lf-action="shift-month" data-month-delta="-1" aria-label="Previous month">‹</button><strong>${monthName}</strong><button class="hbtn" data-lf-action="shift-month" data-month-delta="1" aria-label="Next month">›</button></div>${toggle}</div><div class="cal-calendar-actions"><button type="button" class="primary" data-lf-action="new-calendar-event">+ New event</button><button type="button" class="secondary" data-lf-action="open-calendar-share">Share calendar</button><button type="button" class="secondary" data-lf-action="export-calendar-ics">Export .ics</button></div><div class="cal-context-strip"><span><strong>${total}</strong> scheduled</span><span><strong>${days.size}</strong> active days</span><span><strong>${busiest}</strong> peak daily load</span></div>${body}${calendarMode==='month'?'<div class="cal-legend"><span><i class="open-dot"></i> Open tasks</span><span><i class="done-dot"></i> Completed</span><span><i class="clear-dot"></i> No scheduled items</span><span><i class="cal-event-dot"></i> Events</span></div>':''}<div class="notice">Tasks and events share this calendar. Locations open in Maps. Departure reminders use your estimated travel time.</div></div><section class="card other-calendars-panel" id="lfOtherCalendars"><header><div><span class="custom-kicker">SHARED WORKSPACE</span><h3>Other Calendars</h3></div><button type="button" class="secondary" data-lf-action="open-live-calendar">Manage</button></header><div class="other-calendars-content"><p class="muted">Add a shared calendar link to see someone else's events here.</p><button type="button" class="secondary" data-lf-action="open-live-calendar">Add shared calendar</button></div></section>`;
 }
 function shiftMonth(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderApp(); }
 function dropDay(e,y,m,d){
