@@ -33,7 +33,7 @@ async function importSnapshot(file){
 function openLiveCalendarDialog(){
  const host=document.getElementById('calendarEventHost');if(!host)return;
  const endpoint=window.LifeFlowCalendarSharing.getEndpoint(),owners=JSON.parse(localStorage.getItem('lifeflow_calendar_share_owners')||'{}');
- const rows=Object.entries(owners).map(([id,item])=>'<div class="other-calendar-event"><strong>'+escText(item.title||'Shared calendar')+'</strong><small>Live link active on this device</small><button type="button" class="secondary" data-lf-action="update-live-calendar-share" data-share-id="'+escText(id)+'">Update from my events</button><button type="button" class="danger" data-lf-action="revoke-live-calendar-share" data-share-id="'+escText(id)+'">Revoke link</button></div>').join('');
+ const rows=Object.entries(owners).map(([id,item])=>'<div class="other-calendar-event"><strong>'+escText(item.title||'Shared calendar')+'</strong><small>Live link active on this device</small><button type="button" class="secondary" data-lf-action="copy-live-calendar-share" data-share-id="'+escText(id)+'">Copy share link</button><button type="button" class="secondary" data-lf-action="update-live-calendar-share" data-share-id="'+escText(id)+'">Update from my events</button><button type="button" class="danger" data-lf-action="revoke-live-calendar-share" data-share-id="'+escText(id)+'">Revoke link</button></div>').join('');
  host.innerHTML='<div class="calendar-event-overlay" data-lf-overlay="close-calendar-share"><section class="calendar-event-dialog live-calendar-dialog" role="dialog" aria-modal="true" aria-labelledby="liveCalendarTitle"><header><div><span class="custom-kicker">OPTIONAL LIVE SHARING</span><h2 id="liveCalendarTitle">Live shared calendars</h2></div><button type="button" class="hbtn" data-lf-action="close-calendar-share">×</button></header><p>Live sharing uses a small relay service. Neither person needs a LifeFlow account. Your events remain private unless you publish them.</p><label for="calendarShareRelayUrl">Relay service URL</label><input id="calendarShareRelayUrl" type="url" value="'+escText(endpoint)+'" placeholder="https://your-calendar-relay.workers.dev"><small class="muted">Snapshot sharing works without this service. Live sharing needs the optional Cloudflare Worker configured for LifeFlow.</small><label for="calendarSubscribeLink">Add someone else’s live calendar link</label><input id="calendarSubscribeLink" type="url" placeholder="Paste the complete LifeFlow share link"><div class="calendar-event-error" id="liveCalendarMessage" role="status"></div><footer><div><button type="button" class="secondary" data-lf-action="save-calendar-relay">Save relay URL</button></div><div><button type="button" class="secondary" data-lf-action="subscribe-live-calendar">Add calendar</button><button type="button" class="primary" data-lf-action="create-live-calendar-share">Create live link</button></div></footer><div id="liveCalendarOwned">'+(rows?'<h3>Your live links</h3>'+rows:'')+'</div></section></div>';
 }
 async function createLiveShare(){
@@ -75,6 +75,7 @@ async function renderOtherCalendarsPanel(root){
 document.addEventListener('click',function(event){
  const control=event.target.closest('[data-lf-action]');if(!control)return;const action=control.dataset.lfAction;
  const actions={
+  'copy-live-calendar-share':()=>{const item=JSON.parse(localStorage.getItem('lifeflow_calendar_share_owners')||'{}')[control.dataset.shareId];if(item?.url)navigator.clipboard?.writeText(item.url).then(()=>showToast('Live link copied.')).catch(()=>showToast(item.url));},
   'download-calendar-snapshot':downloadSnapshot,
   'import-calendar-snapshot':()=>document.getElementById('calendarSnapshotFile')?.click(),
   'save-calendar-relay':()=>{const v=document.getElementById('calendarShareRelayUrl')?.value.trim()||'';if(!v){document.getElementById('liveCalendarMessage').textContent='Enter the relay service URL.';return;}window.LifeFlowCalendarSharing.setEndpoint(v);document.getElementById('liveCalendarMessage').textContent='Relay URL saved on this browser.';},
@@ -93,7 +94,7 @@ window.addEventListener('load',function(){
  window.LifeFlowCalendarSharing.subscribe(location.href).then(function(feed){
   cache[feed.id]=feed;const clean=new URL(location.href);clean.searchParams.delete('calendarShare');clean.searchParams.delete('relay');clean.hash='';history.replaceState({},'',clean.pathname+clean.search);
   const main=document.getElementById('main');if(main)renderOtherCalendarsPanel(main);
-  if(typeof showToast==='function')showToast('Shared calendar added: '+feed.title);
+  if(typeof setView==='function')setView('calendar');if(typeof showToast==='function')showToast('Shared calendar added: '+feed.title);
  }).catch(function(error){if(typeof showToast==='function')showToast('Could not add shared calendar: '+error.message);});
 });
 g.openCalendarShareDialog=openCalendarShareDialog;
