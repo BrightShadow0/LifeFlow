@@ -513,7 +513,7 @@ function initLoginAccessibility(){
     appRoot.addEventListener('click',event=>{
       const control=event.target.closest('[data-app-action]');
       if(!control || !appRoot.contains(control)) return;
-      if(control.dataset.appAction==='export-csv') exportData('csv');
+      if(control.dataset.appAction==='toggle-sidebar'){toggleLifeFlowSidebar();return;}\n      if(control.dataset.appAction==='export-csv') exportData('csv');
       else if(control.dataset.appAction==='export-json') exportData('json');
       else if(control.dataset.appAction==='logout') doLogout();
       else if(control.dataset.appAction==='set-view') setView(control.dataset.view);
@@ -1701,16 +1701,32 @@ function suppressWorkspaceTitleTooltips(){
     });
   }).observe(app,{subtree:true,childList:true,attributes:true,attributeFilter:['title']});
 }
+let lifeFlowSidebarOpen=false;
+function setSidebarOpen(open){
+  lifeFlowSidebarOpen=Boolean(open);
+  const app=document.getElementById('app');
+  const sidebar=app?.querySelector('.app-sidebar');
+  if(!app||!sidebar)return;
+  app.classList.toggle('sidebar-open',lifeFlowSidebarOpen);
+  const toggle=sidebar.querySelector('.sidebar-collapse-toggle');
+  if(toggle){
+    toggle.setAttribute('aria-expanded',String(lifeFlowSidebarOpen));
+    toggle.setAttribute('aria-label',lifeFlowSidebarOpen?'Close navigation':'Open navigation');
+    toggle.title=lifeFlowSidebarOpen?'Close navigation':'Open navigation';
+    toggle.innerHTML='<span aria-hidden="true">'+(lifeFlowSidebarOpen?'‹':'☰')+'</span>';
+  }
+}
+function toggleLifeFlowSidebar(){setSidebarOpen(!lifeFlowSidebarOpen);}
 function renderNav(){
   suppressWorkspaceTitleTooltips();
   const sidebar=document.querySelector('.app-sidebar'); if(!sidebar)return;
-  sidebar.innerHTML='<div class="workspace-wordmark">LIFEFLOW</div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
+  sidebar.innerHTML='<div class="sidebar-topline"><div class="workspace-wordmark">LIFEFLOW</div><button type="button" class="sidebar-collapse-toggle" data-app-action="toggle-sidebar" aria-label="Close navigation" aria-expanded="true" title="Close navigation"><span aria-hidden="true">‹</span></button></div><div class="navlabel">Workspace</div><nav id="nav" aria-label="Workspace"></nav><div class="sidebottom"><div class="sidebar-data"><div class="navlabel">Data & account</div><button class="sidebar-action" data-app-action="export-csv" aria-label="Export CSV" title="Export CSV"><span class="nav-icon">⇩</span><span class="nav-text">Export CSV</span></button><button class="sidebar-action" data-app-action="export-json" aria-label="Export JSON" title="Export JSON"><span class="nav-icon">⇩</span><span class="nav-text">Export JSON</span></button></div><button class="sidebar-action logout" data-app-action="logout" aria-label="Log out" title="Log out"><span class="nav-icon">↪</span><span class="nav-text">Log out</span></button></div>';
   const u=currentUser(),tabs=[['today','Today','◈'],['list','Tasks','☷'],['calendar','Calendar','▦'],['board','Board','▥']];
   if(hasFullAccess(u)){tabs.push(['branches','Your Branches','⌘'],['notes','Notes Manager','▤']);}
   tabs.push(['account','Profile & settings','◎'],['releases','Releases','◷']);
   document.getElementById('nav').innerHTML=tabs.map(function(x){return '<button type="button" aria-label="'+x[1]+'" class="'+(view===x[0]?'active':'')+'" data-app-action="set-view" data-view="'+x[0]+'"><span class="nav-icon">'+x[2]+'</span><span class="nav-text">'+x[1]+'</span></button>';}).join('');
 }
-function setView(v){const u=currentUser();view=v;clearNewTimes();renderApp();}
+function setView(v){const u=currentUser();view=v;clearNewTimes();renderApp();setSidebarOpen(false);}
 function taskFormHtml(){
   return `<div class="card new-task-card"><h2>New Task</h2>
     <div class="new-task-fields">
@@ -2335,7 +2351,7 @@ function renderReleaseNotes(){
 function renderApp(){
   newTaskTimes={start:'',end:''};
   if(!getSession())return;
-  applyDensity();renderNav();
+  applyDensity();renderNav();setSidebarOpen(lifeFlowSidebarOpen);
   const names={today:'Today',list:'Tasks',calendar:'Calendar',board:'Board',branches:'Your Branches',notes:'Notes Manager',account:'Profile & settings',releases:'Releases',about:'Why LifeFlow'};
   document.getElementById('pageTitle').textContent=names[view]||'LifeFlow';
   const u=currentUser();applyTheme(temporaryTheme||u?.theme||'dark');applyWorkspaceAppearance(u);initWorkspaceAtmosphereInteraction();applyAmbientEnvironment();
