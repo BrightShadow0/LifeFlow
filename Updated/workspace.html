@@ -110,9 +110,6 @@
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
-<script src="live-calendar.js?v=20261109-release8-live1" defer></script>
-<script src="calendar-notifications.js?v=20261109-release8-reminders1" defer></script>
-<script src="push-config.js?v=20261109-release8-pushconfig1" defer></script>
 
 <script src="calendar-events.js?v=20261109-release7-calendar-share1" defer></script>
 
@@ -125,128 +122,7 @@
 <script src="calendar-sharing.js?v=20261121-share3" defer></script>
 <script src="script.js?v=20261121-local-login-fix1" defer></script>
 <script src="calendar-sharing-ui.js?v=20261121-share3" defer></script>
-<script>
-  // Release 9: manual encrypted cloud backup management.
-  (function(){
-    const status=()=>document.getElementById('cloudBackupStatus');
-    const host=()=>document.getElementById('cloudBackupList');
-    const escapeHtml=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    async function refreshList(){
-      const result=await window.LifeFlowCloudBackup.listBackups();
-      const target=host();
-      if(target){
-        target.innerHTML='<div class="cloud-backup-account">Cloud account: <strong>'+escapeHtml(result.account)+'</strong></div>'+
-          (result.backups.length?result.backups.map(item=>'<div class="cloud-backup-item"><div><strong>'+escapeHtml(new Date(item.created_at).toLocaleString())+'</strong><small>'+Number(item.payload_bytes||0).toLocaleString()+' bytes · encryption v'+escapeHtml(item.encryption_version)+'</small></div><div class="cloud-backup-item-actions"><button type="button" class="secondary" data-cloud-restore="'+escapeHtml(item.id)+'">Preview &amp; restore</button><button type="button" class="danger" data-cloud-delete="'+escapeHtml(item.id)+'">Delete</button></div></div>').join(''):'<p class="muted">No encrypted cloud backups found for this account yet.</p>');
-      }
-      return result;
-    }
-    document.addEventListener('click',async event=>{
-      const restore=event.target.closest('[data-cloud-restore]');
-      const remove=event.target.closest('[data-cloud-delete]');
-      const button=event.target.closest('[data-cloud-backup]');
-      if(!restore&&!remove&&!button)return;
-      const output=status();
-      const controls=document.querySelectorAll('[data-cloud-backup],[data-cloud-restore],[data-cloud-delete]');
-      controls.forEach(control=>control.disabled=true);
-      try{
-        if(restore){
-          const passphrase=(document.getElementById('cloudBackupPassphrase')||{}).value||'';
-          if(output)output.textContent='Decrypting and verifying the selected backup…';
-          const result=await window.LifeFlowCloudBackup.decryptBackup(restore.dataset.cloudRestore,passphrase);
-          const workspace=result.workspace;
-          const counts=['tasks','notes','codeNotes','folders','noteLinks'].map(key=>key+': '+(workspace[key]||[]).length).join(' · ');
-          if(output)output.textContent='Integrity verified. Account: '+result.account+'. Preview: '+counts+'. Current workspace remains unchanged.';
-          if(!window.confirm('Restore verified backup from '+new Date(result.createdAt).toLocaleString()+'?\n\nCloud account: '+result.account+'\n'+counts+'\n\nThis replaces the current local workspace.'))return;
-          const current=window.LifeFlowWorkspaceData?.getState?.();
-          if(!current||!window.LifeFlowRecovery?.capture)throw new Error('Local recovery protection is unavailable. Restore was stopped to protect your current workspace.');
-          const checkpoint=await window.LifeFlowRecovery.capture({user:current.currentUser,state:current,source:'before-cloud-restore',force:true});
-          if(!checkpoint?.saved)throw new Error('A local recovery checkpoint could not be confirmed. Restore was stopped; your current workspace is unchanged.');
-          window.LifeFlowWorkspaceData.replaceState(workspace);
-          if(output)output.textContent='Restore complete. Your previous workspace was checkpointed locally first.';
-          return;
-        }
-        if(remove){
-          const id=remove.dataset.cloudDelete;
-          if(!window.confirm('Permanently delete this encrypted cloud backup? This cannot be undone.'))return;
-          await window.LifeFlowCloudBackup.deleteBackup(id);
-          await refreshList();
-          if(output)output.textContent='Encrypted cloud backup deleted.';
-          return;
-        }
-        const action=button.dataset.cloudBackup;
-        if(action==='create'){
-          const passphrase=(document.getElementById('cloudBackupPassphrase')||{}).value||'';
-          if(passphrase.length<12)throw new Error('Enter a backup passphrase with at least 12 characters.');
-          const snapshot=window.LifeFlowWorkspaceData?.getState?.();
-          if(!snapshot)throw new Error('Workspace storage is not ready.');
-          if(output)output.textContent='Encrypting locally and uploading ciphertext…';
-          const created=await window.LifeFlowCloudBackup.createBackup(snapshot,passphrase);
-          const result=await refreshList();
-          if(output)output.textContent='Encrypted backup created for '+result.account+' at '+new Date(created.backup.created_at).toLocaleString()+'.';
-        }else{
-          if(output)output.textContent='Loading encrypted backups…';
-          const result=await refreshList();
-          if(output)output.textContent='Backup history loaded for '+result.account+'. '+result.backups.length+' backup(s) found.';
-        }
-      }catch(error){if(output)output.textContent=error.message||'Cloud backup operation failed.';}
-      finally{controls.forEach(control=>control.disabled=false);}
-    });
-  })();
-  // Capture auth interactions before any other handler or native form navigation.
-  // Deferred scripts may still be downloading when the login form first becomes interactive.
-  var lifeFlowLoginPending = false;
-  function waitForLifeFlowLogin(timeoutMs) {
-    return new Promise(function(resolve, reject) {
-      var started = Date.now();
-      (function check() {
-        if (typeof window.doLogin === 'function') { resolve(window.doLogin); return; }
-        if (Date.now() - started >= timeoutMs) { reject(new Error('LifeFlow authentication did not become available.')); return; }
-        window.setTimeout(check, 50);
-      })();
-    });
-  }
-  document.addEventListener('submit', function(event) {
-    if (!event.target || event.target.id !== 'loginForm') return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    if (lifeFlowLoginPending) return;
-    lifeFlowLoginPending = true;
-    var submit = document.getElementById('loginSubmit');
-    var notice = document.getElementById('loginError');
-    if (notice) { notice.textContent = 'Loading secure sign-in…'; notice.hidden = false; }
-    if (submit) submit.disabled = true;
-    waitForLifeFlowLogin(10000).then(function(login) {
-      if (notice) { notice.textContent = ''; notice.hidden = true; }
-      return login();
-    }).catch(function(error) {
-      console.error('LifeFlow sign-in failed:', error);
-      if (notice) {
-        notice.textContent = error && error.message === 'LifeFlow authentication did not become available.'
-          ? 'LifeFlow could not finish loading. Check your connection and refresh the page.'
-          : (error && error.message ? error.message : 'Sign-in could not be completed. Please try again.');
-        notice.hidden = false;
-      }
-    }).finally(function() {
-      lifeFlowLoginPending = false;
-      if (submit) submit.disabled = false;
-    });
-  }, true);
-  document.addEventListener('click', function(event) {
-    var button = event.target && event.target.closest ? event.target.closest('[data-auth-action="toggle-login-password"], [data-auth-action="toggle-signup-password"]') : null;
-    if (!button) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    var inputId = button.dataset.authAction === 'toggle-login-password' ? 'loginPass' : 'signupPass';
-    var input = document.getElementById(inputId);
-    if (!input) return;
-    var visible = input.type === 'password';
-    input.type = visible ? 'text' : 'password';
-    button.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
-    button.setAttribute('aria-pressed', visible ? 'true' : 'false');
-    button.title = visible ? 'Hide password' : 'Show password';
-    button.classList.toggle('is-visible', visible);
-  }, true);
-</script>
+
 
 <script>
 (function(){
